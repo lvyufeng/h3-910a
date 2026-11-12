@@ -62,10 +62,17 @@ class H3910AAttentionImpl(SDPAImpl):
         if scale is None:
             scale = 1.0 / (query.shape[-1] ** 0.5)
         keys = key.shape[-2]
-        key_t = key.transpose(-1, -2)
+        # A non-contiguous K^T costs ~24% on this SoC: matmul has to gather
+        # strided rows for every chunk, and the same K^T is reused across all
+        # of them. Pay one copy up front instead.
+        key_t = key.transpose(-1, -2).contiguous()
         queries = query.shape[-2]
         step = _attn_chunk(queries)
         causal = bool(self.causal)
+        # Fold the softmax scale into Q once. Q is S x D while the scores are
+        # S x N, so scaling here replaces one full pass over the score matrix
+        # with a pass over a far smaller tensor.
+        query = query * scale
         # Ascend's softmax rejects infinities (it lowers to a NanToNum fallback
         # that has no 910A kernel), so mask with the most negative finite value.
         neg = torch.finfo(query.dtype).min
@@ -78,7 +85,7 @@ class H3910AAttentionImpl(SDPAImpl):
         for start in range(0, queries, step):
             stop = min(start + step, queries)
             # (B, H, block, D) @ (B, H, D, K) -> (B, H, block, K)
-            scores = torch.matmul(query[..., start:stop, :], key_t) * scale
+            scores = torch.matmul(query[..., start:stop, :], key_t)
             if causal:
                 rows = torch.arange(start, stop, device=query.device).view(-1, 1)
                 cols = torch.arange(keys, device=query.device).view(1, -1)
