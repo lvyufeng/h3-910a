@@ -66,6 +66,13 @@ class H3910AAttentionImpl(SDPAImpl):
         queries = query.shape[-2]
         step = _attn_chunk(queries)
         causal = bool(self.causal)
+        # Ascend's softmax rejects infinities (it lowers to a NanToNum fallback
+        # that has no 910A kernel), so mask with the most negative finite value.
+        neg = torch.finfo(query.dtype).min
+        # SoftmaxV2 has native fp16 and fp32 kernels but rejects bf16
+        # ("Unsupported cast type! src_dtype: bfloat16"), so only bf16 needs the
+        # fp32 round trip.
+        upcast_softmax = query.dtype == torch.bfloat16
 
         chunks: list[torch.Tensor] = []
         for start in range(0, queries, step):
@@ -75,7 +82,7 @@ class H3910AAttentionImpl(SDPAImpl):
             if causal:
                 rows = torch.arange(start, stop, device=query.device).view(-1, 1)
                 cols = torch.arange(keys, device=query.device).view(1, -1)
-                scores = scores.masked_fill(cols > rows, float("-inf"))
+                scores = scores.masked_fill(cols > rows, neg)
             if attention_mask is not None:
                 mask = attention_mask
                 if mask.dim() >= 3 and mask.shape[-2] != 1:
@@ -84,8 +91,14 @@ class H3910AAttentionImpl(SDPAImpl):
                     mask = mask.bool()
                 if mask.device != scores.device:
                     mask = mask.to(scores.device)
-                scores = scores.masked_fill(~mask, float("-inf"))
-            weights = torch.softmax(scores.float(), dim=-1).to(query.dtype)
+                scores = scores.masked_fill(~mask, neg)
+            # Keeping the native dtype avoids a fp32 copy of the whole score
+            # tile; that upcast doubled peak attention memory and is what made
+            # 768p OOM on 32 GiB cards.
+            if upcast_softmax:
+                weights = torch.softmax(scores.float(), dim=-1).to(query.dtype)
+            else:
+                weights = torch.softmax(scores, dim=-1)
             chunks.append(torch.matmul(weights, value))
 
         if len(chunks) == 1:
