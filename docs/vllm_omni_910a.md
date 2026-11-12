@@ -670,3 +670,100 @@ HCCL allgather 超时，进而死锁。
 3. **提升步数**：4 步是速度档；质量档可以试 8 步（耗时约翻倍）。
 4. **要真正上 768p 必须先解决主机内存**：改成共享权重（DLO_MODE=allgather 需要
    HCCL all_gather 可用）或减少 rank 数，把 8×权重副本降下来。
+
+---
+
+# 第十轮：主机内存为什么吃这么多（实测）
+
+## 一句话结论
+
+**文本编码器（Qwen3-VL，63 GB）被 8 个 rank 各复制了一份私有副本 = 504 GB。**
+原因是 DLO 的 `weight_transfer: rank-local` 走的是"每个 worker 摊平一份
+模型大小的私有分配"，而不是共享页缓存。
+
+## 实测数据
+
+8 个 worker 的 RSS **完全一致**，这是复制而非共享的直接证据：
+
+```
+pid        RSS      PSS     Private
+2010072   77.3 GB  76.7 GB  76.7 GB
+2010071   77.2 GB  76.7 GB  76.7 GB
+2010075   76.3 GB  75.8 GB  75.7 GB
+2010069   76.2 GB  75.6 GB  75.6 GB
+2010074   75.9 GB  75.4 GB  75.4 GB
+2010076   74.6 GB  74.0 GB  74.0 GB
+2010073   73.7 GB  73.2 GB  73.2 GB
+2010070   71.8 GB  71.3 GB  71.2 GB
+TOTAL    603.3 GB 599.1 GB 598.9 GB
+```
+
+**关键：PSS ≈ RSS ≈ Private（599 / 603 GB 都是私有）。**
+如果用 mmap 共享文件，PSS 会远小于 RSS（共享页按比例分摊）。这里三者相等，
+说明是**真的 8 份互不共享的私有内存**，不是页缓存重复计数。
+
+稳态 `free -g`：**666–678 GB 已用，剩 38 GB**。
+
+## 每个 worker 74 GB 的构成
+
+| 项目 | 大小 | 说明 |
+|---|---|---|
+| 文本编码器 Qwen3-VL | **63 GB** | 完整私有副本，**纯浪费 7/8** |
+| DiT 权重分片 | ~7.75 GB | 62 GB ÷ 8，每 rank 一份，**合理** |
+| 运行时/缓冲 | ~3 GB | Python、torch、激活缓冲 |
+
+8 × 74 GB ≈ 592 GB，与实测 595 GB 吻合。
+
+## 为什么不得不用 rank-local
+
+DLO 默认的权重传输是 AllGather（8 个 rank 共享一份主机权重，按需 all_gather 到设备）。
+但 910A 上这条路径直接失败：
+
+```
+HcclAllGatherV ... HCCL_E_NOT_SUPPORT
+```
+
+（`docs/910a_ops_notes.md` 里有记录。）所以只能退到 `rank-local`，
+代价就是注释里写的 "costs ~8x host RAM"。
+
+代码层面，`distributed_layerwise_backend.py` 把两条路径分得很清楚：
+
+```python
+# 非 mmap（我们现在走的）
+self.cpu_shards: dict[...] = {}      # "flattened into a model-sized private allocation"
+
+# mmap 共享路径
+self.cpu_sources: dict[...] = {}     # "immutable views of the checkpoint and are never
+                                     #  pinned or flattened into a model-sized private allocation"
+```
+
+## 已有的解药：Host Weight Runtime（HWR）
+
+代码里有现成开关，用主机侧共享存储替代私有拷贝：
+
+```
+--host-weight-runtime-mode {disabled,preferred,required}   # 默认 disabled
+--host-weight-runtime-root <dir>                            # 启用时必填
+```
+
+启用后走 `backing_kind == "checkpoint_mmap"`，8 个 rank 只读映射同一份文件，
+`_using_rank_local_mmap = True`。理论上 TE 从 504 GB 降到 ~63 GB，**省出约 440 GB**。
+
+注意两个约束（`distributed_layerwise_backend.py`）：
+
+```python
+if rank_local_mmap and dp_size != 1:
+    raise ValueError("rank_local_mmap requires dp_size=1")
+```
+
+我们的配置是 `--usp 8 --ring 1`，dp_size 是否为 1 需要在启用时确认。
+
+**这意味着 768p 很可能可以救回来**：目前卡在主机内存（715/754 GB → swap 抖动 →
+HCCL ALLGATHER 超时死锁），而不是设备显存。HWR 若生效，768p 的内存约束会大幅缓解。
+
+## 顺带说明：之前"关掉 TE 流式"为什么更糟
+
+曾经试过不 offload 文本编码器，想让权重全常驻，结果主机内存反而先爆
+（671/754 GB，加载从 17s/分片劣化到 105s/分片）。
+因为 TE 会整份加载到设备再分片，8 个 rank 各自在主机侧材料化全量副本，
+比流式更糟。**TE 流式是必要手段，但 rank-local 的实现方式才是内存问题的根源。**
