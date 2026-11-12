@@ -836,3 +836,96 @@ if has_distilled_lora:        return None, "..."
 当前实测：768p 最好的情况是**跑不通**（主机内存死锁），
 640×384 10 秒热机 219–287 秒。若目标是"768p / 10 秒 / 5 分钟"，还差 3 倍左右；
 需要先解决上面的 8×63 GB 私有副本问题。
+
+---
+
+# 第十二轮：768p 跑通了 —— checkpoint mmap 解决主机内存
+
+## 突破：主机内存 595 GB → 29 GB
+
+### 找到真正的开关
+
+上一轮确认了 76 GB/worker 是**匿名私有内存**。这一轮顺着"vllm-omni 有没有支持按分片读"
+查下去，结论是：
+
+* `_shard_and_pin()` **确实**支持按分片分配主机内存，但只沿 `dp_size` 维度切：
+  ```python
+  shard_size = (total_numel + dp_size - 1) // dp_size
+  shard = torch.zeros(shard_size, ...)   # 只分配 1/dp_size
+  ```
+* 我们是 HSDP + 序列并行，`dp_size = 1`，所以"分片"就等于整个模型 → 每 rank 一份全量。
+* 真正的共享路径是 `checkpoint_mmap`：把权重保留为 checkpoint 的只读 mmap 视图，
+  8 个进程共享同一份 page cache。
+
+### 两个否决条件，逐个拆掉
+
+`build_checkpoint_mmap_plan()` 有四个拒绝条件：
+
+```python
+if tensor_parallel_size != 1: ...   # 我们用 usp，tp=1 ✓
+if use_hsdp:                  ...   # ← 真正的拦路虎
+if online_quantization:       ...   # 无量化 ✓
+if has_distilled_lora:        ...   # LORA="" ✓
+```
+
+**关掉 HSDP 后 mmap 计划就被生成出来了**，但立刻又撞上第二个条件：
+
+```
+DLO direct checkpoint mmap unavailable; using ordinary loader:
+dtype mismatch for 'transformer.condition_proj.weight':
+checkpoint=BF16, transformed=torch.bfloat16, runtime=torch.float16
+```
+
+### 离线转 fp16（关键一步）
+
+mmap 是零拷贝，要求 **文件 dtype == 运行时 dtype**。checkpoint 是 BF16，而我们为了
+GEMM 吞吐必须跑 fp16（bf16 在这卡上慢 168 倍），所以不能在线转换——在线转换等于把
+权重读进来再转，又变回匿名私有内存。
+
+**做法：离线把 DiT checkpoint 转成 fp16 存一份**
+（`/home/mseco/models/MiniMax-H3-fp16`，13 个分片共 62 GB，F32 张量保持 F32，
+文本编码器继续符号链接到原 bf16 版本）：
+
+```
+fp16 dir dtypes: {'F32': 13, 'F16': 522}
+```
+
+### 结果
+
+```
+DLO host-weight plan active (AllGather, checkpoint_mmap): skipping ordinary materialization
+```
+
+| 指标 | HSDP=1（旧） | HSDP=0 + fp16 mmap（新） |
+|---|---|---|
+| 每 worker RSS | 74 GB | **2.9 GB** |
+| 8 worker 总计 | 595 GB | **29.1 GB** |
+| 主机内存 used/avail | 676 / 24 GB | 331 / 237 GB |
+| 每卡 HBM | 30 / 32 GB（爆满） | **3.2 / 32 GB** |
+
+**主机内存降 20 倍，HBM 降 10 倍。**
+
+## 768p 现在能跑了
+
+之前 768p 是**根本跑不通**的（主机内存 715/754 GB → swap 抖动 → HCCL ALLGATHER 超时死锁）。
+换新配置后：
+
+| 分辨率 | 旧配置 | 新配置 |
+|---|---|---|
+| 640×384 / 10s | 219–287 s | **167 s**（还更快了） |
+| 1344×768 / 10s | ❌ 死锁 | **1554 s（25.9 分钟）** |
+
+产物已验证：`tkhd dims: 1344x768`，21.3 MB，243 帧，无 OOM。
+
+**HSDP=0 不但没变慢，640p 反而从 219–287 s 降到 167 s** —— 说明 mmap 省掉的
+主机→设备搬运开销，比 HSDP 带来的权重分片收益更大。
+
+## 距离目标还差多少
+
+目标：768p / 10s / ≤300 s。实测 1554 s，**差 5.2 倍**。
+
+注意像素比只有 4.2 倍（640p 167 s → 768p 若线性应是 ~700 s），实际 1554 s，
+多出来的约 2.2 倍来自注意力 O(n²) 和 VAE 解码的非线性成本。
+
+下一步需要拿到阶段分解（`VLLM_OMNI_910A_PERF=1` 已内置但这次没开），
+定位是去噪还是 VAE 占主导，再决定优化重点。
