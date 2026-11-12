@@ -125,8 +125,16 @@ DEFAULT_OFFLOAD_CONFIG='{"mode":"layer","components":["dit","text_encoder"],"lay
 # DLO_MODE=allgather shares one host copy across ranks (needs HCCL all_gather,
 # verified working on 910A); rank-local gives each rank its own copy and costs
 # ~8x host RAM, which OOMs this box at 156 GB of weights.
+#
+# HWR (Host Weight Runtime) is mutually exclusive with an explicit
+# diffusion_offload_config -- vllm-omni rejects the combination:
+#   "diffusion_offload_config cannot be combined with Host Weight Runtime"
+# It drives DLO through the legacy switches instead, so HWR wins over
+# OFFLOAD_CONFIG here and pins the transfer to rank-local (no AllGather).
 if [[ "$DLO" == "1" ]]; then
-  if [[ -n "${OFFLOAD_CONFIG:-}" ]]; then
+  if [[ -n "${HWR_ROOT:-}" ]]; then
+    args+=(--enable-distributed-layerwise-offload --dlo-no-use-allgather)
+  elif [[ -n "${OFFLOAD_CONFIG:-}" ]]; then
     args+=(--diffusion-offload-config "$OFFLOAD_CONFIG")
   elif [[ "${DLO_MODE:-allgather}" == "allgather" ]]; then
     args+=(--enable-distributed-layerwise-offload)
@@ -139,6 +147,27 @@ if [[ -n "$LORA" && -f "$LORA" ]]; then
 fi
 if [[ -n "$QUANT" ]]; then
   args+=(--diffusion-quantization-config "$QUANT")
+fi
+
+# Host Weight Runtime (HWR): share ONE host copy of the offloaded weights across
+# workers instead of giving each rank its own.
+#
+# rank-local DLO (forced on 910A, see above) flattens each rank's offloaded
+# weights into a model-sized PRIVATE host allocation. With a 63 GB text encoder
+# and 8 ranks that is 504 GB of host RAM, which is what exhausts this 754 GB
+# box. Measured: 8 workers at ~74 GB private each (PSS == RSS, so genuinely not
+# shared), total 599/603 GB private.
+#
+# HWR keeps the checkpoint as a node-shared mmap source instead of flattening it
+# per rank. "preferred" restores an exact cache hit and otherwise loads and
+# publishes normally, so it degrades gracefully rather than failing startup.
+# Requires dp_size == 1 (we run usp/ring, no data parallelism).
+if [[ -n "${HWR_ROOT:-}" ]]; then
+  mkdir -p "$HWR_ROOT"
+  args+=(
+    --host-weight-runtime-mode "${HWR_MODE:-preferred}"
+    --host-weight-runtime-root "$HWR_ROOT"
+  )
 fi
 
 mkdir -p "$ROOT/run/omni"

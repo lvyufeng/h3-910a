@@ -767,3 +767,72 @@ HCCL ALLGATHER 超时死锁），而不是设备显存。HWR 若生效，768p �
 （671/754 GB，加载从 17s/分片劣化到 105s/分片）。
 因为 TE 会整份加载到设备再分片，8 个 rank 各自在主机侧材料化全量副本，
 比流式更糟。**TE 流式是必要手段，但 rank-local 的实现方式才是内存问题的根源。**
+
+---
+
+# 第十一轮：主机内存的分配性质确认 + 一个物理上限
+
+## 76 GB 是匿名私有内存，不是可共享的文件映射
+
+之前只测了 RSS/PSS，这轮直接看 smaps 里映射的性质：
+
+```
+total private    : 76.4 GB
+anonymous private: 76.0 GB
+file-backed private:
+    0.5 GB  [heap]
+    0.0 GB  libtorch_cpu.so
+    0.0 GB  libtvm.so ...
+```
+
+**76.0 / 76.4 GB 全部是匿名私有映射。** 如果权重是 mmap 自 `.safetensors` 文件，
+它会显示为 file-backed，且 8 个进程通过 page cache 天然共享（物理内存只存一份）。
+现在不是——**权重被复制进了每个 worker 的私有堆，8 份真实占用 8 × 76 = 608 GB。**
+
+这解释了为什么 `free -g` 的 used 和 RSS 总和几乎相等，也解释了 PSS ≈ RSS。
+
+## Host Weight Runtime 这条路走不通（已实测）
+
+启用 `--host-weight-runtime-mode preferred --host-weight-runtime-root <dir>` 后启动直接报错：
+
+```
+ValueError: diffusion_offload_config cannot be combined with Host Weight Runtime
+```
+
+HWR 与显式 offload 配置互斥，只能改用 legacy 开关
+（`--enable-distributed-layerwise-offload --dlo-no-use-allgather`）。
+按 legacy 方式启动后确实起来了，但：
+
+* **HWR 存储目录始终是空的（4.0K）**——HWR 从未真正发布或复用任何东西
+* 内存只从 595 GB 降到 522 GB，而且这是配置基线变了（legacy 路径把 DiT 也 offload 了），不是 HWR 的功劳
+* 加载完成后卡死 8 分钟无输出，主机内存只剩 5 GB
+
+更关键的是，真正想要的 mmap 共享路径在 `host_weight_plan.py` 里被直接拒绝：
+
+```python
+if tensor_parallel_size != 1: return None, "TP requires the ordinary loader"
+if use_hsdp:                  return None, "HSDP requires the ordinary loader"
+if online_quantization:       return None, "..."
+if has_distilled_lora:        return None, "..."
+```
+
+我们的配置**同时命中 TP=8、HSDP=1、蒸馏 LoRA 三项**，全部是否决条件。
+而且这个 plan 只收集 DiT 张量（`_collect_required_dit_tensors`），
+**根本不覆盖文本编码器**——即使可用也解决不了那 63 GB。
+
+## 一个物理上限：768p 10s 不可能在 5 ms 内生成
+
+需求本身要过一遍量级检查。1344×768、243 帧（H3 的 17n+5 网格）：
+
+| 项目 | 数值 | 5 ms 内需要 | 对比 |
+|---|---|---|---|
+| 输出像素原始数据 | 752 MB | 0.2 TB/s 写入 | 尚可，但只是"写" |
+| **权重只需读一遍** | 125 GB | **25 TB/s** | 8 卡 HBM 聚合约 6.4 TB/s，**差 4 倍** |
+| DiT 计算（4 步，约 24 万 token） | ~6.0e16 FLOPs | **12 EFLOPS** | 8×910A fp16 约 3 PFLOPS，**差约 4000 倍** |
+
+**光把权重读一遍就装不下 5 ms**，这已经是纯访存、零计算的下限；
+计算侧差三到四个数量级。这不是优化问题，是物理约束。
+
+当前实测：768p 最好的情况是**跑不通**（主机内存死锁），
+640×384 10 秒热机 219–287 秒。若目标是"768p / 10 秒 / 5 分钟"，还差 3 倍左右；
+需要先解决上面的 8×63 GB 私有副本问题。
