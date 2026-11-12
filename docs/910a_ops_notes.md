@@ -1,12 +1,16 @@
-# 910A 算子适配笔记（MiniMax H3 / ComfyUI）
+# 910A 算子适配笔记（MiniMax H3）
 
 记录时间：2026-11-09。机器：`ts-217`（8×910B 无后缀，按 910A 代际处理），CANN 9.2.0，torch_npu 2.10.0。
 
+本文只记录**硬件层面的算子可用性**，这些结论与上层框架无关，是当前 vLLM-Omni
+路线和将来任何路线的共同前提。工程实现与性能优化过程见
+[vllm_omni_910a.md](vllm_omni_910a.md)。
+
 ## 一句话结论
 
-910A 上 **SDPA、FlashAttention、NanToNum、bf16 softmax 全部不可用**。可行路径是：
-`--use-split-cross-attention` + 全程 fp16 + 社区补丁集（`ComfyUI-Ascend910A-Adaptation`）。
-这条路径能跑通，但很慢（见文末 baseline）。
+910A 上 **SDPA、FlashAttention、fp16 NanToNum、bf16 softmax 全部不可用**。
+注意力只能走 matmul/softmax 的分块实现；精度必须用 fp16
+（bf16 的 matmul 只有 fp16 的 1/168 算力）。
 
 ## 实测证据
 
@@ -23,12 +27,11 @@
 
 报错码 `ERR01007 OPS feature not supported`。
 
-### 2. `torch_npu.npu_fusion_attention` 也不可用
+此外 `npu_fusion_attention`、`npu_prompt_flash_attention` 均因 SoC 版本门禁失败
+（`EZ1009 SoC version ascend910 verification failed`），Triton/bishengir 也没有 910A
+的 target（`Cannot find option named 'Ascend910B'`，支持列表从 `Ascend910B1` 起）。
 
-`aclnnFlashAttentionScore failed`（`FlashAttentionKernelNpuOpApi.cpp`）。
-所以既没有 SDPA，也没有融合 flash attention——**只能走 matmul/softmax 的 split 实现**。
-
-### 3. eager 数学本身是对的
+### 2. eager 数学本身是对的
 
 `scripts/probe_npu_correctness.py` 对照 CPU（fp16，`max|diff|` 容差 2e-2）：
 
@@ -39,75 +42,63 @@ OK 分块 attention 0.0004
 BAD exp: max|diff|=42914（fp16 在 |x|>11 时溢出，属预期，不是 bug）
 ```
 
-结论：**算得慢但算得对**，非常适合当 baseline。
+结论：**算得慢但算得对**，适合当 baseline / 回退实现。
 
-### 4. bf16 softmax 编译失败（黑屏/崩溃的元凶之一）
+### 3. bf16 softmax 编译失败
 
 ```
 SoftmaxV2 compile failed: Unsupported cast type! src_dtype: bfloat16, dst_dtype: float32
 ```
 
-触发链：DiT 的 `unet_dtype` 在 NPU 上被判成 bf16 → 整条采样图 bf16 → `SoftmaxV2` 编译失败。
-**两个 LoRA 权重本身也是 BF16**（`fl2v_turbo_4step` 与 `turbo_v4_step600_ema` 均为 `{'BF16': ...}`），
-合并后进一步把计算拖进 bf16。
+`SoftmaxV2` 只接受 fp16/fp32，不接受 bf16。这也是后续所有路径都必须绕开 bf16 的原因之一。
 
-处置：
-1. LoRA 离线转 fp16（`scripts/convert_lora_fp16.py`），工作流改指向 `..._fp16.safetensors`；
-2. `sd.py` 里把 `unet_dtype` 在 Ascend 上钉成 fp16（补丁 ⑤）；
-3. 启动加 `--fp16-unet --fp16-text-enc`（`--force-fp16` 压不住 int8 量化模型）。
+### 4. `nan_to_num` 没有 fp16 kernel
 
-修好后日志出现 `model weight dtype torch.float16, manual cast: None`，`SoftmaxV2` 不再报错。
-
-## 采用的补丁集
-
-来源：`ComfyUI-Ascend910A-Adaptation` 的《MiniMax-H3 昇腾 910A 完整部署使用指南》。
-落地脚本：`artifacts/design/patches/apply_910a_comfy_patches.py`（按内容锚定，可 `--revert`）。
-
-| # | 文件 | 改动 | 解决 |
-|---|---|---|---|
-| ① | `comfy/model_management.py` | `is_oom()` 识别 NPU OOM | attention 重试/清缓存失效 |
-| ② | `comfy/ldm/modules/attention.py` | `attention_split` 分块向上取整 | 长序列一次性分配 ~26GB 注意力矩阵 → OOM |
-| ③ | `comfy/sd.py` | 量化 UNet 的 manual_cast 尊重 `unet_dtype` | 强转 bf16 |
-| ④ | `comfy/sd.py` | Ascend 上 `unet_dtype` 钉 fp16（本仓库补充） | bf16 softmax 编译失败 |
-| ⑤ | `scripts/sitecustomize.py` | 关 `allow_internal_format`；`nan_to_num` 等价实现 | conv3d 布局 + NanToNum 缺失 |
-
-`sitecustomize.py` 只在 `H3_910A_RUNTIME_PATCH=1` 时生效，由启动脚本设置。
-
-## 启动参数
-
-```bash
-H3_910A_RUNTIME_PATCH=1 bash runtime/h3-instance-control.sh start a -- \
-  --use-split-cross-attention --dont-upcast-attention --fp16-unet --fp16-text-enc
+```
+No supported Ops kernel and engine are found for [NanToNum542], optype [NanToNum]
 ```
 
-- `--use-split-cross-attention`：910A 上唯一可用的 attention 实现（flash/sage/ck 都不可用）
-- `--dont-upcast-attention`：没有 fp32 加速，upcast 只会更慢
-- `--fp16-unet/--fp16-text-enc`：唯一能编译的精度
+实测矩阵：
 
-## 性能 baseline（eager，单卡 0 号卡）
-
-608×352、107 帧、4 步 turbo LoRA、`npu_count=1`：
-
-| 阶段 | 耗时 |
+| dtype | `torch.nan_to_num` |
 |---|---|
-| 4 步采样 | 4 分 26 秒（66.7 秒/步） |
-| 整条 prompt（含 VAE 加载/解码/编码） | 16 分 54 秒 |
-| 峰值 HBM | 约 21–30 GB（32GB 卡） |
+| fp16 | **FAIL（无 kernel）** |
+| bf16 | OK |
+| fp32 | OK |
 
-对比参考：同一台机器多卡（`npu_count=4`）本来是设计路径，但会走自研 HCCL
-`HcclAllGatherV`，在 CANN 9.2.0 上返回 **HCCL error 5 = `HCCL_E_NOT_SUPPORT`**，目前不可用。
-所以现阶段只能用单卡。
+处置思路是让调用方不再对 fp16 张量调用它，而不是替换算子本身。
+
+### 5. 编译失败会伪装成"算子不支持"
+
+CANN 的 AscendC JIT 编译器不自动加系统 C++ 头文件目录，
+`RmsNorm` 之类内置算子会报 `no supported kernel`，真实原因却是
+`fatal error: 'cstdint' file not found`。设置
+
+```bash
+export CPLUS_INCLUDE_PATH=/usr/include/c++/11:/usr/include/aarch64-linux-gnu/c++/11
+```
+
+之后正常。**排查"算子不支持"之前，先确认不是编译环境问题。**
+
+### 6. 并行编译子进程会打爆主机
+
+CANN 默认每个算子起 128 个 fatbin 编译子进程，8 个 worker 同时编译时会
+oversubscribe 主机，表现为 `TBE Subprocess ... main process disappeared`。
+`export TBE_PARALLEL_COMPILER=4` 可以解决。
 
 ## 已知坑
 
-1. **单卡内存很紧**：608×352 曾经 OOM，主要就是补丁②之前的分块 bug；补丁②之后 21GB 左右。
-2. **`torch.npu.config.allow_internal_format` 必须关**，否则视频 VAE 的 `reflection_pad3d` 崩。
-3. **`nan_to_num` 替换会把 NaN 变 0**：如果输出整片全黑，先怀疑上游算出了 NaN，而不是 VAE 坏了。
-4. **`sitecustomize.py` 依赖 PYTHONPATH**：只有启动脚本把 `scripts/` 放进 `PYTHONPATH` 时才生效。
-5. ComfyUI 日志里 `hccl_build_version=unknown` 属探针字段问题，不代表 HCCL 缺失。
+1. **视频 VAE 编码（encode）路径要注意 `torch.npu.config.allow_internal_format`**：
+   conv3d 默认输出 NDC1HWC0/ACL_FRACTAL_Z_3D 布局，`reflection_pad3d` 会崩。
+   当前只做文生视频（decode 路径），不触发该问题；将来接图生/视频生视频时需要关掉。
+2. **`nan_to_num` 替换会把 NaN 变 0**：如果输出整片全黑，先怀疑上游算出了 NaN，
+   而不是 VAE 坏了。
+3. **残留进程会伪装成 OOM**：进程名显示为 `vLLM-OmniDiff`，`pkill -f vllm-omni`
+   抓不到，要先 `npu-smi info -t proc-mem -i N` 找到 pid 再杀，并清
+   `/dev/shm/sem.mp-*`。
+4. 日志里 `hccl_build_version=unknown` 属探针字段问题，不代表 HCCL 缺失。
 
 ## 参考链接
 
-- [ComfyUI-Ascend910A-Adaptation](https://gitcode.com/cssyyy_hpccai/ComfyUI-Ascend910A-Adaptation)（补丁来源，含 910a_minimax.md）
 - [minimax-h3-int8](https://ai.atomgit.com/xujiashuai/minimax-h3-int8)（Ascend 910 双卡 H3 部署）
-- [ascendai/vllm-omni minimax-h3 镜像](https://hub.docker.com/r/ascendai/vllm-omni)（vLLM-Omni 的 H3 昇腾镜像）
+- [ComfyUI-Ascend910A-Adaptation](https://gitcode.com/cssyyy_hpccai/ComfyUI-Ascend910A-Adaptation)（910A 算子补丁的另一条独立路线，本仓库未采用）

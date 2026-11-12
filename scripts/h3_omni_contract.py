@@ -7,8 +7,8 @@ turns one multipart submission into a validated request, and it renders the
 job state back into the three status words OpenDirector understands
 (``queued``/``in_progress``/``completed``).
 
-Nothing here imports aiohttp or the workflow editor, so the rules can be
-tested without a running ComfyUI.
+Nothing here imports aiohttp, so the rules can be tested without a running
+service.
 """
 
 from __future__ import annotations
@@ -135,7 +135,7 @@ def parse_extra_params(raw: str | None) -> dict[str, Any]:
         raise RequestError("extra_params.task 只能是 t2va、fl2va 或 ref2va。")
     if value.get("continue_from"):
         # Continuation needs the cached latent tail of an earlier clip; the
-        # 910A ComfyUI graph has no such cache, so refuse instead of silently
+        # 910A path keeps no such cache, so refuse instead of silently
         # generating an unrelated clip.
         raise RequestError(
             "该服务不支持 continue_from 接续（需要上一段视频的 latent 缓存）。",

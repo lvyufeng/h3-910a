@@ -91,11 +91,10 @@ remaining per-step cost is sampler bookkeeping and sequence-parallel traffic.
 ## Layout
 
 ```
-runtime/     launch and control scripts (start here: omni-serve-910a.sh)
-scripts/     model merge, benchmarking, probes, server helpers
-docs/        engineering log, operator notes, API reference, acceptance criteria
-config/      extra model path config
-artifacts/design/   patches and probes that make the stack run on 910A
+runtime/     launch script (start here: omni-serve-910a.sh) + HCCL probes
+scripts/     model merge/LoRA conversion, NPU probes, protocol + smoke helpers
+docs/        engineering log, and the 910A operator/op notes
+artifacts/   the patches that make the stack run on 910A, plus its probes/tests
 ```
 
 `docs/vllm_omni_910a.md` is the detailed multi-round engineering log, including

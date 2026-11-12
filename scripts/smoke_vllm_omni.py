@@ -5,7 +5,7 @@
         --prompt "a red fox" --frames 107 --size 608x352 --out /tmp/smoke.mp4
 
 Uses only the standard library so it runs both on the dev machine and on
-ts-217 without touching the ComfyUI virtualenv.
+ts-217.
 """
 
 from __future__ import annotations

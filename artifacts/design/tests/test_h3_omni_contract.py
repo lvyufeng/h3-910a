@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Protocol tests for the vLLM-Omni compatible H3 service.
 
-These run without aiohttp or ComfyUI: they pin the request rules that
+These run without aiohttp: they pin the request rules that
 OpenDirector's ``minimax_h3`` adapter depends on.
 """
 

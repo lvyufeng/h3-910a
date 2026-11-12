@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Check which HCCL collectives actually work on the 910A fleet.
 
-DLO's default weight transfer is AllGather. ComfyUI's hand-rolled
-``HcclAllGatherV`` failed with HCCL_E_NOT_SUPPORT on this hardware, which pushed
-the vLLM-Omni offload path onto rank-local copies (8x host RAM). If fixed-size
+DLO's default weight transfer is AllGather. The hand-rolled ``HcclAllGatherV``
+path failed with HCCL_E_NOT_SUPPORT on this hardware, which pushed the
+vLLM-Omni offload path onto rank-local copies (8x host RAM). If fixed-size
 ``all_gather`` works, the shared-weight path is viable again.
 
     torchrun --nproc_per_node=8 probe_hccl_collectives.py

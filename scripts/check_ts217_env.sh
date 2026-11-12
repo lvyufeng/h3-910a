@@ -5,8 +5,8 @@
 #   bash scripts/check_ts217_env.sh [--json]
 #
 # Important environment:
-#   H3_MODEL_ROOT          ComfyUI model roots, colon-separated.
-#                          Default: /mnt/workspace/ComfyUI/models
+#   H3_MODEL_ROOT          Model roots, colon-separated.
+#                          Default: /home/mseco/models
 #   H3_MODEL_MANIFEST      JSON list with destination, size and sha256 fields.
 #   H3_HASH_MODELS         full|none (default: full)
 #   H3_RUNTIME_ROOT        Directory checked for free space.
@@ -60,7 +60,7 @@ readonly EXPECTED_DEVICES="${H3_EXPECTED_DEVICES:-8}"
 readonly HASH_MODE="${H3_HASH_MODELS:-full}"
 readonly REQUIRE_TOPO="${H3_REQUIRE_TOPO:-0}"
 readonly REQUIRE_ATC="${H3_REQUIRE_ATC:-1}"
-readonly MODEL_ROOT="${H3_MODEL_ROOT:-/mnt/workspace/ComfyUI/models}"
+readonly MODEL_ROOT="${H3_MODEL_ROOT:-/home/mseco/models}"
 readonly MANIFEST="${H3_MODEL_MANIFEST:-}"
 readonly RUNTIME_ROOT="${H3_RUNTIME_ROOT:-${H3_INSTANCE_ROOT:-/mnt/workspace/h3-ascend/ts217}}"
 readonly CHECK_TIMEOUT="${H3_CHECK_TIMEOUT:-30}"
