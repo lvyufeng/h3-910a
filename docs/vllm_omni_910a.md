@@ -1018,3 +1018,104 @@ chunk 只改变 score tile 的大小，不改变总访存量，所以到不了�
 1. 等 CANN 提供 910A 可用的融合注意力（外部依赖）
 2. 自己写 AscendC 融合注意力（工作量大，且此前判断优先级低）
 3. 换更省注意力的模型/采样策略（改变画质）
+
+---
+
+# 第十四轮：注意力微优化 + AscendC 工具链验证
+
+## 实测到的真实注意力形状
+
+在 `forward_npu` 里加一次性形状日志（`VLLM_OMNI_910A_SHAPE_LOG=1`）后拿到真相：
+
+```
+[SHAPE] q=(1, 73408, 7, 128) k=(1, 73408, 7, 128) v=(1, 73408, 7, 128) dtype=torch.float16
+```
+
+permute 后是 `(1, 7, 73408, 128)`，即 **H=7, S=73408, D=128**。
+（另有 16 次 `(1, 8, 56, 128)` 是极小序列的预热调用。）
+
+**Ultysses 序列并行是把 head 切开、序列保持完整**，所以 8 个 rank 各自对全长序列做
+注意力，只是每人 7 个 head。这解释了为什么注意力是 O(n²) 且没有随卡数下降。
+
+## 免费优化：K^T 连续化 + scale 折入 Q
+
+真实形状下测单次注意力调用：
+
+| 实现 | 耗时 | 等效算力 |
+|---|---|---|
+| 原实现（chunk=1024） | 1.350 s | 14.3 TFLOPS |
+| 优化后 | **1.175 s** | 16.4 TFLOPS |
+
+两处改动：
+
+1. **`key.transpose(-1,-2).contiguous()`**：原来 K^T 是非连续的，72 个 chunk 每次
+   都要 matmul 去 gather 跨步的行。一次拷贝换掉 72 次跨步访问，实测 matmul 快约 24%。
+2. **`query = query * scale`**：scale 原来是乘在 score 矩阵上（S×N），每 chunk 一遍。
+   折进 Q（S×D）后这次全量大矩阵遍历直接消失。
+
+在模型里的实际效果：
+
+| 指标 | 优化前 | 优化后 | 倍数 |
+|---|---|---|---|
+| 单 block | 1.960 s | **1.792 s** | 1.09× |
+| model（每步） | 86.2 s | **77.0 s** | 1.12× |
+| 每步合计 | 107.5 s | **99.3 s** | 1.08× |
+| 4 步去噪 | 430 s | **397 s** | 1.08× |
+
+后端测试仍 7/7 通过，`max|diff| ≈ 1e-3`。
+
+## 试过但没用：npu_attn_softmax_
+
+`torch_npu.npu_attn_softmax_` 在该 SoC 上**可用**（不报错、结果有限），
+但速度与 `torch.softmax` 完全相同（0.0204 s vs 0.0206 s）。不是优化点。
+
+## 为什么 4.8% 的效率能救
+
+优化后注意力仍是 14–16 TFLOPS，约为 910A fp16 峰值的 **4.8%**。原因很明确：
+
+单次注意力要处理的 score 矩阵是 `73408 × 7 × 73408` 个 fp16，约 **75 GB**，
+而三个独立 matmul 的流程是：
+
+```
+matmul 写 scores  ->  softmax 读 scores 写 weights  ->  matmul 读 weights
+```
+
+即 **75 GB 数据在 HBM 上往返三次**。softmax 单独就占了单 block 的 38%。
+
+若用 flash-attention 式的分块在线 softmax，score 只存在于片上，这 75 GB×3 的往返
+就全部消失。按效率从 4.8% 提到 40% 估算，注意力可从 1.35 s/block 降到约 0.16 s：
+
+```
+4 步 × 50 blocks × (1.792 - 1.35 + 0.16) ≈ 120 s 去噪  + 113 s VAE ≈ 233 s
+```
+
+**这就是能在 300 s 内完成的唯一路径。**
+
+## AscendC 工具链在 910A 上可用（已验证）
+
+这是写融合算子的前提，本轮把它验证掉了。
+
+平台配置里有 `Ascend910A.ini`，编译器是 CANN 自带的 `ccec`。可用的编译命令：
+
+```bash
+source $ASCEND_HOME_PATH/set_env.sh
+export CPLUS_INCLUDE_PATH=/usr/include/c++/11:/usr/include/aarch64-linux-gnu/c++/11:/usr/include:/usr/include/aarch64-linux-gnu
+$ASCEND_HOME_PATH/aarch64-linux/bin/ccec -xcce -std=c++17 -O2 \
+  --cce-aicore-arch=dav-c100 \
+  -I$ASCEND_HOME_PATH/aarch64-linux/asc/include \
+  -I$ASCEND_HOME_PATH/aarch64-linux/asc/include/basic_api \
+  -I$ASCEND_HOME_PATH/aarch64-linux/asc/include/highlevel_api \
+  -I$ASCEND_HOME_PATH/aarch64-linux/tikcpp/tikcfw \
+  -c kernel.cpp -o kernel.o
+```
+
+最小 kernel（`TPipe` + `TQue` + `GlobalTensor` + `DataCopy` + `Muls`）**编译通过，
+产出 32,928 字节目标文件**。三个曾经踩到的坑：
+
+1. `cstdint` 找不到 → 必须设 `CPLUS_INCLUDE_PATH`
+2. `kernel_tpipe.h` 找不到 → 要显式加 `asc/include/basic_api`
+3. **默认语言标准太旧**（`'auto' not allowed in template parameter until C++17`）
+   → 必须加 `-std=c++17`
+
+注意：编译通过 ≠ 能运行。内核还需要走算子注册（aclnn）才能在 torch 里调用，
+这是下一步的工作。
