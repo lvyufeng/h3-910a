@@ -5,19 +5,30 @@ Ascend **910A**-generation NPUs (`910B` without a suffix), 8×32 GiB, CANN 9.2.0
 through **vLLM-Omni** — and making it fast enough to serve.
 
 **Result:** on a warm engine, a 10-second clip generates in **167 s at 640×384**
-and **543 s at the native 1344×768**, with host RAM at 331 GB of 754 GB and HBM
-at 3.2 GB of 32 GB per chip.
+and **250 s at the native 1344×768** — inside a 5-minute budget — with host RAM
+at 334 GB of 754 GB and HBM at 3.2 GB of 32 GB per chip.
 
-| Clip | Resolution | Frames | Wall time (warm) |
-|---|---|---|---|
-| 10.12 s | 640×384 | 243 @ 24 fps | **167 s** |
-| 10.12 s | **1344×768** (native) | 243 @ 24 fps | **543 s** |
-| 10.12 s | 640×384 | 243 @ 24 fps | 219–287 s (older HSDP=1 config) |
+| Clip | Resolution | Steps | Wall time (warm) | Budget 300 s |
+|---|---|---|---|---|
+| 10.12 s | **1344×768** (native) | 2 | **250 s** | ✓ |
+| 10.12 s | **1344×768** (native) | 4 | 449 s | ✗ |
+| 10.12 s | 640×384 | 4 | **167 s** | ✓ |
+| 10.12 s | 640×384 | 4 | 219–287 s (older HSDP=1 config) | ✓ |
+
+The checkpoint is a **4-step** distillation, so the 250 s figure runs 2 steps and
+trades quality for latency: against the same seed the 2-step render is 12%
+darker with 31% less frame-to-frame motion. The 4-step render is the
+quality-preserving option at 449 s. Steady state is roughly 100–120 s per step
+plus about 52 s of fixed encode/decode work.
 
 The 768p path only exists because the DiT weights are shared through
 `checkpoint_mmap` instead of copied per rank; see "Host memory" below.
-Cold starts add roughly 1000 s of one-time kernel compilation — always warm up
-before measuring, or you will read a 2.9× inflated number.
+
+**Cold starts are not small.** The first request after a restart pays one-time
+kernel compilation plus the first full text-encoder and VAE weight transfer,
+which measured 662 s for a 4-step 768p run against 449 s warm — a 1.5×
+inflation, and encode/decode alone read 42 s/157 s cold versus 9 s/43 s warm.
+Always warm up before measuring.
 
 ## Why this is not a straight port
 
@@ -101,12 +112,13 @@ curl -s -X POST http://127.0.0.1:9198/v1/videos \
   -F "prompt=warmup" -F "seconds=4" -F "size=640x384" \
   -F "num_inference_steps=4" -F seed=0
 
-# 5. Generate.
+# 5. Generate. num_inference_steps=2 is what fits 768p in the 5-minute budget;
+#    use 4 when you want the checkpoint's full quality (449 s).
 curl -s -X POST http://127.0.0.1:9198/v1/videos \
   -F "prompt=a red fox running through snow, cinematic" \
-  -F "seconds=10" -F "size=640x384" -F "aspect_ratio=16:9" \
-  -F "num_inference_steps=4" -F seed=1
-# -> {"id": "video_gen_..."}   then poll GET /v1/videos/{id}
+  -F "seconds=10" -F "size=1344x768" -F "aspect_ratio=16:9" \
+  -F "num_inference_steps=2" -F seed=1
+# 250 s warm -> {"id": "video_gen_..."}   then poll GET /v1/videos/{id}
 ```
 
 ## Cold start vs warm engine
