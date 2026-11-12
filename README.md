@@ -4,13 +4,20 @@ Running [MiniMax-H3](https://github.com/MiniMax-AI/MiniMax-H3) video generation 
 Ascend **910A**-generation NPUs (`910B` without a suffix), 8×32 GiB, CANN 9.2.0,
 through **vLLM-Omni** — and making it fast enough to serve.
 
-**Result:** a 10-second 640×384 clip generates in **219–287 s** on a warm engine,
-against a 300 s budget.
+**Result:** on a warm engine, a 10-second clip generates in **167 s at 640×384**
+and **543 s at the native 1344×768**, with host RAM at 331 GB of 754 GB and HBM
+at 3.2 GB of 32 GB per chip.
 
-| Clip | Resolution | Frames | Wall time |
+| Clip | Resolution | Frames | Wall time (warm) |
 |---|---|---|---|
-| 10.12 s | 640×384 | 243 @ 24 fps | 219 s |
-| 10.12 s | 640×384 | 243 @ 24 fps | 287 s |
+| 10.12 s | 640×384 | 243 @ 24 fps | **167 s** |
+| 10.12 s | **1344×768** (native) | 243 @ 24 fps | **543 s** |
+| 10.12 s | 640×384 | 243 @ 24 fps | 219–287 s (older HSDP=1 config) |
+
+The 768p path only exists because the DiT weights are shared through
+`checkpoint_mmap` instead of copied per rank; see "Host memory" below.
+Cold starts add roughly 1000 s of one-time kernel compilation — always warm up
+before measuring, or you will read a 2.9× inflated number.
 
 ## Why this is not a straight port
 
@@ -35,6 +42,39 @@ HuggingFace dynamic modules are regenerated from the model directory on every
 load, so the fix has to live in the model source, not in
 `~/.cache/huggingface/modules`.
 
+## Host memory: how 768p fits at all
+
+H3 is 62 GB of DiT plus a 63 GB Qwen3-VL text encoder. The naive deployment
+copies each rank's weights into its own private heap, and with 8 ranks that is
+**595 GB of a 754 GB box** — measured 74 GB per worker with PSS equal to RSS, so
+genuinely unshared. 768p then pushed host RAM to 715/754 GB, the box swapped,
+and an ALLGATHER stalled into a deadlock.
+
+The fix is `checkpoint_mmap`: keep the weights as read-only views of the
+checkpoint so the 8 ranks share one page cache, instead of flattening a private
+copy each. Two conditions blocked it, and clearing them is the whole recipe:
+
+1. **HSDP must be off.** `build_checkpoint_mmap_plan` rejects `use_hsdp`.
+   Dropping it costs nothing here — 640×384 actually got *faster* (219–287 s →
+   167 s), because the mmap savings beat the weight sharding.
+2. **The checkpoint must already be fp16.** mmap is zero-copy, so file dtype
+   must equal runtime dtype, and H3 ships BF16 while bf16 GEMM is 168× slower.
+   Convert offline, once; converting on load defeats the purpose because the
+   converted copy becomes anonymous private memory again.
+
+```bash
+# Convert ONLY the DiT to fp16 (F32 tensors stay F32), then link the rest.
+python artifacts/design/patches/convert_dit_fp16.py \
+    /path/to/MiniMax-H3-4step /path/to/MiniMax-H3-fp16
+```
+
+| | HSDP=1 (old) | HSDP=0 + fp16 mmap |
+|---|---|---|
+| Host RAM per worker | 74 GB | **2.9 GB** |
+| Host RAM total | 595 GB | **29 GB** |
+| HBM per chip | 30 / 32 GB | **3.2 / 32 GB** |
+| 768p 10 s | deadlock | **543 s** |
+
 ## Quick start
 
 Requires a 910A host with CANN installed, vLLM 0.30.0 built with
@@ -47,16 +87,21 @@ Requires a 910A host with CANN installed, vLLM 0.30.0 built with
 python artifacts/design/patches/patch_model_vae_nan_to_num.py \
     /path/to/MiniMax-H3-4step
 
-# 2. Serve.
-bash runtime/omni-serve-910a.sh --daemon
+# 2. Convert the DiT to fp16 so the mmap weight path can be used (see above).
+python artifacts/design/patches/convert_dit_fp16.py \
+    /path/to/MiniMax-H3-4step /path/to/MiniMax-H3-fp16
 
-# 3. Warm the engine first -- the first request pays a large one-time cost
+# 3. Serve. HSDP=0 is what unlocks the shared-memory path.
+HSDP=0 TE_TP=8 MODEL=/path/to/MiniMax-H3-fp16 DTYPE=half \
+  bash runtime/omni-serve-910a.sh --daemon
+
+# 4. Warm the engine first -- the first request pays a large one-time cost
 #    (kernel/shape warmup); without this step measurements are meaningless.
 curl -s -X POST http://127.0.0.1:9198/v1/videos \
   -F "prompt=warmup" -F "seconds=4" -F "size=640x384" \
   -F "num_inference_steps=4" -F seed=0
 
-# 4. Generate.
+# 5. Generate.
 curl -s -X POST http://127.0.0.1:9198/v1/videos \
   -F "prompt=a red fox running through snow, cinematic" \
   -F "seconds=10" -F "size=640x384" -F "aspect_ratio=16:9" \
