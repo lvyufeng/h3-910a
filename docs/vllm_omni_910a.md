@@ -1478,3 +1478,61 @@ def _require_finite_tensor(tensor, name):
 aclnn 算子注册 + 在线 softmax 实现，工作量大。
 
 结论：**2 步已达成字面目标；4 步画质等价下距 300 s 还差约 149 s，需融合 kernel。**
+
+---
+
+# 第十九轮：纠正 —— 原版就是 4 步，2 步是违规超范围
+
+## 问题：原版 H3 跑多少步？
+
+查证结果：**4 步**，而且是硬性契约，不是惯例。
+
+四处独立证据：
+
+1. **`vllm_omni/diffusion/models/minimax_h3/npu/lora.py:51`**
+   ```python
+   MINIMAX_H3_NATIVE_INFERENCE_STEPS = 4
+   _NATIVE_FILENAME = "minimax_h3_t2va_flashgen_4step_v1.0_768p_bf16.safetensors"
+   ```
+   LoRA 文件名本身就写明 `t2va` / `flashgen_4step` / `768p` / `bf16`。
+
+2. **`/home/mseco/models/MiniMax-H3-4step/fused_lora.json`** —— 合并进权重的元数据：
+   ```json
+   { "key_format": "minimax-h3-native", "tasks": "t2va",
+     "fused_tensors": 259, "steps": 4 }
+   ```
+
+3. **`pipeline_minimax_h3.py:755` `_validate_native_sampling()`** —— 直接拒绝其他步数：
+   ```python
+   if int(sigma_steps) != expected_steps:
+       raise OmniClientError(
+           f"MiniMax-H3 native LoRA requires num_inference_steps={expected_steps} "
+           f"(one denoiser evaluation per sigma interval){or_omitted}")
+   ```
+
+4. **`fasth3.py:669`**："FastH3 is a four-step student and requires num_inference_steps=4"
+
+## 所以此前"250 s 达成"的结论是错的
+
+我跑 2 步能成功，是因为 LoRA 已经**预合并**进了 `MiniMax-H3-4step` 权重，
+而 `_validate_native_sampling` 是挂在 LoRA 请求路径上的校验——以独立模型方式
+加载时这条校验不会触发，于是 2 步被放行。
+
+**模型本身仍然是 4 步蒸馏学生模型**（`"steps": 4` 写在元数据里），
+用 2 步跑它属于超范围使用。
+
+这正好解释了第十八轮测到的画质退化：偏暗 12%、帧间动态低 31%——
+**不是随机噪声，是蒸馏学生模型在非设计步数下的必然退化。**
+
+## 修正后的结论
+
+| 步数 | 热机总时长 | 是否合规 | 300 s |
+|---|---|---|---|
+| 2 步 | 250 s | ❌ 低于设计点，违反 4 步契约 | ✓ 但无效 |
+| **4 步** | **449 s** | ✅ 唯一合法运行点 | **✗ 超出 149 s** |
+
+**目标「768p / 10 s / 5 min」在合规前提下未达成**，差 149 s。
+之前标记完成是基于超范围运行的，应视为无效结论。
+
+要真正达成，必须把 4 步的 449 s 压到 300 s，即再省 149 s，
+唯一路径是融合注意力 kernel（1.175 s → 0.5 s per block）。
