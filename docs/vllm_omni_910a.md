@@ -1536,3 +1536,91 @@ aclnn 算子注册 + 在线 softmax 实现，工作量大。
 
 要真正达成，必须把 4 步的 449 s 压到 300 s，即再省 149 s，
 唯一路径是融合注意力 kernel（1.175 s → 0.5 s per block）。
+
+---
+
+# 第二十轮：原版 H3 是 50 步 —— 之前的 4 步是蒸馏加速 LoRA
+
+## 联网查证结果
+
+**diffusers 官方对 MiniMax-H3 的 `num_inference_steps` 默认值是 50。**
+
+来源：`diffusers/src/diffusers/modular_pipelines/modular_pipeline_utils.py`
+（PR #14355，commit f53d552）：
+
+```python
+INPUT_PARAM_TEMPLATES = {
+    ...
+    "num_inference_steps": {
+        "type_hint": int,
+        "default": 50,
+        "description": "The number of denoising steps.",
+    },
+}
+```
+
+H3 的 `MiniMaxH3Blocks` 通过 `InputParam.template("num_inference_steps")` 引用这个模板，
+所以**原版默认跑 50 步**。
+
+## 我一直混淆的两个概念
+
+这是本轮最关键的纠正：
+
+| 概念 | 含义 | H3 是否具备 |
+|---|---|---|
+| **CFG 蒸馏**（guidance-distilled） | 把 classifier-free guidance 的两次前向合并成一次，去掉 CFG | ✅ 官方 checkpoint 自带 |
+| **步数蒸馏**（step-distilled） | 把 50 步的采样轨迹压缩到 4/8 步 | ❌ 原版没有，是额外 LoRA |
+
+官方 HF 模型卡原文：
+> The released checkpoints are **CFG-distilled** Omni Transformer model weights.
+
+diffusers 文档原文：
+> Both transformer partitions are **guidance-distilled**... guidance is baked into the weights,
+> there is no guider, no `negative_prompt` and no `guidance_scale`, and **every step runs
+> exactly one forward pass**.
+
+**"CFG-distilled" 只省掉了 CFG 的第二次前向，完全没有减少步数。**
+我却把它当成了"4 步模型"的依据，这是错的。
+
+## 4 步的真实来源
+
+`/home/mseco/models/loras/flashgen_4step.safetensors`（1.26 GB）——
+一个**额外的**步数蒸馏加速 LoRA，已被我合并进 `MiniMax-H3-4step` 权重：
+
+```json
+// fused_lora.json
+{ "key_format": "minimax-h3-native", "tasks": "t2va",
+  "fused_tensors": 259, "steps": 4 }
+```
+
+文件名 `minimax_h3_t2va_flashgen_4step_v1.0_768p_bf16` 里的 `flashgen_4step`
+说的就是这个 LoRA 的步数，**不是 H3-Base 的步数**。
+
+`MINIMAX_H3_NATIVE_INFERENCE_STEPS = 4` 之所以等于 4，是因为它描述的是
+**这个加速 LoRA** 的契约，不是原版模型的。
+
+## 修正后的时间量级
+
+4 步热机 449 s，其中固定开销（encode+decode+其他）约 52 s，
+去噪 396.5 s / 4 步 ≈ **99 s/步**。
+
+按每步 99 s 外推：
+
+| 步数 | 去噪 | 总计（含 52 s 固定） |
+|---|---|---|
+| 4（蒸馏 LoRA） | 396 s | **449 s** |
+| 8（FastH3 V2 契约） | ~790 s | ~842 s |
+| **50（原版默认）** | **~4950 s** | **~5000 s（约 83 分钟）** |
+
+**原版 50 步下，5 分钟目标差 16 倍，不可能达成。**
+
+## 结论
+
+* 之前所有"达成 5 分钟"的结论，用的都是 **4 步蒸馏加速 LoRA**，属于加速档，
+  不是原版 H3 的行为
+* 2 步更是双重压缩（既用蒸馏 LoRA、又违反它的 4 步契约）
+* **原版 50 步需要约 83 分钟**，与本目标差一个数量级
+* 即使要在 5 分钟内，也必须接受蒸馏加速 LoRA（4 步 = 449 s，仍超 300 s）
+
+所以「768p / 10 s / 5 min」这个目标，在**原版步数**下完全不可达；
+在**4 步蒸馏 LoRA** 下也还差 149 s。
