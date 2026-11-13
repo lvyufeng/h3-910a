@@ -1624,3 +1624,90 @@ diffusers 文档原文：
 
 所以「768p / 10 s / 5 min」这个目标，在**原版步数**下完全不可达；
 在**4 步蒸馏 LoRA** 下也还差 149 s。
+
+---
+
+# 第二十一轮：HyperFlow 文章确认 49 次前向，并指出真正出路
+
+参考：https://hub.baai.ac.cn/view/59638
+（Hugging Face 中文社区供稿，介绍 HyperFlow H3 Flash，2026-11-13）
+
+## 1. 原版步数得到第三方确认：49 次前向
+
+原文：
+> MiniMax-H3 是目前规格最高的开源视频生成模型之一……每生成一段视频，
+> **33B 参数的扩散 Transformer（DiT）要跑 49 次前向**
+
+这与第二十轮从 diffusers 源码查到的默认 `num_inference_steps = 50` 完全吻合：
+diffusers 文档说 "num_inference_steps counts sigma grid points, the terminal 0 included,
+so it drives **one model evaluation less**"，即 50 个 sigma 点 → **49 次前向**。
+
+所以：
+* 原版 49 次前向 ✅（文章 + diffusers 源码双向确认）
+* 我们跑的 4 步来自 `flashgen_4step` 蒸馏 LoRA ❌ 不是原版行为
+
+## 2. 文章独立印证了我测到的"后段瓶颈"
+
+这是本轮最重要的一点。原文解释为什么 8 步加速只有 3 倍（远低于 49→8 的 6 倍）：
+
+> 约 3 倍的加速比明显低于 49 步到 8 步的步数比。原因是 DiT 变快之后，
+> **我们没有改动的 text encoder 和 VAE decoder 占掉了剩余时间的大头**。
+
+这正是我在第十三~十八轮实测到的结果：encode 40 s（冷）/ 5.7 s（热）、
+decode 155 s（冷）/ 43 s（热），在 4 步 449 s 里占 52 s 固定开销。
+**社区团队在完全不同的硬件栈上撞到了同一个瓶颈。**
+
+## 3. HyperFlow H3 Flash 做了什么（33B → 13.7B）
+
+| 手段 | 细节 | 效果 |
+|---|---|---|
+| **AdaLN 压缩** | 时间嵌入 2688 维 → **16 维**（7.8 万组 (t,r) 做 SVD，第 16 个奇异值已衰减到 1e-5） | AdaLN 参数 **13.0B → 0.08B** |
+| **激活白化 SVD** | 102 个线性层逐层敏感度扫描定秩（`lowrank_ranks` 里 block 13 的 ff.net.2 只保留 **rank 2**） | attention/FFN 大幅瘦身 |
+| **整块丢弃** | `dropped_blocks: [6, 21, 22]` | 50 → 47 blocks |
+| **INT8 W8A8 + Hadamard 旋转** | 组大小 256 的块对角旋转压离群值 | DiT 25.5 GiB → 14.8 GiB |
+
+配置实证（`fl2va_int8_convrot/config.json`）：
+```json
+"time_embed_dim": 16,          // 原 2688
+"dropped_blocks": [6, 21, 22],
+"hyperflow_gate": 0.25,
+"quantization": { "method": "int8_convrot", "group": 256 }
+```
+
+支持 **4 / 6 / 8 步**，无需 CFG，**默认 6 步**。
+速度参考（5.2 s 片段 / 6 步）：4×B200 **8.7 s**、1×H200 **36 s**、RTX 5090 **92 s**。
+
+## 4. 对我们 910A 的直接障碍：只有量化格式
+
+仓库文件清单里**没有 fp16/bf16 发布**，只有：
+
+| 格式 | 问题 |
+|---|---|
+| `fl2va_int8_convrot/` (W8A8) | 激活旋转+量化融合在 **Triton kernel** 里；而 `bishengir-compile` 没有 910A 目标（实测报 `Cannot find option named 'Ascend910B'`）→ **跑不了** |
+| `fl2va_gguf/` (Q3_K_M~Q8_0) | 需要 llama.cpp / stable-diffusion.cpp 系运行时，不是 vLLM/torch_npu → **跑不了** |
+
+要用就必须自己把 INT8 权重反量化回 fp16（还要撤掉 Hadamard 旋转），
+并把 `HyperFlowH3FlashTransformer3DModel` 这套新架构（16 维时间通路 +
+低秩层 + 丢块）移植进 vllm-omni。架构代码仓库里有
+（`hyperflow_h3_flash_transformer.py`），所以可行，但是个实数天的工程，不是配置改动。
+
+## 5. 假如移植成功，能否进 300 s？
+
+用实测量级推算（单卡 fp16 峰值：910A ≈ 77 TFLOPS、RTX 5090 ≈ 660、H200 ≈ 990；
+8×910A 聚合约 616，≈ 1 张 5090）：
+
+| 场景 | 归一化到 10 s 片段 | 推算 |
+|---|---|---|
+| 我们的 33B / 4 步 / 10 s（实测） | — | **449 s** |
+| 5090 上 14B / 6 步 / 5.2 s（官方） | 10 s ≈ 177 s | — |
+| 8×910A 跑 14B / 6 步 / 10 s | 按 ≈1.7× 慢于 5090 估 | **~300 s** |
+| 8×910A 跑 14B / 4 步 / 10 s | 同上 | **~200 s** |
+
+**结论：14B Flash 是唯一有机会进 300 s 的现成方案**（它把模型砍到 1/2.4，
+直接命中我们"每步 99 s"的计算瓶颈），但必须先解决格式和架构移植。
+
+## 6. 另外注意
+
+* `VideoRebirthAI/hyperflow` 是**跑在完整 33B 上的 8 步 LoRA**，比我们现有的
+  4 步 LoRA 更慢，对速度目标没用（质量可能更好，但 8 步 ≈ 790 s）
+* 许可：HyperFlow 权重属 MiniMax-H3 衍生模型，**欧盟/英国/韩国/美国地区需另行授权**
