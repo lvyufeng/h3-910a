@@ -1936,3 +1936,98 @@ So the plan for the next rounds is to do the pipeline work because it is real an
 worth ~1.6x, but the 15 s/step figure in the goal should be treated as
 out of reach on this hardware unless the short-K efficiency can be broken through.
 I would rather say that now than after another twenty rounds.
+
+---
+
+# Round 7: the 39 s text encode is fixed per-request offload cost, not compute
+
+Switched to goal item (3) this round, because the kernel side has a measured
+ceiling (round 6) and the encode had never been looked at despite being 39 s of a
+~343 s run against an official 0.48 s.
+
+## It is entirely text encoding
+
+Split `_prepare_request_inputs`:
+
+```
+[H3PERFT] text_enc=39.10s cond_prep=0.00s
+[H3PERFP] encode=39.23s
+```
+
+So the whole 39 s is `_prepare_local_conditioning`; the latent/conditioning
+preparation is 0.00 s.
+
+## It is fixed overhead, not prompt-dependent work
+
+Submitted a 378-word prompt against the short-prompt baseline:
+
+| prompt | text_enc |
+|---|---:|
+| ~4 words | 39.10-39.23 s |
+| **378 words** | **39.17 s** |
+
+Identical. A 50-layer Qwen3-VL forward over the actual tokens cannot be
+prompt-length-insensitive like that, so the 39 s is **per-request fixed cost**,
+not the encoder doing more or less work.
+
+## The cause: the text encoder is staged-offloaded and re-gathered every request
+
+The served log says:
+
+```
+Prepared text_encoder for pipeline-managed staged offload
+Prepared video_vae  for pipeline-managed staged offload
+Prepared audio_vae  for pipeline-managed staged offload
+```
+
+and the mechanism is `vllm_omni/diffusion/offloader/component_utils.py`:
+
+```python
+def prepare_component(module, name, *, device, stage_on_demand, blockwise, staged_components):
+    if stage_on_demand:
+        validate_on_demand_component(module, name)
+        getattr(module, "offload_to_cpu")()          # <- evicted from device
+        staged_components.append(module)
+        logger.info("Prepared %s for pipeline-managed staged offload", name)
+    elif not blockwise:
+        module.to(device)
+```
+
+called as `stage_on_demand=component.on_demand` from `component_utils.py:172/182`,
+where the component classification comes from `ResolvedOffloadPlan` in
+`offloader/plan_resolver.py`. That plan has separate `dits`, `encoders`, `vaes`
+and **`residents`** tuples, so "keep this resident" is an existing concept in the
+design.
+
+With DLO enabled the encoder is therefore evicted to host between requests and
+has to be brought back and TP-gathered across all 8 ranks on the next one. That
+is the fixed ~39 s, and it explains why the official A2/A3 numbers are 0.48-0.83 s
+-- on 64 GB parts the encoder does not need to be evicted at all.
+
+## Why this matters more than the kernel work
+
+* 39 s on a ~343 s warm run is **11% of the pipeline**, and removing it is a
+  configuration/classification change rather than a kernel rewrite.
+* Unlike the attention work, this one has no measured ceiling in the way: the
+  target of 2 s is plausible if the encoder simply stays resident, because the
+  compute itself is evidently cheap (it does not scale with prompt length).
+* HBM was only ~8.7 GB used of 32 GB during denoise, so there may well be room to
+  hold the encoder resident; that has to be checked rather than assumed, since
+  DLO's own pool is the thing being sized.
+
+## Next step, narrowly
+
+Find where `ResolvedOffloadPlan` classifies `text_encoder` as `on_demand`, and
+put it in `residents` instead (or find the config that already expresses that).
+Then measure `text_enc` again: the expectation is that it drops to roughly the
+real forward cost, which the prompt-length experiment says is small. If HBM does
+not permit it, the fallback is to keep the encoder's weights on device but its
+activations transient, which is a smaller change than the current full eviction.
+
+## Round accounting
+
+No speedup landed this round -- the instrumentation is removed and the service is
+stopped. What was established is a named, bounded cause for an 11% slice of the
+pipeline, with the exact function and the exact knob. Given that the attention
+path is against a measured ceiling, this is the more promising of the two
+remaining fronts.
