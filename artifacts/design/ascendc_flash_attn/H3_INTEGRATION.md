@@ -2394,3 +2394,38 @@ complementary rather than alternatives:
 * with bandwidth pressure reduced, the missing pipeline (round 6: no double
   buffering, no set_flag/wait_flag) is now the larger remaining term, and it is
   worth revisiting precisely because the kernel is no longer saturating HBM.
+
+## Verified in the real pipeline: block 0.875 -> 0.759 s
+
+Restarted the serving stack with the new tiling and ran a request:
+
+```
+dit 11/50 block=0.758s
+dit 11/50 block=0.760s
+dit 11/50 block=0.761s
+fallbacks: 0
+```
+
+Against the 0.875 s block measured in round 3 on the same shape, that is **13.4%
+faster end to end in the pipeline**, with zero fallbacks, so the denser tiling is
+being used for every DiT attention call.
+
+Per step: 50 blocks x 0.759 s = **37.9 s**, down from 43.8 s. At 4 steps the
+denoise loop becomes ~152 s instead of ~175 s.
+
+The gap between the isolated 15% (656 -> 558 ms) and the in-pipeline 13.4% is
+expected: the block also contains the non-attention work that did not change, so
+a 15% cut on the attention portion cannot be a 15% cut on the whole block.
+
+## Round 10 result
+
+This is the **first speedup of the goal that shows up end to end**:
+
+| change | effect |
+|---|---|
+| Bc 416 -> 608 (round 5) | 2% on the kernel |
+| fp16 in-place exp + Br 64 -> 128 at Bc 304 (round 10) | **15% on the kernel, 13.4% on the block** |
+
+Numerics verified at the real shape with the new path: worst relative error
+0.000389, which is better than the 4.7e-4 recorded for the previous fp32-exp
+configuration.
