@@ -2559,3 +2559,22 @@ decode still un-diagnosed.
 
 No speedup. The failed bf16 experiment cost a restart plus a full request, and it
 is worth recording mainly so nobody else follows that comment.
+
+## Component sizes, for the record
+
+Checked the sizes because `decode()` stages `video_vae.decoder_component` in on
+every request and `_prepare_local_conditioning` does the same for the encoder:
+
+| component | weights |
+|---|---|
+| `text_encoder` | 14 shards, **62.13 GB** |
+| `audio_vae` | 1 shard, 0.56 GB |
+| `video_vae` | **no separate safetensors** |
+
+The video VAE having no own weights is worth knowing before chasing its load
+cost: its parameters must live inside the shared shards, so "stage the decoder in"
+is not a simple small-file transfer and I cannot currently size that part of the
+decode timer from the filesystem the way I could for the 62 GB encoder.
+
+This also confirms the round-9 figure for the encoder at 62.13 GB, and hence the
+~1.6 GB/s implied streaming rate (62.13 GB / 39 s).
