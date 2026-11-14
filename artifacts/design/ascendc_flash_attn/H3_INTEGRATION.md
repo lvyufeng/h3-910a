@@ -1169,3 +1169,62 @@ the cube can run well.
 At 4 steps the attention bill is 50 x 871 ms x 4 = 174 s of the ~260 s denoise
 loop. At 49 steps it would be ~2130 s, which is where the 23x gap to official
 2.85 s/step actually lives.
+
+## Second split: the projections are free, everything is in the attention dispatch
+
+Instrumented `MiniMaxH3Attention.forward` itself (`[H3PERFA]`), same run:
+
+```
+[H3PERFA] qkv=0.1ms norm_rope=1.7 attn_dispatch=870.5 out_proj=0.1 total=872.4
+```
+
+Steady-state, all four segments:
+
+| segment | ms | share |
+|---|---:|---:|
+| qkv_proj | 0.1 | 0.01% |
+| fused_qk_norm_rope | 1.7 | 0.2% |
+| **_run_packed_attention** | **870.5** | **99.8%** |
+| out_proj | 0.1 | 0.01% |
+
+So the earlier guess that ~200 ms of the block was "qkv/o projections" was wrong
+too — the projections together are **0.2 ms**, because they run on the 7904-row
+shard. That attribution is now retracted as well.
+
+The non-attention total across the *whole* block is therefore about 3 ms
+(adaln 0.6 + norm1 1.1 + qk-norm/rope 1.7 counted inside attention but tiny +
+mlp 0.5 + gates 0.9), and there is no meaningful fusion-operator work left to
+do anywhere in the block.
+
+## What is actually left, and the one open number
+
+`_run_packed_attention` = 870 ms, which contains the Ulysses all-to-all, the
+layout conversions, mask/metadata setup, and my TBE kernel. My kernel measured
+standalone at N=63232 is **672 ms**, so roughly **198 ms** is inside that
+dispatch but not in the kernel.
+
+I do not yet know what that 198 ms is, and my two candidate explanations both
+survive a rough sanity check badly:
+
+* two all-to-alls of a 7904x7168 fp16 tensor (113 MB) should be on the order of
+  tens of milliseconds, not 198 ms, unless HCCL is running far below link speed;
+* the NZ/ND conversions were independently measured at ~0.27 ms each, so four of
+  them is ~1 ms.
+
+So the 198 ms is unexplained until measured. That is the next thing to do:
+time inside the backend wrapper around the layout conversions, the metadata
+setup, and the raw `fa910a_launch` call, so the 870 ms splits into kernel,
+conversion and communication.
+
+## Net state of the goal after this round
+
+* Workstream (1), fused RMSNorm/SwiGLU/RoPE/AdaLN: **proven worthless** (3 ms of
+  871 ms, 0.3%), dropped. The Triton versions already exist and are bypassed on
+  910A only for lack of a bishengir target, so even flipping that flag wins
+  ~nothing.
+* Workstream (2), attention efficiency: **this is the entire problem.**
+  672 ms of kernel at ~8% of peak plus ~198 ms of unexplained dispatch cost.
+* Workstream (3), decode: demoted earlier this round to ~44 s warm, about 6.7x
+  off official and partly hardware.
+* Baseline for the target: DiT ~65 s/step measured against official A2 2.85 s
+  and A3 2.16 s.
