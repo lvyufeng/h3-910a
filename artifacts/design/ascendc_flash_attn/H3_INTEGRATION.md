@@ -2917,3 +2917,101 @@ So the honest statement is: **this stack runs ~21x slower per step than A2**
 (65.7 / 3.06) on the same nominal workload shape, and the gap is distributed
 across attention (58%), prep/update (29%) and overhead -- not concentrated in any
 one place the way I had assumed.
+
+---
+
+# Round 17: found 6.4 s per step going into a CPU round-trip to extract four numbers
+
+Acting on round 16's decomposition, split the 8.6 s `prep` into its parts.
+
+## First measurement was misattributed, and worth recording
+
+My first timer wrapped "both `prepare_edit_rows` calls plus `forward_kwargs`" and
+labelled the whole thing `rows`, printing `kwargs` as the time *after*
+`forward_kwargs` (always 0.00). That produced `rows=6.5s kwargs=0.00s`, which
+reads as "prepare_edit_rows is the cost".
+
+That was wrong. `minimax_h3_prepare_edit_rows` in `latent_mask.py:155` begins:
+
+```python
+if edit is None:
+    return rows, None
+```
+
+A generation request has no edit, so it is an immediate passthrough. Re-timed with
+separate boundaries:
+
+```
+[H3PERFQ] editrows=0.00s kwargs=6.25s
+[H3PERFQ] editrows=0.00s kwargs=6.56s
+[H3PERFQ] editrows=0.00s kwargs=6.70s
+```
+
+So `prepare_edit_rows` is exactly 0.00 s as the code says, and the 6.4 s is
+**`positive.forward_kwargs`**. The lesson is the same one as rounds 2 and 15: a
+measurement is only worth what its boundaries are worth, and I should have read
+the callee before naming the number after it.
+
+## The actual cause
+
+`forward_kwargs` (`denoise_loop.py:182`) ends with:
+
+```python
+# 910A: torch.unique runs on AICPU and fails there ("The aicpu execution
+# is abnormal"), so do it on CPU; the tensor is a 1-D row vector.
+_unique_cpu, _inverse_cpu = torch.unique(
+    timesteps.detach().cpu(), sorted=True, return_inverse=True
+)
+unique_timesteps = _unique_cpu.to(timesteps.device, dtype=timesteps.dtype)
+inverse_indices = _inverse_cpu.to(timesteps.device)
+```
+
+`timesteps` has shape `(self.seq_len,)` -- the full packed row count, ~63232.
+So every step does:
+
+1. `.detach().cpu()` -- a **device-to-host copy, which forces a synchronisation
+   of the whole pipeline**;
+2. a sort-based `torch.unique` on the CPU over 63232 elements;
+3. two host-to-device copies.
+
+And the decisive observation: **`timesteps` is never given to the model.** The
+returned dict contains only `x`, `audio_x`, `unique_timesteps` and
+`inverse_indices`. The 63232-element vector is constructed on the device, copied
+to the host, reduced to its distinct values, and then only a handful of distinct
+scalars plus an index vector go back. The vector carries **about four distinct
+values** (t_video, imgvid_cond_timestep, t_audio, audio_ref_cond_timestep), plus
+target timesteps under editing.
+
+Worse, `fill_timesteps` *already* maintains a CPU copy for the same 910A reason:
+
+```python
+# 910A: build the packed timestep vector on CPU and copy it back once.
+_cpu_timesteps = torch.full((self.seq_len,), float(t_video), ..., device="cpu")
+```
+
+So there are two CPU round-trips per step for a vector that is piecewise constant
+with four values.
+
+## Why this matters more than the attention work
+
+6.4 s of a ~93 s step is **~7%**, and unlike the attention headroom it is not
+shielded by a hardware ceiling: this is argument marshalling. The fix is to build
+the timestep vector and its unique/inverse **once on the CPU** (the mask positions
+are static per request) and upload only the results, eliminating the
+device-to-host copy and its synchronisation entirely.
+
+The synchronisation is the part I would expect to matter beyond the measured
+6.4 s: a `.cpu()` in the step loop serialises everything queued on the device, so
+it can both inflate its own apparent cost and prevent overlap across the step
+boundary. That is the same trap that corrupted my stage timings in round 3.
+
+## Round 17 accounting
+
+No speedup landed; instrumentation added, measured, and reverted (verified: no
+`H3PERFQ` or `_perf_p` remnants, 0 NPU processes). But the target is now precise
+to a function and a line, with a wrong intermediate attribution explicitly
+corrected rather than left standing.
+
+Also refined the step picture from round 16: `model` is 71.6-74.4 s warm here
+against the 95.7 s cold figure recorded last round, confirming that figure
+included TBE compilation and should not be quoted as steady state.
