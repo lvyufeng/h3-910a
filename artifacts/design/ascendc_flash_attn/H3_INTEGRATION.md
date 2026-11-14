@@ -1014,3 +1014,84 @@ the buffer reuse are in place.
 The host is left **running with it enabled**, since that is the verified-faster
 configuration, and the mechanism is an explicit environment variable rather than
 a hard-coded default so it can be turned off without editing code.
+
+---
+
+# Round 1 of the kernel goal: correcting the baseline, cold versus warm
+
+Chasing the "decode is 24x slower than official" figure before writing any
+kernel turned up a measurement error of mine, and it changes the priority order.
+
+## The official numbers exclude a warmup request; mine never did
+
+The NPU recipe says so twice:
+
+> The first request includes regional compilation; warm the server once before
+> measuring steady-state latency.
+> The first regional-compile request is a warmup and should not be included in
+> steady-state performance measurements.
+
+I could never do that, because a second request reliably crashes this service
+(see below). So every figure I have quoted so far was a **cold** first request.
+
+## decode is 157 s cold and 44 s warm
+
+Measured directly by running the same decode twice inside one request (a
+temporary diagnostic, since removed):
+
+```
+[H3PERFP] decode=157.29s     <- first call, includes cold compile/capture
+[H3PERFP] decode2=43.75s     <- identical call, immediately after
+```
+
+Repeatable across eight ranks: `decode2` was 43.75 / 45.92 / 47.12 / 47.20 s.
+
+So roughly **115 s of the 157 s decode is one-off cold cost**, and the honest
+comparison to the official 6.56 s VAE decode is **44 s vs 6.56 s, about 6.7x**,
+not 24x. Part of that residual is 910A against 910B/910C hardware.
+
+## The corrected baseline
+
+Warm-adjusted, 768p / 5 s / fl2va / 4 steps / USP8:
+
+| phase | cold (previously quoted) | warm |
+|---|---|---|
+| encode | 38.8 s | not measured (see below) |
+| denoise (4 steps) | 258.7-260.7 s | ~260 s (warm after step 1) |
+| decode | 157 s | **44 s** |
+| **total** | ~493 s | **~343 s** |
+
+I could not measure a warm encode: calling `_prepare_request_inputs` a second
+time raises `RuntimeError: The size of tensor a (0) must match the size of
+tensor b (5120)`, because the second call sees consumed state. That failure
+does *not* kill the worker -- `/health` stayed healthy -- so it is a distinct
+failure mode from the TBE crash. The warm encode figure is therefore still
+unknown and the 38.8 s above stands as a cold number.
+
+## What this changes about the plan
+
+The decode is no longer the headline. At 44 s warm it is roughly one eighth of
+the run, and the official 6.56 s gap is partly hardware generation. The dominant
+gap is the **DiT per-step cost**:
+
+| | per step |
+|---|---|
+| mine (flash, warm) | ~65 s |
+| official A2 lossless | 2.85 s |
+| official A3 lossless | 2.16 s |
+
+That is ~23x on A2, and it is what the two kernel workstreams (attention
+efficiency, fused operators) address. The goal ordering stands, with the decode
+demoted from "biggest absolute win" to "~44 s, worth a look but not the lever".
+
+## Also ruled out this round
+
+* **The second-request crash is not an OOM.** `dmesg` does show an oom-kill of a
+  `vLLM-Omni::Diff` process at 46.5 GB anon-rss, but at uptime 2771769 s against
+  a current 3232222 s, i.e. about 5.3 days old. Nothing fresh. The crash is
+  still the `TBE Subprocess[task_distribute] ... main process disappeared` path.
+* **AllGather is worth keeping on.** Dropping `--dlo-no-use-allgather` (matching
+  the official lossless config, which says to keep it enabled for SP>1) moved
+  denoise from 287.00 s to 258.68 s. Host RAM did not fall as I predicted
+  (261 -> 327 GB used), so my reasoning that it was replicating the full model
+  8x was wrong, but the speed effect is real and it aligns with the recipe.
