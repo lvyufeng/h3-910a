@@ -1794,3 +1794,79 @@ plausibility:
 
 None of these is a knob. They are changes to `flash_attention_fwd.py` / the TIK
 kernel body, which is the work the goal has been pointing at all along.
+
+---
+
+# Round 6: found WHY the kernel is at 28% -- it has no software pipeline at all
+
+## The cube is idle about 40% of the time
+
+Ran the kernel in a loop on an otherwise idle chip and sampled AICore:
+
+```
+AICore: 100% 49% 7% 7% 7% 7% 100% 100% 100% 100%
+RAN 155 launches in 101.8 s -> 657.1 ms/launch, 21.8 TFLOPS
+```
+
+So the cube duty cycle is roughly **55-60%**. At 100% duty the same work would
+take ~375 ms rather than 657. The gap to the 191 ms matmul-ceiling figure is
+therefore two separate problems: cube idle time, and cube efficiency per matmul
+(small K=128 tiles).
+
+## The cause: no pipelining and no synchronisation primitives anywhere
+
+Grepped the TIK kernel body for the machinery a flash-attention software pipeline
+needs:
+
+```
+double_buf | _dbl | buf_num | DOUBLE | ping | pong   ->  0 hits
+set_scope  | wait_flag | set_flag | set_atomic      ->  0 hits
+```
+
+Neither double buffering nor any manual flag-based synchronisation exists. In TIK
+that means the three hardware pipelines -- MTE2 for GM->L1 loads, the cube for the
+two matmuls, and the vector unit for softmax -- can only issue in program order
+with implicit full barriers between them:
+
+```
+load Vj, Kj   -> wait for load to finish
+qk matmul     -> wait for cube to finish
+softmax       -> wait for vector to finish
+pv matmul     -> wait for cube to finish
+```
+
+Each stage drains before the next begins, so at any instant at most one of the
+three pipelines is doing work. That is exactly the 55-60% duty cycle, and it is
+the dominant term in the 480 ms of non-matmul time.
+
+## This is the actionable root cause
+
+The fix is the standard flash-attention software pipeline, and it is now a
+specific, bounded piece of work rather than a search:
+
+1. Double-buffer `Kj_l1_zN` / `Vj_l1_zN` so MTE2 prefetches tile N+1 while the
+   cube works on tile N.
+2. Double-buffer `Sij_ub_zN` (fp32) so the vector unit softmaxes tile N-1 while
+   the cube computes tile N.
+3. Insert `set_flag` / `wait_flag` pairs between the three pipelines with distinct
+   event ids per buffer, so the compiler stops serialising them.
+4. Keep the existing Br=64 / Bc=608 tiling, which is already the largest that
+   fits in UB; the pipeline must therefore fit its extra buffers into the same
+   budget, which is the main design constraint.
+
+Expected gain: recovering the idle time alone takes 657 -> ~375 ms (1.75x). Better
+cube efficiency on the small-K matmuls is a further, separate opportunity. The
+2.25x needed for 15 s/step is therefore reachable in two steps rather than one
+heroic one.
+
+## What this round changed
+
+It converted "the kernel is 2.7x off its own hardware ceiling, cause unknown"
+into "the kernel has no software pipeline, here is the buffer to double, here are
+the flags to add". That is the difference between research and engineering, and
+it is the first round where the remaining work has a concrete shape.
+
+Ital also settles a question from round 2: the flat 672 ms across all tilings was
+not evidence about bandwidth at all. With no pipelining, time is dominated by
+serialised stage latencies, which are nearly tiling-insensitive -- which is
+exactly what a flat curve looks like.
