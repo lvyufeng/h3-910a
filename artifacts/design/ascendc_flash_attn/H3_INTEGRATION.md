@@ -3111,3 +3111,90 @@ contribution is that the 6.4 s is now attributed to a specific statement with a
 physical argument (12 MB cannot be 6.4 s) and corroborated by the codebase's own
 scatter workaround, plus an explicit record of three failed guesses so the next
 attempt starts from the measurement rather than from suspicion.
+
+---
+
+# Round 19: index_copy_ was costing 6.1 s per step; fixed, denoise 262.7 -> 211.7 s
+
+## Micro-benchmark first, because three guesses in a row had been wrong
+
+Before touching the code I benchmarked the candidate statements at the real
+shapes (`seq_len=63232`, video row width 96, audio 32):
+
+```
+video base 24.3 MB, audio base 8.1 MB
+
+clone alone                      :    0.127 ms
+clone + index_copy_(n=63000)     : 6144.669 ms
+clone + x[0][idx] = rows         :    2.606 ms
+clone + contiguous slice write   :    0.288 ms
+```
+
+At n=7904 (the per-rank row count) it is 794 ms, so it scales with the index
+count at about **97 microseconds per index** -- a per-element fallback path, not a
+memory-bandwidth limit. `6144 ms` matches the 6.4 s `xcopy` region measured in
+round 18, which is what confirms this is the right statement rather than a
+plausible one.
+
+Two useful negatives from the same run: the inputs `idx` here are not contiguous,
+so the 0.288 ms slice write is not available in general; and the clone itself is
+0.127 ms, so the buffer copy never mattered.
+
+## The fix
+
+```python
+x[0].index_copy_(0, self.img_pos_dev, video_rows)   ->   x[0][self.img_pos_dev] = video_rows
+audio_x[0].index_copy_(0, self.audio_pos_dev, audio_rows)
+                                                    ->   audio_x[0][self.audio_pos_dev] = audio_rows
+```
+
+Same scatter semantics, **2358x faster**. The codebase already knew scatter was
+broken here -- `fill_timesteps` carries "the scatter needs AICPU [and is]
+unavailable here" and builds its vector on the CPU to avoid it -- but
+`forward_kwargs` had never received the same treatment.
+
+## Verified end to end
+
+```
+prep   8.6 s  ->  1.97-2.52 s        (per step; 6.4 s removed, as predicted)
+model  73.0-73.5 s                   (unchanged)
+update  8.7-10.7 s                   (unchanged)
+
+denoise  262.65 s  ->  211.66 s      (-51 s, -19%)
+encode    41.49 s  ->   39.99 s
+block     0.762 s  ->   0.754-0.757 s
+wall                  ->   422 s
+```
+
+No new errors: the only warnings in the log are the 8 pre-existing
+`causal_conv1d_update is unavailable` mamba fallbacks from `vllm_ascend`, one per
+rank at startup, which were present in every earlier run. Health stayed healthy.
+
+This is the **largest single improvement of the session** and, unlike the
+attention work, it does not sit against any hardware ceiling -- it was pure
+argument marshalling on a pathological fallback path.
+
+## The generalisable lesson
+
+`index_copy_` at ~97 us per index on this part is the kind of thing that hides in
+plain sight: one plausible-looking line, no error, no warning. It would never have
+been found by reading the code -- the round-18 evidence that scatter was
+suspect came from the authors' own workaround comment, but the magnitude only came
+out of a benchmark.
+
+Standing practice worth adopting for the rest of this work: **before assuming a
+line is cheap because it is a single statement, benchmark it at the real shape.**
+Three consecutive wrong guesses in rounds 7, 17 and 18 all came from reasoning
+about code instead of timing it.
+
+## Where the step now stands
+
+| part | per step | share |
+|---|---:|---:|
+| model (block loop etc.) | 73.1 s | ~86% |
+| update | 10.1 s | ~12% |
+| prep | 2.2 s | ~3% |
+
+So `update` (Euler step and row updates, still using device scatters in places) is
+now the largest non-model item at ~10 s per step, and the block loop at 38 s of
+the 73 s model time remains the single biggest component overall.
