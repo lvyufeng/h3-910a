@@ -1318,3 +1318,49 @@ So Br <= 64 is structural for this kernel. Raising it needs the accumulator
 moved out of UB (keep O in L0C or L1 across the K/V loop, or split D), which is
 real kernel design work rather than a tiling knob. That is the concrete kernel
 task the goal should carry.
+
+## Correction: Br <= 64 is NOT structural, and the picker is already near-optimal
+
+The section above concludes from a single UB error that Br cannot exceed 64. That
+conclusion is wrong, and the artefact cache gives it away: the sweep left
+`br128_bc128` and `br128_bc256` built successfully in `/tmp/fa910a_kernels/`.
+Br=128 builds and runs.
+
+Timing the variants properly (all cached, three launches each, N=63232):
+
+| Br | Bc | ms | fp32 accumulator |
+|---:|---:|---:|---:|
+| 64 | **416** | **672.0** | 32 768 B |
+| 64 | 256 | 859.7 | 32 768 B |
+| 128 | 256 | 708.3 | 65 536 B |
+| 128 | 128 | 1057.5 | 65 536 B |
+
+Three things follow.
+
+1. **The UB error does not mean Br is capped at 64.** Br=128 fits, because the
+   accumulator is consumed in `n1_size` chunks rather than all at once. Only
+   Br=256 x Bc=128 actually failed. The earlier claim was an over-generalisation
+   from one data point.
+2. **The existing picker is already the best of these.** br64/bc416 at 672.0 ms
+   beats every alternative, so there is no free win in the tiling knobs.
+3. **Bc is what matters, not Br.** Going from Bc=416 to Bc=256 costs +188 ms at
+   the same Br, whereas doubling Br at fixed Bc=256 *gains* 151 ms. Large Bc
+   reduces the number of K/V tile boundaries and their per-tile overhead, which
+   is consistent with the kernel being dominated by fixed per-tile work rather
+   than by K/V bandwidth -- and that also explains why the flat 672.5 ms sweep
+   looked plausible for a while.
+
+So the K/V-traffic theory of the kernel's slowness is dead: cutting K/V sweeps
+4x by raising Br does not help, and shrinking Bc actively hurts. Whatever the
+672 ms is spent on, it scales with the number of Q x KV tile pairs and their
+fixed costs, not with bytes moved.
+
+## Corrected state after round 2
+
+* communication: ~2 ms, not a factor
+* conversions: ~1.2 ms, not a factor
+* kernel: 672 ms standalone, ~869 ms in service, tiling already optimal at
+  br64/bc416, not bandwidth-bound in the K/V-reuse sense
+* the ~200 ms in-service/standalone gap: still unexplained, now known to be
+  inside the kernel call
+* Br is not structurally capped; the earlier claim is retracted
