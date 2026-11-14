@@ -1442,3 +1442,86 @@ Unchanged in substance, but with two hypotheses now closed rather than open:
 | fused operators | 0.3% of block, dropped (round 1) |
 | inter-rank serialisation | refuted, it was my own sync (round 3) |
 | **672 -> 875 ms in-service gap** | **still open, now known to be compute-saturated on both sides** |
+
+---
+
+# Round 4: n_pad is 36 (not 0), and round 2's communication conclusion is void
+
+## n_pad is non-zero on every DiT call
+
+```
+[910A pad] n_pad=36 kv_len=63232 q_heads=7 kv_heads=7
+[910A pad] n_pad=None kv_len=4 q_heads=56 kv_heads=56   <- text encoder, dense path
+```
+
+So the earlier "no padding in this configuration" assumption was wrong: the DiT
+packs 63 196 real rows and pads to 63 232, so **every** attention call runs my
+float32 padding correction, not the plain path. (This is the same 36/37-row
+suffix padding noted much earlier, now pinned at exactly 36.)
+
+Cost measured at the real shape:
+
+| step | ms |
+|---|---:|
+| `out.float()` alone | 0.47 |
+| float / div / half, no exp | 1.61 |
+| **full correction** | **1.86** |
+
+So it is 1.86 ms per call, ~0.37 s per run. Real, avoidable in principle (the
+padding could be eliminated upstream instead of corrected downstream), but **it
+is not the missing 200 ms.**
+
+## Retracting round 2's "communication is only 2 ms"
+
+Round 2 compared the flash backend's duration against the enclosing
+`attn_dispatch` and found them equal (869.6-871.0 against 871.4-872.7), and
+concluded that both all-to-alls plus the metadata together cost ~2 ms.
+
+**That measurement is invalid.** The backend timing I added contained
+`torch.npu.synchronize()`, which flushes the whole device -- including the DLO
+weight copies that are in flight on their own stream. So the "backend" figure was
+inflated to roughly the dispatch figure and the comparison could only ever come
+out equal.
+
+Reconstructing from the parts that are independently measured:
+
+```
+attn_dispatch                    870 ms   (round 1, no sync in the wrapper)
+  conversions                     ~1.2    (round 2, standalone, valid)
+  n_pad correction                 1.86   (this round, standalone, valid)
+  kernel (standalone)            672.0    (valid)
+  --------------------------------------
+  unexplained / pre+post        ~195 ms
+```
+
+So the ~195 ms is back inside `pre_attention` / `post_attention` -- the two
+Ulysses all-to-alls and the metadata -- and communication is once again the
+leading suspect. At ~49 ms per all-to-all for a 113 MB tensor that implies only
+**~2.3 GB/s** effective, which is low enough to be worth investigating on its own
+terms (link, HCCL config, or an unnecessary extra reshard).
+
+This is the second time a synchronise I added has corrupted a conclusion. The
+rule to carry forward: never measure a stage by wrapping it in a device-wide
+sync when other streams are concurrently active, because the sync absorbs their
+work into the number.
+
+## Corrected hypothesis table
+
+| candidate | verdict |
+|---|---|
+| fused operators | 0.3% of block, dropped (round 1) |
+| tiling knobs | already optimal at br64/bc416 (round 2) |
+| K/V re-read bandwidth | refuted (round 2) |
+| layout conversion | 1.2 ms, excluded (round 2, valid) |
+| n_pad correction | 1.86 ms, excluded (round 4) |
+| inter-rank serialisation | refuted, it was my own sync (round 3) |
+| **Ulysses all-to-all + metadata** | **~195 ms, prime suspect (round 4, replacing the void round-2 exclusion)** |
+
+## Next step, stated narrowly
+
+Time `pre_attention` and `post_attention` separately, with no device-wide
+synchronise, using per-stream NPU events or by differencing two runs in which
+only the communication is varied. If the ~195 ms is confirmed as all-to-all, the
+question stops being "write a better attention kernel" and becomes "why is a
+113 MB all-to-all taking ~49 ms", which is a different and possibly much cheaper
+fix.
