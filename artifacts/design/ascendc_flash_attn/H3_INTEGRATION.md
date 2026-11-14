@@ -1006,7 +1006,11 @@ on the phase the kernel actually controls.
 
 ## The default
 
-`VLLM_OMNI_910A_FLASH_ATTN` is off by default in the committed backend. It is
-now worth switching on deliberately, and the host is left running the dense
-configuration so that the choice is explicit rather than inherited from a
-leftover environment variable.
+`VLLM_OMNI_910A_FLASH_ATTN` is off by default in the committed backend, so a
+bare `vllm-omni serve` gets the dense path. Setting the variable to 1 enables
+the fused kernel, which is the faster configuration once the schedule fix and
+the buffer reuse are in place.
+
+The host is left **running with it enabled**, since that is the verified-faster
+configuration, and the mechanism is an explicit environment variable rather than
+a hard-coded default so it can be turned off without editing code.
