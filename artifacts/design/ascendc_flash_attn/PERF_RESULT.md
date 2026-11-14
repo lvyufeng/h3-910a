@@ -36,17 +36,31 @@ flash:  fused, 13.5 TFLOPS                            ->  ~1427 ms/call
 **The fused kernel is about 22% slower.** It does the same arithmetic, so the
 gap is pure cube efficiency: 13.5 TFLOPS against 32-78.
 
-## Why
+## Why, on the correct comparison
+
+Both paths do the same arithmetic:
+`4 * B * H * N^2 * D = 1.93e13` FLOPs (QK^T plus SV, two flops each). Dividing
+by measured wall time gives the like-for-like number:
+
+```
+dense        1166 ms -> 16.6 TFLOPS overall
+flash       1427 ms -> 13.5 TFLOPS overall
+```
 
 Flash attention streams in 128x128 tiles (`Br = min(128, Nq)`,
 `Bc = min(128, N)`, both fixed in the reference), so every cube operation is
 `128 x 128 x 128` with a fresh load and an online-softmax pass between them. The
 dense path instead issues long `M`-dimension matmuls over many keys, which keeps
-the cube fed and amortises the per-tile overheads. On this part the cache/UB
-budgets pin the tile size at roughly what the reference already uses, so the
-usual flash-attention advantage -- not materialising the score matrix -- buys
-nothing here, because the dense path was never bandwidth-bound on the score
-matrix in the first place; it was already running at 32-78 TFLOPS.
+the cube fed.
+
+**Correction to an earlier draft of this note.** I first wrote that the fused
+kernel runs at 13.5 TFLOPS "against 32-78", implying it was 2.5x off the pace.
+That compared flash's *whole-operation* rate against the dense path's *per-matmul*
+rates and ignored the softmax sitting between those matmuls. The dense path's own
+overall rate is 16.6 TFLOPS, not 32-78, because 148 s of its 233 s attention
+budget is softmax. So the real gap is **13.5 against 16.6, and flash needs only
+about 1.22x to break even** -- a materially different and much more reachable
+target than the 2.5x the earlier framing implied.
 
 ## What this means for the objective
 
@@ -60,10 +74,8 @@ It should not be wired into `h3_910a_attn.py`.
 Worth being explicit about the confidence: the 1427 ms figure is an
 extrapolation from a clean four-point quadratic fit, not a measurement at
 N=73408. The per-N^2 constant drifts up slightly with N (2.37 -> 2.65 e-7), so
-if anything the real number is worse than 1427 ms. The direction of the
-conclusion does not depend on that drift -- the kernel is already at 13.5
-TFLOPS where the dense path sustains 32-78, and the crossover would need a
-~2.5x efficiency gain.
+if anything the real number is worse than 1427 ms, and the drift means the
+required break-even gain is somewhat more than 1.22x.
 
 ## What could still change the answer
 
