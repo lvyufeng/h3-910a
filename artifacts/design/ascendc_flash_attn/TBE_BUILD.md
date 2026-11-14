@@ -182,3 +182,82 @@ Two viable routes, both larger than "run the existing kernel":
 
 The first is now clearly better value: the algorithm, tiling and online softmax
 are all present and correct-looking, and the defect is localised to two helpers.
+
+---
+
+# Patching the two helpers does not work: 910A TBE has no tensor_mov out of L0C
+
+Tried the repair proposed above -- route the fixpipe through L1OUT instead of UB.
+All three `tensor_mov(C_ub, C_l0c, ...)` sites now go via L1OUT
+(`tik_ops_utils.py` 362, 427, 485), zero L0C -> UB calls left in the file.
+
+Rebuild fails:
+
+```
+Error: Ascend910AiCore Instruction tensor_mov doesn't support cc to cc.
+        tik_ops_utils.py:362   tensor_mov(C_l1out, C_l0c, ...)
+```
+
+So on Ascend910A the `tensor_mov` primitive refuses **both** directions out of
+L0C:
+
+| move | verdict |
+|---|---|
+| `tensor_mov` L0C -> UB | `doesn't support cc to ubuf` |
+| `tensor_mov` L0C -> L1OUT | `doesn't support cc to cc` |
+
+This changes the shape of the problem. The earlier plan assumed a localised
+defect -- one unsupported edge -- that a two-line redirect to L1OUT would fix.
+It is not that. The `matmul_compute` epilogue in this codebase is built on a
+`tensor_mov`-out-of-L0C pattern that 910A's TBE does not provide in any form
+tried. Note these are *compile-time* rejections by TIK's own instruction table,
+which is the authoritative statement of what this backend can emit.
+
+A correct epilogue still has to exist: `matmul_core.h` does it as
+`CO1 -> CO2 -> Cast -> GM/L1`, using `DataCopy` with `BLOCK_MODE_MATRIX` rather
+than `tensor_mov`. So the fix is not a redirect but a rewrite of the
+matmul-output path in TBE terms, i.e. the same work as writing the epilogue
+from scratch, at which point keeping the rest of the TIK algorithm saves less
+than originally hoped.
+
+## Honest status
+
+What is established:
+
+1. TBE targets dav-c100 with `set_current_compile_soc_info("Ascend910A")`
+   (CORE_NUM 32, L1 1 MiB, L0C 256 KiB).
+2. A kernel object is produced and the ACL launch path works with no MindSpore
+   (`BinaryLoadFromFile` -> `BinaryGetFunction` -> `LaunchKernelWithHostArgs`).
+3. The unmodified reference faults on device with
+   `ACL_ERROR_RT_AICORE_EXCEPTION (507015)`.
+4. `tensor_mov` is unusable out of L0C on this backend in both directions, so
+   the reference's epilogue cannot be repaired by redirecting it.
+
+What is therefore true: **option 2 -- "just run the existing TBE kernel" -- is
+closed.** It is not a small wiring job; the primitive it depends on does not
+exist here.
+
+Remaining routes, in order of confidence:
+
+1. **Rewrite the matmul epilogue in TBE** using the L0C -> L1OUT path that
+   `matmul_core.h` demonstrates, keeping the rest of the TIK algorithm
+   (online softmax, tiling, cube rowsum). Medium effort, and the pieces that
+   are most likely to be correct (the FA2 maths) are already written.
+2. **Hand-write AscendC** against `matmul_core.h`, per `DESIGN.md`. Best
+   understood route since that code is known to run on this chip, but the most
+   work.
+3. Give up on the fused kernel and keep the dense path (448 s, 4 steps).
+
+Nothing here has been numerically validated, and no timing has been measured for
+a working kernel, so the 297 s projection in the notes remains unconfirmed.
+
+## Lesson worth keeping
+
+Twice now a TIK error message has been read as evidence about the *hardware*
+when it was evidence about *the SoC the backend had selected*:
+
+* `RmsNorm ... no supported kernel` -> actually a missing `cstdint` include.
+* `tensor_mov doesn't support cc to ubuf` on Ascend310B -> looked like TIK using
+  the wrong table, and forcing Ascend910A did silence it; but the follow-up
+  shows 910A rejects the neighbouring form too, so the message was substantively
+  right and forcing the SoC only moved the failure later.
