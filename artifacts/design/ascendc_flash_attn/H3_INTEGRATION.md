@@ -156,3 +156,36 @@ attention call those could eat into the gain.
 The next measurement must be a clean A/B: same prompt, same clip, one run with
 `VLLM_OMNI_910A_FLASH_ATTN=0` and one with `=1`, both after a warm-up request,
 comparing the `[H3PERFP]` breakdown or total wall clock.
+
+---
+
+# Why the first integrated run was so slow: a per-call device sync
+
+First live run with the fused path actually firing: the 5 s clip sat
+`in_progress` for over 15 minutes with no `[H3PERF] dit` progress lines at all,
+where the dense path had printed them steadily. `npu-smi` showed the shape of
+the problem:
+
+```
+NPU 3  AICore 83%      NPU 0,1,2,4,5,6,7  AICore 7%
+```
+
+One chip busy, seven idle. That is not a hang (the AICore is working) but a
+serialisation.
+
+Cause: the wrapper called `aclrtSynchronizeStream` after **every** attention
+launch. In a standalone test that was needed to read the result, but inside the
+diffusion pipeline it forces a full device round-trip per call -- and there are
+roughly 200 attention calls per denoise step across 50 layers. The pipeline
+never overlaps, so seven chips wait on the one doing the synchronous call.
+
+Fix: do not synchronise. The kernel is enqueued on the torch stream that
+`torch.npu.current_stream().npu_stream` reports, so torch's own stream ordering
+already covers it, and any later torch op that reads the output is ordered
+behind the kernel. Sync is now opt-in via `VLLM_OMNI_910A_FLASH_SYNC=1` for
+callers that must read the buffer immediately.
+
+This is the second time in this integration that a convenience from the
+standalone harness was actively harmful in situ -- the first being the hardcoded
+`/tmp/kernel_meta` path. Both were invisible in testing because the harness
+controlled its own environment, and both only surfaced under the real pipeline.
