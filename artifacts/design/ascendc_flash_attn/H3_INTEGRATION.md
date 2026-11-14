@@ -2640,3 +2640,90 @@ hardware generation. I am not going to claim it is achievable.
 
 Every remaining item has now been either landed, refuted, or diagnosed as
 hardware-dominated. The one durable gain is the attention kernel.
+
+---
+
+# Round 14: ping-pong buffers are necessary but not sufficient
+
+Round 6 established that the kernel has no software pipeline at all -- no double
+buffering and no `set_flag`/`wait_flag` anywhere -- which is the main explanation
+for its cube duty cycle and for the 103 ms gap between the 558 ms measured time
+and the 455 ms compute floor.
+
+Step one of fixing that is giving consecutive kv-block iterations distinct L1
+buffers. Today `compute_in_each_kv_block` allocates `Vj_l1_zN` and `KjT_l1_zN`
+fresh on every call, so if those land on the same addresses each iteration there
+is a write-after-read hazard between iteration i's use and iteration i+1's load,
+which forbids overlap by construction.
+
+## L1 budget says it fits
+
+| buffer | size at Br=128, Bc=304 |
+|---|---:|
+| KjT (fp16) | 76.0 KB |
+| Vj (fp16) | 76.0 KB |
+| Pij (fp16) | 32.0 KB |
+| Oi (fp32) | 64.0 KB |
+| Qi (fp16) | 32.0 KB |
+
+```
+fixed (Pij+Oi+Qi)      128.0 KB
+one K/V set            152.0 KB
+two K/V sets           304.0 KB
+TOTAL current          280.0 KB
+TOTAL double-buffered  432.0 KB
+fits within 512 KB and within 1 MB
+```
+
+So there was no memory obstacle, and I made `Vj_l1_zN` / `KjT_l1_zN` select
+`kv_blk_idx % 2` so consecutive iterations cannot alias.
+
+## Result: it builds, runs, verifies -- and the time does not move
+
+```
+built ok
+558 ms  25.7 TFLOPS  (baseline 558 ms / 25.7)
+```
+
+Exactly unchanged. So distinct buffers alone buy **nothing**: TIK still serialises
+the load against the compute, because it has no way to know the two iterations'
+buffers are independent without explicit synchronisation. That is what
+`set_flag`/`wait_flag` are for, and the kernel still has none.
+
+This is a useful negative result rather than a dead end -- it separates two things
+I would otherwise have run together:
+
+* the **memory precondition** (distinct buffers) is now satisfied and costs no
+  performance and no correctness;
+* the **pipelining machinery** (issue iteration i+1's MTE2 load before iteration
+  i's compute, with flags so compute waits on its own load but not on the next
+  one) is still absent and is what actually produces overlap.
+
+The patch is left in place and verified correct, so the next attempt starts from
+buffers that are already hazard-free rather than having to redo that part.
+
+## What the flag version has to do
+
+Restructure the kv loop from
+
+```
+for i: load V[i]; load K[i]; compute on V[i], K[i]
+```
+
+to
+
+```
+load V[0]; load K[0]
+for i:
+    if i+1 < n_blk: load V[i+1]; load K[i+1]     # into buffer (i+1)%2, async
+    compute on V[i], K[i]                         # buffer i%2
+```
+
+with a `set_flag`/`wait_flag` pair per buffer so `compute i` waits for `load i`
+and `load i+1` does not wait for `compute i`. The buffers for that already exist.
+
+## Round 14 accounting
+
+No speedup. But the remaining 1.23x is now narrowed to exactly one mechanism, with
+its memory precondition verified and its absence confirmed by measurement rather
+than by grep.
