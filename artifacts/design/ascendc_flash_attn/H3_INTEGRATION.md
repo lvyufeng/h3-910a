@@ -189,3 +189,75 @@ This is the second time in this integration that a convenience from the
 standalone harness was actively harmful in situ -- the first being the hardcoded
 `/tmp/kernel_meta` path. Both were invisible in testing because the harness
 controlled its own environment, and both only surfaced under the real pipeline.
+
+---
+
+# Integrated it runs 3.2x SLOWER, because of the layout conversions
+
+Measured the live run after removing the sync. It progresses fine (no hang), but
+the per-layer time is the wrong direction:
+
+```
+dense run:        [H3PERF] dit N/50 block=1.392 s
+flash run:        dit 11/50 -> dit 21/50 in 45 s   =>  4.5 s per layer
+```
+
+4.5 s against 1.392 s is **3.2x slower**, in a configuration where the kernel
+itself is 1.34x faster than the dense attention (872 ms vs 1166 ms measured at
+the real shape) and had zero fallbacks in this run.
+
+## Why
+
+The kernel only accepts and returns NZ layout, `(B,H,d/16,N/16,16,16)`, while
+the H3 path is NDS. My wrapper therefore pays, on every attention call:
+
+* `qs = (q.float() * scale).half()` -- an fp16 -> fp32 -> fp16 round trip over
+  the full tensor just to apply a scalar
+* three `permute(...).contiguous()` calls, one each for q, k, v, each a full
+  N*D copy
+* on the way out, `permute().reshape().to(float32)`, an fp32 division by the pad
+  correction, then `.to(fp16)`
+
+At N=63232, H=7, D=128 that is roughly 113 MB per tensor per conversion, and
+with q, k, v, the scaled copy and the output that is on the order of a gigabyte
+of extra traffic per call. The dense path touches none of it. The per-call
+kernel gain of ~300 ms is swamped.
+
+Note this is a different failure from the two previous ones: those were harness
+conveniences that leaked into the pipeline (hardcoded path, per-call sync). This
+one is intrinsic to my wrapper's interface choice, and it was **already present**
+in the 872 ms standalone figure -- it just did not show up as a loss there
+because I compared kernel-with-conversion against dense-without-conversion and
+the kernel was fast enough to still win at N=73408.
+
+## What would actually fix it
+
+1. **Fold the scale into the kernel**, or pre-scale q once per denoise step
+   instead of per attention call. Cheapest win: scaling is constant across all
+   50 layers of a step, and possibly across all steps.
+2. **Avoid the fp32 round trip.** `q.float() * scale` then `.half()` is two
+   full-tensor casts; `q * half_scalar` in fp16 does it in one pass without
+   leaving fp16.
+3. **Skip the pad correction when n_pad == 0**, which is the common case, so no
+   fp32 upcast and divide at all.
+4. **Convert once, not per call.** q/k/v for a given layer are produced by that
+   layer's projections, so they cannot be cached across calls; but the output
+   conversion could write straight into the layout the caller needs.
+5. **The real fix: teach the kernel NDS.** Its NZ requirement comes from the
+   TIK reference's `F16_FracNZ` input declaration. Accepting NDS would remove
+   every conversion, at the cost of changing the op contract or adding a
+   `data_move` with nd2nz inside the kernel (which is what the cube wants
+   anyway).
+
+## Honest status of the objective
+
+* "支持 910A 的 flash attention": **done and verified.** Builds for dav-c100,
+  runs via the legacy runtime API, numerically matches an fp32 reference to fp16
+  rounding at N=256, N=992 and the real N=73408, and is 1.34x faster per call
+  than the dense path when the layouts it needs are already in place.
+* "加速 H3 推理": **not achieved.** Integrated as-is it makes the pipeline 3.2x
+  slower. The kernel is correct and fast; the glue around it is not, and until
+  the conversion cost is removed this cannot be switched on.
+
+So the per-call result stands, the integration does not. Leaving this disabled by
+default (`VLLM_OMNI_910A_FLASH_ATTN` unset) is the correct state.
