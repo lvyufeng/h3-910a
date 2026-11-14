@@ -2124,3 +2124,70 @@ were really the pattern matching my own shell command line. The host was clean a
 along: NPU processes 0, DiffusionWorker 0, RAM settled at 9 GB used. Worth
 recording because a false "orphans still running" reading could easily have led to
 a needless reboot or to conclusions about memory pressure.
+
+---
+
+# Round 9: the HBM trace settles it -- the encoder is streamed, not resident
+
+The measurement that should have been first. Sampled per-chip HBM every ~1.5 s
+across a whole request, timestamped from submission.
+
+```
+ t(s)   HBM chip0 / others (MB)
+  0.5   3414 3222 ...           idle
+ 12.3   4228 4036 ...           encoder begins streaming in
+ 16.3   5324 4760 ...
+ 18.3   5324 5132 ...           plateau: encode running
+ 35.9   5330 5138 ...
+ 37.9   4608 4416 ...           encode ends, buffers released
+ 41.8   4752 4560 ...
+ 71.1   7076 6884 ...           denoise / DLO pool grows
+ 82.8   8866 8674 ...           denoise steady state
+155.6   9102 8690 ...
+```
+
+## What it proves
+
+* During encode HBM peaks at **5.33 GB**, i.e. an increment of only **~1.9 GB**
+  over the 3.4 GB idle baseline. A resident TP8 shard of the 62.1 GB encoder would
+  be **~7.8 GB**. It is not there.
+* At t=37.9 s, exactly when encode finishes, HBM **drops** by ~0.7 GB. Resident
+  weights would not be released at that moment; per-layer streaming buffers would.
+* Denoise then settles at 8.87 / 8.68 GB and stays flat.
+
+So the text encoder is being **streamed through the device layer by layer on every
+request**, and the 39 s is the transfer. 62.1 GB / 39 s = 1.6 GB/s, consistent with
+a host-to-device rate.
+
+This confirms the mechanism suspected last round via `encoder_block_attrs` and
+finally refutes both earlier stories (staged-offload in round 7, CPU/NPU placement
+in round 8). The encoder was never resident, and `on_demand` was never the switch.
+
+## And residency would fit
+
+Denoise steady state is 8.87 GB of a 32 GB chip. A resident encoder shard is
+~7.75 GB. Together that is **~16.6 GB**, leaving ~15 GB headroom. So the fix is
+available on this hardware, contrary to my round-7 reflex of comparing 62 GB
+against 32 GB and forgetting the TP8 sharding.
+
+## The fix, concretely
+
+Two things have to change together, because `prepare_component` skips
+`module.to(device)` when `blockwise` is true:
+
+1. drop `text_encoder` from `encoder_block_attrs` in the `_offload_plan`
+   declaration (`pipeline_minimax_h3.py:636`), so its layers stop being streamed;
+2. make sure it is actually placed on the device once, since the blockwise branch
+   is what currently prevents the `elif not blockwise: module.to(device)` from
+   running.
+
+Expected: `text_enc` falls from ~39 s toward the real forward cost. The
+prompt-length experiment (4 words and 378 words both 39 s) says the compute part is
+small, so the target of ~2 s in the goal is plausible rather than optimistic.
+
+## Round accounting
+
+No speedup landed, again. But this round converted a two-round-wrong hypothesis
+into a measured mechanism plus a specific two-line change with a favourable memory
+budget. The trace took four minutes to run and would have saved rounds 7 and 8 had
+I done it first; that is the real lesson of this stretch.
