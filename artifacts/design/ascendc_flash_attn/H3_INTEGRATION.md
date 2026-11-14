@@ -2031,3 +2031,96 @@ stopped. What was established is a named, bounded cause for an 11% slice of the
 pipeline, with the exact function and the exact knob. Given that the attention
 path is against a measured ceiling, this is the more promising of the two
 remaining fronts.
+
+---
+
+# Round 8: the offload hypothesis was wrong; the encoder is on NPU and still takes 39 s
+
+Round 7 concluded the 39 s encode was staged-offload cost and proposed keeping the
+text encoder resident. That was tested this round and **refuted**, twice, before
+the real state of affairs became clear.
+
+## Test 1: take text_encoder out of on_demand
+
+The declaration at `pipeline_minimax_h3.py:639` is
+
+```python
+on_demand_component_paths=frozenset({"text_encoder", "video_vae", "audio_vae"}),
+```
+
+and `prepare_component` evicts anything that is `stage_on_demand`. So I removed
+`text_encoder` from that set. The served log confirmed the change took effect:
+
+```
+Prepared audio_vae for pipeline-managed staged offload
+Prepared video_vae for pipeline-managed staged offload      <- text_encoder gone
+```
+
+**Result: encode was 39.85 s, unchanged.** So the eviction was not the cause.
+
+## Test 2: where do the weights actually live?
+
+Flat timing regardless of prompt length had two candidate explanations -- a fixed
+padded sequence length, or the encoder running somewhere slow. Logged the first
+parameter's device at the point the encoder runs:
+
+```
+[H3PERFD] text_encoder params device=npu:0 dtype=torch.bfloat16
+[H3PERFP] encode=39.54s
+```
+
+So the encoder is **already on the NPU, in bfloat16**, and still takes 39.5 s. That
+kills both the "it is on CPU" and the "it is a host-to-device transfer" stories.
+
+## What is actually true
+
+The text encoder is registered for **blockwise layer streaming**, a different
+mechanism from `on_demand`:
+
+```python
+encoder_block_attrs={"text_encoder": ("vision.blocks", "text_model.layers")},
+```
+
+so its layers are streamed through the device layer by layer during the forward,
+and `on_demand` was never the relevant switch. That is why removing it from
+`on_demand_component_paths` did nothing.
+
+The 62.1 GB on-disk size divided by the 39 s gives ~1.6 GB/s, which is exactly a
+plausible host-to-device streaming rate -- so the timing is consistent with the
+encoder's layers being streamed in on every request rather than already resident.
+But note that is now an inference again, not a measurement, because the direct
+measurement (params on npu:0) shows at least the first parameter resident. I have
+not established whether the whole encoder is resident during the forward or
+whether it is being re-streamed per layer, and the two imply very different fixes.
+
+## Honest status
+
+* The round-7 conclusion ("39 s is staged-offload cost") is **withdrawn**.
+* The measurement that would settle it -- whether HBM rises by ~7.8 GB while the
+  encoder runs, i.e. whether all 8 ranks hold their shard simultaneously -- was not
+  taken. HBM sat at 8.6-8.8 GB per chip during a full request, which is too low
+  for a resident 62/8 = 7.8 GB encoder on top of the DiT pool, which argues for
+  re-streaming; but "too low to be resident" is an inference from a number I
+  sampled once, not a controlled measurement.
+* No speedup landed. The on_demand change was reverted since it demonstrably did
+  nothing, and all instrumentation was removed.
+
+## Next step, narrowed again
+
+Sample per-chip HBM at ~1 s resolution across a whole request and look for the
+encoder's ~7.8 GB appearing and then disappearing. That single trace distinguishes
+"resident, 39 s is compute on a padded sequence" from "re-streamed every request,
+39 s is transfer", and those have completely different fixes -- the first needs
+the padded length found and cut, the second needs the layer streaming disabled for
+the encoder specifically.
+
+That trace is the cheapest decisive thing left in this thread, and it should have
+been the first thing done rather than the third.
+
+## Also: my process check was broken
+
+Twice this round `pgrep -cf "[v]llm..."` reported large counts (154, then 2) that
+were really the pattern matching my own shell command line. The host was clean all
+along: NPU processes 0, DiffusionWorker 0, RAM settled at 9 GB used. Worth
+recording because a false "orphans still running" reading could easily have led to
+a needless reboot or to conclusions about memory pressure.
