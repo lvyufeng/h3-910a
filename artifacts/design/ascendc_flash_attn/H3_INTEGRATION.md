@@ -2250,3 +2250,85 @@ The only measurable gain landed in nine rounds is Bc=416 -> 608, worth 2%.
 Against that, the round-6 finding (no pipeline) and round-9 trace (encoder is
 streamed) are the two things a future attempt should build on, and both are
 recorded with the exact numbers needed to verify a fix.
+
+---
+
+# Round 10: the kernel IS bandwidth-bound, and br=128/bc=608 is the way to fix it
+
+## Peak HBM bandwidth, measured
+
+```
+device-to-device copy : 2.01 ms -> 534.8 GB/s (rw)
+```
+
+(An accompanying `sum` measured 41.5 GB/s, but that is a torch reduction and is
+compute-bound; it is not a bandwidth figure and should not be quoted as one.)
+
+## The kernel moves 234 GB per launch and does it at 65% of peak
+
+With Br=64 there are 988 q-blocks, each sweeping all of K and V (2 x 113 MB):
+
+```
+traffic  = 988 x 226 MB            = 234 GB
+measured = 672 ms
+implies  = 348 GB/s                = 65% of the 534.8 GB/s peak
+```
+
+So the kernel is **substantially bandwidth-bound**, and the 65% figure means a
+large part of the 672 ms is K/V being re-read from HBM.
+
+**This retracts the round-2 conclusion that "the K/V traffic theory is dead".**
+That conclusion rested on the Br sweep which was itself invalid -- `_build`
+computes the tile sizes and overwrites `FA_BR`/`FA_BC`, so every arm of that
+sweep ran the same br=64 kernel and the flat 672 ms was an artefact. Two rounds
+later I described the flat curve as "consistent with fixed per-tile costs rather
+than bandwidth", which was a plausible story built on a broken measurement. The
+direct bandwidth measurement now says the opposite.
+
+## Why the earlier br=128 test missed it
+
+br=128 was only ever tested with a *smaller* Bc (256 or 128), because the fp32
+score tile at br=128/bc=608 would be **304 KB** and does not fit. Small Bc costs
+per-tile efficiency -- Bc 608 -> 256 alone was worth +188 ms at br=64 -- so that
+test traded away more than the traffic saving gained, and came out at 708 ms.
+
+The confound was never removed: **br=128 with bc=608 has never been run.**
+
+## And it fits, in fp16
+
+| tiling | fp32 score tile | fp16 score tile |
+|---|---:|---:|
+| Br=64, Bc=608 (today) | **152 KB** | 76 KB |
+| Br=128, Bc=608 | 304 KB -- too big | **152 KB -- same as today** |
+| Br=256, Bc=608 | 608 KB -- too big | 304 KB -- too big |
+
+So keeping the score tile in fp16 buys exactly the footprint that already works
+today while doubling Br:
+
+```
+br=64  / bc=608 : 234 GB traffic -> 438 ms bandwidth floor (measured 672)
+br=128 / bc=608 : 117 GB traffic -> 219 ms bandwidth floor
+```
+
+If the kernel is at 65% of peak now, halving traffic should move the bandwidth
+component from ~438 to ~219 ms, i.e. the 672 ms could plausibly land in the
+350-400 ms range. That is a **1.7-1.9x** improvement on the attention kernel --
+more than the pipeline work was going to give, and it attacks the dominant term.
+
+## Precision risk, stated honestly
+
+Softmax on fp16 scores is a real change, not a free one. After the max
+subtraction the scores are in [-inf, 0] and the exponentials in [0, 1], which is a
+benign range for fp16, but the accumulated denominators and the P@V product would
+carry ~1e-3 relative error rather than the ~5e-4 the fp32 path currently achieves
+against the reference. My verified tolerance in earlier rounds was 4.7e-4, so this
+may or may not pass. The experiment must therefore check numerics at N=63232, not
+just timing -- and if fp16 scores are too lossy, the fallback is chunking the fp32
+score tile within UB (process Bc in two halves with online softmax), which keeps
+precision and still halves the K/V traffic.
+
+## Next step
+
+Implement the smallest change that lets br=128/bc=608 build: allocate the score
+tile as fp16. Then measure both time and worst-case relative error at the real
+shape, and compare against the 672 ms / 4.7e-4 baseline.
