@@ -3365,3 +3365,64 @@ which is now the largest identified item in the pipeline.
 
 Push to GitHub failed all round (`SSL_ERROR_SYSCALL` at the TLS handshake, DNS
 resolves); commits are local and will be pushed when the network recovers.
+
+## Round 22: the two obvious explanations for the 38.5 s are both ruled out
+
+Read the wrapper chain rather than guessing, per round 21's lesson.
+
+```
+pipeline_minimax_h3.py:1994   minimax_h3_denoise_loop(model=transformer, ...)
+        transformer = self._transformer_for_task(task)
+        with self._resident_dit_layers_on_device(enabled=transformer is self.transformer):
+            ... denoise loop ...
+```
+
+and the context manager is:
+
+```python
+def _resident_dit_layers_on_device(self, *, enabled: bool = True):
+    controller = getattr(self, "_dlo_residency_controller", None)
+    if controller is not None and enabled:
+        controller.load_resident_layers()
+    try:
+        yield
+    finally:
+        if controller is not None and enabled:
+            controller.offload_resident_layers()
+```
+
+So `model` is the raw transformer and the only wrapper is a DLO residency
+context that loads **once before the loop** and offloads **after it** -- it is not
+per-step, so it cannot produce a per-step 38.5 s gap.
+
+The other candidate, that the model is called twice per step (positive and
+negative branches) so that two 34.7 s forwards add to ~69 s, is also ruled out:
+32 `phase` lines divided by 8 ranks gives 4 per rank for a 4-step schedule, i.e.
+one model call per step.
+
+So both explanations are dead and the gap stands unexplained:
+
+```
+inner   phase total : 34.7 s   (and 73.1 s on some steps -- it varies)
+outer   dstep model : 73.2 s   (consistent)
+```
+
+One observation worth carrying forward: `phase total` itself takes **both** 34.7
+and 73.1 across steps, while `dstep model` sits at 73.2 throughout. That pattern is
+more consistent with *some* forwards being cheap and others expensive than with a
+constant gap, which would mean my framing of "38.5 s between the timers" may be
+wrong -- the inner timer may simply be sampling different steps than the outer one
+in the log I compared.
+
+**The measurement that settles it** (not taken): print both timings in a single
+statement, in the same process, for the same step -- e.g. have the denoise loop
+record `_dmodel` and also read whatever the transformer recorded for that same
+call, and emit them on one line. Comparing values from different lines of a
+multi-rank log is what produced this ambiguity in the first place.
+
+## Round 22 accounting
+
+No speedup, no new instrumentation. Two plausible mechanisms eliminated by reading
+the code, and an explicit statement that the 38.5 s figure itself is now in doubt
+because the two numbers were never observed together for the same step. That is a
+correction to round 21's conclusion, which was stated too confidently.
