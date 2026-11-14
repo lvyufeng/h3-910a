@@ -355,3 +355,95 @@ which may be a consequence of my own edit, of a wrong SoC, or of a build config
 problem. Before treating any of these as a hardware fact, verify the claim
 against `archversion_scope` / the SoC spec directly. That check is cheap and
 would have saved all three detours.
+
+---
+
+# The harness is broken: a trivial kernel faults identically
+
+Decided to separate harness bugs from kernel bugs before touching anything else.
+Built the smallest kernel that could possibly work -- a 4-line vector add:
+
+```python
+a = UB tensor; b = UB tensor; c = UB tensor
+data_move(a, A); data_move(b, B); h_add(c, a, b); data_move(C, c)
+BuildCCE(kernel_name="probe_add", inputs=[A, B], outputs=[C])
+```
+
+It compiles. Launched through the same `harness` path
+(`aclrtBinaryLoadFromFile` -> `aclrtBinaryGetFunction` ->
+`aclrtLaunchKernelWithHostArgs`, 1 block, 3 GM pointers), it fails with **the
+same error as flash attention**:
+
+```
+rtStreamSynchronize execution failed, reason=aicore exception
+Message info[0]:RTS_HWTS: aicore exception, slot_id=20, stream_id=77
+```
+
+## What this establishes
+
+**The flash attention kernel has not been shown to be broken.** The fault
+happens for a kernel with four instructions, so the cause lies in the launch
+path, not in the attention code, its tiling, its UB budget or its atomics.
+Every earlier statement of the form "the TBE kernel faults on device" was
+attributing a harness failure to the kernel and is withdrawn.
+
+This also means the `ACL_ERROR_RT_AICORE_EXCEPTION (507015)` recorded twice
+above is evidence about *my launch harness* and nothing more.
+
+## Why the bare `.o` is probably not launchable this way
+
+`BuildCCE` emits `kernel_meta/<name>.o` plus `<name>.json` containing
+`opParaSize: 0`, `magic: RT_DEV_BINARY_MAGIC_ELF`, `blockDim`, `coreType`.
+That is the *object file*, not the packaged operator. The supported route for
+TBE kernels is to package them into an op `.so` with `op_info_cfg` and register
+them, so the framework supplies what the kernel expects at launch:
+workspace, tiling parameters, atomic-accumulate setup, and the UB/L1 budget.
+`aclrtBinaryLoadFromFile` on the raw `.o` skips all of that, which would
+explain a fault that is identical for a 4-instruction kernel and a 277 KB one.
+
+Plausible specific causes, none yet tested:
+
+1. **A tiling / op-parameter block.** Even with `opParaSize: 0`, TBE kernels
+   conventionally receive a tiling struct; launching without it can make the
+   kernel read past its argument list.
+2. **Argument layout.** `aclrtLaunchKernelWithHostArgs` may want the GM
+   addresses as a flat value buffer plus a `placeHolderArray` describing them,
+   rather than an array of pointers-to-pointers.
+3. **Binary packaging.** The `.o` may need `opc`/op-project packaging, or
+   `aclrtBinaryLoadFromFile` may expect the packaged form.
+
+## Corrected bottom line
+
+Established:
+
+* TBE targets dav-c100 with `set_current_compile_soc_info("Ascend910A")`
+  (CORE_NUM 32, L1 1 MiB, L0C 256 KiB).
+* The reference flash attention **compiles**, and its `tensor_mov` L0C -> UB
+  epilogue is legal here (`cc_m322ubuf` is in `archversion_scope`).
+* A trivial TBE kernel also compiles.
+* **Neither runs through my launch harness**, so the harness is the current
+  blocker and the kernel's correctness on this chip is untested either way.
+
+Not established: whether TBE kernels can be launched at all from a bare `.o` on
+910A; whether the flash attention kernel is correct; any numerics; any timing.
+The 297 s projection stays unconfirmed.
+
+## Next step, if this is picked up again
+
+Get *any* TBE kernel to run first, using the simplest thing available, before
+spending more effort on attention. Two concrete options:
+
+1. Find the supported packaging route for a TBE op on this CANN — i.e. what
+   turns `kernel_meta/probe_add.{o,json}` into something `aclrtBinaryLoadFromFile`
+   accepts. `msopgen` generates AscendC projects, so the TBE route is likely
+   the legacy `op_info_cfg` + `opc` flow, which this CANN no longer ships.
+2. Sidestep TBE entirely: write the probe add, then the attention, in AscendC,
+   where `msopgen` does ship and `matmul_core.h` shows the contract that is
+   known to run on this chip.
+
+If (1) turns out to be unavailable on CANN 9.2.0, the TBE route is dead on this
+install regardless of how good the reference implementation is, and the choice
+collapses to AscendC or keeping the dense path. Deciding between those two is
+the real fork, and it turns on one question that is cheap to answer: does
+`msopgen` produce a working, launchable op on this chip? That should be tested
+before any more kernel work.
