@@ -2578,3 +2578,65 @@ decode timer from the filesystem the way I could for the 62 GB encoder.
 
 This also confirms the round-9 figure for the encoder at 62.13 GB, and hence the
 ~1.6 GB/s implied streaming rate (62.13 GB / 39 s).
+
+---
+
+# Round 13: the decode is 100% video-VAE compute, not staging or dtype
+
+Instrumented `decode()` to separate the three candidate costs:
+
+```
+[H3PERFV] vae_stage_in=0.06s decode_latent=97.82s stage_out+rest=0.00s
+[H3PERFV] audio_stage_in=0.05s audio_decode=0.28s
+[H3PERFP] decode=154.95s / 158.30s
+```
+
+| component | cost |
+|---|---|
+| staging the video VAE decoder onto the device | **0.06 s** |
+| **`video_vae.decode_latent`** | **97.82 s (cold)** |
+| staging the audio VAE | 0.05 s |
+| audio VAE decode | 0.28 s |
+
+So the hypothesis I carried since round 12 -- that `_component_on_device` staging
+was a meaningful part of the decode timer -- is **wrong**. Staging is six
+hundredths of a second. The audio VAE is three tenths. Essentially the entire
+decode is the video VAE's own convolutions.
+
+Combined with round 12's result that bf16 is 64% worse, the decode is now
+diagnosed: **it is video VAE compute on this chip, and nothing else.**
+
+A note on the arithmetic: total decode was ~155 s against 97.8 s of
+`decode_latent`, so ~57 s sits outside the instrumented `with` block -- in
+`_release_stage_cache()` (called before the first timer) plus the
+`[..., :height, :width].contiguous()` slice. This was a **cold** run, so an
+unknown part of that is first-call compilation. The earlier decode-twice
+experiment measured warm decode at 43.75 s, which means the warm figure for
+`decode_latent` is around 43 s and I should not read the 57 s gap as a steady
+state cost. It does not change the conclusion, but it does mean the cold and warm
+splits differ and only the cold split was measured directly.
+
+## What this means for the decode goal item
+
+Warm decode ~43 s against an official 6.56 s is a **6.6x** gap that is now known
+to be video VAE compute. A video VAE decoder is almost entirely convolutions,
+normalisation and upsampling -- vector-unit work, not cube work -- and the 910A's
+vector throughput is several generations behind the 910B/910C parts the official
+numbers come from. So most of the 6.6x is very likely silicon, not software.
+
+That makes the decode goal ("155s -> 20s") the same shape of problem as the 15 s
+per-step target: the remaining headroom is small and the gap is dominated by
+hardware generation. I am not going to claim it is achievable.
+
+## Thirteen-round position
+
+| item | state |
+|---|---|
+| (2) attention efficiency | **656 -> 558 ms kernel, block 13.4% faster, verified end to end** |
+| (2) 15 s/step | measured infeasible (needs 47.8 vs a 31.5 TFLOPS mixed ceiling) |
+| (1) fused operators | refuted, 0.3% of a block |
+| (3) text encode 39 s | 62.13 GB streamed per request; three fixes tried, all failed |
+| (3) decode | **diagnosed: video VAE compute, ~43 s warm, mostly hardware** |
+
+Every remaining item has now been either landed, refuted, or diagnosed as
+hardware-dominated. The one durable gain is the attention kernel.
