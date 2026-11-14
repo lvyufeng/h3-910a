@@ -79,3 +79,80 @@ correction, because it would make the fix trivial.
 * "加速 H3 推理": **not yet**. The kernel is never invoked inside H3 because of
   the mask above, so there is no end-to-end speedup to report. The per-call gain
   is real but unrealised.
+
+---
+
+# The flash path now fires inside H3
+
+The 37-key suffix mask turned out to be recoverable exactly, and the kernel is
+now actually invoked in a live run.
+
+## Root cause of the mask, and why it is harmless
+
+`minimax_h3_transformer.py` builds the mask only when the backend advertises
+neither `supports_prefix_kv_slicing` nor `supports_packed_mask_free`:
+
+```python
+used = min(max_seqlen, packed_total)
+mask_free_packed_padding = ... supports_packed_mask_free()
+no_mask = ... supports_prefix_kv_slicing or mask_free_packed_padding
+if used < packed_total and not no_mask and not use_ring:
+    attn_mask = torch.arange(packed_total, device=q.device)[None] < used
+```
+
+so it is purely `arange < used`, confirming suffix padding. And
+`batched_packing.py` allocates the packed tensor with `torch.zeros`, so a padded
+key row is k=0, v=0. Its score is `q.0 = 0`, hence `exp(0) = 1` of denominator
+and nothing at all to the numerator. Therefore
+
+```
+O_kernel = num / (den_valid + n_pad)
+O_exact  = O_kernel / (1 - n_pad * exp(-l))
+```
+
+using the log-sum-exp `l` the kernel already returns. No mask, no extra matmul,
+no 8 GB additive mask.
+
+Verified before wiring it up, at N=1280 with 256 zero-padded keys:
+
+```
+worst relative error WITH correction: 0.000597   PASS
+```
+
+## Two real bugs found while wiring it in
+
+1. **Build path vs cwd.** TIK writes `./kernel_meta` relative to the process
+   cwd, but the wrapper looked in `/tmp/kernel_meta`. Outside the service that
+   accidentally worked because cwd was `/tmp`; inside the service cwd is
+   `/home/mseco/h3-910a`, so every build "produced nothing". The wrapper now
+   builds inside a private temp dir and moves the artefact into the cache.
+2. **Eight-worker build race.** All 8 USP workers build the same shape at the
+   same time into one directory. Now serialised with an exclusive `flock`, with
+   a re-check inside the lock so only the first worker builds.
+
+## Evidence that it fires
+
+Live run, `VLLM_OMNI_910A_FLASH_ATTN=1`, 5 s clip (N=63232, Bc=416 which
+divides 63232 exactly):
+
+```
+kernel cache:  b1_h7_n63232_d128_br64_bc416  (26392 B .o + json)
+fallbacks:     0
+```
+
+Zero fallbacks means every DiT attention call in that run took the fused path,
+and the built artefact shows the tile picker chose 416 rather than the reference
+default of 128.
+
+## Still missing: the end-to-end number
+
+The run had not completed when this was written, so there is **no flash-ON vs
+flash-OFF wall-clock comparison yet**. What is established is that the kernel is
+correct and 1.34x faster per call in isolation, and that H3 now dispatches to
+it. What is not established is that the whole pipeline got faster -- the fast
+path adds an NDS->NZ conversion per call and an fp32 rescale, and at ~870 ms per
+attention call those could eat into the gain.
+
+The next measurement must be a clean A/B: same prompt, same clip, one run with
+`VLLM_OMNI_910A_FLASH_ATTN=0` and one with `=1`, both after a warm-up request,
+comparing the `[H3PERFP]` breakdown or total wall clock.
