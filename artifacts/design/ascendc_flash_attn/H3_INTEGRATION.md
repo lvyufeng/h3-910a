@@ -2727,3 +2727,86 @@ and `load i+1` does not wait for `compute i`. The buffers for that already exist
 No speedup. But the remaining 1.23x is now narrowed to exactly one mechanism, with
 its memory precondition verified and its absence confirmed by measurement rather
 than by grep.
+
+---
+
+# Round 15: RETRACTION -- the round-14 ping-pong result was a cached build
+
+## What happened
+
+Round 14 claimed that ping-pong K/V buffers "built ok, ran, and measured 558 ms,
+exactly unchanged". That conclusion was **wrong**: the patched kernel never
+compiled.
+
+Deleting the kernel cache and forcing a real rebuild produced:
+
+```
+TypeError: %d format: a real number is required, not Expr
+  fa910a.py line 97, in _build
+```
+
+The patch named the buffers
+
+```python
+_vpar = kv_blk_idx % 2
+Vj_l1_zN = self.tik_instance.Tensor(..., name="Vj_l1_zN_%d" % _vpar, scope=L1)
+```
+
+but inside `tik_instance.for_range` the loop variable `kv_blk_idx` is a TIK
+**symbolic Expr**, not a Python int. `%d` on an Expr raises, so the build could
+never succeed. Round 14's "built ok / 558 ms" was served from the cached
+pre-patch kernel -- same shape, so same cache key.
+
+**So the round-14 conclusion "ping-pong buffers are necessary but not
+sufficient" is withdrawn.** I have no evidence either way about whether distinct
+buffers help, because that configuration was never actually built or run.
+
+## The real constraint this exposes
+
+TIK resolves buffers by **name at trace time**, so a buffer cannot be selected by
+a symbolic loop parity. Double buffering in this kernel therefore needs one of:
+
+* `tik_instance.if_scope` on `kv_blk_idx % 2` with two separately named buffers
+  allocated outside the scope, which is where TIK's own examples put them;
+* or unrolling the kv loop so the parity is a Python value.
+
+Both are real restructures, not a one-line rename. That is the actual blocker and
+it was invisible while the cache was hiding the failure.
+
+## The lesson, which I have now hit twice this session
+
+**A build that "succeeds" after editing a kernel source must be verified against
+a cleared cache.** In round 2 an invalid Br sweep produced a flat curve that I
+then rationalised; here a cached build produced a clean-looking null result that I
+reported as a finding. Both times the measurement apparatus, not the hypothesis,
+was the problem. The tiling work in round 10 was only trustworthy because the
+numbers moved (656 -> 558); a *null* result needs the cache cleared before it can
+be believed at all.
+
+## State after reverting
+
+Reverted to the pre-ping-pong source (`flash_attention_fwd.py.nopipe.bak`), which
+retains the round-10 in-place fp16 exp. Verified by deleting the kernel cache and
+rebuilding from scratch:
+
+```
+built ok (fresh, cache deleted)
+558 ms  25.7 TFLOPS
+```
+
+So the deployed kernel is the verified round-10 configuration: br=128/bc=304,
+in-place fp16 exp, 558 ms, worst relative error 0.000389 as measured properly in
+round 10 through the `flash_attention_910a` wrapper.
+
+(One note: a hand-rolled raw-kernel numeric check in this round reported a
+nonsense error of 3358.6. That reference did the 1/sqrt(d) scaling and layout
+by hand and was simply wrong; the wrapper-based check from round 10 is the
+authoritative one and passed at 0.000389. Worth recording so the 3358 figure is
+not mistaken for a regression later.)
+
+## Round 15 accounting
+
+No speedup, and one earlier claim retracted. The genuine progress is negative but
+useful: the double-buffering blocker is now identified precisely (symbolic parity
+cannot name TIK buffers), and the measurement discipline required for null results
+is written down where I will see it next time.
