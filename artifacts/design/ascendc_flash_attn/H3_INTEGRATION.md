@@ -598,3 +598,87 @@ behaviour, and again not an attention problem.
   reason -- the step count is 12 rather than 4, and that is a serving
   configuration question about how many passes the 4-step schedule gets, not a
   kernel question.
+
+---
+
+# RESOLVED: the schedule was in the partition index, and the first complete run
+
+## The actual fix
+
+Previous round added `_minimax_h3.base_schedule` to the **root**
+`model_index.json`. Wrong file. There are two, and the authoritative one is the
+partition index:
+
+```
+FL2VA/model_index.json   partition=fl2va  tasks=[t2va, fl2va]
+                         sigma_shift_scales={video:12.0, audio:3.0}
+                         base_schedule=None        <- the gap
+model_index.json         partition=None  tasks=None  base_schedule=[...]
+```
+
+`release = model_index.get("_minimax_h3")` is read from the partition root, so
+the root-level edit was never consulted. Setting `base_schedule` in
+`FL2VA/model_index.json` is what took effect.
+
+Verified through the real functions rather than by inspection:
+
+```
+num_inference_steps = 4
+minimax_h3_time_shift_sigmas(num_steps=12, shift_scale=12.0,
+                             base_schedule=[1.0,0.7,0.4,0.15,0.0])
+    -> 5 sigma points -> 4 steps
+```
+
+Note it works even though the request asks for 12: `_time_shift_sigmas` gives
+`base_schedule` precedence over `num_steps`, which is exactly the intended
+distilled-checkpoint behaviour.
+
+## First complete end-to-end run, 4 steps, flash attention enabled
+
+```
+dstep 1  dstep 2  dstep 3  dstep 4          <- exactly 4, was 12
+[H3PERFP] encode=39.01s
+[H3PERFP] denoise=299.32s
+[H3PERFP] decode=634.39s
+status: completed, output 18.8 MB valid MP4 (ftyp present)
+fallbacks: 0
+```
+
+Per-step model time: **88.3 s cold, then 54.7 s, 49.2 s, ~46 s** warm. So the
+first step carries a large cold penalty and steady state is ~46-49 s.
+
+## The important finding: decode dominates, not attention
+
+```
+encode    39 s    4%
+denoise  299 s   31%
+decode   634 s   65%
+--- total ~973 s for a 5 s clip
+```
+
+**The VAE decode is 65% of the wall clock and roughly twice the entire denoise
+loop.** My earlier notes recorded decode at ~43 s warm, which is off by an order
+of magnitude from this measurement -- either those notes were from a different
+configuration or the cold path is far worse than assumed.
+
+Consequences, stated plainly:
+
+1. A perfect attention kernel can only ever improve the 299 s denoise share.
+   Even driving attention to zero would leave ~673 s, far above the 300 s
+   target. The 5-minute goal is **not reachable through attention work at all**
+   in this configuration; it needs the decode fixed first.
+2. The measured 1.41x on the denoise phase is real but is worth about 12% of
+   this particular run's total, because denoise is only 31% of it.
+3. This also explains why every previous attempt looked hopeless: attention was
+   being optimised while a 634 s decode sat next to it.
+
+## Where the objective stands
+
+* "支持 910A 的 flash attention": **done**, and now demonstrated end to end in a
+  completed run that produced a valid video, with zero fallbacks.
+* "加速 H3 推理": **1.41x on the denoise phase**, which is ~12% of total wall
+  clock in this configuration. Net pipeline speedup is therefore small, and the
+  dominant cost is elsewhere.
+
+The next useful work is not on attention. It is the 634 s decode -- that is
+where a 5-minute target would actually be won or lost.
