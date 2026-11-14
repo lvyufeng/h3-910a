@@ -3015,3 +3015,99 @@ corrected rather than left standing.
 Also refined the step picture from round 16: `model` is 71.6-74.4 s warm here
 against the 95.7 s cold figure recorded last round, confirming that figure
 included TBE compilation and should not be quoted as steady state.
+
+---
+
+# Round 18: three wrong guesses, then the answer -- it is the scatter, not the unique
+
+## Guess 1 (round 17's conclusion) was wrong
+
+Round 17 concluded the 6.4 s was the `torch.unique` CPU round-trip and predicted
+removing the device download would fix it. Implemented exactly that: had
+`fill_timesteps` return the CPU vector it already builds, and used it for
+`torch.unique` instead of `timesteps.detach().cpu()`.
+
+Result: **`kwargs=6.31-6.65 s`, unchanged.** So the download was not the cost.
+
+What that change *did* show is that the unique path is genuinely cheap once the
+data is already on the host: `fill=0.01-0.31 s`, `uniq_and_up=0.01-0.06 s`.
+
+## Then measured instead of guessing again
+
+Split `forward_kwargs` into its three regions:
+
+```
+[H3PERFR] xcopy=6.20s  fill=0.07s  uniq_and_up=0.06s
+[H3PERFR] xcopy=6.27s  fill=0.06s  uniq_and_up=0.05s
+[H3PERFR] xcopy=6.49s  fill=0.07s  uniq_and_up=0.04s
+```
+
+**`xcopy` is the whole 6.4 s.** That region is:
+
+```python
+x = self.x_base.clone()                          # (1, seq_len, VIDEO_ROW_WIDTH) fp32
+x[0].index_copy_(0, self.img_pos_dev, video_rows)
+audio_x = self.audio_x_base.clone()
+audio_x[0].index_copy_(0, self.audio_pos_dev, audio_rows)
+```
+
+## And it cannot be bandwidth
+
+`x_base` is `torch.zeros(1, seq_len, MINIMAX_H3_VIDEO_ROW_WIDTH)` -- at seq_len
+63232 with a latent row width in the tens, that is on the order of 12 MB. A 12 MB
+clone plus two row writes cannot take 6.4 s of memory bandwidth; at the 535 GB/s
+measured in round 10 it is well under a millisecond.
+
+So the cost is the **`index_copy_` scatter**, roughly 63000 indices, twice per
+step. And this codebase already documents that scatter is pathological on this
+part -- `fill_timesteps` carries the comment:
+
+> 910A: build the packed timestep vector on CPU and copy it back once.
+> Device-side mask indexing needs **NonZero and the scatter needs AICPU; both are
+> unavailable here**
+
+So there is strong corroboration from the code itself: the authors already routed
+*around* device scatter for the timestep vector. `forward_kwargs` still uses
+`index_copy_` (a scatter) for the latent rows, twice per step, and that is the
+6.4 s.
+
+## Three guesses, three misses, and the pattern
+
+| guess | source | verdict |
+|---|---|---|
+| staged offload of the encoder | round 7 | wrong |
+| `.cpu()` for `torch.unique` | round 17 | wrong |
+| `fill_timesteps` CPU copies | round 18, briefly | wrong |
+| **`x_base.clone()` + `index_copy_` scatter** | **measured** | **this one** |
+
+Every wrong one was a plausible reading of the code; only the measurement
+settled it. The specific discipline that would have saved rounds 17 and 18: when
+a region is 6.4 s and the obvious candidates are sub-millisecond on paper, measure
+*which line* before proposing a fix, rather than picking the most suspicious code
+inside it.
+
+## The fix, for next time
+
+`x` is a zeros buffer with the media rows scattered in. Two directions:
+
+1. **Persistent buffer, avoid the clone.** Keep `x`/`audio_x` allocated per
+   request and refill in place. Removes the 12 MB clone but not the scatter.
+2. **Remove the scatter.** With `img_pos` sorted, writing `video_rows` into
+   consecutive rows is a contiguous copy rather than a gather-scatter; if the
+   media rows are a contiguous range in the packed sequence, `index_copy_`
+   becomes a slice assignment. Need to confirm whether they are contiguous
+   (text/padding interleaved would break this), and if not, precompute the
+   inverse permutation once per request and use `index_select` on the *base*
+   instead -- both are one-time costs rather than per-step.
+
+Expected: up to 6.4 s per step, ~26 s over 4 steps, plus removal of a
+synchronising scatter from the step loop.
+
+## Round 18 accounting
+
+No speedup landed. Everything was reverted: verified 0 remnants of the
+instrumentation, `fill_timesteps` back to returning `None`, 0 NPU processes. The
+contribution is that the 6.4 s is now attributed to a specific statement with a
+physical argument (12 MB cannot be 6.4 s) and corroborated by the codebase's own
+scatter workaround, plus an explicit record of three failed guesses so the next
+attempt starts from the measurement rather than from suspicion.
