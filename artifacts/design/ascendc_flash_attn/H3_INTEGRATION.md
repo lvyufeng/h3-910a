@@ -899,3 +899,52 @@ The 287 s figure is the better one.
 Whole-run estimate from measured phases: 39 + 287 + 161 = **~487 s** for a 5 s
 clip, against dense's ~554 s. So roughly **1.14x on the whole pipeline**, all of
 it coming from the denoise loop.
+
+---
+
+# DEFINITIVE: 584 s -> 493 s, a measured 1.18x end-to-end
+
+Clean A/B, identical request, both configurations as the first request after a
+fresh service start so both pay the same cold cost, both running the fixed
+4-step schedule, both completing successfully:
+
+| | wall clock | encode | denoise | decode | steps | fallbacks |
+|---|---|---|---|---|---|---|
+| **dense** | **584 s** | 39 s | ~354 s | 157-161 s | 4 | n/a |
+| **flash + buffer reuse** | **493 s** | 39 s | **287 s** | 152-158 s | 4 | 0 |
+
+**1.18x on the whole pipeline, 91 s saved**, and the decode is not merely at
+parity but slightly better (152-158 against 157-161), which is the expected
+consequence of less allocator churn.
+
+Breakdown of where the 91 s comes from: essentially all of it is the denoise
+loop, 354 s -> 287 s, i.e. 67 s. The remainder is the small decode improvement
+and run-to-run variation.
+
+## What this establishes
+
+The objective was "support flash attention on 910A and accelerate H3 inference".
+Both halves now have direct evidence:
+
+* flash attention on 910A: builds for dav-c100, runs via the legacy runtime API,
+  matches an fp32 reference to fp16 rounding at four shapes, and serves every
+  DiT attention call in a real run with zero fallbacks.
+* H3 acceleration: **584 s -> 493 s measured wall clock**, 1.18x, with a valid
+  video produced in both arms.
+
+## Honest limits of the claim
+
+1. **One run per arm.** Both are first-request-after-restart, so the comparison
+   is controlled, but neither arm was repeated. Run-to-run variation on this
+   host has been large enough before (decode 159 to 165 s across runs) that a
+   single pair is not a confidence interval.
+2. **5 s clip, 16:9, fl2va, 4 steps.** Nothing here says what a 10 s clip does.
+3. **Only the first request after a restart is measurable** in this
+   configuration, because of the pre-existing TBE crash on subsequent requests.
+4. **Attention is no longer the lever.** After this change the remaining split
+   is roughly 39 s encode / 287 s denoise / 155 s decode. Decode is now over a
+   third of the run and is on a known-bad path (`causal_convNd` falling back to
+   a per-request-syncing PyTorch implementation that stalls ACL graph capture).
+   Further attention work cannot move much.
+5. The 300 s class of target is not reachable from 493 s by attention work
+   alone; it would need the denoise loop and the decode both cut substantially.
