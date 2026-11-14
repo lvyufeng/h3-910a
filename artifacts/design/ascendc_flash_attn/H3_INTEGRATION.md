@@ -476,3 +476,91 @@ fl2va is the obvious first thing to try.
   on identical cold work and ~1.48x per layer warm, measured twice by different
   means. The whole-pipeline speedup cannot be quoted yet because requests do not
   finish inside the observation window, for a reason unrelated to attention.
+
+---
+
+# Found a real config bug: the 4-step schedule was never loaded
+
+Chased the "16 steps instead of 4" question to its source. It is a missing key
+in the checkpoint, not anything to do with attention.
+
+## The chain
+
+`denoise_loop.py:383`:
+
+```python
+num_steps = len(sigmas_video) - 1
+```
+
+and the sigmas come from the pipeline's per-partition distilled schedule:
+
+```python
+sigmas_video = state.extra[_STEP_SIGMAS_VIDEO]                 # pipeline:304
+self._base_schedule_by_partition = {expected_partition: _read_base_schedule(release)}   # :941
+release = model_index.get("_minimax_h3") or {}                 # :911
+```
+
+`_read_base_schedule` is `DMD2SigmaSchedule.from_metadata(release)`, which reads
+`release["base_schedule"]` and returns **None** when the key is absent, at which
+point the pipeline keeps its legacy uniform schedule derived from
+`num_inference_steps` instead.
+
+Our checkpoint's `model_index.json` had **no `_minimax_h3` key at all**
+(`top keys: _class_name, _diffusers_version, _blocks_class_name, text_encoder,
+tokenizer, processor, vae, audio_vae, transformer, transformer_ref, scheduler,
+audio_scheduler`), so `release` was `{}`, the schedule was None, and the
+distilled 4-step contract was silently discarded.
+
+The 4-step information does exist in the checkpoint, but in the wrong file and
+the wrong type -- `fused_lora.json` has
+
+```json
+"base_schedule": "1.0,0.7,0.4,0.15,0.0",   "steps": 4
+```
+
+a **string**, in a file this code path never reads. `DMD2SigmaSchedule` wants a
+sequence of floats under `_minimax_h3.base_schedule` inside `model_index.json`.
+
+## The fix, and its verification
+
+Added to `model_index.json` (backup at `model_index.json.bak`):
+
+```json
+"_minimax_h3": { "base_schedule": [1.0, 0.7, 0.4, 0.15, 0.0] }
+```
+
+Verified through the real class rather than by inspection:
+
+```
+schedule = (1.0, 0.7, 0.4, 0.15, 0.0)
+num_inference_steps = 4
+```
+
+## Effect, and what is still wrong
+
+The step count fell from 16 to **9**, but not to 4, so a second factor is still
+in play. Two candidates, neither checked:
+
+1. H3 denoises video and audio as coupled modalities; if each gets its own loop
+   pass, 4 steps may appear as 8, and the observed 9 would be 8 plus one.
+2. The request-level `num_inference_steps` may still default to a larger value
+   and only be reconciled with the schedule on some paths -- the validation that
+   would catch this (`_validate_native_sampling`, and the
+   `expected_steps`/`num_inference_steps` check at :761-786) appears to be
+   gated on the *native LoRA* being active, which it is not on a checkpoint that
+   already pins `base_schedule`.
+
+This matters because it is the last thing standing between the measured 1.41x
+and a whole-pipeline number.
+
+## Attention is unaffected and still healthy in this run
+
+```
+dit 11/50 block=0.922s   (flash, warm)
+dstep 5  prep=6.42s model=46.40s update=   (warm, ~55 s/step)
+fallbacks: 0
+```
+
+So the flash path continues to serve every DiT attention call at ~0.92 s/layer
+against the dense 1.44 s, throughout this debugging. The serving configuration
+is what is wrong, not the kernel.
