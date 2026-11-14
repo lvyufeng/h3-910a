@@ -1095,3 +1095,77 @@ demoted from "biggest absolute win" to "~44 s, worth a look but not the lever".
   denoise from 287.00 s to 258.68 s. Host RAM did not fall as I predicted
   (261 -> 327 GB used), so my reasoning that it was replicating the full model
   8x was wrong, but the speed effect is real and it aligns with the recipe.
+
+---
+
+# Block decomposition: attention is 99.3% of the DiT block, fusion ops are worth 3 ms
+
+Instrumented `MiniMaxH3DiTBlock.forward` with per-sub-op timers
+(`[H3PERFB]`), one request, USP8, 768P, 5 s, flash attention on. Steady-state
+block, one rank:
+
+```
+[H3PERFB] rows=7904 adaln=0.6ms norm1=1.1 attn=869.4
+          gate_norm=0.7 mlp=0.5 gate=0.2 total=870.8
+```
+
+Every rank reports `rows=7904` = 63232/8, so sequence parallelism is working and
+the MLP does run on the shard, not the full sequence.
+
+Distribution over 800 samples (50 blocks x 4 steps x 4 ranks): attn min 15.0,
+p50 **871.1**, max 12140.3 ms. The extremes are the compile step and the first
+touched block; p50 is the steady state.
+
+## The retraction
+
+Last round I attributed ~254 ms per block to non-attention work by subtracting a
+standalone kernel time of 672 ms from the 926 ms block. **That was wrong.** The
+attention inside the pipeline costs 869-876 ms, not 672 ms, so there was never a
+254 ms non-attention budget. Measured directly, everything that is not attention
+in the block sums to **about 3 ms**:
+
+| sub-op | ms | share |
+|---|---:|---:|
+| adaln_proj | 0.6 | 0.07% |
+| rms_norm_indexed_scale_shift (norm1) | 1.1 | 0.13% |
+| **attn** | **869.4** | **99.3%** |
+| indexed_gate_rms_norm_scale_shift (gate_norm) | 0.7 | 0.08% |
+| mlp | 0.5 | 0.06% |
+| indexed_gate | 0.2 | 0.02% |
+| total | 870.8 | |
+
+50 blocks x 871 ms = 43.6 s per step, which matches the measured ~46 s/step, so
+the decomposition is complete and self-consistent.
+
+## Consequence: workstream (1) of the goal is nearly worthless
+
+The goal took "fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN" as workstream (1),
+on the assumption they were a large share. They are not: writing all of them as
+perfect zero-cost kernels could win at most **3 ms of 871 ms per block, about
+0.3%**, or ~0.6 s per step, ~2.4 s per run.
+
+Note also that the Triton fused kernels for these ops already exist in
+`indexed_modulation.py`; they are bypassed on 910A only because Triton's Ascend
+backend targets `Ascend910B1`+ and has no bishengir target for this part
+(`_eager_modulation_910a()`, which defaults on). So even "just enable the
+existing fused path" would recover a rounding error.
+
+That workstream is being dropped from the critical path.
+
+## The whole remaining problem is attention, and it splits in two
+
+`attn` = 869 ms per block, of which:
+
+* **~672 ms** is my TBE flash attention kernel measured standalone at
+  N=63232 (about 21 TFLOPS, ~8% of a 910A FP16 peak of roughly 256 TFLOPS).
+* **~200 ms** is everything else inside `self.attn`: the qkv and output
+  projections, the NZ/ND layout conversions, and the USP all-to-all.
+
+Both are worth attacking and they need different work: the first is kernel
+efficiency (tiling, pipelining, L1/L0 double buffering), the second is
+getting rid of per-call conversions and folding the projections into a shape
+the cube can run well.
+
+At 4 steps the attention bill is 50 x 871 ms x 4 = 174 s of the ~260 s denoise
+loop. At 49 steps it would be ~2130 s, which is where the 23x gap to official
+2.85 s/step actually lives.
