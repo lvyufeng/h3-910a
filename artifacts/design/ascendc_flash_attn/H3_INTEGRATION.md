@@ -1649,3 +1649,105 @@ That is worth stating plainly because the goal as written ("补齐官方 lossles
 far suggest the gap is not a list of small missing pieces; it is dominated by the
 fact that this kernel does a 50-block step in 65 s where A2 does it in 2.85 s,
 and on 910A against 910B/910C hardware that per-chip difference is most of it.
+
+---
+
+# Round 5: the practical ceiling is 75 TFLOPS, and the gap splits evenly
+
+This round measured what the chip can actually sustain, which the whole plan
+depended on and which had only ever been assumed. It changes the framing.
+
+## The 910A does not sustain 256 TFLOPS, it sustains ~75
+
+Plain fp16 matmul, one chip, large shapes:
+
+| shape | ms | TFLOPS |
+|---|---:|---:|
+| 4096 x 5376 x 14336 | 11.3 | 55.8 |
+| 8192 x 5376 x 8192 | 9.6 | **75.0** |
+| 16384 x 4096 x 4096 | 7.3 | 75.5 |
+
+**So the practical cube ceiling is ~75 TFLOPS**, not the ~256 I had been quoting
+as "peak". Every efficiency figure in this file up to now was therefore computed
+against the wrong denominator, and the goal's own wording ("672 ms ... only about
+8% of peak") inherits that error. Measured against what the chip actually
+delivers, the kernel is at **28%**, not 8%.
+
+## The kernel is already 1.9x better than a torch implementation
+
+A straightforward torch chunked attention at the real shape (H=7, N=63232,
+D=128, chunked Q tiles, fp32 softmax):
+
+```
+head 0 chunk      0      1.6 ms     10.5 TFLOPS
+head 0 chunk  31616      1.5 ms     11.2 TFLOPS
+head 1 chunk      0      1.5 ms     11.3 TFLOPS
+extrapolated full attention: 1291 ms  (11.1 TFLOPS)
+```
+
+| implementation | ms | TFLOPS | vs ceiling |
+|---|---:|---:|---:|
+| torch chunked attention | ~1291 | 11.1 | 15% |
+| **our TBE kernel** | **672** | **21.3** | **28%** |
+| plain matmul (ceiling) | -- | 75.0 | 100% |
+
+So there is no free win from falling back to a framework path -- ours is already
+1.9x faster than that -- and the real target is the 2.7x between us and the pure
+matmul ceiling, which is the softmax/pipelining overhead.
+
+## What the target implies, exactly
+
+Attention FLOPs per rank: 1.433e13 per block, 7.165e14 per step (50 blocks).
+
+| throughput | s/step (attention only) |
+|---|---:|
+| 11.1 TFLOPS (torch) | 64.5 |
+| **21.3 TFLOPS (ours now)** | **33.6** |
+| 37.5 TFLOPS (50% of ceiling) | 19.1 |
+| **48.0 TFLOPS (64% of ceiling)** | **14.9 -- the 15 s/step target** |
+| 75.0 TFLOPS (ceiling) | 9.6 |
+
+So **the 15 s/step goal needs the kernel at 48 TFLOPS, which is 64% of the
+practical matmul ceiling**. That is demanding for an attention kernel, because
+softmax and the score-tile round trips are pure overhead relative to the two
+matmuls, but it is not physically impossible -- and the ceiling case (9.6 s)
+would beat the target. The goal is therefore feasible on this hardware, and the
+required improvement is **2.25x**, not the 22x the raw A2 comparison suggested.
+
+## Correcting last round's hardware claim
+
+Last round I said the gap to A2 was "mostly hardware generation". Decomposing it
+against the now-measured ceiling:
+
+```
+A2 effective throughput         251 TFLOPS/rank   (7.165e14 / 2.85 s)
+our practical matmul ceiling     75 TFLOPS/rank
+-> hardware ratio                3.35x
+-> our software shortfall        3.52x   (75 / 21.3)
+-> product                      11.80x   (actual measured gap 11.80x)
+```
+
+The two factors multiply to exactly the observed gap, so it is **very close to
+half hardware and half software**. My earlier statement that hardware dominated
+was wrong, and my mid-round swing to "mostly software" was also wrong. It is
+about even, and the software half is addressable.
+
+## Why larger Bc is not available
+
+Since Bc mattered far more than Br last round, I tried the divisors of 63232
+beyond the picker's 512 cap: 608 (104 tiles), 832 (76), 1216 (52).
+
+All fail to build, at the same place:
+
+```
+Sij_ub_zN_fp32 = self.tik_instance.Tensor(FP32, (n1, m, n0), scope=UB)
+```
+
+The fp32 score tile is `Br x Bc x 4` = 64 x 416 x 4 = **106 KB** at the current
+setting, and that is already the UB ceiling. So Bc=416 is not an arbitrary
+choice, it is the largest that fits.
+
+Going beyond it is a genuine kernel change, not a knob: either keep the score
+tile in fp16 and pay a precision cost, or stream it through UB in sub-chunks so
+the buffer is smaller than the tile, or restructure so the softmax vector work
+overlaps the next tile's matmul. Those are the actual options for the 2.25x.
