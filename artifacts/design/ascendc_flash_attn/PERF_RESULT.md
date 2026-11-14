@@ -278,3 +278,89 @@ tiling parameter validated at a small shape does not carry to a large shape
 unless the divisibility class is the same, and N=256 was silently the easy case.
 Any future timing of this kernel should assert numerical agreement at the exact
 shape being timed before the timing means anything.
+
+---
+
+# Resolved: use a tile that divides the sequence length
+
+The retraction above is right about the bug and wrong about the conclusion. The
+remainder path does not have to be entered at all -- the tile size can be chosen
+to divide the sequence length.
+
+## The arithmetic
+
+`73408 = 2^6 * 31 * 37`. Powers of two above 64 do not divide it, which is why
+128/256/512 all hit the broken path. But other factorisations do:
+
+```
+Bc = 496 = 16 * 31  ->  73408 / 496 = 148  exactly
+Bc = 592 = 16 * 37  ->  73408 / 592 = 124  exactly
+```
+
+Both are 16-aligned (the kernel needs that) and both are large enough to keep
+the cube efficient. So the choice is not "Bc <= 64 and slow" after all.
+
+## Correctness
+
+Verified at exact division, N=992 with Br=64 Bc=496, against an fp32 reference:
+
+```
+max|diff| = 0.000007   relative = 0.00056
+```
+
+so the long tile is correct whenever it divides evenly, as expected from the
+N=1024 control earlier.
+
+## Measured at the real shape
+
+N=73408, B=1, H=7, D=128, blockDim 32:
+
+```
+Br=64  Bc=496    867.752 ms/call     <- correct, divides exactly
+Br=64  Bc=592    903.622 ms/call     <- correct, divides exactly
+Br=64  Bc=64    2698.130 ms/call     <- correct but tile too short
+Br=64  Bc=512    935.719 ms/call     <- INVALID, remainder path
+dense path      1166      ms/call
+```
+
+**867.8 ms against 1166 ms is 1.34x faster**, and this one is not an
+extrapolation or an artefact -- it is a measurement at the true shape with a
+configuration whose correctness is established.
+
+## Effect on the H3 run
+
+Attention was 200 calls x 1.166 s = 233 s inside the 449 s 4-step run. At
+867.8 ms:
+
+```
+200 x 0.8678 = 174 s   ->   449 s becomes ~390 s
+```
+
+About 59 s saved. That is a genuine speedup and worth integrating, but 390 s is
+still 90 s over the 300 s target, so this alone does not reach the five-minute
+goal.
+
+## What is now known, precisely
+
+| configuration | ms at N=73408 | correct | vs dense |
+|---|---|---|---|
+| Br=64 Bc=64 | 2698 | yes | 2.3x slower |
+| **Br=64 Bc=496** | **868** | **yes** | **1.34x faster** |
+| Br=64 Bc=592 | 904 | yes | 1.29x faster |
+| Br=64 Bc=512 | 936 | no | invalid |
+| default Br=128 Bc=128 | -- | no (remainder 64) | invalid |
+
+Note the reference default is in the invalid row: it would have been silently
+wrong at this sequence length. The correct rule is that both `Br` and `Bc` must
+divide `N`, and any future call site has to pick tiles per sequence length
+rather than trusting the defaults.
+
+## Remaining risk before integration
+
+The correctness evidence is at N=992 (exact division, fp32 reference) and the
+timing is at N=73408. Those are different shapes, and the thing that could
+differ between them is the per-head/per-block task map the compiler bakes in.
+The safest next step is a correctness check at the true shape on a subset of
+rows -- compute an fp32 reference for a handful of query positions against all
+73408 keys, which is cheap, rather than materialising the full score matrix.
+That has not been done yet.
