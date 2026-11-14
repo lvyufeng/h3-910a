@@ -2429,3 +2429,65 @@ This is the **first speedup of the goal that shows up end to end**:
 Numerics verified at the real shape with the new path: worst relative error
 0.000389, which is better than the 4.7e-4 recorded for the previous fp32-exp
 configuration.
+
+## The kernel is now at 82% of its shape-limited ceiling
+
+With Br=128/Bc=304 the numbers are:
+
+```
+time        558 ms per block
+throughput  25.7 TFLOPS
+bandwidth   117 GB / 0.558 s = 210 GB/s = 39% of the 534.8 GB/s peak
+```
+
+The bandwidth figure is the important one: the kernel is **no longer
+bandwidth-bound**, so further traffic reduction has little left to give. The
+mixed compute ceiling for this shape follows from the K-length sweep --
+QK^T runs at K=D=128 (~26 TFLOPS) and PV at K=Bc=304 (~40 TFLOPS):
+
+```
+mixed ceiling = 2 / (1/26 + 1/40) = 31.5 TFLOPS
+achieved                           25.7 TFLOPS  = 82% of it
+compute floor                      455 ms/block
+measured                           558 ms/block
+max remaining kernel gain          1.23x  (558 -> 455 ms)
+```
+
+So the kernel has **at most 1.23x left in it**, and capturing it would take the
+block from 759 to 656 ms and the step from 37.9 to 32.8 s.
+
+I tried Br=256 to quarter the traffic anyway and could not build it: the blocker
+is `Oi_ub_zN`, the fp32 output accumulator chunk in `output_update`
+(`Tensor(FP32, (n1_size, m, N0), scope=UB)`), which overflows when Br doubles.
+That is the same buffer that failed back in round 2 at Br=256/Bc=128, so it is a
+known, structural cap on Br in this reference kernel rather than a new problem.
+Working around it means shrinking `n1_size` further, which is more TIK surgery for
+a gain the bandwidth measurement says is not there.
+
+## What this settles about the 15 s/step target
+
+```
+needed for 15 s/step : 47.8 TFLOPS
+mixed ceiling        : 31.5 TFLOPS
+                     -> 1.5x ABOVE the ceiling
+```
+
+So 15 s/step is **not reachable by optimising this kernel**, and that is now
+established by two independent routes: the FLOP/bandwidth budget (round 6) and
+the measured K-length ceilings plus the 82%-of-ceiling result (this round). The
+best case this hardware can reach by kernel work is ~32.8 s/step, and even that
+requires recovering all 1.23x, which means the software pipeline plus tighter
+per-tile efficiency.
+
+## Where the goal actually stands
+
+| item | state |
+|---|---|
+| (2) attention efficiency | **656 -> 558 ms kernel, 13.4% on the block, verified** |
+| (2) reaching 15 s/step | **measured infeasible**: needs 47.8 TFLOPS vs a 31.5 ceiling |
+| (1) fused operators | refuted as worthwhile, 0.3% of a block |
+| (3) text encode 39 s | mechanism known (62 GB per-request streaming), three fixes tried, all failed |
+| (3) VAE decode 44 s warm | not started |
+
+The one durable gain is the attention kernel: two tiling/precision changes, 13.4%
+end to end, numerics improved to 3.9e-4 rather than degraded.
