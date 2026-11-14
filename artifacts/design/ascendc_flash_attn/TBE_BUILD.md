@@ -261,3 +261,97 @@ when it was evidence about *the SoC the backend had selected*:
   the wrong table, and forcing Ascend910A did silence it; but the follow-up
   shows 910A rejects the neighbouring form too, so the message was substantively
   right and forcing the SoC only moved the failure later.
+
+---
+
+# RETRACTION: the previous section is wrong. tensor_mov L0C -> UB is legal here.
+
+The conclusion above -- that 910A's TBE has no `tensor_mov` out of L0C, and that
+option 2 is therefore closed -- is **wrong**. Retracting it.
+
+## What the authoritative table actually says
+
+`tbe/tik/tik_lib/tik_data_move_api/tik_data_move_common.py:51` holds
+`archversion_scope`, the list of scope pairs each arch may move between. For
+`ASCEND_910AIC` it contains, among others:
+
+```
+'cc_m162ubuf', 'cc_m322ubuf', 'cc_v162ubuf', 'cc_v322ubuf'
+```
+
+Those are L0C -> UB, in the matrix (m) and vector (v) modes at 16- and 32-bit.
+So L0C -> UB **is** supported on this backend.
+
+The scope string is built by `get_scope_str` (:288):
+
+```python
+if src_scope == "cc":
+    src_scope = src_scope + "_" + block_mode + str(get_bit_len(src.dtype))
+```
+
+so `tensor_mov(C_ub, C_l0c, "m", ...)` with an fp32 L0C source produces
+`cc_m322ubuf`, which the table allows. Checked directly rather than reasoned
+about:
+
+```
+SCOPE_MAP cc = cc   SCOPE_MAP ubuf = ubuf   SCOPE_MAP L1OUT = cc
+get_bit_len(fp32) = 32
+L0C->UB(f16) 'm'   scope_str=cc_m322ubuf    allowed=True
+L0C->UB(f32) 'm'   scope_str=cc_m322ubuf    allowed=True
+L0C->L1OUT   'm'   scope_str=cc_m322cc_m32  allowed=False
+```
+
+## Why my patch failed, and what it means
+
+`SCOPE_MAP` maps `L1OUT` to **`cc`**, not to `cbuf`. So redirecting to L1OUT
+produced `cc_m322cc_m32` -- an L0C-to-L0C move -- and TIK rejected it with
+"doesn't support cc to cc". The error was correct and was about my patch, not
+about the hardware. I misread it as further evidence that the epilogue was
+impossible, when it was evidence that my redirect was invalid.
+
+After reverting all three sites to the original
+`tensor_mov(C_ub, C_l0c, "m", ...)`, the build compiles again ("OK: kernel
+compiled"). So:
+
+* The original code is **legal** and compiles for 910A.
+* The runtime `ACL_ERROR_RT_AICORE_EXCEPTION (507015)` is therefore **a
+  different bug**, not an unsupported instruction.
+* Option 2 is **not** closed.
+
+## Corrected status of the runtime fault
+
+Still unexplained. The kernel is legal, compiles, launches, and faults on the
+AI Core. Candidate causes, none investigated yet:
+
+1. **UB budget.** The generated `.cce` places `core_idx_to_tr_info` at UB offset
+   111872 B; the full UB footprint of the S2 path may exceed what this part
+   provides at runtime even though TIK accepted it.
+2. **Atomic-add outputs.** The reference declares `O_gm` and `l_gm` with
+   `is_atomic_add=True`; if the runtime path does not set up atomic
+   accumulation the way the kernel expects, the write would fault.
+3. **My harness.** Buffer sizes, the per-argument pointer indirection in
+   `aclrtLaunchKernelWithHostArgs`, or the absence of an explicit context are
+   all unverified.
+4. **Genuine kernel bug** for this shape that only shows at runtime.
+
+The next step is to separate (3) from the rest, because a harness bug is both
+the most likely and the cheapest to exclude -- for instance by launching a
+trivial known-good kernel through the same `harness.cpp` path first. Until that
+is done, no conclusion about the TBE kernel's correctness on 910A is warranted.
+
+## Process note
+
+Three turns in a row now, an error message has been read as a fact about the
+hardware and used to close a route:
+
+* `RmsNorm no supported kernel` -> missing `cstdint` include.
+* `tensor_mov doesn't support cc to ubuf` (as Ascend310B) -> soC default was
+  wrong; forcing Ascend910A made it compile.
+* `tensor_mov doesn't support cc to cc` -> my own invalid redirect, not a
+  hardware limit. And it caused me to wrongly retract a working approach.
+
+The pattern is that TIK reports the *symptom nearest to the check that fired*,
+which may be a consequence of my own edit, of a wrong SoC, or of a build config
+problem. Before treating any of these as a hardware fact, verify the claim
+against `archversion_scope` / the SoC spec directly. That check is cheap and
+would have saved all three detours.
