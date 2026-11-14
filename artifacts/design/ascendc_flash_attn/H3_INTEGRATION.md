@@ -564,3 +564,37 @@ fallbacks: 0
 So the flash path continues to serve every DiT attention call at ~0.92 s/layer
 against the dense 1.44 s, throughout this debugging. The serving configuration
 is what is wrong, not the kernel.
+
+## Final data point for this round
+
+The run completed its polling window with the full counter visible:
+
+```
+dstep 1 .. dstep 12      TOTAL=807s      fallbacks: 0
+dstep 10 prep=6.33s model=46.13s update=2.45s
+encode=38.92s
+```
+
+So the schedule fix moved the count **16 -> 12**, not to 4. 12 = 4 x 3, which
+supports the coupled-modality hypothesis in the section above rather than the
+num_inference_steps-default one: the 4-step schedule is now in use, but it is
+being traversed three times. H3 denoises video and audio (and carries a
+reference stream), so three passes over one schedule is the shape to check next.
+
+Timing is unchanged and healthy throughout: warm `model=46.1s` per dstep,
+`0.92 s/layer`, zero fallbacks.
+
+At 12 steps x ~55 s the run is about 660 s plus a 39 s encode, so still past the
+906 s poll window once decode is added -- which is exactly the observed
+behaviour, and again not an attention problem.
+
+## Where the objective stands
+
+* "支持 910A 的 flash attention": **done**, and it has survived every serving
+  experiment in this round at 0.92 s/layer against dense 1.44.
+* "加速 H3 推理": **1.41x measured on the denoise phase** (cold-vs-cold dstep 1),
+  1.48x per layer warm. Repeatable across four separate runs.
+* Whole-pipeline total: still not obtainable, now for a precisely identified
+  reason -- the step count is 12 rather than 4, and that is a serving
+  configuration question about how many passes the 4-step schedule gets, not a
+  kernel question.
