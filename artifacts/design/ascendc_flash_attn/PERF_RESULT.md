@@ -184,3 +184,97 @@ flatter across three points (1.616, 1.609, 1.631 e-7 at N=4096/8192/16384) than
 the untuned one was. The next step should be a real measurement at N=32768 and
 then at the true shape, since the tiling that is best at 16384 need not be best
 at 73408 -- the sweep should be repeated near the real length before committing.
+
+---
+
+# RETRACTION: the 1.33x / 1.25x speedup is invalid. The large-tile path is numerically wrong.
+
+The retiling result above is built on incorrect output. Retracting it.
+
+## The remainder path is broken
+
+`sparse_tiling.py` computes `last_Bc = N - Tc*Bc` when `N % Bc != 0`, so the
+kernel can have a short final key block. That path does not produce correct
+results.
+
+Test at N=1280, Bc=512, which leaves `last_Bc = 256`:
+
+```
+N=1280  Br=64 Bc=512   max|diff| = 0.002532   max|ref| = 0.0129   rel = 0.197
+rows with error > 1e-3:  1280 / 1280
+```
+
+20% relative error on **every** row -- not only the 256 rows in the short block.
+
+Control, same tiling, N=1024 where `1024 % 512 == 0` and the remainder path is
+never taken:
+
+```
+N=1024  Br=64 Bc=512   max|diff| = 0.000008   rel = 0.00065
+```
+
+exact. So the defect is specifically the non-divisible case, not the tiling.
+
+## What that does to the real shape
+
+`73408 = 2^6 * 31 * 37`, so:
+
+| Bc | N/Bc | remainder | correct? |
+|---|---|---|---|
+| 16 | 4588.0 | 0 | yes |
+| 32 | 2294.0 | 0 | yes |
+| 64 | 1147.0 | 0 | yes |
+| 128 | 573.5 | **64** | **no** |
+| 256 | 286.75 | **192** | **no** |
+| 512 | 143.375 | **192** | **no** |
+
+`Br = 128` leaves the same remainder of 64. So **both tile dimensions must be
+<= 64** for the real sequence length, and this is not a limitation of my
+retuning -- the reference's own default of 128x128 is broken at N=73408 too.
+
+The 935.7 ms measurement was taken with Br=64, Bc=512 on this shape, i.e. on
+wrong output.
+
+## Measured performance of the only correct configuration
+
+```
+N=73408  Br=64  Bc=64   2698.130 ms/call      <- correct
+dense path              1166 ms/call          <- for comparison
+```
+
+**2.3x slower than dense.** So the entire apparent speedup was an artefact of
+the broken large-tile path: the long `Bc` is what made the cube efficient, and
+a long `Bc` cannot be used correctly at this sequence length.
+
+## Corrected bottom line
+
+* Flash attention on 910A: builds, runs, and is numerically correct for shapes
+  whose sequence length is divisible by the tile size.
+* It does **not** accelerate H3. The fastest correct configuration found is
+  2698 ms versus 1166 ms for the existing dense path.
+* The earlier 1.33x and 1.25x claims are withdrawn.
+
+## What would have to be true to revisit this
+
+1. **Fix the remainder path.** This is the highest-value fix: with it, Bc=512
+   becomes usable and the measured 935.7 ms would be real, i.e. 1.25x faster
+   than dense. That single bug is the difference between slower-than-dense and
+   faster-than-dense.
+2. Or avoid the remainder by construction: pad the *key* dimension to a multiple
+   of `Bc`. Padding with zeros does not work -- the kernel takes no mask, so
+   zeroed keys would each contribute `exp(0) = 1` of weight and dilute the
+   result. It would need either a mask or `-inf` scores, neither of which the
+   reference interface exposes.
+3. Or measure with Bc<=64 across the board and accept ~2.3x slower than dense,
+   which is not worth integrating.
+
+## Method note, and the mistake made here
+
+The first timing pass used the tuned tiles and reported 1.25x faster without
+checking correctness at that configuration. The tuned tiles were validated only
+at N=256, where `Bc` clamps to the sequence length and the remainder path is
+never entered -- so the test could not have caught this. The lesson is that a
+tiling parameter validated at a small shape does not carry to a large shape
+unless the divisibility class is the same, and N=256 was silently the easy case.
+Any future timing of this kernel should assert numerical agreement at the exact
+shape being timed before the timing means anything.
