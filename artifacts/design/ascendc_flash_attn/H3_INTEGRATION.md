@@ -1364,3 +1364,81 @@ fixed costs, not with bytes moved.
 * the ~200 ms in-service/standalone gap: still unexplained, now known to be
   inside the kernel call
 * Br is not structurally capped; the earlier claim is retracted
+
+---
+
+# Round 3: utilisation says the kernel is compute-saturated; retracting a scare
+
+## First, a scare that was partly mine
+
+Sampling `npu-smi` AICore during a request, with the round-2 diagnostic
+`torch.npu.synchronize()` still inside the flash backend, showed the eight chips
+apparently **taking turns**:
+
+```
+AICore: 100% 61% 2% 78% 7% 7% 7% 30%
+AICore: 3% 84% 7% 7% 7% 7% 39% 100%
+AICore: 7% 7% 92% 7% 7% 39% 100% 100%
+```
+
+The hot slot rotates across chips, which looks like serialisation. I had added
+that `synchronize()` for the round-2 timing and never removed it, so this was
+very likely self-inflicted.
+
+Removed all instrumentation from rounds 1-3 (backend timing and its sync, the
+`[H3PERFA]` attention timers, the `[H3PERFB]` block timers, the decode-twice
+probe) and re-measured on a clean build:
+
+```
+AICore: 0% 0% 0% 0% 0% 0% 0% 0%          <- text encode phase
+AICore: 7% 100% 100% 100% 60% 68% 7% 7%  <- denoise ramping
+AICore: 100% 100% 100% 100% 100% 100% 69% 35%   <- denoise steady state
+AICore: 100% 100% 58% 6% 7% 7% 7% 36%    <- denoise tail
+dit 11/50 block=0.875s
+```
+
+So during the denoise the eight chips are genuinely **cube-saturated at 100%**,
+running in parallel, not serialised. The rotation was an artefact of my own
+synchronise plus phase transitions. Retracting the serialisation reading.
+
+Note also that `AICore%` counts cube utilisation only. The 0% samples are the
+text-encode phase and the VAE decode, which are vector-bound; 0% there does not
+mean idle, and I should not read it as such.
+
+## What this does and does not settle
+
+It settles that the in-service kernel is **compute-bound with all eight chips
+saturated**. So the earlier candidates -- inter-rank contention for a shared
+resource, and ranks waiting on each other -- are out. It also means there is no
+free capacity being left on the table during denoise; the only way down is to
+do less work or do it more efficiently.
+
+It does **not** explain the remaining gap: 672 ms standalone against ~875 ms
+in-service for the same shape, with cube utilisation pegged in both cases. If
+both are truly compute-saturated on identical work, they should take the same
+time. Something differs, and the plausible remaining candidates are:
+
+* `n_pad > 0` in service, which would trigger the float32 padding correction
+  path in the wrapper (measured earlier at ~0.6 ms for a 113 MB `.float()`, so
+  this does not look big enough, but it has not been checked in service);
+* DLO weight streaming sharing HBM with the kernel, which would show up as
+  cube stalls on memory rather than as reduced AICore;
+* the standalone benchmark measuring a different effective tile loop than the
+  in-service call.
+
+`block=0.875s` against 0.926 s before the cleanup is a ~5% improvement, which
+is consistent with removing the sync and nothing more.
+
+## State of the goal after round 3
+
+Unchanged in substance, but with two hypotheses now closed rather than open:
+
+| candidate | verdict |
+|---|---|
+| communication (all-to-all) | ~2 ms, excluded (round 2) |
+| layout conversion | ~1.2 ms, excluded (round 2) |
+| tiling knobs | already optimal at br64/bc416 (round 2) |
+| K/V re-read bandwidth | refuted: raising Br does not help, lowering Bc hurts (round 2) |
+| fused operators | 0.3% of block, dropped (round 1) |
+| inter-rank serialisation | refuted, it was my own sync (round 3) |
+| **672 -> 875 ms in-service gap** | **still open, now known to be compute-saturated on both sides** |
