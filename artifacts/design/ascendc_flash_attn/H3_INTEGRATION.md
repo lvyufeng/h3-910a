@@ -3426,3 +3426,76 @@ No speedup, no new instrumentation. Two plausible mechanisms eliminated by readi
 the code, and an explicit statement that the 38.5 s figure itself is now in doubt
 because the two numbers were never observed together for the same step. That is a
 correction to round 21's conclusion, which was stated too confidently.
+
+---
+
+# Round 23: no gap at all -- instead, 20% of the denoise is first-step warmup
+
+## The paired measurement
+
+Printed the inner (`MiniMaxH3DiTModel.forward` total) and outer (`dstep model`)
+timings on **one line, same process, same step**, stashing the inner value on the
+module instance that the denoise loop already holds as `model`:
+
+```
+step=1 outer_model=71.122s inner_total=71.121 inner_pre=19.995 inner_blocks=51.126
+step=2 outer_model=40.125s inner_total=40.125 inner_pre= 3.611 inner_blocks=36.513
+step=3 outer_model=34.730s inner_total=34.729 inner_pre= 0.984 inner_blocks=33.80
+```
+
+**Inner and outer agree to 1-2 ms.** So the 38.5 s gap I reported in round 21
+**does not exist**. It was an artefact of comparing `dstep model=73.2s` against
+`phase total=34.7s` when those lines came from different ranks and different steps
+of a multi-rank log. Round 21's headline conclusion is withdrawn, and round 22 was
+right to doubt it.
+
+## What the measurement did find, which is much more useful
+
+| step | total | inner_pre | inner_blocks |
+|---|---:|---:|---:|
+| 1 | **71.4 s** | **19.7 s** | 51.7 s |
+| 2 | **40.2 s** | 3.7 s | 36.5 s |
+| 3 | **34.7 s** | **0.97 s** | 33.8 s |
+| 4 | ~34.7 s | ~0.97 s | ~33.8 s |
+
+**Warm steady state is 34.7 s per step, and the first two steps carry about 42 s
+of excess (36.7 s + 5.5 s).** On a 4-step schedule that is **20% of the 210 s
+denoise** spent warming up, not doing diffusion.
+
+Both components converge monotonically: `inner_pre` 19.7 -> 3.7 -> 0.97 s, and
+`inner_blocks` 51.7 -> 36.5 -> 33.8 s. That is the signature of the distributed
+layerwise offload progressively making weights resident, so the first forward
+streams most of the 50 blocks' weights in and later forwards do not.
+
+## Consequences, both of them large
+
+1. **Every per-step number I have quoted all session was a blend of warmup and
+   steady state.** "65.7 s per step" (round 16), "~93 s step" (round 17), "~85 s
+   step" (round 21) and "73.2 s model" are all averages that include this ramp.
+   The honest steady-state figure is **34.7 s per step**, and the honest first-step
+   figure is 71.4 s.
+2. **A warmup outside the timed region is worth ~42 s per 4-step run (20%)**, and
+   official benchmark numbers exclude warmup by construction -- which is part of
+   why the comparison looked so bad. If the stack emitted a throwaway forward
+   before the real loop, denoise would be about 4 x 34.7 = 139 s instead of 210 s.
+
+This also finally explains the "official excludes warmup" note carried since round
+3: I had been comparing my cold-ish 4-step denoise against their warm 49-step
+figure, and the warmup is a fifth of my total.
+
+## Round 23 accounting
+
+No speedup landed, but this is the most consequential measurement since round 16:
+it retracts a wrong headline from round 21, replaces it with a real and much
+larger structural finding (20% warmup), and corrects the denominator used for
+every per-step figure in the record. Instrumentation added, measured, reverted;
+verified 0 remnants of both probes and the round-19 index fix intact.
+
+## Next step
+
+Either (a) add a warmup forward before the timed loop so the reported number is
+steady state, which is also what makes any A2/A3 comparison fair, or (b) attack
+the streaming itself -- `_resident_dit_layers_on_device` calls
+`load_resident_layers()` once, and HBM at 8.9 GB of 32 GB suggests the 50 blocks
+could simply stay resident, which would remove the ramp from the warm steps too
+(34.7 s step contains 33.8 s of blocks that are still restreaming).
