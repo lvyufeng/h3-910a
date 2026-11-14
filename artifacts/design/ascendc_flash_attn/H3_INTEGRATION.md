@@ -1587,3 +1587,65 @@ That is a hypothesis, not a measurement. It is falsifiable in one of two ways:
 time the kernel standalone with a concurrent weight-sized memory stream on the
 same device, or show that block time drops when DLO is off (which may not fit in
 32 GB and therefore may be untestable on this hardware).
+
+## The DLO-contention test did not run
+
+I tried to falsify the DLO hypothesis directly: time the kernel alone, then time
+it again with a second stream copying a 512 MB buffer pair continuously, and see
+whether 672 ms moves toward 870 ms.
+
+It crashed before producing a number:
+
+```
+multiprocessing/connection.py ... EOFError
+resource_tracker: There appear to be 30 leaked semaphore objects
+```
+
+Driving a background copy thread on the same device while launching a raw ACL
+kernel through ctypes is not stable enough to measure with. That is an
+unfavourable comparison with the alternative, which is simply to run the serving
+stack twice with DLO on and off -- and that may not be possible here, because the
+merged fp16 model plus activations likely does not fit in 32 GB without DLO, which
+is the same reason the recipe requires DLO for 768P on 64 GB A3 parts.
+
+So the DLO hypothesis remains **untested**, and the ~193 ms is still unexplained.
+I am recording it as open rather than dressing the failed experiment up as
+evidence.
+
+## Honest summary of round 4
+
+What was established:
+
+* `n_pad` is 36 on every DiT attention call, so the float32 correction runs
+  always. It costs 1.86 ms per call, 0.37 s per run: real, upstream-avoidable,
+  and not material.
+* The two Ulysses all-to-alls cost **1.6 ms per block** total, measured properly
+  with no synchronise.
+* Therefore round 2's ~2 ms communication figure was right, my retraction of it
+  was wrong, and every term of the 870 ms dispatch is now accounted for except
+  ~193 ms.
+
+What was not established:
+
+* Where the ~193 ms goes. The surviving hypothesis is that the kernel itself is
+  slower in service because DLO streams weights over the same HBM, but that is
+  untested and the attempt to test it failed.
+
+What moved the objective forward: nothing measurable. Four candidate
+explanations were closed (fused ops, tiling, conversions, communication, n_pad
+correction -- five in fact), which narrows the remaining space to one hypothesis
+but does not by itself make H3 faster.
+
+## The number that actually matters, for perspective
+
+DiT per-step is still ~65 s against official A2's 2.85 s. Every item closed so
+far accounts for milliseconds against a 65 s step. The ~193 ms per block that
+this round failed to attribute would be 9.7 s per step -- i.e. 15% of the step,
+not the 22x gap. Even fully recovering it and the kernel's remaining inefficiency
+would not close the distance to 2.85 s.
+
+That is worth stating plainly because the goal as written ("补齐官方 lossless
+清单") implies the gap is a list of missing optimisations. The measurements so
+far suggest the gap is not a list of small missing pieces; it is dominated by the
+fact that this kernel does a 50-block step in 65 s where A2 does it in 2.85 s,
+and on 910A against 910B/910C hardware that per-chip difference is most of it.
