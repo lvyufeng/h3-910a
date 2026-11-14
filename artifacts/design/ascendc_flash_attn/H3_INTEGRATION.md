@@ -708,3 +708,73 @@ fixed first.
 
 Practical consequence: treat one-run results as provisional, and expect to
 restart between measured requests until this is understood.
+
+## A/B with the schedule fixed: flash speeds denoise but the decode blew up
+
+Ran the identical 5 s, 16:9, 4-step request in both configurations, each as the
+first request after a fresh service start, so both pay the same cold penalty.
+
+| | denoise (dstep 4 model) | **decode** | steps |
+|---|---|---|---|
+| dense | 69.2 s | **160-165 s** | 4 |
+| flash | 46-54 s | **634-636 s** | 4 |
+
+Denoise behaves exactly as measured before: 69 s dense against ~46 s flash. But
+decode is **4x worse** with flash enabled, which reverses the net result -- the
+flash run is slower overall despite the faster attention.
+
+### The VAE is not using the flash kernel
+
+First hypothesis was that the VAE's own attention had been captured by the new
+backend. Ruled out: the kernel cache contains exactly one entry,
+
+```
+/tmp/fa910a_kernels/b1_h7_n63232_d128_br64_bc416
+```
+
+which is the DiT shape. If the VAE had taken the fast path there would be
+additional shapes here for its spatial resolutions.
+
+### What the decode actually is
+
+The decode log shows:
+
+```
+MiniMax-H3 VAE streaming uint8 decode patch installed
+NPU Triton causal_convNd_update is unavailable (... causal_convNd.py);
+  falling back to the PyTorch implementation, which syncs per request and
+  therefore stalls ACL graph capture at decode-FULL.
+```
+
+So the decode contains a per-request-synchronising PyTorch fallback that blocks
+ACL graph capture. That is pre-existing and worth fixing on its own terms.
+
+### Why flash makes it 4x worse: not established
+
+Candidates, none tested:
+
+1. **Memory pressure.** My wrapper allocates up to four 113 MB NZ tensors plus a
+   float32 copy per attention call, 200 calls per run. If that leaves the
+   allocator fragmented, the VAE decode -- which needs large contiguous / tiled
+   buffers -- could fall onto a slow path. This is the most likely explanation
+   and the easiest to test (watch HBM during decode in both configurations).
+2. **Async-kernel hazard.** The kernel is launched raw on the torch stream
+   without `record_stream`. Same-stream reuse is safe for correctness, but the
+   caching allocator's bookkeeping does not know the raw kernel touched the
+   block, which can interact badly with later graph capture.
+3. Genuine interaction with the `decode-FULL` graph capture the log warns about.
+
+Until one of these is settled, flash attention is **net-negative on this
+configuration** and correctly left disabled by default.
+
+## Corrected bottom line for the objective
+
+* "支持 910A 的 flash attention": **done**, demonstrated end to end in a
+  completed 4-step run that produced a valid 18.8 MB MP4, zero fallbacks.
+* "加速 H3 推理": **not achieved in net terms.** Attention is 1.41-1.5x faster
+  and the denoise phase 69 s -> 46 s, but enabling the path as written inflates
+  the VAE decode from 160 s to 634 s, so the pipeline gets slower overall. The
+  cause of that inflation is not yet known.
+* Independent of this work, the decode is already the largest single cost
+  (~160 s dense against a ~300 s dense denoise), so it is the right next target
+  regardless.
