@@ -1751,3 +1751,46 @@ Going beyond it is a genuine kernel change, not a knob: either keep the score
 tile in fp16 and pay a precision cost, or stream it through UB in sub-chunks so
 the buffer is smaller than the tile, or restructure so the softmax vector work
 overlaps the next tile's matmul. Those are the actual options for the 2.25x.
+
+## Bc=608 is the largest that fits, and it is worth 2%
+
+Re-ran the sweep with the output visible (my previous `tail -20` had hidden the
+successful rows behind a traceback from a later case, and I had also deleted a
+`br64_bc608` artefact that had in fact built):
+
+| Br | Bc | fp32 S tile | ms | TFLOPS |
+|---:|---:|---:|---:|---:|
+| 64 | 416 | 104 KB | 671.2 | 21.4 |
+| **64** | **608** | **152 KB** | **657.7** | **21.8** |
+| 64 | 832 | 208 KB | build fails (UB) | |
+
+So the ceiling for Bc on this kernel is 608, not 416, and it is **2% faster**. A
+small but free win: `bc_cap` in `_build` has been raised 512 -> 608 so the picker
+selects it, verified to choose `br=64 bc=608` for N=63232.
+
+Two percent is nowhere near the 2.25x the target needs, which settles the tiling
+question:
+
+> **Tiling is exhausted.** Bc=608 is the largest that fits in UB, Br does not
+> help, and the combination is worth 2%. Everything left has to come from
+> restructuring the kernel so the cube is not idle during softmax.
+
+## What the 2.25x actually requires
+
+Concretely, the kernel currently spends 672 ms where the two matmuls alone would
+be 191 ms at the 75 TFLOPS ceiling. The ~480 ms difference is softmax vector work
+and the stalls where cube waits for it. The available levers, in order of
+plausibility:
+
+1. **Overlap softmax with the next tile's matmul.** Double-buffer the score tile
+   so MTE2/cube/vector run on different tiles concurrently. This is the standard
+   flash-attention pipelining and is almost certainly where most of the 480 ms
+   is.
+2. **Keep the score tile in fp16** to fit a larger Bc, trading precision for
+   fewer softmax synchronisation points. Needs a numerical check against the
+   existing fp32 path.
+3. **Split the fp32 score tile into sub-chunks in UB** so Bc can exceed 608
+   without the 208 KB buffer.
+
+None of these is a knob. They are changes to `flash_attention_fwd.py` / the TIK
+kernel body, which is the work the goal has been pointing at all along.
