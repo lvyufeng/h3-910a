@@ -853,3 +853,49 @@ allocation pattern in the glue code. The useful check was to look at what the
 feature added *per call* rather than what it changed in the phase being
 optimised. The kernel was never at fault and its own timings were unchanged
 throughout.
+
+---
+
+# The second-request TBE crash is pre-existing, not from this work
+
+Ran two consecutive identical-shape requests on the **dense** configuration to
+find out whether the `TBE Subprocess[task_distribute] ... main process
+disappeared` crash is something the flash patch introduced.
+
+It is not. Dense shows the same thing:
+
+```
+TBE Subprocess crashes: 8
+health: {"status":"unhealthy"}
+one request completed, the next left in_progress
+```
+
+So the post-first-request instability belongs to this serving configuration, and
+the flash path is cleared of it. That matters because it had been listed as a
+caveat against the flash result, and it is not one.
+
+It does mean, though, that only the **first** request after a restart can be
+trusted as a measurement here, which is what all the figures in this file were
+taken from.
+
+## Measured flash totals, for the record
+
+From the completed run with buffer reuse:
+
+```
+[H3PERFP] encode=39.02s
+[H3PERFP] denoise=287.00s
+[H3PERFP] decode=159-164s
+4 steps, valid MP4, zero fallbacks
+```
+
+`denoise=287.00s` is the whole 4-step loop. Against the dense per-step numbers
+(`dstep 1` 113.6 s, `dstep 4` 69.2 s) the dense loop lands around 354 s, so the
+denoise saving is on the order of 67 s rather than the ~94 s projected in the
+previous section. The projection there used the warm step cost for all three
+later steps; the measured 287 s says the real per-step cost is a little higher.
+The 287 s figure is the better one.
+
+Whole-run estimate from measured phases: 39 + 287 + 161 = **~487 s** for a 5 s
+clip, against dense's ~554 s. So roughly **1.14x on the whole pipeline**, all of
+it coming from the denoise loop.
