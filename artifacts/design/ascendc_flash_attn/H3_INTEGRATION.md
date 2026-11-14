@@ -2491,3 +2491,71 @@ per-tile efficiency.
 
 The one durable gain is the attention kernel: two tiling/precision changes, 13.4%
 end to end, numerics improved to 3.9e-4 rather than degraded.
+
+---
+
+# Round 12: the decode dtype comment is stale; bf16 makes it much worse
+
+Started on goal item (3), the VAE decode (44 s warm against an official 6.56 s).
+The strongest lead in the code looked like a direct contradiction:
+
+```python
+# 910A has no fp16 NanToNum kernel and the VAE decoder calls
+# nan_to_num, so decode in bf16 where that op exists. The VAE is a
+# small slice of the runtime, so the dtype switch costs nothing.
+with current_omni_platform.create_autocast_context(
+    device_type=self.device.type,
+    dtype=torch.float16,          # <- comment says bf16
+    enabled=True,
+):
+    video = self.video_vae.decode_latent(video_latent)
+```
+
+The comment says "decode in bf16 where that op exists" and the code requests
+float16. If the comment were right, every decode would be pushing `nan_to_num`
+through a fallback.
+
+## Tested it: the comment is wrong, the code is right
+
+Changed the autocast dtype to bfloat16, matching what the comment describes, and
+measured a full request:
+
+```
+[H3PERFP] decode=256.07s
+[H3PERFP] decode=257.30s
+[H3PERFP] decode=257.42s
+[H3PERFP] decode=258.11s
+```
+
+Against **157 s cold with float16** measured in earlier rounds, bf16 is **64%
+worse**. So the fp16 path is correct on this hardware and the comment is stale --
+presumably written for a code path or a CANN version where the fp16 `nan_to_num`
+kernel really was missing. Reverted.
+
+Also ruled out along the way: the `causal_convNd_update` warning that appears in
+the decode logs comes from `vllm_ascend/ops/triton/mamba/`, i.e. it is a mamba
+path, not the VAE. Chasing it would have been a red herring.
+
+## What this leaves for the decode
+
+The dtype is not the problem, so the 44 s warm against 6.56 s official is
+elsewhere. Two things are worth noting before spending more rounds on it:
+
+1. `decode()` wraps the work in `self._component_on_device(self.video_vae.decoder_component)`,
+   so the VAE decoder is **staged in on every request** exactly like the text
+   encoder was. Whatever the decoder weighs has to be brought in each time, and
+   that cost sits inside the `decode` timer.
+2. The rest is likely genuine 910A slowness on vector-heavy convolutional work. A
+   video VAE decoder is almost entirely convolutions and normalisation, which land
+   on the vector units rather than the cube, and the 910A is several generations
+   behind the 910B/910C parts the official numbers come from. On that reading a
+   large part of the 6.7x is hardware, not software.
+
+I did not measure the split this round. The honest state is: one plausible
+hypothesis tested and refuted, one red herring identified and dropped, and the
+decode still un-diagnosed.
+
+## Round 12 accounting
+
+No speedup. The failed bf16 experiment cost a restart plus a full request, and it
+is worth recording mainly so nobody else follows that comment.
