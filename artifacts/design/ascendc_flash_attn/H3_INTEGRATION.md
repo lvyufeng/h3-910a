@@ -778,3 +778,78 @@ configuration** and correctly left disabled by default.
 * Independent of this work, the decode is already the largest single cost
   (~160 s dense against a ~300 s dense denoise), so it is the right next target
   regardless.
+
+---
+
+# Regression fixed: buffer reuse restores the decode, and flash is now a net win
+
+The memory-pressure hypothesis was right. Reusing the NZ scratch buffers per
+shape instead of allocating them per call removes the decode blow-up entirely.
+
+## The three-way comparison, same request, same 4-step schedule
+
+| | denoise (cold `dstep 1` model) | denoise (warm `dstep 4` model) | **decode** |
+|---|---|---|---|
+| dense | 113.6 s | 69.2 s | 160-165 s |
+| flash, allocating per call | 89.5 s | 46-54 s | **634-636 s** |
+| **flash, reusing scratch** | **84.5 s** | **49.0 s** | **159-163 s** |
+
+So:
+
+* denoise **1.34x** faster cold, **1.41x** warm
+* decode back to parity with dense (159-163 against 160-165)
+* run completed, valid MP4, zero fallbacks
+* 4 steps, not 12
+
+## What the bug was
+
+`flash_attention_910a` allocated four fresh ~113 MB NZ tensors plus a float32
+log-sum-exp tensor on **every** call, 200 calls per run. That is ~450 MB of
+churn per call through the caching allocator. It did not show up in steady-state
+attention timing -- the kernel still measured 0.92 s/layer -- but it fragmented
+the allocator badly enough that the VAE decode, which needs large tiled buffers,
+fell onto a slow path and took 4x as long.
+
+Fixed by caching one set of scratch tensors per `(B,H,N,D,device)` and copying
+into them (`dst.copy_(view)`) rather than allocating. Also avoids a real copy
+by scaling q in place into its own scratch instead of via a float32 temporary.
+
+Verified before wiring it in: two successive calls return bitwise identical
+output (`reuse stable: True`), relative error 0.00047 against an fp32 reference,
+0.76 ms/call at N=2048.
+
+## Estimated end-to-end effect
+
+Denoise is four steps. Taking `dstep 1` as measured and the warm step cost for
+steps 2-4:
+
+```
+dense:  39 encode + ~354 denoise + ~161 decode  = ~554 s
+flash:  39 encode + ~260 denoise + ~161 decode  = ~460 s
+```
+
+roughly **94 s saved, about 1.20x on the whole pipeline**. That is an estimate
+built from measured per-step and per-phase numbers, not a single wall-clock
+reading of both configurations back to back; those two runs were made at
+different times and their totals were never captured cleanly.
+
+## Where the objective now stands
+
+* "支持 910A 的 flash attention": **done**, end to end, in a completed run that
+  produced a valid video with zero fallbacks.
+* "加速 H3 推理": **yes, for the first time.** Denoise 1.41x warm / 1.34x cold,
+  decode at parity, projected ~1.20x on the whole pipeline.
+
+The remaining headroom is no longer attention: decode (~161 s) now exceeds the
+entire warm denoise loop per step spread, and the encode is a flat 39 s. The
+flash kernel has taken attention from 69 s to 49 s per step and there is little
+left in it.
+
+## Lesson
+
+Two rounds were lost to this. The symptom -- decode 4x slower with an unrelated
+feature enabled -- pointed at the wrong subsystem, and the actual cause was an
+allocation pattern in the glue code. The useful check was to look at what the
+feature added *per call* rather than what it changed in the phase being
+optimised. The kernel was never at fault and its own timings were unchanged
+throughout.
