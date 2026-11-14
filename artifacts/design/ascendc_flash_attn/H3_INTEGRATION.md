@@ -682,3 +682,29 @@ Consequences, stated plainly:
 
 The next useful work is not on attention. It is the 634 s decode -- that is
 where a 5-minute target would actually be won or lost.
+
+## Known issue: the second request crashes the workers
+
+The first request after this service start completed successfully. The second
+request (`a blue cup on a table`, same 5 s and 16:9 shape) **failed after 10 s**
+and left the service unhealthy with only 1 NPU process alive:
+
+```
+[ERROR] TBE Subprocess[task_distribute] raised error[], main process disappeared!
+health: {"status":"unhealthy"}
+npu procs: 1
+```
+
+This is the TBE parallel-compiler crash that this project has hit before, and
+`TBE_PARALLEL_COMPILER=1` was set in this service's environment. So either that
+guard is not sufficient here, or a second-build path is being taken that the
+first request did not take.
+
+It is not obviously attention-related: the shape is identical to the successful
+run, so the flash kernel should have been served from cache
+(`b1_h7_n63232_d128_br64_bc416`). But it does mean a single successful run is not
+yet evidence of a stable configuration, and any throughput work needs this
+fixed first.
+
+Practical consequence: treat one-run results as provisional, and expect to
+restart between measured requests until this is understood.
