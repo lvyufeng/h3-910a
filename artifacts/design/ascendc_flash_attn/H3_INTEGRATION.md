@@ -2332,3 +2332,65 @@ precision and still halves the K/V traffic.
 Implement the smallest change that lets br=128/bc=608 build: allocate the score
 tile as fp16. Then measure both time and worst-case relative error at the real
 shape, and compare against the 672 ms / 4.7e-4 baseline.
+
+## The fix works: 656 -> 558 ms, and the constraint moved from UB to L0C
+
+Removed the fp32 exp temporary by exponentiating in place on the fp16 score tile
+(`h_exp(Sij_ub_zN, Sij_ub_zN)`), then rebuilt at br=128:
+
+```
+Br=64  Bc=608  656.8 ms  21.8 TFLOPS     (in-place fp16 exp, unchanged from 657.7)
+Br=128 Bc=608  fails: C_l0c needs 311296 B, 262144 B available
+```
+
+So freeing UB did not unlock br=128/bc=608; the limit had moved to **L0C**, which
+is 256 KB: the score accumulator needs `Br x Bc x 4 <= 262144`, i.e.
+`Br x Bc <= 65536`. At Bc=608 that caps Br at 107.
+
+That constraint still allows halving the K/V traffic with a smaller Bc, and the
+sweep over L0C-feasible tilings found one that works:
+
+| tiling | ms | TFLOPS | L0C |
+|---|---:|---:|---:|
+| **Br=64, Bc=608** (previous) | **656** | 21.8 | 152 KB |
+| **Br=128, Bc=304** | **558** | **25.6** | 152 KB |
+| Br=256, Bc=256 | fails (`C_ub` 131072 B > 125440 B, narrowly) | | 256 KB |
+
+**15% faster, 656 -> 558 ms**, with K/V traffic halved from 234 GB to 117 GB. It is
+not the 1.7x the bandwidth arithmetic suggested, because Bc=304 has worse per-tile
+efficiency than Bc=608 -- the two effects partly cancel, exactly as the earlier
+Bc sweep predicted (608 -> 256 cost +188 ms at br=64). Net is still a solid gain.
+
+## Numerics verified with the fp16 exp
+
+```
+cfg br64/bc608  worst rel err 0.000389  PASS
+cfg br128/bc304 worst rel err 0.000389  PASS
+```
+
+Both identical, and **better** than the 4.7e-4 recorded for the old fp32-exp path.
+The in-place fp16 exp costs nothing measurable: after the row-max subtraction the
+scores are <= 0, so the exponentials sit in [0, 1] where fp16 is well behaved.
+
+## Adopted
+
+`_build` defaults changed from `br_cap=64, bc_cap=608` to **`br_cap=128,
+bc_cap=304`**, verified to select br=128/bc=304 (L0C 152 KB) for N=63232.
+
+This is the first measured kernel speedup of the goal: **15% on the attention
+kernel**, on top of the 2% from the Bc change.
+
+## What this implies for the remaining headroom
+
+At 558 ms the implied K/V bandwidth is 117 GB / 0.558 s = **210 GB/s**, down from
+348 GB/s. So the kernel is now much less bandwidth-bound (39% of the 534.8 GB/s
+peak rather than 65%) and correspondingly more bound by per-tile compute
+efficiency and the missing software pipeline. That means the two levers are now
+complementary rather than alternatives:
+
+* further Br increases are blocked by L0C, but Br=256/Bc=256 failed only narrowly
+  on `C_ub` (131072 vs 125440 B), so shaving that buffer by ~5% would unlock a
+  further halving of traffic;
+* with bandwidth pressure reduced, the missing pipeline (round 6: no double
+  buffering, no set_flag/wait_flag) is now the larger remaining term, and it is
+  worth revisiting precisely because the kernel is no longer saturating HBM.
