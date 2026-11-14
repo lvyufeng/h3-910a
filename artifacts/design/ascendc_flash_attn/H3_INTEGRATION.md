@@ -1870,3 +1870,69 @@ Ital also settles a question from round 2: the flat 672 ms across all tilings wa
 not evidence about bandwidth at all. With no pipelining, time is dominated by
 serialised stage latencies, which are nearly tiling-insensitive -- which is
 exactly what a flat curve looks like.
+
+## The ceiling was measured at the wrong K, and that revises feasibility again
+
+The 75 TFLOPS ceiling was measured at K=5376. The attention kernel's matmuls are
+nothing like that. Measured TFLOPS against reduction length:
+
+| M | K | N | ms | TFLOPS |
+|---:|---:|---:|---:|---:|
+| 4096 | 5376 | 8192 | 4.94 | **73.0** |
+| 4096 | 2048 | 8192 | 1.98 | 69.5 |
+| 4096 | 608 | 4096 | 0.39 | 51.7 |
+| 4096 | 512 | 8192 | 0.65 | 52.8 |
+| 4096 | **128** | 8192 | 0.34 | **25.0** |
+| 8192 | **128** | 8192 | 0.65 | 26.4 |
+| 2048 | **128** | 63232 | 1.19 | 27.8 |
+
+`QK^T` has K = D = 128 and that is **not changeable** -- it is the head dimension.
+`PV` has K = Bc = 608. So the two halves of the attention have different ceilings:
+
+```
+QK^T (K=128) at ~26 TFLOPS : 13.8 s/step
+PV   (K=608) at ~52 TFLOPS :  6.9 s/step
+shape-limited total        : 20.7 s/step   (34.6 TFLOPS effective)
+```
+
+Consequences, stated plainly:
+
+* We are at **62% of this shape-limited ceiling**, not 28% of a 75 TFLOPS one. The
+  kernel is closer to what a vendor matmul achieves at these shapes than the
+  earlier framing suggested -- a vendor-level matmul at K=128 only reaches
+  25-28 TFLOPS, and we get 21.8 overall while also doing softmax.
+* **The 15 s/step target needs 47.8 TFLOPS, which is 1.38x ABOVE the shape-limited
+  ceiling.** So pipelining alone cannot reach it. Even a perfect pipeline that hit
+  the vendor matmul's short-K efficiency would land near 21 s/step.
+* Reaching 15 s would require beating the vendor library's K=128 efficiency by
+  more than 2x, i.e. exactly the kind of gain MindIE-SD's LaserAttention appears
+  to deliver (see below), from a hand-written fused kernel.
+
+## And the A2 comparison implies a startling number
+
+At 2.85 s/step with the same per-rank work, A2 must be sustaining **251
+TFLOPS/rank**. That is **7.3x our shape-limited ceiling of 34.6 TFLOPS**. Even
+allowing generous hardware generation differences, the bulk of that cannot be
+silicon -- it has to be that LaserAttention extracts far more from a K=128
+matmul than either our kernel or the vendor library does.
+
+I do not know how, and I am not going to guess in this file. What it does
+establish is where the remaining gap actually lives: not in pipelining our
+existing structure, but in a fundamentally better short-K attention
+implementation.
+
+## Corrected position on the goal's 15 s/step target
+
+Two rounds ago I said the target was reachable and needed 2.25x. With the ceiling
+measured at the real K it is **not reachable by the path I proposed**. The honest
+statement:
+
+* pipeline recovery: 33.6 -> ~21 s/step (best case, ~1.6x) -- feasible, worth doing
+* 15 s/step: needs 47.8 TFLOPS against a 34.6 TFLOPS shape-limited ceiling -- not
+  reachable without beating the vendor short-K matmul by >2x
+* official 2.85 s/step: needs 251 TFLOPS -- a different class of kernel
+
+So the plan for the next rounds is to do the pipeline work because it is real and
+worth ~1.6x, but the 15 s/step figure in the goal should be treated as
+out of reach on this hardware unless the short-K efficiency can be broken through.
+I would rather say that now than after another twenty rounds.
