@@ -2191,3 +2191,62 @@ No speedup landed, again. But this round converted a two-round-wrong hypothesis
 into a measured mechanism plus a specific two-line change with a favourable memory
 budget. The trace took four minutes to run and would have saved rounds 7 and 8 had
 I done it first; that is the real lesson of this stretch.
+
+## The proposed fix does not work either: 39 s -> 42.85 s
+
+Applied the two-part fix from the section above -- emptied `encoder_block_attrs` so
+`text_encoder`'s `("vision.blocks", "text_model.layers")` entry stops driving
+per-layer streaming -- and measured:
+
+```
+idle HBM 3194 / 3002 MB
+ t=35s   4388 / 4196 MB      during encode
+ t=45s   4512 / 4320 MB
+encode=42.85s                  (was 39.10-39.85 s)
+```
+
+**Worse, not better, and still not resident.** HBM during encode reached only
+4.5 GB, so the encoder still never occupied the ~7.8 GB a resident TP8 shard
+would need. Removing the block attributes changed the streaming granularity
+slightly (hence the small regression) without changing the fundamental behaviour.
+
+## Three hypotheses now falsified for the same 39 s
+
+| hypothesis | how tested | result |
+|---|---|---|
+| staged offload via `on_demand` (round 7) | removed `text_encoder` from `on_demand_component_paths`, confirmed via the "Prepared ... staged offload" log line | 39.85 s, unchanged |
+| running on CPU / H2D transfer (round 8) | logged the encoder's parameter device | `npu:0`, `bfloat16` -- already on device |
+| blockwise layer streaming via `encoder_block_attrs` (round 9) | emptied the entry | **42.85 s**, worse, still not resident |
+
+Each was a plausible reading of the code. All three are wrong. What the HBM trace
+does firmly establish is the *behaviour*: the encoder occupies ~1.9 GB and releases
+it the instant encode finishes, so ~62 GB is passing through the device per
+request. What I have not found is the code path that decides to do that.
+
+I am stopping this thread rather than guessing a fourth time. Three falsified
+hypotheses in a row is a signal that I am reading the offloader code without
+understanding its control flow, and the next attempt should start by finding who
+actually calls the per-layer load during the encoder forward -- by tracing it at
+runtime rather than by grepping for configuration knobs.
+
+## Where the goal stands after nine rounds
+
+Honest accounting:
+
+* **Refuted as worthwhile**: fused operators (0.3% of block time, round 1).
+* **Refuted as reachable**: 15 s/step. Needs 47.8 TFLOPS against a shape-limited
+  ceiling of 34.6 TFLOPS measured at the kernel's real K=128 (round 6).
+* **Closed**: tiling (already optimal, Bc=608 adopted for 2%), communication
+  (1.6 ms), conversions (1.2 ms), n_pad correction (1.86 ms), inter-rank
+  serialisation (was my own sync).
+* **Root cause found but not fixed**: the flash kernel has no software pipeline at
+  all -- no double buffering, no set_flag/wait_flag -- which explains its 55-60%
+  cube duty cycle. Fixing it is worth roughly 1.3-1.6x, to ~520-550 ms/block.
+* **Mechanism found but not fixed**: the 39 s text encode is ~62 GB of per-request
+  streaming. Three knobs tried, all wrong.
+* **Not started**: VAE decode (44 s warm, 6.7x off official, partly hardware).
+
+The only measurable gain landed in nine rounds is Bc=416 -> 608, worth 2%.
+Against that, the round-6 finding (no pipeline) and round-9 trace (encoder is
+streamed) are the two things a future attempt should build on, and both are
+recorded with the exact numbers needed to verify a fix.
