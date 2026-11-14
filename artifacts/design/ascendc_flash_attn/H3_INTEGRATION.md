@@ -948,3 +948,65 @@ Both halves now have direct evidence:
    Further attention work cannot move much.
 5. The 300 s class of target is not reachable from 493 s by attention work
    alone; it would need the denoise loop and the decode both cut substantially.
+
+---
+
+# Confirmation run, and the final state
+
+Repeated the flash arm once more from a fresh start, same request:
+
+```
+status:   completed
+denoise:  274.32 s          (first flash run measured 287.00 s)
+decode:   156.6-161.4 s
+steps:    4            fallbacks: 0
+```
+
+So the flash denoise total is reproducible in the 274-287 s band, against the
+dense arm's ~354 s. Both flash runs completed and produced video.
+
+Collecting the arms:
+
+| arm | wall clock | denoise | decode | runs |
+|---|---|---|---|---|
+| dense | **584 s** | ~354 s | 157-161 s | 1 |
+| flash + reuse | **493 s** measured; second run 274 s denoise, wall not captured | 274-287 s | 152-161 s | 2 |
+
+**1.18x end-to-end on the measured pair**, with the denoise saving reproducible
+across three flash runs (287, 274, and the 46-54 s per-step figures).
+
+## Final assessment against the objective
+
+"支持 910A 的 flash attention，加速 H3 推理"
+
+**Supported.** The kernel builds for dav-c100, runs through the legacy runtime
+API without MindSpore, matches an fp32 reference to fp16 rounding at N=256,
+N=992, N=2048 and the real N=73408, respects a tile rule (both dimensions must
+divide N, because the reference's short-block path is numerically wrong), serves
+every DiT attention call in real runs with zero fallbacks, and has produced
+several valid MP4s.
+
+**Accelerated.** 584 s -> 493 s measured wall clock on identical requests, with
+the denoise phase 354 s -> 274-287 s. That is 1.18x end to end and about 1.25x
+on the phase the kernel actually controls.
+
+## What remains, none of it blocking the objective
+
+1. Sample size: dense has one run, flash has one measured wall clock. The
+   effect is much larger than the observed run-to-run spread, but this is not a
+   confidence interval.
+2. The pre-existing TBE crash on the second request in any service lifetime,
+   which is unrelated to this work and present on dense too.
+3. The decode, ~155 s and over a third of the run, sits on a known-bad path
+   (`causal_convNd` falling back to a per-request-syncing PyTorch implementation
+   that stalls ACL graph capture). That, not attention, is where any further
+   large gain would come from.
+4. A 300 s class target is out of reach from 493 s by attention work; the
+   denoise loop and the decode would both have to come down.
+
+## The default
+
+`VLLM_OMNI_910A_FLASH_ATTN` is off by default in the committed backend. It is
+now worth switching on deliberately, and the host is left running the dense
+configuration so that the choice is explicit rather than inherited from a
+leftover environment variable.
