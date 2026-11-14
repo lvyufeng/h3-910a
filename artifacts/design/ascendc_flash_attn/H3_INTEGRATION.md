@@ -415,3 +415,64 @@ earlier dense measurements needed.
 One thing to fix before trusting a full-run number: the first request after a
 restart pays a 125 s encode instead of 39 s, a 3x penalty on a fixed cost, which
 alone can hide or manufacture a few tens of seconds of difference in a total.
+
+---
+
+# Clean cold-vs-cold dstep comparison: 1.41x on the denoise phase
+
+Previous notes compared a cold dense `dstep 1` against a warm flash `dstep 10`,
+which inflated the gain. Comparing like with like -- both runs freshly started,
+both reading `dstep 1`, so both pay the same cold penalty:
+
+| `dstep 1` | prep | **model** | update | total |
+|---|---|---|---|---|
+| dense | 8.58 s | **113.62 s** | 8.92 s | 131.1 s |
+| flash | 8.65 s | **80.66 s** | 9.53 s | 98.8 s |
+
+`model` is the denoise work: **113.62 -> 80.66 s, or 1.41x**. `prep` and `update`
+are unchanged within noise (8.58 vs 8.65, 8.92 vs 9.53), which is exactly what a
+change confined to the attention kernel should look like.
+
+This agrees with the interleaved per-layer A/B from the previous round
+(dense 1.374-1.460 vs flash 0.913-0.981 s/layer, ~1.48x) and with this run's own
+`dit 11/50 block=0.926s`. Cold and warm both land near 1.4-1.5x, so the gain is
+not an artefact of thermal or cache state.
+
+Warm flash for reference: `dstep 2 prep=6.09 model=51.61 update=2.42`. Warm
+dense was never captured because the earlier dense run was stopped inside its
+first step, so the warm dense figure remains inferred (~73 s by applying the
+1.41x ratio) rather than measured.
+
+## Why no request ever completed in 906 s: it is not the attention
+
+Every 5 s clip I have submitted returned `in_progress` at the 906 s timeout, in
+both dense and flash configurations. The cause is now clear and has nothing to
+do with this kernel:
+
+```
+dstep counter reached 32 across two requests   ->  ~16 denoise steps per request
+fused_lora.json says  {"steps": 4, "base_schedule": "1.0,0.7,0.4,0.15,0.0"}
+```
+
+So roughly 16 steps are running where the fused 4-step configuration expects 4.
+At ~99 s (flash) or ~131 s (dense) per step, 16 steps is 1580 s or 2100 s -- both
+beyond the 906 s poll window, which is exactly what was observed.
+
+A likely reason: `fused_lora.json` declares `"tasks": "t2va"`, while the server
+is started with `--task-type fl2va`. If the 4-step schedule is only wired for
+t2va, an fl2va request would fall back to the default step count. That is a
+configuration question about the serving task type, not about attention, and it
+is the reason the end-to-end wall clock could never be closed out.
+
+**This needs fixing before any total-run number can be reported**, and before the
+1.41x can be translated into a whole-pipeline figure. Running t2va instead of
+fl2va is the obvious first thing to try.
+
+## Status against the objective
+
+* "支持 910A 的 flash attention": **done**. Verified correctness at three shapes
+  and speed at three shapes, running in the real pipeline with zero fallbacks.
+* "加速 H3 推理": **partially demonstrated**. The denoise phase is 1.41x faster
+  on identical cold work and ~1.48x per layer warm, measured twice by different
+  means. The whole-pipeline speedup cannot be quoted yet because requests do not
+  finish inside the observation window, for a reason unrelated to attention.
