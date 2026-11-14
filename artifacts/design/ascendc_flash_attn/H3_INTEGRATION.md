@@ -1228,3 +1228,93 @@ conversion and communication.
   off official and partly hardware.
 * Baseline for the target: DiT ~65 s/step measured against official A2 2.85 s
   and A3 2.16 s.
+
+---
+
+# Round 2: the 198 ms is neither communication nor conversion
+
+Goal for this round was to split `attn_dispatch` (870 ms) into kernel,
+conversions and communication. Two of the three are now measured and both are
+negligible.
+
+## Communication is ~2 ms, not 198 ms
+
+Timed inside the flash backend with a stream synchronise, and compared against
+the enclosing `attn_dispatch` on the same call:
+
+```
+backend=869.6ms   attn_dispatch=872.0
+backend=869.1ms   attn_dispatch=872.7
+backend=870.1ms   attn_dispatch=871.8
+backend=871.0ms   attn_dispatch=871.4
+```
+
+The backend is the whole dispatch. Everything outside it -- both Ulysses
+all-to-alls, the `AttentionMetadata` construction, the mask logic -- is about
+**2 ms**. So the earlier hypothesis that ~198 ms was all-to-all traffic is
+refuted.
+
+Shape confirmed by the same log line: `q=(1, 7, 63232, 128)`.
+
+## Layout conversion is 1.2 ms per block, not 198 ms
+
+I suspected the buffer-reuse change had made conversion slower, because it
+replaced `.permute(...).contiguous()` with `dst.copy_(permuted_view)`, which
+looks like a strided gather into a contiguous-in-NZ buffer. Measured at the real
+shape (N=63232, 113 MB tensors):
+
+| strategy | ms per conversion | per run (50 blocks x 4 steps) |
+|---|---:|---:|
+| `copy_` into preallocated (what ships) | **0.31** | 0.2 s |
+| `permute().contiguous()` (previous) | 0.30 | 0.2 s |
+| `contiguous()` then `copy_` (hybrid) | 68.69 | 55.0 s |
+| `new_empty` only | 0.02 | -- |
+
+So the current form is as fast as the old one, and the "obvious" hybrid fix
+would have been **200x worse**. Hypothesis refuted, and worth recording as a
+trap: on this hardware the strided `copy_` is cheap and materialising a
+contiguous temporary is not.
+
+Four conversions per block therefore cost **~1.2 ms**, which is the same order
+as everything else non-attention.
+
+## So the kernel itself is 870 ms in the pipeline and 672 ms standalone
+
+With communication and conversions excluded, the same kernel at the same shape
+takes 672.5 ms in a standalone process and ~869 ms inside the serving pipeline.
+That ~200 ms gap is unexplained but it is *inside the kernel call*, and the two
+remaining candidate explanations are contention with the other seven ranks and
+contention with DLO weight streaming, which shares HBM bandwidth with the
+kernel's own traffic.
+
+This matters for the plan: if the in-pipeline kernel is bandwidth-starved by
+DLO, then arithmetic-level kernel optimisation has a ceiling set by that
+contention, and DLO scheduling becomes part of the answer.
+
+## A structural finding: Br cannot exceed 64 in this reference kernel
+
+I tried to reduce repeated K/V traffic by raising Br, having noted that with
+Br=64 the kernel sweeps all of K and V 988 times. The sweep was invalid at
+first -- `_build` computes `br = pick_tile(n, br_cap)` and then **overwrites**
+`FA_BR`/`FA_BC`, so setting those env vars does nothing and every run reused the
+same cached br=64 kernel. That is why the first sweep reported a suspiciously
+flat 672.5 ms across eight tilings: all eight were the same kernel.
+
+Driving `_build` with real caps instead gives a hard limit:
+
+```
+Br=256 Bc=128: Error: Tensor Oi_ub_zN applies buffer size(131072B)
+               more than available buffer size(43520B)
+```
+
+The binding constraint is not the softmax tile but the **fp32 output
+accumulator** `Oi_ub_zN`, which is `Br x D x 4` bytes and must coexist with
+everything else in UB, where only 43 520 B is free:
+
+* Br=64 -> 64 x 128 x 4 = 32 768 B, fits
+* Br=128 -> 65 536 B, does not fit in 43 520 B
+
+So Br <= 64 is structural for this kernel. Raising it needs the accumulator
+moved out of UB (keep O in L0C or L1 across the K/V loop, or split D), which is
+real kernel design work rather than a tiling knob. That is the concrete kernel
+task the goal should carry.
