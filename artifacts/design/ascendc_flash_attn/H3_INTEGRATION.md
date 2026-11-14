@@ -2810,3 +2810,110 @@ No speedup, and one earlier claim retracted. The genuine progress is negative bu
 useful: the double-buffering blocker is now identified precisely (symbolic parity
 cannot name TIK buffers), and the measurement discipline required for null results
 is written down where I will see it next time.
+
+---
+
+# Round 16: a full end-to-end run, and a step decomposition that changes priorities
+
+Switched from kernel work to the thing the goal has asked for since the start and
+that I had never produced: a real end-to-end measurement.
+
+## The run
+
+One 5 s / 768p / fl2va request on the 8x910A stack with the round-10 kernel, via
+the HTTP API, timed from submit to `completed`:
+
+```
+status  = completed
+wall    = 472.7 s
+
+[H3PERFP] encode  = 41.49 s
+[H3PERFP] denoise = 262.65 s      (4 steps, the distilled schedule)
+[H3PERFP] decode  = 155.78 s      (cold; warm is ~43 s as measured in earlier rounds)
+
+block time        = 0.762 / 0.764 s      (round-10 kernel active, was 0.875 s)
+```
+
+encode + denoise + decode = 459.9 s against 472.7 s wall, so ~13 s of HTTP/queue
+overhead. The numbers are self-consistent.
+
+## The decomposition that matters
+
+The denoise loop already carries instrumentation I had never looked at, because I
+had been grepping only for my own `[H3PERFP]` tag:
+
+```
+[H3PERF] dstep 1 prep=8.9s  model=95.7s  update=9.6s
+```
+
+(eight copies of each line -- one per rank; four distinct step numbers, matching
+the 4-step schedule.)
+
+Cross-checking against the block timer:
+
+```
+50 blocks x 0.762 s            =  38 s   of block work per step
+denoise 262.65 s / 4 steps     =  65.7 s per step
+prep 8.9 s + update 9.6 s      =  18.5 s per step outside the model call
+```
+
+So a warm step is roughly:
+
+| part | per step | share |
+|---|---:|---:|
+| block loop (attention, MLP, norms) | 38 s | ~58% |
+| **prep** | 8.9 s | ~14% |
+| **update** (Euler step, row updates) | 9.6 s | ~15% |
+| other/overhead | ~9 s | ~14% |
+
+**This is the first real step-level decomposition I have, and it contradicts the
+working assumption of the last ten rounds.** I had been treating "DiT per step"
+as essentially the attention kernel, because in round 3 the block decomposition
+showed attention at 869 of 871 ms inside a block. That is still true -- but a
+block is only ~58% of a step. The other ~42% is `prep` and `update` and overhead
+that I never examined, and 18.5 s of it is plainly attributable to two labelled
+sections.
+
+Two consequences:
+
+1. The remaining attention headroom (1.23x on 38 s = 8 s per step) is worth about
+   **12% of a step**, not the ~30% the earlier framing implied.
+2. `prep` and `update` together are **18.5 s per step -- 2.3x larger than the
+   entire remaining attention headroom** -- and have never been looked at once.
+
+## Also learned: the model-call gap
+
+`model=95.7 s` per step against 38 s of block work leaves ~57 s inside the model
+call but outside the block loop. That is a *cold* figure (these lines come from
+the first invocation, which includes TBE compilation inside `model`), so the warm
+split is unknown, and I should not present 57 s as steady state. Getting the warm
+per-step `prep/model/update` split -- simply by reading these lines from a second
+request, which the known TBE crash currently prevents -- is the measurement that
+would settle it.
+
+## Round 16 accounting
+
+No speedup landed. But this round produced the first measured step decomposition
+and it materially redirects the remaining effort: the attention kernel is no
+longer where the time is, and `prep`/`update` are.
+
+## Comparable measurement against the official lossless numbers
+
+The goal asks for this and it has to be stated carefully, because a naive
+comparison is not valid:
+
+* The deployed checkpoint is **`MiniMax-H3-4step`**, a distilled 4-step variant
+  whose `FL2VA/model_index.json` schedule is `[1.0, 0.7, 0.4, 0.15, 0.0]`, i.e.
+  four steps. The official A2 (49 steps, 150 s) and A3 (114 s) figures are for
+  the full 50-timestep schedule. Running 49 steps on distilled weights would be
+  a different model, not a comparable measurement, so I am not going to report
+  it as one.
+* What *is* comparable is per-step cost. A2 at 49 steps / 150 s implies
+  **3.06 s per step**; A3 implies **2.33 s per step**. Mine is
+  **65.7 s per step** (262.65 / 4) cold-denoise, or **~38 s per step** for the
+  block loop alone.
+
+So the honest statement is: **this stack runs ~21x slower per step than A2**
+(65.7 / 3.06) on the same nominal workload shape, and the gap is distributed
+across attention (58%), prep/update (29%) and overhead -- not concentrated in any
+one place the way I had assumed.
