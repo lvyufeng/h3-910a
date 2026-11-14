@@ -360,3 +360,58 @@ always the same -- one chip busy, the rest idle, layer time inflated several
 fold. Any future edit on this path should be checked against
 `npu-smi` utilisation before and after, because per-layer time alone does not
 say whether you are slow on compute or serialised on sync.
+
+---
+
+# Caveat on the 1.48x: the A/B is sound, the full-run total is not measured
+
+Worth separating two claims of very different strength, because the notes above
+could be read as making the stronger one.
+
+## What is well established
+
+The same-workload, interleaved A/B at a 5 s clip:
+
+```
+dense: 1.374 1.394 1.400 1.387 1.460 1.400  s/layer
+flash: 0.949 0.973 0.923 0.935 0.922 0.945  s/layer     fallbacks 0
+```
+
+Both runs on the same host, same 8-way USP, same prompt and clip length, read
+off the model's own `[H3PERF] dit N/50 block=` line, in a comparable state
+(encode 38.9 s and 38.4 s respectively). That is a ~1.48x per-layer gain and it
+is not an extrapolation.
+
+Cross-checks agree: the kernel alone is 672.5 ms at N=63232 with the tile picker
+choosing br=64/bc=416, versus an estimated 865 ms for dense attention at that
+shape (scaling the measured 1166 ms at N=73408 by N^2), and 867.8 ms / 1.34x
+measured directly at N=73408.
+
+## What is NOT established
+
+**No clean full-run wall-clock total.** Every attempt to time a whole 5 s clip to
+completion was confounded:
+
+* runs take far longer than the per-layer numbers imply, and none of the 5 s
+  clips has been observed to reach `completed`;
+* a later flash run showed `encode=125.22s` against 38-39 s in the A/B runs, so
+  the first request after a restart is cold and the absolute layer times in such
+  a run (1.04-1.13 s) are not comparable to the warm A/B figures (0.91-0.98 s);
+* the video `content` endpoint returned 98 bytes for an incomplete request, so
+  no visual check of a flash-produced clip has been done either.
+
+So the honest statement is: **the attention layer is ~1.48x faster on identical
+warm work**, which is the part this kernel controls. Whether the whole pipeline
+lands near the projected ~360 s is unverified, and one warm full run with a
+completed video is still owed.
+
+## Practical state
+
+The fast path is off by default (`VLLM_OMNI_910A_FLASH_ATTN` unset) and the host
+is left running the dense configuration. To evaluate it, set the variable, submit
+one request to warm up, then measure the second -- the same discipline the
+earlier dense measurements needed.
+
+One thing to fix before trusting a full-run number: the first request after a
+restart pays a 125 s encode instead of 39 s, a 3x penalty on a fixed cost, which
+alone can hide or manufacture a few tens of seconds of difference in a total.
