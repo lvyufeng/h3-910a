@@ -97,3 +97,90 @@ Every number here comes from the legacy-runtime launch harness
 launches before timing, since the first launch includes module load. The kernel
 was rebuilt per N, because the core task map is baked in at compile time -- so
 each row is a genuine kernel for that shape, not a resized call.
+
+---
+
+# Retiling reverses the result: 1.33x faster than dense
+
+The section above concluded the fused kernel was slower and should not be
+integrated. That was measured with the reference's default tiling, which is not
+the best tiling for this part. Retiling flips the answer.
+
+## The tiles are hard-coded, and 128x128 is not optimal here
+
+`sparse_tiling.py:27` fixes `Br = min(128, Nq)` and `Bc = min(128, N)`. They are
+now overridable for experiments via `FA_BR` / `FA_BC`. Sweeping them at
+N=8192, B=1, H=7, D=128 (baseline 16.686 ms):
+
+| Br | Bc | ms | note |
+|---|---|---|---|
+| 128 | 128 | 16.686 | reference default |
+| 128 | 192 | 13.413 | |
+| 128 | 256 | 11.393 | 1.46x |
+| 128 | 384+ | -- | build fails, UB budget |
+| 256 | any | -- | build fails, UB budget |
+| 64 | 256 | 13.669 | |
+| **64** | **512** | **10.795** | **1.55x, best** |
+| 32 | 512 | 15.051 | |
+| 16 | 1024 | 22.047 | |
+
+A long `Bc` is what the cube wants, and shrinking `Br` buys the UB headroom to
+afford it. `Br` alone cannot grow -- 256 fails outright.
+
+## Tuned performance
+
+Br=64, Bc=512:
+
+| N | ms | TFLOPS |
+|---|---|---|
+| 4096 | 2.713 | 22.2 |
+| 8192 | 10.795 | 22.3 |
+| 16384 | 43.766 | 22.0 |
+
+Flat 22 TFLOPS, versus 13.5 at the default tiling and 16.6 for the dense path's
+whole attention step. At N=16384 the speedup over the default tiling is 1.62x.
+
+Extrapolating the tuned constant to the real per-rank shape:
+
+```
+N = 73408  ->  879 ms   (22.0 TFLOPS)
+dense      -> 1166 ms   (16.6 TFLOPS)
+                       -> 1.33x faster
+```
+
+## Numerics are unchanged by the retiling
+
+Rebuilt at N=256 with Br=64, Bc=512 (both clamp to the sequence length) and
+compared against the same float32 reference:
+
+```
+max|diff| = 0.000009   relative = 0.00051
+```
+
+identical to the default tiling, so the speedup is not bought with accuracy.
+
+## Effect on the H3 run
+
+The attention step was measured at 200 calls x 1.166 s = 233 s inside the 449 s
+4-step run. At 879 ms/call that becomes 176 s:
+
+```
+449 s  ->  ~392 s
+```
+
+So this is a real speedup of roughly 57 s on the 4-step configuration. It is the
+first change in this whole line of work that makes the fused kernel a win rather
+than a loss, and it makes integration worth doing.
+
+It does **not** reach the 300 s target on its own. 392 s is still 92 s over, and
+the remaining budget would have to come from elsewhere (the 43 s VAE decode, the
+148 s softmax share that fusing does not remove, or fewer steps).
+
+## Confidence
+
+The 879 ms is an extrapolation, not a measurement at N=73408. It is better
+supported than the earlier 1427 ms figure because the tuned per-N^2 constant is
+flatter across three points (1.616, 1.609, 1.631 e-7 at N=4096/8192/16384) than
+the untuned one was. The next step should be a real measurement at N=32768 and
+then at the true shape, since the tiling that is best at 16384 need not be best
+at 73408 -- the sweep should be repeated near the real length before committing.
