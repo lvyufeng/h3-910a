@@ -1525,3 +1525,65 @@ only the communication is varied. If the ~195 ms is confirmed as all-to-all, the
 question stops being "write a better attention kernel" and becomes "why is a
 113 MB all-to-all taking ~49 ms", which is a different and possibly much cheaper
 fix.
+
+## Un-retracting: communication really is ~1.6 ms. Round 4's retraction was wrong.
+
+Measured the two collectives directly, wrapping `pre_attention` and
+`post_attention` with wall-clock timers and **no synchronize anywhere** (a
+collective already blocks, so the timer includes waiting for the slowest rank,
+which is the quantity of interest):
+
+```
+[H3PERFC] 10 blocks: pre=1.1ms/block post=0.6ms/block
+[H3PERFC] 10 blocks: pre=1.0ms/block post=0.5ms/block
+[H3PERFC] 10 blocks: pre=1.1ms/block post=0.6ms/block
+```
+
+The one large reading, `pre=109.6ms`, is the first 10-block window and contains
+warm-up/compile.
+
+So the all-to-alls total **~1.6 ms per block**. Round 2's original conclusion
+was right, and the retraction written earlier in this same round was wrong: I
+reasoned that a ~195 ms residue must be sitting in pre/post, but direct
+measurement says it is not there.
+
+I therefore have to be careful about what is actually established, because I have
+now flip-flopped once on this number:
+
+* round 2: "communication ~2 ms" -- **correct**, but reached via an invalid
+  measurement (the backend figure was inflated by a device sync).
+* round 4a: "that is invalid, communication must be ~195 ms" -- **wrong**, from
+  arithmetic rather than measurement.
+* round 4b: "communication is ~1.6 ms, measured properly" -- **correct**, and
+  now supported by a valid measurement.
+
+The lesson is not "round 2 was lucky" but that a right answer from a broken
+measurement has to be re-established before it can be relied on, and that
+arithmetic on residuals is not a substitute for measuring the term directly.
+
+## Where the 870 vs 672 actually stands
+
+Every term is now measured, with no device-wide sync anywhere:
+
+| term | value | how |
+|---|---:|---|
+| attn_dispatch | 870 ms | Python timer around the call, no sync |
+| pre_attention (q/k/v all-to-all) | ~1.1 ms | wall clock around the collective |
+| post_attention (output all-to-all) | ~0.6 ms | wall clock around the collective |
+| layout conversions (4x) | ~1.2 ms | standalone, real shape |
+| n_pad float32 correction | 1.86 ms | standalone, real shape |
+| kernel, standalone | 672.0 ms | direct launch, real shape |
+| **sum of the parts** | **~677 ms** | |
+| **residue inside the dispatch** | **~193 ms** | |
+
+The residue is inside the dispatch, it is not communication, and it is not the
+wrapper's own copies. Combined with round 3's finding that all eight chips sit at
+100% AICore during denoise, the remaining explanation is that the kernel itself
+runs slower in service than standalone -- and the one systematic difference is
+**DLO**, which streams layer weights over the same HBM while attention runs. A
+standalone benchmark has no competing traffic.
+
+That is a hypothesis, not a measurement. It is falsifiable in one of two ways:
+time the kernel standalone with a concurrent weight-sized memory stream on the
+same device, or show that block time drops when DLO is off (which may not fit in
+32 GB and therefore may be untestable on this hardware).
