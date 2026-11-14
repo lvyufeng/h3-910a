@@ -3198,3 +3198,80 @@ about code instead of timing it.
 So `update` (Euler step and row updates, still using device scatters in places) is
 now the largest non-model item at ~10 s per step, and the block loop at 38 s of
 the 73 s model time remains the single biggest component overall.
+
+---
+
+# Round 20: update is not a scatter target, and 4.4 s of it was async misattribution
+
+Chased `update` (10.1 s/step) with the technique that worked in round 19.
+
+## The mask ops there are genuinely cheap
+
+`update` contains four boolean-mask scatters and several mask gathers per step.
+Measured at the real shape (seq 63232, video width 96, 60000 updated rows):
+
+```
+rows.clone()                : 0.124 ms
+rows[update].float()        : 0.866 ms
+clone + r[update]=tgt       : 1.976 ms
+clone + both mask writes    : 2.629 ms
+clone + contiguous writes   : 0.352 ms
+```
+
+So boolean-mask assignment is ~2-3 ms, **three orders of magnitude away** from
+`index_copy_`'s 6.1 s. The two ops are not the same path on this part: indexed
+assignment with a mask vectorises, `index_copy_` apparently does not. Worth knowing
+so I do not "fix" mask indexing that was never broken.
+
+The mask also turns out to be contiguous, so contiguous writes would be 0.35 ms, a
+further ~2 ms available -- far too small to be worth the risk.
+
+## So the 10 s was not update's either
+
+Added a `torch.npu.synchronize()` after the model call, purely as an accounting
+probe, and compared:
+
+| | without sync | with sync |
+|---|---:|---:|
+| prep | 2.2 s | 2.5 s |
+| **model** | **73.1 s** | **77.2 s** |
+| **update** | **10.1 s** | **5.7 s** |
+| denoise | 211.66 s | 212.42 s |
+
+About **4.4 s of update's apparent cost was the model's device tail**, returned to
+its rightful owner once the call was synchronised. NPU ops are asynchronous, so a
+Python-level timer around `model(**fk)` stops before the device has finished, and
+the remainder lands in whatever the next timer covers.
+
+This is the same trap that corrupted my round-3 stage timings, now appearing in the
+project's own instrumentation. **The consequence is that `_dmodel` has been
+understating the model and `update` overstating the update since the beginning.**
+
+Critically, denoise did **not** change (212.42 vs 211.66), so this is a
+re-attribution and not a speedup -- the sync only makes measurements honest.
+Reverted it: the file is byte-identical to the pre-probe backup (verified by
+`diff`), and the round-19 fancy-index fix is intact.
+
+## Corrected step picture
+
+| part | per step | share |
+|---|---:|---:|
+| model, device-synchronised | **77.2 s** | ~89% |
+| update | 5.7 s | ~7% |
+| prep | 2.5 s | ~3% |
+
+And within the model, the block loop accounts for only **38 s** (50 x 0.754).
+So **~39 s per step is inside the model call but outside the block loop** --
+about 45% of a whole step, and larger than everything else combined.
+
+That is now the biggest unexamined item by a wide margin, and it is where the next
+round should go: it covers patchification/embedding, the per-step global
+conditioning (AdaLN modulation), the final norm and unpatchify.
+
+## Round 20 accounting
+
+No speedup. Two useful negatives (mask indexing is fine; update is not a scatter
+problem) and one correction (the project's own prep/model/update split is
+async-skewed by ~4.4 s, understating the model). The next target is now
+identified by measurement rather than inference: the 39 s inside the model call
+but outside the block loop.
