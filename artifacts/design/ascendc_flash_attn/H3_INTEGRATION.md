@@ -3275,3 +3275,93 @@ problem) and one correction (the project's own prep/model/update split is
 async-skewed by ~4.4 s, understating the model). The next target is now
 identified by measurement rather than inference: the 39 s inside the model call
 but outside the block loop.
+
+---
+
+# Round 21: the phase breakdown was in the logs all along, and it exposes a 38 s gap
+
+## The instrumentation already existed
+
+`MiniMaxH3DiTModel.forward` already prints, per step:
+
+```
+[H3PERF] phase pre=20.954s blocks=52.129s post=0.000s total=73.083s
+[H3PERF] dit 50/50 block=0.759s stack=52.675s
+```
+
+I had been reading only `block=`, and had been computing "50 x 0.759 = 38 s" of
+block work. That was wrong: **`block=` is a single block's time, while `stack=` is
+the 50-block total, and the stack is 52 s.**
+
+So the model call decomposes as pre ~20.5 s + blocks ~52.1 s, and `pre` -- the
+largest uninspected item -- was visible in the log the whole time.
+
+## Then a surprising and inconsistent run
+
+Adding only a timer produced a run whose phase lines read:
+
+```
+phase pre=0.922s rope=0.000s blocks=33.796s post=0.000s total=34.718s
+dit 50/50 block=0.752s stack=33.763s
+```
+
+i.e. total 34.7 s against 73.1 s before. I did not accept that at face value,
+because a timer cannot halve the model. Grouping the lines by rank showed the real
+structure:
+
+```
+702033  pre=0.958  blocks=33.739
+702033  pre=20.084 blocks=52.261      <- same rank, different step
+702033  pre=3.576  blocks=36.548
+```
+
+So it is **step-to-step variance within a single rank**, not rank imbalance: `pre`
+ranges 0.9-20.1 s and the stack 33.7-52.3 s. The pattern is what DLO weight
+streaming looks like -- cheap when the layers are resident, expensive when they
+are being streamed in.
+
+## The finding that matters
+
+Across all of that variance, two numbers stayed rock steady:
+
+```
+inner  MiniMaxH3DiTModel.forward : phase total = 34.7 s
+outer  step timer                : dstep model = 73.2 s
+```
+
+Both consistent, every step, every rank. So **roughly 38.5 s per step is spent
+inside the `model(...)` call but outside `MiniMaxH3DiTModel.forward`** -- between
+the two timers. That is larger than `pre`, larger than `update`, and larger than
+the remaining attention headroom, and it has never been looked at because both
+timers were already in place and I had been reading neither.
+
+Candidate explanations to check next: a wrapper around the model that does the
+DLO forward hooks, a per-rank synchronisation or collective in the wrapper, or the
+serving layer re-packing inputs. It is not the transformer's own arithmetic, which
+is the 34.7 s.
+
+## Corrected step accounting
+
+Given model outer 73.2 s, prep 2.4 s, update 9.8 s, a step is ~85 s:
+
+| part | per step | share |
+|---|---:|---:|
+| **inside model(), outside the transformer forward** | **~38.5 s** | **~45%** |
+| transformer forward (pre ~1-20 + blocks ~34-52) | ~34.7 s | ~41% |
+| update | 9.8 s | ~12% |
+| prep | 2.4 s | ~3% |
+
+The largest single item is now a gap between two existing timers rather than any
+particular computation.
+
+## Round 21 accounting
+
+No speedup. Rope-table hypothesis instrumented and found not to be the cost
+(`rope=0.000s` -- the table is supplied through kwargs, so the branch is not
+taken; reverted, 0 remnants). The contribution is the corrected block arithmetic
+(the stack is 52 s, not 38 s), the discovery that `pre` is 20.5 s and had been
+visible all along, and the 38.5 s gap between the inner and outer model timers,
+which is now the largest identified item in the pipeline.
+
+Push to GitHub failed all round (`SSL_ERROR_SYSCALL` at the TLS handshake, DNS
+resolves); commits are local and will be pushed when the network recovers.
