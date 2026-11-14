@@ -3499,3 +3499,77 @@ the streaming itself -- `_resident_dit_layers_on_device` calls
 `load_resident_layers()` once, and HBM at 8.9 GB of 32 GB suggests the 50 blocks
 could simply stay resident, which would remove the ramp from the warm steps too
 (34.7 s step contains 33.8 s of blocks that are still restreaming).
+
+---
+
+# Round 24: the residency knob exists, works, and does not fit in 32 GB
+
+Round 23 identified ~42 s per 4-step run (20% of denoise) as first-step warmup and
+proposed making the DiT blocks resident.
+
+## The knob is real
+
+`plan_resolver.py:235`:
+
+```python
+resident_head = min(config.dlo_resident_layers, len(blocks))
+```
+
+exposed as `--dlo-resident-layers`. Confirmed it takes effect:
+
+```
+--dlo-resident-layers 50 -> "Keeping 50 leading blocks resident on transformer; streaming 0 tail blocks"
+--dlo-resident-layers 30 -> "Keeping 30 leading blocks resident on transformer; streaming 20 tail blocks"
+```
+
+And with no flag at all, **no such message appears** -- confirming round 23's
+inference that `resident_head` is 0 by default, i.e. **all 50 blocks stream on every
+step** in the configuration used for every measurement in this record.
+
+## But it does not fit, and the failure is not what I expected
+
+```
+--dlo-resident-layers 50 : OOM, 29.54 GiB allocated of 32.00, needs 1.20 more
+--dlo-resident-layers 30 : OOM, 30.51 GiB allocated of 32.00, needs 1.20 more
+```
+
+Residency at 30 blocks used **more** memory than at 50, which is backwards. So the
+memory is not being spent on resident blocks; it is the `--dlo-no-use-allgather`
+path that residency requires (`config.py:275`: "dlo_resident_layers requires the
+DiT DLO transfer to be rank-local; set dlo_use_allgather=False") that is heavy.
+
+That matters because round 5 measured `--dlo-no-use-allgather` as **29 s slower**
+(287 s vs 258 s denoise) before any of this. So the two options are mutually
+exclusive and the one that enables residency also costs 29 s:
+
+| configuration | denoise | resident blocks |
+|---|---:|---|
+| allgather ON, resident 0 (current) | **212.9 s** | 0 |
+| no-allgather, resident 50 | OOM | 50 |
+| no-allgather, resident 30 | OOM | 30 |
+
+For reference, HBM during a normal run peaks at **7.58 GB of 32 GB**, so the memory
+is available in principle but not through this path.
+
+## Direction closed
+
+Making the streamed blocks resident is **not achievable on 32 GB** via
+`--dlo-resident-layers`, and the alternative (option (a) from round 23 -- a warmup
+forward before the timed loop) does not need memory at all. That is now clearly the
+right choice: it recovers the same ~42 s ramp by paying it once outside the
+measurement, and it is also what makes any comparison against A2/A3 fair, since
+official numbers exclude warmup by construction.
+
+Verified restored configuration afterwards: `denoise=212.89s`, and the warm steps
+show `phase pre=0.932s blocks=33.881s total=34.813s`, matching round 23 exactly.
+So the warm steady state is confirmed at **34.8 s per step** and the current
+configuration already reaches it -- the loss is entirely the ramp.
+
+## Round 24 accounting
+
+No speedup. Two OOM experiments, both reverted; the configuration is restored to
+the known-good one and verified working. The contribution is that the residency
+question is now settled with evidence rather than left as a plausible idea, and
+the reason it fails is documented (not block count -- the no-allgather transfer
+path), which stops the next attempt from re-trying 50 and concluding "too many
+blocks".
