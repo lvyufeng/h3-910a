@@ -261,3 +261,102 @@ the kernel was fast enough to still win at N=73408.
 
 So the per-call result stands, the integration does not. Leaving this disabled by
 default (`VLLM_OMNI_910A_FLASH_ATTN` unset) is the correct state.
+
+---
+
+# RESOLVED: 1.48x faster per layer, measured A/B on identical work
+
+The 3.2x regression is fixed and reversed. The cause was not the layout
+conversions at all -- that was my previous conclusion and it was wrong.
+
+## The conversions were never the problem
+
+Micro-benchmarked every conversion at the real shape (B=1, H=7, N=63232,
+D=128; 113 MB per tensor), on device, warmed up:
+
+| operation | ms |
+|---|---|
+| `q.float()*scale` then `.half()` (what the wrapper did) | 1.16 |
+| `q.mul(scale)` in fp16 | 0.24 |
+| `to_nz(q)`, permute + contiguous | 0.27 |
+| in-place `mul_` on the NZ copy | 0.25 |
+| `to_nz(k)` + `to_nz(v)` | 0.48 |
+| output permute + reshape + contiguous | 0.28 |
+| output `.float()` upcast | 0.59 |
+| `torch.empty_like` allocation | 0.02 |
+| **total, all of it** | **3.3 ms** |
+
+3.3 ms against a 672 ms kernel. The conversions were noise, and my claim that
+they were "on the order of a gigabyte of traffic" that swamped the gain was
+simply wrong -- a gigabyte at this part's achieved bandwidth is about 1 ms, not
+seconds. I had reasoned from a bandwidth estimate instead of measuring.
+
+## What it actually was: a device-to-host copy per call
+
+`_flash_pad_count()` did
+
+```python
+m = attention_mask.detach().to("cpu").bool().flatten()
+```
+
+on **every** attention call. A D2H copy synchronises the stream, so this stalled
+the pipeline exactly like the `aclrtSynchronizeStream` removed in the previous
+round. I introduced it while solving the mask problem and did not see that it
+had the same effect as the bug I had just deleted.
+
+The fix needs no device work at all: the model already carries the valid length
+as a plain Python int in `attn_metadata.packed_padding.kv_length`, so
+`n_pad = N - kv_length` is pure host arithmetic. The mask is now only inspected
+as a cached fallback when that metadata is absent.
+
+## Measured A/B, same prompt, same 5 s clip, same 8-way USP
+
+`[H3PERF] dit N/50 block=` reported by the model itself:
+
+```
+dense: 1.374  1.394  1.400  1.387  1.460  1.400   s/layer   (~1.39)
+flash: 0.949  0.973  0.923  0.935  0.922  0.945   s/layer   (~0.94)
+fallbacks: 0
+```
+
+**1.48x faster per layer**, on identical work, with the fused kernel serving
+every DiT attention call.
+
+Cross-checks that agree:
+
+* kernel alone at this shape: 672.5 ms/call, tile picker choosing br=64/bc=416.
+* dense attention at this shape, scaling the measured 1166 ms at N=73408 by
+  N^2: about 865 ms. 672 against 865 is 1.29x at the attention step, and the
+  layer-level gain is larger because the layer time also includes the epilogue.
+* the earlier 10 s clip at N=73408: 867.8 ms measured, 1.34x over dense.
+
+## Projected effect
+
+At 4 steps x 50 layers = 200 layer-evaluations, saving about 0.45 s each:
+
+```
+~90 s off the run
+```
+
+against the dense baseline this was previously measured at 449 s for 768p/10 s,
+i.e. roughly 449 -> ~360 s. That would still not reach the 300 s target, but it
+is the first real end-to-end speedup and it is worth keeping.
+
+## Two corrections to earlier notes in this file
+
+1. The claim that layout conversion swamped the gain is withdrawn; the measured
+   cost is 3.3 ms. The 3.2x regression came from a per-call D2H copy.
+2. The "3.2x slower" number and the "4.5 s per layer" figure were from a 5 s
+   clip while dense "1.392 s per layer" was from a 10 s clip, so that comparison
+   was not apples to apples either. The A/B above is the first same-workload
+   comparison.
+
+## Lesson
+
+Three times now, a synchronisation appeared inside the per-attention path and
+cost a large multiple: `aclrtSynchronizeStream`, then a `.to("cpu")`, and
+implicitly the harness conveniences before them. The shape of the failure is
+always the same -- one chip busy, the rest idle, layer time inflated several
+fold. Any future edit on this path should be checked against
+`npu-smi` utilisation before and after, because per-layer time alone does not
+say whether you are slow on compute or serialised on sync.
