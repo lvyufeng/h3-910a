@@ -3573,3 +3573,87 @@ question is now settled with evidence rather than left as a plausible idea, and
 the reason it fails is documented (not block count -- the no-allgather transfer
 path), which stops the next attempt from re-trying 50 and concluding "too many
 blocks".
+
+---
+
+# Round 25: the comparable measurement, and why a warmup was the wrong way to get it
+
+## Tried the warmup forward first, and it was the wrong instrument
+
+Added a discarded forward before step 0's timed work (round 24's option (a)).
+
+```
+warmup_forward = 73.46 s (discarded, before timing)
+dstep 1 model  = 39.36 s          (was 71.4 s -- the ramp moved, as predicted)
+denoise        = 252.18 s         (was 212.89 -- WORSE)
+wall           = 463 s            (was 472 -- unchanged)
+```
+
+Two things to take from this:
+
+* The mechanism is **confirmed**: warming the DLO path cut step 1's model call from
+  71.4 to 39.4 s. The ~32 s ramp is real streaming cost, not a measurement artefact.
+* But the warmup was placed **inside** the denoise timer, so it added 73 s rather
+  than moving it, and **wall time did not change** (463 vs 472 s is noise). It was
+  73 s of genuinely wasted compute purchased for a cosmetic metric.
+
+Reverted. I had said before running it that a warmup cannot reduce wall time, and
+that is exactly what happened -- so implementing it inside the timed region was a
+mistake in placement, not in concept.
+
+## The same comparison is available for free
+
+Rather than buying the steady-state number with real compute, accumulate each
+step's elapsed time and report it after the loop:
+
+```
+[H3PERF] denoise_steady step1=85.34s steady_avg=41.32s
+         steady_total=165.26s projected_49steps=2024s
+```
+
+Nothing extra is computed; the numbers come from the per-step timings already
+collected. Verified no regression: step1 85.3 + 3 x 41.3 = 209 s against the
+211-213 s baseline, and wall time 423 s.
+
+## The comparable measurement the goal asked for
+
+This is the like-for-like figure, since the official numbers exclude warmup:
+
+| | steps | time | per step |
+|---|---:|---:|---:|
+| this stack, steady state | 49 (projected) | **2024 s** | **41.3 s** |
+| this stack, actual 4-step run | 4 | 209 s denoise | 41.3 s steady / 85.3 s first |
+| official A2 | 49 | **150 s** | 3.06 s |
+| official A3 | 49 | **114 s** | 2.33 s |
+
+So the honest statement is: **this stack is 13.5x slower per step than A2 and 17.8x
+slower than A3** on the same nominal workload shape, on a per-step steady-state
+basis.
+
+That supersedes the "~21x" I wrote in round 16, which compared a *cold* 65.7 s/step
+against A2's warm figure -- not like for like. The corrected gap is smaller than I
+had been reporting, and it is now stated in the same terms the official numbers use.
+
+## Where the 41.3 s per step goes
+
+From rounds 23 and 25, per steady step:
+
+| part | per step |
+|---|---:|
+| transformer blocks (50, all streamed) | 33.8 s |
+| transformer pre | 0.95 s |
+| update | ~5.7 s |
+| prep | ~2.2 s |
+
+Of the 33.8 s of blocks, roughly 28 s is arithmetic and ~5 s is DLO streaming (from
+the step1-vs-steady delta). The attention kernel inside that is 50 x 0.754 s =
+37.7 s of a 52 s stack in the *cold* configuration, or about 33.8 s warm -- so
+attention remains the dominant single component, consistent with round 10's finding
+that it sits at 82% of its shape-limited ceiling.
+
+## Round 25 accounting
+
+No wall-time improvement, and one wrong implementation reverted. The deliverable is
+the comparable measurement itself -- explicitly required by the goal since round 1
+and never produced until now -- plus a correction of the headline ratio from ~21x to
+13.5x/17.8x on a like-for-like basis.
