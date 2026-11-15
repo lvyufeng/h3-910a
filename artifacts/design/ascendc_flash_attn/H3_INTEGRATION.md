@@ -3935,3 +3935,71 @@ No speedup and no code change. The contribution is a correction: an existing
 pipeline was missed, two earlier rounds of work rested on a false premise, and the
 remaining work is now reduced from "implement a software pipeline" to "add a second
 V buffer and thread it exactly as `Sij` is already threaded".
+
+---
+
+# Round 30: the if_scope V ping-pong compiles, and is 9% slower
+
+Round 29 identified V as the un-pipelined half and round 14's failure as a naming
+problem (a symbolic loop index cannot name a TIK buffer). This round fixed the
+approach and tested it.
+
+## The fix compiles
+
+Two fixed-name buffers (`Vj_l1_a`, `Vj_l1_b`) with the load and the PV it feeds
+selected by `if_scope(kv_blk_idx % 2 == 0)`. Names are constant, the branch is
+compile-time, and with the **kernel cache cleared** so a stale artefact could not
+mask a failure:
+
+```
+built ok (cache cleared)
+609 ms  23.5 TFLOPS  (baseline 558)
+```
+
+So the round-14 blocker is genuinely solved -- `if_scope` is the correct way to
+alternate TIK buffers, exactly as inferred.
+
+## But it is 9% slower, which is the useful part
+
+609 ms against 558 ms. Two costs, both plausible:
+
+* two 76 KB V buffers now compete for L1 (the budget was already 280 KB of a
+  512 KB-1 MB pool, plus this pushes toward 432 KB with less room for the matmul
+  workspaces);
+* the `output_compute` body is duplicated into both branches, inflating the
+  instruction footprint for no scheduling benefit.
+
+And the benefit did not materialise, which tells me something about the original
+code: **V's load was already being hidden.** The sequence per iteration is
+`load V[i] -> softmax(Sij[i]) -> PV(V[i])`, and the softmax depends only on `Sij`,
+which iteration `i-1` already precomputed. So V's MTE2 has the whole softmax to hide
+behind, without any second buffer. That is consistent with the kernel sitting at 82%
+of its shape-limited ceiling: the remaining 18% is per-tile compute efficiency, not
+a memory stall waiting to be pipelined.
+
+## Reverted and verified
+
+Restored the pre-experiment source and rebuilt with the cache cleared:
+
+```
+built ok (cache cleared)
+558 ms  (expect 558)
+```
+
+Exact match, with the round-10 in-place fp16 exp still in place and zero `Vj_l1_a`
+remnants. The deployed kernel remains the verified 558 ms configuration.
+
+## Closing the pipelining thread
+
+Four attempts (rounds 14, 15, 30, plus the round-6 premise they rested on) and the
+answer is now measured: the K pipeline already exists, V's load is already hidden
+behind softmax, and adding a second V buffer costs 9%. **There is no pipelining win
+available in this kernel.** The 82%-of-ceiling figure from round 10 is the honest
+statement of where it stands, and the remaining ~18% is compute efficiency at
+K=128, which round 10 already showed the vendor library does not beat either.
+
+## Round 30 accounting
+
+No speedup. One thread closed with a measurement rather than an inference, and a
+mechanism (if_scope buffer alternation) confirmed to work in case it is needed for
+something else. Kernel and deployment verified unchanged at 558 ms.
