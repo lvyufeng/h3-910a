@@ -3725,3 +3725,68 @@ budget, and a wrong figure in a code comment corrected against measurement. The
 remaining `update` cost of ~8.2 s is **not** explained by mask ops (0.003 s, round
 20) or by the finite check (1.9 s) -- roughly 6 s is still unattributed there, making
 it the last substantial unexplained item after attention.
+
+---
+
+# Round 27: update has nothing to optimise -- its ops are 4.5 ms against a 5.7 s reading
+
+Micro-benchmarked every op in the update step at the real shapes (60000 updated
+rows, width 96, seq 63232):
+
+```
+v_video[update].float()            0.105 ms
+rows[update] gather                1.004 ms
+rows.clone()                       0.103 ms
+rf_v_to_x0 (xt + (1-t)*v)          0.230 ms
+euler_eta0_step                    0.347 ms
+clone + both mask writes           2.728 ms
+TOTAL (per step)                   4.515 ms
+```
+
+Against a measured `update` of 5.7-8.2 s that is a **1262x discrepancy**.
+
+## Conclusion: update is an accounting artefact, not a target
+
+There is **nothing to optimise in `update`**. Its apparent seconds are device work
+belonging to the model call, which the Python timer attributes to `update` because
+nothing synchronises between `_dmodel` and `_dend`. Round 20 established this
+partially -- adding a sync after the model moved 4.4 s from `update` back to
+`model` -- and this round closes it: even the residual 5.7 s cannot be update's own
+arithmetic, because its arithmetic is 4.5 milliseconds.
+
+This is the third time in this session that a "large component" turned out to be
+misattributed device work (rounds 3, 20, and now 27). The general lesson, which I
+should have applied sooner: **on an asynchronous device, a Python-level timer
+segment is not a cost measurement unless a synchronisation bounds it.**
+
+## What this corrects in the record
+
+The step budget I have been quoting for several rounds:
+
+| part | quoted | actually |
+|---|---:|---|
+| model (transformer forward, device) | 73 s cold / ~40 s warm | correct |
+| update | 5.7-10 s | **~0.005 s of its own work** |
+| prep | 2.2 s | correct (was the index_copy_ scatter, now fixed) |
+
+So the model call is **essentially the entire step**, and round 10's finding stands
+unchanged: attention sits at 82% of its shape-limited ceiling of 31.5 TFLOPS, with
+at most 1.23x left in it.
+
+## Where this leaves the goal
+
+Steady state is 41.2 s per step, of which ~33.8 s is the block stack (attention
+dominant, at 82% of ceiling), ~5 s is DLO weight streaming that cannot be made
+resident on 32 GB (round 24), and ~2.2 s was the scatter (fixed). There is no
+remaining misattributed component of significant size, and no unexplored subsystem.
+
+**The 15 s/step target in the goal is not reachable on this hardware**, which is now
+established by three independent lines of evidence: the FLOP/bandwidth budget
+(round 6), the measured K-length ceilings giving 31.5 TFLOPS against the 47.8
+required (round 11), and the exhaustive elimination of every non-attention
+component above (rounds 20-27).
+
+## Round 27 accounting
+
+No speedup. One target formally closed with a measurement, and a wrong entry in my
+own step budget corrected. Recorded so that no future round re-opens `update`.
