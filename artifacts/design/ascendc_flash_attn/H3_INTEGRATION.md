@@ -4003,3 +4003,75 @@ K=128, which round 10 already showed the vendor library does not beat either.
 No speedup. One thread closed with a measurement rather than an inference, and a
 mechanism (if_scope buffer alternation) confirmed to work in case it is needed for
 something else. Kernel and deployment verified unchanged at 558 ms.
+
+---
+
+# Round 32: decode tiling is in the model config, and enlarging it deadlocks
+
+## Two discoveries in the VAE config
+
+`FL2VA/video_vae/config.json` (symlink-resolved to
+`/home/mseco/models/MiniMax-H3/FL2VA/video_vae/config.json`):
+
+```json
+"source_class_name": "AutoencoderKLLegacy",
+"vae_decoder_tiling": 1,
+"vae_tile_size": 256,
+"vae_tile_overlap_min": 64,
+"latent_channels": 24
+```
+
+1. The decoder is a **Wan-family `AutoencoderKLLegacy`** (diffusers 0.32.2), not a
+   bespoke H3 architecture. That is worth knowing because `--vae-fast-path` is
+   documented as the "Wan VAE decoder fast path" -- though round 28 measured it as
+   having no effect, and `vae_fast_path` has no references under
+   `models/minimax_h3/`, so it is not wired through for this model either way.
+2. **Tiling is baked into the model config**, not controlled by `--vae-use-tiling`.
+   That is why round 32's earlier test (dropping the flag) changed nothing:
+   `vae.py:188-191` passes `tile_size` and `tile_overlap_min` as constructor kwargs
+   at load time from this file.
+
+## The overhead this implies
+
+At tile 256 with overlap 64 the stride is 192, so a 1344x768 frame takes
+`ceil(1344/192) x ceil(768/192)` = 7 x 4 = **28 tiles**, each computing 256x256 of
+which only ~192x192 is unique -- roughly **56% redundant area**. Across 124 frames
+that is ~3500 tile decodes.
+
+So I raised `vae_tile_size` to 512 (stride 448, 3x2 = 6 tiles/frame) and tested.
+
+## Result: it deadlocks
+
+```
+encode=40.00s     <- fine
+(denoise never completed; request still in_progress at 804 s)
+health: healthy, no OOM, no traceback
+```
+
+Reverted to 256 and verified.
+
+The mechanism is almost certainly the one the code already warns about, in
+`decode_with_chunks`:
+
+> Native H3 tiling performs its own collectives for every temporal clip, so this
+> path needs the same too-few-tiles fallback [...] without it a shape that leaves
+> some ranks tileless **hangs the gather** instead of decoding rank-locally.
+
+With 6 tiles across 8 ranks, some ranks receive **no tiles at all**, and the
+spatial-parallel collective then waits forever. Tile 256 gives 28 tiles, which
+spreads over 8 ranks without leaving any empty.
+
+## So the tiling knob is not usable, and why
+
+Enlarging tiles is the obvious way to cut the ~56% overlap overhead, but the tile
+count has to stay **>= the VAE parallel degree (8)**. With a 1344x768 frame that
+bounds tile size in practice, and the safe choice is the configured 256. A fix here
+would mean giving the tileless ranks something to do (a no-op participation path),
+which is a change to the VAE parallel layer rather than a config value.
+
+## Round 32 accounting
+
+No speedup. Two facts established cheaply: `--vae-use-tiling` is inert because
+tiling lives in the config, and the config's tile size cannot be enlarged without
+deadlocking the rank-local collectives. Both are recorded so the next attempt does
+not repeat them. Config restored and verified, 0 NPU processes, no code changed.
