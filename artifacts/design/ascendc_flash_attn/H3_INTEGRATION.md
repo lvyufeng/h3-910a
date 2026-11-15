@@ -4331,3 +4331,61 @@ because the MLP runs on 7904 rows rather than 63232. Replaced with a smaller,
 measured statement (~81 ms/block unplaced, ~4 s/step) and a named leading candidate
 (the pre-attention Q all-gather). The `seq`/`local` logging is kept -- it is
 env-gated behind `VLLM_OMNI_910A_PERF` and it is what caught this.
+
+---
+
+# Round 38: the custom kernel is not an optimisation -- it is the only thing that fits
+
+Chasing the ~81 ms/block residue, I checked what the *deployed* attention path
+actually costs, because the serve command names `--diffusion-attention-backend
+TORCH_SDPA` while my kernel is reached through `VLLM_OMNI_910A_FLASH_ATTN=1`. If the
+hot path were SDPA then every block-time claim in this record compares against the
+wrong baseline.
+
+At the real shape (H=7, D=128, Q=K=V=63232) **no SDPA path runs at all**:
+
+```
+SDPA default    : NPU out of memory. Tried to allocate 104.26 GiB
+SDPA efficient  : NPU out of memory. Tried to allocate 104.26 GiB
+SDPA math       : NPU out of memory. Tried to allocate 104.26 GiB
+```
+
+The arithmetic explains it: the attention matrix alone is
+`7 x 63232^2 x 2 bytes` = **51.6 GiB**, and 104.26 GiB is that doubled for the
+softmax/dropout temporary. On 32 GB it cannot be materialised by any implementation
+that forms the score matrix.
+
+## What this changes
+
+`fa910a.flash_attention_910a` does **559 ms at 25.6 TFLOPS** for a problem that
+otherwise does not run. So the framing I have used for 38 rounds -- "the kernel is at
+82% of its ceiling and needs to be faster" -- was the wrong frame. The correct one:
+
+**the custom AscendC/TBE kernel is what makes H3 inference possible on 8x910A at
+this sequence length.** Official A2/A3 run 63232-token attention because they have
+the HBM for a fused path and the silicon to run it fast; here, without the kernel,
+the workload OOMs.
+
+This also settles what the 559 ms baseline means. It is not "our slow kernel versus a
+fast vendor one" -- there is no vendor path for this shape on this part. 25.6 TFLOPS
+is what this hardware does for the only algorithm that fits.
+
+## Round 38 accounting
+
+No speedup, and this closes the residue question in a different way than planned: the
+~81 ms/block is not explained yet, but the attention term it is measured against is
+now known to be the *floor* rather than a substitution candidate.
+
+Worth stating plainly for the record: for three quarters of this project I was
+optimising a kernel that I had implicitly treated as a faster alternative to
+something that already worked, when in fact it is the load-bearing component. The
+earlier framing ("8% of peak, must improve") came from the goal text, and I never
+checked whether the vendor path could run the shape at all.
+
+## Correction to the record's framing
+
+Round 6's "62% of the shape-limited ceiling" and round 10's "82% of ceiling" remain
+arithmetically correct, but the inference drawn from them -- that a better kernel
+would unlock large gains -- should be read against this: the ceiling is set by what
+fits and what the vector/cube units sustain at K=128, and there is no alternative
+implementation to compare against.
