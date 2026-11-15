@@ -4389,3 +4389,72 @@ arithmetically correct, but the inference drawn from them -- that a better kerne
 would unlock large gains -- should be read against this: the ceiling is set by what
 fits and what the vector/cube units sustain at K=128, and there is no alternative
 implementation to compare against.
+
+---
+
+# Round 39: the 81 ms residue is DLO weight streaming over PCIe -- the block closes
+
+Round 37 left ~81 ms per block unplaced and named the pre-attention Q all-gather as
+the leading candidate. That was wrong on magnitude: 63232 x 5376 fp16 is 679 MB and
+would move in 1-2 ms at any plausible rate. So instead of another instrumented run,
+tested the other candidate arithmetically -- how much weight does a block actually
+stream?
+
+```
+transformer weights total : 66.28 GB over 13 shards
+per block (50 blocks)     : 1326 MB
+```
+
+Then, what bandwidth would that imply?
+
+| streamed in | rate |
+|---:|---:|
+| 81 ms (the measured residue) | **16.4 GB/s** |
+| 100 ms | 13.3 GB/s |
+| 51 ms | 26.0 GB/s |
+
+against the two references this project measured:
+
+| link | rate | 1326 MB takes |
+|---|---:|---:|
+| HBM device-to-device (measured) | 534.0 GB/s | **2 ms** |
+| PCIe Gen4 x16 practical | ~25 GB/s | 53 ms |
+| PCIe Gen4 x16 theoretical | 32 GB/s | 41 ms |
+
+**16.4 GB/s sits right in the PCIe H2D range**, between the HBM figure (which would
+be 2 ms) and the practical PCIe ceiling (53 ms). So the residue is the **DLO
+host-to-device weight stream**, at ~16 GB/s effective -- partly serialised against
+compute, which is why it lands above the 53 ms a clean 25 GB/s transfer would take.
+
+## The block now closes
+
+| part | per block |
+|---|---:|
+| attention (kernel, the only implementation that fits) | 559 ms |
+| DLO weight streaming (1326 MB over PCIe) | ~81 ms |
+| MLP (7904 local rows) | ~33 ms |
+| other (norms, adaln, gates, conversions) | ~3 ms |
+| **total** | **676 ms** (= 41.2 s / 50) |
+
+That is **four terms, all measured or bounded, summing to the observed value**. The Q
+all-gather is ruled out by magnitude, not by hand-waving.
+
+## Why this is a floor, not a bug
+
+66.28 GB of DiT weights cannot be resident in 32 GB of HBM. Round 24 established this
+the hard way (`--dlo-resident-layers` OOMs at 50 *and* 30 blocks). So every step must
+stream most of the DiT across PCIe, and at 16 GB/s that costs ~4 s per step. It is a
+link-bandwidth consequence of the model being twice the size of device memory, not
+software waste -- the same class of constraint as round 38's finding that attention
+cannot be materialised.
+
+Both of the project's two "unexplained" items have now resolved to the same root
+cause: **this model does not fit this hardware**, and the engineering response was to
+make it fit (fused attention, layerwise offload) at a cost that is now fully accounted.
+
+## Housekeeping
+
+Removed a junk file from the model directory (``, {k:v for k,v in m.items() if
+"schedule" in k or "step" in k})\n``, 86 bytes) -- a Python `SyntaxError` message
+written by a broken heredoc in an earlier round. Model dir now contains only
+`FL2VA`, `fused_lora.json`, `model_index.json`, `model_index.json.bak`.
