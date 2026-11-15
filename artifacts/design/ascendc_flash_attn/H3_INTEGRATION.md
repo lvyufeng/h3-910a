@@ -4075,3 +4075,67 @@ No speedup. Two facts established cheaply: `--vae-use-tiling` is inert because
 tiling lives in the config, and the config's tile size cannot be enlarged without
 deadlocking the rank-local collectives. Both are recorded so the next attempt does
 not repeat them. Config restored and verified, 0 NPU processes, no code changed.
+
+## Round 33: tile 320 deadlocks too -- only the shipped 256 works
+
+Round 32 showed tile 512 hangs the decode. The obvious hypothesis was that some rank
+ends up with **no tiles**, since 6 tiles cannot cover 8 ranks. That predicts any
+tile size giving **>= 8 tiles** should be safe, so I did the arithmetic before
+spending cluster time:
+
+| tile | grid | tiles | total area vs frame | feasible? |
+|---:|---|---:|---:|---|
+| 256 | 7x4 | 28 | **1.78x** | shipped, works |
+| **320** | 5x3 | **15** | **1.49x** | >= 8 tiles |
+| 384 | 4x3 | 12 | 1.71x | >= 8 tiles |
+| 448 | 4x2 | 8 | 1.56x | >= 8 tiles |
+| 512 | 3x2 | 6 | 1.52x | too few -- round 32's hang |
+
+Tile 320 is the optimum of total computed area among feasible sizes (1.49x vs the
+shipped 1.78x), promising ~16% less VAE conv work, i.e. roughly 131 s instead of
+156 s.
+
+**It deadlocked as well.** Denoise completed normally (`steady_avg=41.17s`), then the
+decode never finished: `status=in_progress` at 703 s, health healthy, no OOM, no
+traceback.
+
+So the "tiles >= ranks" model of the constraint is **wrong**. With 15 tiles over 8
+ranks some ranks get 2 and some get 1, and that asymmetry is evidently enough to
+break the per-clip collective. The real requirement is likely that every rank gets
+the **same number** of tiles, or that the tile grid divides the spatial-parallel
+factor evenly -- 28 over 8 is also uneven (3.5), yet 256 works, so neither simple
+rule fits. Without reading the VAE parallel layer this is guesswork, and I have now
+produced two hangs guessing at it.
+
+## Reverted, and the baseline re-verified working
+
+Restored the shipped value and ran a full request to confirm recovery rather than
+assume it:
+
+```
+status = completed
+wall   = 412 s
+decode = 157.14 s
+denoise_steady step1=81.41s steady_avg=41.18s -> projected_49steps=2018s
+```
+
+All matching the established baseline. Config confirmed back at `tile_size=256`,
+`overlap=64`, `decoder_tiling=1`; 0 NPU processes.
+
+## Conclusion: the decode tiling is effectively frozen
+
+Only the shipped tile size works, at a 1.78x area overhead, and I could not find a
+larger-but-still-safe value by reasoning about tile counts. Improving the decode
+therefore requires reading the VAE parallel layer and fixing the rank-participation
+path so larger tiles (or uneven tile counts) are safe -- after which the arithmetic
+in this round's table says tile 320 would be worth ~16%.
+
+That is a well-scoped next step, but it is a change to collective participation,
+not a configuration value, and I am not going to attempt it by trial and error after
+two hangs.
+
+## Round 33 accounting
+
+No speedup, two hung runs (both cleaned up), config restored and the baseline
+re-verified end to end. The contribution is a refuted prediction and a precise table
+of what tile sizes would be worth once the participation path is fixed.
