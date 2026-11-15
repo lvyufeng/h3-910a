@@ -21,6 +21,27 @@ a measurement, a refutation, or a retraction.
 
 ---
 
+## 1b. The kernel is load-bearing, not an optimisation
+
+Measured in round 38: at the real shape (H=7, D=128, Q=K=V=63232) **no SDPA path
+runs at all** on 910A:
+
+```
+SDPA default    : NPU out of memory. Tried to allocate 104.26 GiB
+SDPA efficient  : NPU out of memory. Tried to allocate 104.26 GiB
+SDPA math       : NPU out of memory. Tried to allocate 104.26 GiB
+```
+
+The attention matrix alone is `7 x 63232^2 x 2 bytes` = 51.6 GiB, and 104.26 GiB is
+that doubled for the softmax temporary. On 32 GB nothing that materialises the score
+matrix can run.
+
+So `fa910a` (559 ms, 25.6 TFLOPS) is the **only** implementation of this workload on
+this hardware. The "8% of peak, must improve" framing inherited from the goal text
+was the wrong frame: there is no vendor path to compare against, and 25.6 TFLOPS is
+what the part sustains for the only algorithm that fits. Sections 4 and 8 should be
+read in that light.
+
 ## 2. What actually landed
 
 ### 2.1 Flash-attention kernel: 656.8 → 558 ms
