@@ -4257,3 +4257,77 @@ explained *as efficient work*:
 ceilings for its shape. That is the strongest available statement that the gap to A2
 is hardware rather than missing optimisation -- and unlike the earlier arguments,
 this one is an accounting that closes to zero rather than an extrapolation.
+
+---
+
+# Round 37: round 36's MLP attribution was wrong -- local is 7904, not 63232
+
+Round 36 concluded the block's ~195 ms gap was the MLP, but only bracketed the
+matmul (143.5 ms at 46400 tokens vs 303.6 ms at 63232) instead of measuring it in
+the model. That bracketing was carrying the conclusion, so I logged the real
+sequence length.
+
+## The instrumentation result
+
+```
+[H3PERF] dit 1/50 block=0.033s stack=0.033s seq=63232 local=7904 hy=(7904, 5376)
+```
+
+Three things fall out:
+
+1. **`local=7904`.** `seq` is 63232 but each rank holds only **7904** query rows --
+   exactly 63232/8, as USP8 implies. The hidden state handed to each block is
+   `(7904, 5376)`, not `(63232, 5376)`.
+2. **Therefore the MLP is ~33 ms, not ~195 ms.** At 7904 tokens the MLP is
+   `4 x 7904 x 5376 x 14336` = 2.44e12 FLOPs, which at the measured K=5376 rate of
+   73 TFLOPS is ~33 ms. **Round 36's attribution is wrong.** I bracketed a quantity
+   at the wrong size and let the bracket decide the conclusion.
+3. **`block=0.033s` is dispatch time, not device time** -- another instance of the
+   async trap from rounds 3, 20 and 27. The per-block timer cannot be trusted; the
+   trustworthy figure is `41.2 s / 50 blocks = 676 ms`, which is sync-bounded by the
+   outer measurement.
+
+## And the kernel shape question
+
+If only 7904 queries are local, the kernel should be Q=7904 over K=V=63232, which is
+8x less query work than every benchmark in this record. Measured directly:
+
+```
+real: Q=7904 K=V=63232     FAILED: shape '[1, 7, 494, 16, 8, 16]' is invalid for
+                           input of size 56655872
+record's: Q=K=V=63232       559.2 ms   25.6 TFLOPS
+```
+
+The wrapper **rejects unequal Q/K/V lengths**: the failing tensor holds 63232
+positions while the reshape was built from the Q length. So `flash_attention_910a`
+requires all three to match, which means the real path must bring Q up to the full
+sequence length before calling it -- and the operative kernel shape therefore **is**
+Q=K=V=63232, the one the record has been quoting. The 559 ms stands.
+
+## Corrected block accounting
+
+| part | per block | source |
+|---|---:|---|
+| attention | 559 ms | kernel benchmark, Q=K=V=63232 |
+| MLP | ~33 ms | 7904 tokens at 73 TFLOPS |
+| other (norms, adaln, gates, conversions) | ~3 ms | round 3 |
+| **accounted** | **~595 ms** | |
+| per-block budget | 676 ms | 41.2 s / 50, sync-bounded |
+| **unattributed** | **~81 ms** | |
+
+So the block is **mostly** accounted but not to zero: roughly 81 ms per block, 4 s
+per step, remains unplaced. That is the opposite of round 36's claim, and it is a
+smaller and better-defined residue than the original 196 ms.
+
+Likely candidates for the remaining 81 ms, none measured: the Q all-gather that must
+precede attention (63232 rows of 5376 half = 679 MB per block across ranks), the
+`sp_gather` at the end of the stack, and the async slack between the block loop and
+the outer timer.
+
+## Round 37 accounting
+
+No speedup. Round 36's headline claim is **retracted**: the residue is not the MLP,
+because the MLP runs on 7904 rows rather than 63232. Replaced with a smaller,
+measured statement (~81 ms/block unplaced, ~4 s/step) and a named leading candidate
+(the pre-attention Q all-gather). The `seq`/`local` logging is kept -- it is
+env-gated behind `VLLM_OMNI_910A_PERF` and it is what caught this.
