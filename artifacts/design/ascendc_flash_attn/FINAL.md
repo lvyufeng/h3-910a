@@ -159,12 +159,20 @@ Per block (budget 676 ms from 41.2 s / 50, which is sync-bounded):
 > ~200 GB/s**, **36 ms at 25 GB/s**, or **55 ms at 16.4 GB/s**. 36-55 ms is the right
 > order to account for most of the 81 ms gap.
 >
-> This has not been measured in isolation, so it is recorded as a candidate rather
-> than a closure -- after three wrong attributions it would be dishonest to assert a
-> fourth. The experiment is small: sync-bound `_run_packed_attention` at one block.
-> The 12x spread between HCCS and PCIe-like rates is itself the most concrete
-> remaining lever: if the collective runs at PCIe-like rates, ~50 ms/block where
-> ~5 ms is achievable means **~2.2 s/step (5%)** recoverable in the collective path.
+> **Attempted in round 42 and the measurement failed.** Syncing before and after
+> `_run_packed_attention` at a real 7904-row block reported 8.3-8.7 s per call, which
+> is impossible (a block is 676 ms, so 50 blocks would be 435 s/step) while the
+> end-to-end average did not move at all. The entry sync blocks on everything already
+> in flight -- other ranks' collectives, the DLO prefetch, the next block's stream
+> work -- and reports that backlog as attention time. This is the round-20 trap,
+> restated and then repeated.
+>
+> So the all-to-all remains a **sized but unmeasured** candidate. Isolating it needs
+> per-rank timeline capture (`torch_npu.profiler`) and reading kernel durations off
+> the trace, or removing the confounders (single rank, prefetch off) at the cost of
+> no longer measuring the real pipeline. The 12x spread between HCCS (~4.5 ms) and
+> PCIe-like rates (36-55 ms) remains the most concrete lever if it is real:
+> **~2.2 s/step (5%)** recoverable in the collective path.
 
 ---
 
