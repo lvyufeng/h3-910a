@@ -1,6 +1,6 @@
 # MiniMax H3 on 8x910A — final report after 31 rounds
 
-Benchmark工况: 768p / 5s / fl2va / USP8 / 8×910A (32 GB each), CANN 9.2.0,
+Benchmark configuration: 768p / 5s / fl2va / USP8 / 8×910A (32 GB each), CANN 9.2.0,
 torch_npu 2.10.0, vLLM-Omni 0.30.0, 4-step distilled checkpoint.
 
 ---
@@ -105,7 +105,7 @@ Warm steady state decomposes as:
 | — of which arithmetic | ~28 s | |
 | — of which DLO weight streaming | ~5 s | cannot be made resident on 32 GB |
 | transformer pre | 0.95 s | |
-| update | ~0.005 s | see section 5 |
+| update | ~0.005 s | async tail, not its own work -- see section 5 |
 | prep | ~2.2 s | was the `index_copy_` scatter, now fixed |
 
 ---
