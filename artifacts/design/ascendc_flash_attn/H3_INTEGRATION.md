@@ -5192,3 +5192,57 @@ is deployed; the next round prioritizes a cache-safe, zero-key-safe integration
 of the faster FA padding before another end-to-end measurement. All owned
 processes are stopped, eight cards verified idle and the lease released. The goal
 remains active; no 15 s DiT/2 s encoder/20 s decode completion is claimed.
+
+---
+
+# Round 52: masked tile padding deployed; actual FL2VA completes, quality still unverified
+
+The wrapper now automatically expands inefficient D=128 shapes by at most 10%,
+reusing cleared input buffers and masking only added keys inside the TIK kernel.
+A finite-min score mask precedes rowmax and exact zeroing follows exp before
+rowsum/P@V. This matters: the old zero-key/LSE subtraction returns zero instead of
+one for uniform V=1 when all valid scores are −45.25. The new mask returns exactly
+one there and at the FP16 finite-minimum score −65504. Existing caller `n_pad`
+retains its original correction contract; arbitrary masked/causal attention is
+not added.
+
+At N=41792, the complete wrapper including padding copies/clearing/trimming measures
+**421.151→154.391 ms, 2.7278x / −63.34%**, with reversed-order groups. Pair relative
+RMS is at most 0.01385%, sampled FP32 reference error at most 0.03979%, not bit-exact
+or model-quality proof. **16 host regressions pass**, including uncached build and
+mask-metadata publication. Real NPU tests cover length changes, tail clearing,
+scale=1→scaled calls, and extreme finite negative scores. Compilation failures
+(None Bc, unsupported −inf immediate, json local-import initialization) and a
+macOS temp-path test failure are preserved and corrected, not counted as success.
+
+The final checked source is deployed with SHA256
+`c98b9064b4a01d0fa7166b292d8a7e6abf0793918d4479a8025b9715532da4a8`, original backed up.
+The explicit first/last-image 1344×768, seconds=5, fps=24, seed=1234 request now
+completes: actual MP4 is **124 frames / 5.1667 s with audio**. Request wall is
+**975.59 s** (startup 245.05 s excluded), encode/conditioning **333.59 s**, denoise
+**166.99 s**, decode **465.52–466.88 s**. All eight ranks confirm masked 43776,
+128×304 tiles, 30 cores, and original caller padding 23. No reference-precision,
+weights, schedule or global layout-setting change is made by this wrapper fix.
+
+Source inspection finds step subtimers end **before** the existing synchronization.
+Late subtimer sums **14.674/14.736 s** therefore do not establish synchronized
+15 s/step. The old steady_avg=29.99 averages steps 2–4, including step-2 cold effects;
+steady_total is an extrapolated average×steps, not measured total. The 49-step
+projection is not an official lossless comparison; this is a four-step distilled
+checkpoint. Next measurement must include post-step synchronization and more
+steps without deleting work.
+
+The 124 video frames decode and checksum matches the downloaded file. Visual
+inspection sees the expected red-ball first/last anchors but **prominent unprompted
+lettering in the middle frame**. This is a runtime-path success, not a quality or
+lossless pass. A controlled reference comparison is needed to distinguish
+checkpoint/schedule behavior from conditioning/backend defects; one sample alone
+cannot attribute the cause.
+
+[Round-52 complete evidence](<../../diagnostics/round52/README.md>) includes raw
+wrapper checks, failed builds, final cache tests, completed request, MP4/decoded
+frames, and explicit step-timing qualifications. The
+[deployed wrapper](<../patches/fa910a.py>) retains an opt-out via
+`VLLM_OMNI_910A_FA_PAD_TILES=0`. All owned processes are stopped and cards verified
+idle; the lease is released. Goal remains active for quality verification,
+synchronized timing and the still-unmet encoder/decode targets.

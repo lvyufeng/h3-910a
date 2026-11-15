@@ -1,0 +1,547 @@
+{
+  "command": [
+    "/home/mseco/vllm910a/bin/python",
+    "/home/mseco/vllm910a/bin/vllm-omni",
+    "serve",
+    "/home/mseco/models/MiniMax-H3-fp16",
+    "--omni",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "9198",
+    "--trust-remote-code",
+    "--task-type",
+    "fl2va",
+    "--num-gpus",
+    "8",
+    "--usp",
+    "8",
+    "--ring",
+    "1",
+    "--text-encoder-tp-size",
+    "8",
+    "--vae-parallel-mode",
+    "tile",
+    "--vae-use-tiling",
+    "--vae-patch-parallel-size",
+    "8",
+    "--diffusion-attention-backend",
+    "TORCH_SDPA",
+    "--stage-init-timeout",
+    "2400",
+    "--init-timeout",
+    "2400",
+    "--dtype",
+    "half",
+    "--enable-distributed-layerwise-offload"
+  ],
+  "run_dir": "/tmp/h3_round52_e2e01",
+  "request_limit_seconds": 2400,
+  "server_pid": 67353,
+  "startup_seconds": 245.04946241015568,
+  "request_fields": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "seconds": "5",
+    "size": "1344x768",
+    "fps": "24",
+    "seed": "1234",
+    "extra_params": "{\"task\": \"fl2va\"}"
+  },
+  "expected_frame_alignment": {
+    "requested_frames": 120,
+    "aligned_frames": 124,
+    "duration_s": 5.166666666666667,
+    "rule": "17n+5"
+  },
+  "reference_images": [
+    {
+      "filename": "first.png",
+      "sha256": "aef653db0fde05489b1bad708062727881019bfefac3452fd5f9f0c1c6045118",
+      "width": 1344,
+      "height": 768
+    },
+    {
+      "filename": "last.png",
+      "sha256": "bfe0ecf871a793d7056e1e2a09126b985df1047c6237609cad5386b89de4497e",
+      "width": 1344,
+      "height": 768
+    }
+  ],
+  "submitted": {
+    "model": "/home/mseco/models/MiniMax-H3-fp16",
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "id": "video_gen_b9f75ff1919e4dabaef2eba0178f0363",
+    "object": "video",
+    "status": "queued",
+    "size": "1344x768",
+    "progress": 0,
+    "seconds": "5",
+    "quality": "default",
+    "completed_at": null,
+    "created_at": 1794751238,
+    "remixed_from_video_id": null,
+    "error": null,
+    "media_type": "video/mp4",
+    "expires_at": null,
+    "file_name": null,
+    "inference_time_s": null,
+    "fps": 24.0,
+    "num_frames": 120,
+    "duration_s": 5.0,
+    "metrics": null,
+    "stage_durations": {},
+    "peak_memory_mb": 0.0,
+    "action": null
+  },
+  "request_wall_seconds": 975.5930306203663,
+  "response": {
+    "model": "/home/mseco/models/MiniMax-H3-fp16",
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "id": "video_gen_b9f75ff1919e4dabaef2eba0178f0363",
+    "object": "video",
+    "status": "completed",
+    "size": "1344x768",
+    "progress": 100,
+    "seconds": "5",
+    "quality": "default",
+    "completed_at": 1794752213,
+    "created_at": 1794751238,
+    "remixed_from_video_id": null,
+    "error": null,
+    "media_type": "video/mp4",
+    "expires_at": null,
+    "file_name": "video_gen_b9f75ff1919e4dabaef2eba0178f0363.mp4",
+    "inference_time_s": 974.9445175803266,
+    "fps": 24.0,
+    "num_frames": 124,
+    "duration_s": 5.166666666666667,
+    "metrics": null,
+    "stage_durations": {
+      "queue_wait_ms": 0.7576397620141506,
+      "stage_0_gen_ms": 974120.2521324158
+    },
+    "peak_memory_mb": 20744.0,
+    "action": null
+  },
+  "video_bytes": 2587353,
+  "mp4_metadata": {
+    "file": "/tmp/h3_round52_e2e01/video.mp4",
+    "bytes": 2587353,
+    "tracks": [
+      {
+        "handler": "vide",
+        "width": 1344.0,
+        "height": 768.0,
+        "timescale": 12288,
+        "duration_seconds": 5.166666666666667,
+        "sample_count": 124,
+        "frames_per_second": 24.0
+      },
+      {
+        "handler": "soun",
+        "width": 0.0,
+        "height": 0.0,
+        "timescale": 32000,
+        "duration_seconds": 5.207,
+        "sample_count": 163
+      }
+    ]
+  },
+  "verified_768p_5s_frame_alignment": true,
+  "ffprobe": {
+    "unavailable": true
+  },
+  "server_exit_after_cleanup": -9,
+  "steady_rows": [
+    {
+      "step1_s": 63.49,
+      "steady_avg_s": 29.99
+    },
+    {
+      "step1_s": 64.27,
+      "steady_avg_s": 29.99
+    },
+    {
+      "step1_s": 64.31,
+      "steady_avg_s": 29.99
+    },
+    {
+      "step1_s": 63.45,
+      "steady_avg_s": 29.99
+    },
+    {
+      "step1_s": 63.52,
+      "steady_avg_s": 29.99
+    },
+    {
+      "step1_s": 63.38,
+      "steady_avg_s": 29.99
+    },
+    {
+      "step1_s": 63.61,
+      "steady_avg_s": 29.99
+    },
+    {
+      "step1_s": 63.1,
+      "steady_avg_s": 29.99
+    }
+  ],
+  "fa_core_rows": [
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ]
+  ],
+  "fa_padding_plans": [
+    [
+      41792,
+      43776,
+      41792,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41792,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41792,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41792,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41792,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41792,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41792,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41792,
+      23
+    ]
+  ],
+  "step_rows": [
+    {
+      "step": 1,
+      "prep_s": 0.42,
+      "model_s": 54.56,
+      "update_s": 8.12
+    },
+    {
+      "step": 1,
+      "prep_s": 0.44,
+      "model_s": 54.54,
+      "update_s": 8.4
+    },
+    {
+      "step": 1,
+      "prep_s": 0.43,
+      "model_s": 54.56,
+      "update_s": 8.47
+    },
+    {
+      "step": 1,
+      "prep_s": 0.61,
+      "model_s": 54.37,
+      "update_s": 8.51
+    },
+    {
+      "step": 1,
+      "prep_s": 0.67,
+      "model_s": 54.31,
+      "update_s": 8.54
+    },
+    {
+      "step": 1,
+      "prep_s": 0.24,
+      "model_s": 54.74,
+      "update_s": 8.63
+    },
+    {
+      "step": 1,
+      "prep_s": 0.27,
+      "model_s": 54.71,
+      "update_s": 9.29
+    },
+    {
+      "step": 1,
+      "prep_s": 0.43,
+      "model_s": 54.55,
+      "update_s": 9.33
+    },
+    {
+      "step": 2,
+      "prep_s": 0.2,
+      "model_s": 44.87,
+      "update_s": 15.49
+    },
+    {
+      "step": 2,
+      "prep_s": 0.11,
+      "model_s": 44.96,
+      "update_s": 15.49
+    },
+    {
+      "step": 2,
+      "prep_s": 0.22,
+      "model_s": 44.86,
+      "update_s": 15.49
+    },
+    {
+      "step": 2,
+      "prep_s": 0.11,
+      "model_s": 44.96,
+      "update_s": 15.49
+    },
+    {
+      "step": 2,
+      "prep_s": 0.1,
+      "model_s": 44.97,
+      "update_s": 15.49
+    },
+    {
+      "step": 2,
+      "prep_s": 0.18,
+      "model_s": 44.89,
+      "update_s": 15.49
+    },
+    {
+      "step": 2,
+      "prep_s": 0.13,
+      "model_s": 44.94,
+      "update_s": 15.49
+    },
+    {
+      "step": 2,
+      "prep_s": 0.1,
+      "model_s": 44.97,
+      "update_s": 15.5
+    },
+    {
+      "step": 3,
+      "prep_s": 0.13,
+      "model_s": 12.91,
+      "update_s": 1.64
+    },
+    {
+      "step": 3,
+      "prep_s": 0.09,
+      "model_s": 12.94,
+      "update_s": 1.64
+    },
+    {
+      "step": 3,
+      "prep_s": 0.1,
+      "model_s": 12.94,
+      "update_s": 1.64
+    },
+    {
+      "step": 3,
+      "prep_s": 0.12,
+      "model_s": 12.92,
+      "update_s": 1.64
+    },
+    {
+      "step": 3,
+      "prep_s": 0.24,
+      "model_s": 12.79,
+      "update_s": 1.64
+    },
+    {
+      "step": 3,
+      "prep_s": 0.09,
+      "model_s": 12.94,
+      "update_s": 1.64
+    },
+    {
+      "step": 3,
+      "prep_s": 0.15,
+      "model_s": 12.88,
+      "update_s": 1.64
+    },
+    {
+      "step": 3,
+      "prep_s": 0.12,
+      "model_s": 12.91,
+      "update_s": 1.64
+    },
+    {
+      "step": 4,
+      "prep_s": 0.11,
+      "model_s": 12.99,
+      "update_s": 1.64
+    },
+    {
+      "step": 4,
+      "prep_s": 0.13,
+      "model_s": 12.97,
+      "update_s": 1.64
+    },
+    {
+      "step": 4,
+      "prep_s": 0.09,
+      "model_s": 13.0,
+      "update_s": 1.64
+    },
+    {
+      "step": 4,
+      "prep_s": 0.29,
+      "model_s": 12.8,
+      "update_s": 1.64
+    },
+    {
+      "step": 4,
+      "prep_s": 0.13,
+      "model_s": 12.96,
+      "update_s": 1.64
+    },
+    {
+      "step": 4,
+      "prep_s": 0.1,
+      "model_s": 13.0,
+      "update_s": 1.64
+    },
+    {
+      "step": 4,
+      "prep_s": 0.12,
+      "model_s": 12.98,
+      "update_s": 1.64
+    },
+    {
+      "step": 4,
+      "prep_s": 0.11,
+      "model_s": 12.99,
+      "update_s": 1.64
+    }
+  ],
+  "stage_times": {
+    "encode": [
+      333.59,
+      333.59,
+      333.59,
+      333.59,
+      333.59,
+      333.59,
+      333.59,
+      333.59
+    ],
+    "denoise": [
+      166.99,
+      166.99,
+      166.99,
+      166.99,
+      166.99,
+      166.99,
+      166.99,
+      166.99
+    ],
+    "decode": [
+      465.52,
+      465.6,
+      465.64,
+      465.69,
+      465.94,
+      466.1,
+      466.15,
+      466.88
+    ]
+  }
+}

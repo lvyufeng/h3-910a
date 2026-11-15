@@ -54,6 +54,19 @@
 > That padding strategy is not deployed or model-quality validated yet. See
 > [round-51 evidence](<../../diagnostics/round51/README.md>).
 >
+> **Round 52 update:** integrated tile padding uses explicit added-key probability
+> exclusion (not the prototype's unstable LSE subtraction). Sixteen host tests
+> and real NPU range/reuse checks pass. Full wrapper is **421.151→154.391 ms,
+> 2.7278×**, including buffer copies, clearing and trimming. The same true FL2VA
+> form now completes a verified **1344×768, 124-frame/5.1667 s MP4 with audio**.
+> Request wall **975.59 s**, encode/conditioning **333.59 s**, denoise **166.99 s**,
+> decode **465.52–466.88 s**. Last-step sub-timers near 14.7 s stop before the
+> existing synchronization, so they do not prove a synchronized 15 s step.
+> Visual inspection finds prominent unprompted lettering in the middle frame;
+> runtime success is not a quality/lossless pass. This remains a four-step
+> distilled-checkpoint result, not the official original 49-step comparison.
+> See [round-52 evidence](<../../diagnostics/round52/README.md>).
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
@@ -62,8 +75,9 @@
 Historical run label (not a verified official-equivalent workload):
 768p / 5s / fl2va / USP8 / 8×910A (32 GB each), CANN 9.2.0,
 torch_npu 2.10.0, vLLM-Omni 0.30.0, 4-step distilled checkpoint.
-The old text-only form actually produced 209 frames / 8.7083 s; real FL2VA with
-reference images remains under repair and is not yet a completed benchmark.
+The old text-only form actually produced 209 frames / 8.7083 s. Round 52 has a
+completed real first/last-image 124-frame FL2VA runtime result, but no validated
+quality equivalence or official 49-step lossless performance comparison.
 
 ---
 
@@ -72,10 +86,10 @@ reference images remains under repair and is not yet a completed benchmark.
 | goal item | state |
 |---|---|
 | (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **not completed** — reassess with a correct-workload trace, not the old residual budget |
-| (2) raise flash-attention efficiency | **partly achieved**: controlled same-math 32/30-core A/B is 558.1 → 317.0 ms, bit-exact |
-| (2) DiT to 15 s/step | **not yet achieved; impossibility claim withdrawn** — the old 31.5 TFLOPS ceiling was invalid |
-| (3) VAE decode 155 s → 20 s | **not achieved** — a verified real FL2VA encode/decode benchmark is pending |
-| (3) text encode 39 s → 2 s | **not achieved** — indexing, BF16 vision normalization and attention runtime defects repaired; real VAE conditioning remains blocked by a padding-format defect |
+| (2) raise flash-attention efficiency | **partly achieved**: core-budget A/B 558.1 → 317.0 ms (bit-exact); actual-shape masked tile wrapper 421.151 → 154.391 ms (not bit-exact across tilings) |
+| (2) DiT to 15 s/step | **not yet established** — late sub-timers near 14.7 s exclude synchronization; impossibility claim withdrawn |
+| (3) VAE decode 155 s → 20 s | **not achieved** — the completed real FL2VA run reports 465.52–466.88 s decode |
+| (3) text encode 39 s → 2 s | **not achieved** — runtime defects repaired; complete encode/conditioning is 333.59 s, not isolated text timing |
 | comparable measurement vs A2/A3 | **not delivered** — the old text-only 209-frame/4-step run is not the official 5s/49-step lossless workload |
 
 The older experiments below are retained as a historical record. Their numerical
