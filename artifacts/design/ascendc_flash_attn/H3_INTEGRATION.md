@@ -4580,3 +4580,66 @@ No speedup. Three candidate explanations for the residue were refuted in rounds 
 this round replaces the third refutation with a **mechanism of the correct size** and
 an explicit statement that it is unconfirmed. Also identifies a 12x spread between the
 achievable and observed collective cost as the most concrete remaining lever.
+
+---
+
+# Round 42: sync-bounded timing cannot isolate attention here -- instrument abandoned
+
+Round 41 sized the per-block all-to-all at 906 MB and asked the obvious question: is
+it the ~81 ms? Measured it directly by syncing before and after
+`_run_packed_attention`.
+
+## First attempt landed on the wrong forward
+
+```
+[H3PROBE] packed_attention_sync=1977.5 ms  local=4
+```
+
+`local=4`, not 7904 -- the probe caught the first two `MiniMaxH3Attention` calls in
+the process, which are a tiny forward, not the DiT blocks. And 1977 ms for 4 rows is
+impossible as compute, which already signalled that the entry sync was absorbing a
+queue backlog. Re-gated on `total > 1000` and re-ran.
+
+## Second attempt hit the right forward and produced an impossible number
+
+```
+[H3PROBE] packed_attention_sync=8697.6 ms  local=7904
+denoise_steady step1=87.08s steady_avg=41.34s   <- unchanged from 41.2-41.3 baseline
+```
+
+So the probe measured the **7904-row DiT block** and reported **8.3-8.7 s** for one
+attention call. That cannot be device time: a block is 676 ms and a step is 41.2 s,
+so 50 blocks at 8.7 s would be 435 s per step. And critically **the end-to-end
+steady-state average did not move** (41.34 vs 41.2-41.3), so the probe did not
+actually slow the workload.
+
+The explanation is that the entry `torch.npu.synchronize()` blocks on everything
+already in flight -- other ranks' collectives, the DLO prefetch pipeline, the next
+block's stream work -- and then reports that waiting time as though it were
+attention's. The measured 8.7 s is dominated by backlog that would have been waited
+on regardless.
+
+## Conclusion: the instrument is invalid, and I should have known
+
+This is precisely the trap recorded in round 20 ("never time a stage by wrapping it in
+a sync while other streams are active") and repeated in rounds 3, 20, 27 and 37. I
+proposed this experiment in rounds 40 and 41 as "the correct next experiment" after
+explicitly citing that lesson, and then ran it anyway. It was never going to work in a
+multi-rank, multi-stream, prefetching pipeline: an in-situ sync does not isolate a
+stage, it waits for the whole system.
+
+**The ~81 ms/block residue therefore stays unmeasured.** What would actually work:
+
+* per-rank timeline capture (`torch_npu.profiler` with NPU activities) and reading the
+  kernel-level durations off the trace, rather than wall-clock timers; or
+* turning off the confounders (single rank, prefetch disabled, one block) so a sync
+  means what it usually means -- at the cost of no longer measuring the real pipeline.
+
+Neither is a small experiment, which is why the honest state is "residue sized but
+unmeasured" rather than a number.
+
+## Reverted
+
+Restored the pre-probe source; 0 `H3PROBE`/`_A2A_PROBE` remnants, syntax checked, the
+`seq`/`local` instrumentation from round 37 kept (it is env-gated and was useful).
+Steady state unchanged at 41.34 s/step, so nothing was left disturbed.
