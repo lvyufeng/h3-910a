@@ -41,6 +41,19 @@
 > at reflection_pad3d on an internal NPU storage format after ~535 s. No DiT/video
 > result exists yet. See [round-50 evidence](<../../diagnostics/round50/README.md>).
 >
+> **Round 51 update:** local base-format reflection padding and removal of a
+> zero-padding no-op are tested and deployed in the native VAE sources. There are
+> 13 CPU/NPU regressions; 12 padding layout/dtype cases are exactly equal to CPU.
+> The real FP32 image encoder now produces finite `[1008,96]` rows for 1344×768.
+> Its first observed single-NPU call is 187.956 s, not a steady-state or decode
+> result. A 64×64 repeat is bit-exact. Full FL2VA now completes conditioning and
+> enters DiT, but the 900 s test deadline stops it during step 2; no video exists.
+> Real attention N=41792 forces 64×64 tiles. A same-input prototype pads to 43776
+> for 128×304 and measures **421.375→154.206 ms (2.7325×)** with LSE correction;
+> sampled FP32-reference relative RMS error is at most 0.04097%, not bit-exact.
+> That padding strategy is not deployed or model-quality validated yet. See
+> [round-51 evidence](<../../diagnostics/round51/README.md>).
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical

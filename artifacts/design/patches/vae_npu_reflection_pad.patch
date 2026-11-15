@@ -1,0 +1,92 @@
+--- a/vae_cnn.py
++++ b/vae_cnn.py
+@@ -22,6 +22,19 @@
+ # ============================================================================
+ # 3D CNN Components
+ # ============================================================================
++
++
++def _pad_base_format(x, pad, mode):
++    """Repack only NPU reflection padding; preserve dtype and every value.
++
++    ReflectionPad3D on 910A rejects packed NDC1HWC0 Conv3D outputs. Base NCDHW
++    (format 30) is accepted and is exactly equivalent to CPU reflection padding.
++    Do not disable internal layouts globally or change the encoder's FP32 path.
++    """
++    if x.device.type in ("npu", "privateuseone") and mode == "reflect":
++        import torch_npu
++        x = torch_npu.npu_format_cast(x, 30)
++    return F.pad(x, pad, mode=mode)
+ 
+ 
+ def norm_silu(x, norm, cond=None):
+@@ -76,7 +89,7 @@
+                 )
+             else:
+                 pad = (0, 1, 0, 1, 0, 0)
+-                x = F.pad(x, pad, mode=self.pad_mode)
++                x = _pad_base_format(x, pad, mode=self.pad_mode)
+         return self.conv(x)
+ 
+ 
+--- a/conv.py
++++ b/conv.py
+@@ -7,6 +7,14 @@
+ from .parallel import get_parallel_state, exchange_borders
+ 
+ 
++
++
++def _pad_base_format(x, pad, mode):
++    """Keep reflection padding on a base layout without changing tensor values."""
++    if x.device.type in ("npu", "privateuseone") and mode == "reflect":
++        import torch_npu
++        x = torch_npu.npu_format_cast(x, 30)
++    return F.pad(x, pad, mode=mode)
+ 
+ 
+ class BaseConv3d(nn.Conv3d):
+@@ -48,7 +56,7 @@
+                 self.padding[0] * 2 if self.causal else self.padding[0],
+                 0 if self.causal else self.padding[0],
+             )
+-            return F.pad(x, pad_size, mode=self.pad_mode_t)
++            return _pad_base_format(x, pad_size, mode=self.pad_mode_t)
+         else:
+             if self.pad_mode_t == "constant":
+                 assert self.causal, "Zeros padding is only supported for causal mode"
+@@ -63,7 +71,7 @@
+         if sum(self.padding) == 0:
+             return x
+ 
+-        x = F.pad(
++        x = _pad_base_format(
+             x,
+             (self.padding[2], self.padding[2], self.padding[1], self.padding[1], 0, 0),
+             mode=self.pad_mode,
+@@ -74,7 +82,10 @@
+ 
+     def forward(self, x):
+         if sum(self.padding) == 0:
+-            return super().forward(x)
++            # nn.Conv3d with padding_mode='reflect' still calls F.pad with six
++            # zeros; that no-op fails on packed 910A tensors. Skip it exactly.
++            return F.conv3d(x, self.weight, self.bias, stride=self.stride,
++                            padding=0, dilation=self.dilation, groups=self.groups)
+ 
+         x = self._apply_padding(x)
+         return F.conv3d(
+@@ -145,11 +156,11 @@
+         x = self._exchange_borders(x, state["sp_rank"], state["sp_size"])
+ 
+         if self.chunk_dim == -1:
+-            x = F.pad(
++            x = _pad_base_format(
+                 x, (0, 0, self.padding[1], self.padding[1], 0, 0), mode=self.pad_mode
+             )
+         elif self.chunk_dim == -2:
+-            x = F.pad(
++            x = _pad_base_format(
+                 x, (self.padding[2], self.padding[2], 0, 0, 0, 0), mode=self.pad_mode
+             )
+         else:

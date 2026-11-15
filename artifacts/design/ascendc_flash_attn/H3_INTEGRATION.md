@@ -5146,3 +5146,49 @@ probes, stable numerical results, final tests, the failed real request, and the
 All owned engine processes are stopped, eight cards are verified idle and the
 lease is released. The goal remains active; the real workload is not yet complete,
 and no official lossless comparison or 15 s/2 s/20 s target achievement is claimed.
+
+---
+
+# Round 51: VAE image encode runs, and real-shape FA padding is 2.73x faster
+
+FP16/FP32 packed reflection-pad failure is reproduced. Explicit conversion to ND
+or NCDHW before identical padding gives **12 exact CPU/NPU layout/dtype cases**;
+small-case convert-plus-pad is 0.1525–0.1732 ms. The local Downsample3D patch then
+uncovers a second entry point: nn.Conv3d with zero reflection padding still calls
+F.pad with six zeros. Skipping that no-op and locally repacking explicit reflection
+padding in BaseConv3d preserves the convolution formula and tensor dtype.
+**13 CPU/NPU regressions pass** (7 pad helper/forward, 6 convolution routes).
+
+Both canonical and checked cached VAE sources are patched, with exclusive original
+backups. The real FP32 encoder weights (721,351,552 bytes) now successfully encode
+64×64 and **1344×768** inputs. Outputs are finite CPU FP32 rows `[4,96]` and
+**`[1008,96]`**. The small repeat is bit-exact. First observed call times are
+98.269 s and **187.956 s**, not steady or decode timings. The actual fresh HF cache
+has the tested Conv3D source SHA; its 1020-pad trace contains 120 packed→base calls.
+
+The full first/last-image 768p/5s request now passes conditioning and enters DiT.
+Encode/conditioning reporter is **507.71 s**; cold first iteration is **351.31 s**.
+The 900 s manager deadline stops it during the second step. No video/denoise
+completion or full steady step exists; individual late blocks cannot be multiplied
+into a purported whole-step result or decomposed by residual subtraction.
+
+The actual attention shape is **N=41792**, H=7, D=128, and all eight ranks confirm
+30 cores with **Br=64/Bc=64**. The exact-divisor heuristic is the reason for that
+small tile. A controlled same-input prototype pads to **43776**, uses **128×304**
+tiles, and applies the existing LSE correction for 1984 known-zero K/V rows:
+**421.375→154.206 ms, 2.7325x / −63.40%**, confirmed by reversed-order repetitions.
+Padded input allocation/copy is outside this prototype's timing; production
+integration must account for reuse/copy overhead and real model effects.
+
+Pair relative RMS is at most 0.03622%, sampled relative RMS to an FP32 full-key
+reference at most **0.04097%**, max sampled absolute error 7.221e-6. Outputs are
+finite but not bit-exact across tilings. This is not a full-model quality or official
+lossless result, and the tuned attention padding is **not deployed** yet.
+
+[Round-51 scripts and raw evidence](<../../diagnostics/round51/README.md>) include
+both encoder attempts, layout checks, the partial complete-request record, and
+attention A/B. The [tested VAE padding patch](<../patches/vae_npu_reflection_pad.patch>)
+is deployed; the next round prioritizes a cache-safe, zero-key-safe integration
+of the faster FA padding before another end-to-end measurement. All owned
+processes are stopped, eight cards verified idle and the lease released. The goal
+remains active; no 15 s DiT/2 s encoder/20 s decode completion is claimed.
