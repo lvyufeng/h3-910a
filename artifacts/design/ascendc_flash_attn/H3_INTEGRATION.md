@@ -4911,3 +4911,67 @@ condition is identified exactly (BF16 weights), and the reason we cannot use it 
 is confirmed by inspection (fp16-only kernel, 16 TIB buffer declarations, no bf16
 branch). What would unlock it is now a well-specified task rather than an unexplained
 gap.
+
+---
+
+# Round 47: BF16 is accepted by TIK, so a bf16 kernel is plausible -- but converting it is a project
+
+Round 46 established that the last 20% of the step (162 ms/block of slow weight
+transfer) is gated behind serving BF16 to enable the Host Weight Runtime, which needs a
+BF16 attention kernel because SDPA OOMs at 104 GiB.
+
+Before committing to converting a ~700-line TIK kernel, probed whether the toolchain
+supports BF16 at all on 910A.
+
+## What the probes established
+
+Four attempts, each failing at a different point, and **the failure point is
+informative**:
+
+| probe | result |
+|---|---|
+| `tbe.dsl.set_current_compile_soc_info` | wrong module; correct is `tbe.common.platform` |
+| `tik.float16` / `tik.bfloat16` | dtypes are **strings** on this build (`FP16 = "float16"`), not objects |
+| `tik.scope_l1` | scopes are `tik.scope_cbuf` (L1), `tik.scope_cc` (L0C), `tik.scope_ubuf` |
+| bf16 `Tensor()` + `data_move` + vector op | **`Tensor()` and `data_move` accepted bf16**; failed only on `vec_add`'s positional signature, **identically for fp16 and bf16** |
+
+The last row is the answer: because the fp16 and bf16 runs fail at the **same**
+argument-count error in the same call, execution had already passed BF16 tensor
+allocation and BF16 `data_move`. So **TIK accepts bf16 tensors on this CANN build**.
+
+I did not get a full BF16 kernel to compile -- I ran out of productive iterations on the
+`vec_add` signature and stopped rather than keep guessing argument counts.
+
+## What this means for the path
+
+**Not blocked by the toolchain**, which was the question. A bf16 kernel is therefore
+plausibly buildable, but the probe also showed why it is a project rather than a tweak:
+
+* dtypes are string-typed throughout and `constants.py` hardcodes `FP16` plus a
+  `DTYPE_SIZE` table with no bf16 entry, so the conversion touches every buffer
+  declaration (16 `Tensor(FP16, ...)` sites), the dtype-size arithmetic, and any op
+  whose stride/alignment assumes 2-byte fp16 semantics;
+* `vec_*` signatures take 8 positional arguments and I could not pin them down by
+  trial, which does not bode well for the ~40 vector ops in the real kernel;
+* the matmul call needs TIK's TIK2 init/bias form, which the real kernel wraps in
+  `tik_ops_utils.matmul_compute` -- that wrapper would need a bf16 path too.
+
+## Honest position after 47 rounds
+
+The engineering chain is now fully mapped and I can state it precisely:
+
+```
+slow weight transfer (162 ms/block, 20% of step)
+   -> needs Host Weight Runtime (direct H2D)
+      -> needs BF16 weights (fp16 rejected by FinalLayoutContractError)
+         -> needs a BF16 attention kernel (SDPA OOMs at 104 GiB)
+            -> TIK accepts bf16, but the kernel is 16 FP16 buffer decls + string dtype
+               tables with no bf16 entry, and needs a bf16 matmul/vec path
+```
+
+Every link is verified. The last link is a real but substantial build task, not a
+configuration change, and it is the only remaining work with a large multiple (41.2 ->
+~33 s/step, still 10x slower than A2).
+
+Nothing was deployed or changed this round; host verified clean (0 NPU procs, kernel
+and index fixes intact).
