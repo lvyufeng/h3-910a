@@ -130,7 +130,7 @@ Warm steady state decomposes as:
 | update | ~0.005 s | async tail, not its own work -- see section 5 |
 | prep | ~2.2 s | was the `index_copy_` scatter, now fixed |
 
-Per block (budget 676 ms from 41.2 s / 50, which is sync-bounded):
+Per block (budget **824 ms** = 41.2 s / 50):
 
 | configuration | s/step | ms/block |
 |---|---:|---:|
@@ -200,11 +200,11 @@ dtype-parametric (or write a bf16 twin), then serve `--dtype bfloat16` with
 `--host-weight-runtime-mode preferred`.
 
 ---|---:|---|
-| attention | 559 ms | kernel benchmark, Q=K=V=63232 |
-| MLP | ~33 ms | 7904 local rows at 73 TFLOPS |
-| other (norms, adaln, gates, conversions) | ~3 ms | round 3 |
-| **unexplained** | **~81 ms** | see below |
-| **total** | **676 ms** | = 41.2 s / 50 |
+| attention | **585 ms** | differential (rounds 43-44) |
+| slow weight transfer | **~162 ms** | the open item, see below |
+| MLP | **55 ms** | differential |
+| projections, norms, RoPE, gates | **~22 ms** | FLOP-counted |
+| **total** | **824 ms** | = 41.2 s / 50 |
 
 > **The ~81 ms does not close, and three attempts to close it failed** — recorded
 > here rather than papered over:
@@ -404,9 +404,20 @@ I do not believe 15 s/step is reachable on this hardware, and I have not found a
 way to make the text encode, the decode, or the DLO ramp cheaper within the
 constraints (32 GB HBM, no H3 VAE fast path, rank-local transfer requirement).
 
-The DiT step is the best-characterised part: a 676 ms block is attention (559 ms,
-the only implementation that fits) plus MLP (33 ms) plus ~3 ms of elementwise work,
-leaving **~81 ms unexplained** per block -- about 4 s per step. Three candidate
-explanations were tried and each was refuted (MLP, Q all-gather, DLO streaming; see
-the note in section 3). Finding it needs sync-bounded per-component timers inside a
-live block, which is the one experiment I would run first if continuing.
+The DiT step is the best-characterised part, by timer-free bypass differentials
+(rounds 43-46): an **824 ms** block is
+
+| part | ms | share |
+|---|---:|---:|
+| attention (the only implementation that fits) | **585** | **71%** |
+| slow weight transfer (HWR blocked by dtype) | **~162** | **20%** |
+| MLP | 55 | 7% |
+| projections, norms, RoPE, gates | ~22 | 3% |
+
+Four earlier attributions for the non-attention cost were each refuted by measurement
+(MLP ~195 ms, Q all-gather, exposed DLO, and a timer that reported 8.7 s from a
+backlog). Round 46 finally pinned it: the Host Weight Runtime would make this transfer
+fast, but it **rejects fp16 weights**, and the only attention implementation that fits
+is **fp16-only** -- so HWR and working attention cannot coexist here without a bf16
+build of the kernel. That is the one remaining path with a large multiple
+(41.2 -> ~33 s/step, still 10x slower than A2).
