@@ -4139,3 +4139,50 @@ two hangs.
 No speedup, two hung runs (both cleaned up), config restored and the baseline
 re-verified end to end. The contribution is a refuted prediction and a precise table
 of what tile sizes would be worth once the participation path is fixed.
+
+## Round 35: reading the VAE parallel layer refutes my own deadlock theory
+
+Rounds 32-34 attributed the tile 320/512 hangs to a rank ending up with no tiles,
+and to uneven tile counts breaking the spatial collective. Read the VAE source to
+check that before attempting the fix. The model ships its code alongside the
+weights:
+
+```
+video_vae/parallel.py       418 lines, the collective layer
+video_vae/klvae.py          the tiled decode
+video_vae/flash.py          torch-native SDPA attention (not a conv fast path)
+```
+
+and the tiled decode does **not** use the fixed-shape gather:
+
+```python
+klvae.py:17   from .parallel import get_parallel_state, all_gather_var_shape
+klvae.py:186  gathered = all_gather_var_shape(x, group=sp_process_group)
+klvae.py:262  gathered = all_gather_var_shape(stacked, group=group)
+```
+
+`parallel.py` provides both `all_gather` (fixed shape, `dist.all_gather`) and
+`all_gather_var_shape`, and **the tiled decode already uses the variable-shape
+one**. So uneven per-rank tile counts are handled by construction.
+
+**That refutes the rounds 32-34 explanation.** "Some rank received no tiles, so the
+gather hangs" cannot be right when the gather is var-shape aware. The real cause is
+still unidentified, and my prediction in round 33 that "every rank needs the same
+number of tiles" is presumably wrong too.
+
+## Stopping the VAE thread
+
+Four rounds (32-35) on the decode have produced no speedup and now two wrong
+explanations of the same hang. The cost structure is bad: each hypothesis is tested
+by a full end-to-end run that takes 12+ minutes and, when wrong, **hangs** rather
+than failing, so a single experiment can consume a whole round.
+
+The honest position: fixing the decode needs someone to read `klvae.py`'s tiling
+and `parallel.py`'s collective protocol together and find the actual mismatch. I
+have not found it by reading the two entry points, and trial-and-error against
+hangs is not a reasonable strategy at this cost.
+
+Recorded so the next attempt starts from: **tiling lives in the model config, only
+256 works, tile 320 would be worth ~16%, the var-shape gather already exists so
+uneven tile counts are not the blocker, and `--vae-parallel-mode
+spatial_shard_height` fails at startup.**
