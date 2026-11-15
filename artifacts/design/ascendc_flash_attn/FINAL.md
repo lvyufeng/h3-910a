@@ -122,10 +122,10 @@ Warm steady state decomposes as:
 
 | part | per step | note |
 |---|---:|---|
-| transformer blocks (50) | 33.8 s | attention 28.0 + MLP 1.6 + ~4 other/streaming |
-| — attention | 28.0 s | 82% of its shape-limited ceiling |
+| transformer blocks (50) | 33.8 s | attention 28.0 + DLO 4.0 + MLP 1.6 + 0.15 other |
+| — attention | 28.0 s | the only implementation that fits (section 1b) |
+| — DLO weight streaming | ~4.0 s | 1326 MB/block over PCIe, cannot be resident |
 | — MLP matmuls | ~1.6 s | 33 ms/block: only 7904 rows are local per rank |
-| — unplaced | ~4 s | 81 ms/block, leading candidate the Q all-gather |
 | transformer pre | 0.95 s | |
 | update | ~0.005 s | async tail, not its own work -- see section 5 |
 | prep | ~2.2 s | was the `index_copy_` scatter, now fixed |
@@ -135,16 +135,22 @@ Per block (budget 676 ms from 41.2 s / 50, which is sync-bounded):
 | part | per block | source |
 |---|---:|---|
 | attention | 559 ms | kernel benchmark, Q=K=V=63232 |
+| DLO weight streaming | ~81 ms | 1326 MB/block over PCIe at ~16 GB/s |
 | MLP | ~33 ms | 7904 local rows at 73 TFLOPS |
 | other (norms, adaln, gates, conversions) | ~3 ms | round 3 |
-| **unplaced** | **~81 ms** | leading candidate: pre-attention Q all-gather |
+| **total** | **676 ms** | = 41.2 s / 50, closes |
 
-> **Corrected in round 37.** Round 36 claimed this accounting closed to zero and
-> attributed the remaining ~195 ms to the MLP. That was wrong: instrumentation
-> showed `local=7904` per rank, not 63232, so the MLP is ~33 ms. The block is
-> therefore **mostly** accounted, with ~81 ms/block (~4 s/step) unplaced rather than
-> zero. It is a smaller and better-defined residue than the original 196 ms, but it
-> is not closed.
+The DLO term was identified in round 39 by arithmetic rather than instrumentation:
+the DiT is **66.28 GB** over 50 blocks = **1326 MB per block**, and streaming that in
+81 ms implies **16.4 GB/s** — squarely in the PCIe H2D range, versus 2 ms if it were
+HBM (534 GB/s measured) or 53 ms at a clean 25 GB/s. The Q all-gather I had guessed
+in round 37 is ruled out by magnitude (679 MB, 1-2 ms).
+
+> **Two corrections stand in this record.** Round 36 claimed this closed to zero and
+> blamed the MLP; that was wrong because `local=7904` per rank, not 63232, so the MLP
+> is ~33 ms. Round 37 then left ~81 ms unplaced and guessed the Q all-gather, also
+> wrong. Round 39 closes it with the DLO stream. The block is now accounted by four
+> terms, each measured or bounded.
 
 ---
 
