@@ -235,10 +235,16 @@ Ranked by expected value, with the honest expectation attached:
    frame area in redundant overlap. Total computed area by tile size:
    `256 -> 28 tiles, 1.78x` (shipped, works); `320 -> 15 tiles, **1.49x**`
    (best, but **deadlocks**); `384 -> 12, 1.71x`; `448 -> 8, 1.56x`;
-   `512 -> 6, 1.52x` (deadlocks). So **tile 320 is worth ~16% of the decode**
-   once the VAE parallel layer is fixed to tolerate uneven tile counts per rank
-   (or zero tiles on some ranks). That is the concrete, pre-measured first step,
-   and it is a collective-participation fix, not a config value.
+   `512 -> 6, 1.52x` (deadlocks). So **tile 320 is worth ~16% of the decode** if the
+   deadlock can be solved.
+   **But the obvious explanation is wrong** (round 35): `klvae.py:186,262` already
+   call `all_gather_var_shape`, so uneven per-rank tile counts are handled by
+   construction and "some rank got no tiles" is not the cause. Neither is
+   `--vae-parallel-mode spatial_shard_height`, which fails at startup. The actual
+   mismatch is between `klvae.py`'s tiling and `parallel.py`'s collective protocol
+   and **has not been found**. Whoever continues should read those two together;
+   note that each wrong hypothesis costs a 12+ minute run that *hangs* rather than
+   fails, so trial and error is expensive.
 2. **Short-K matmul efficiency** — the kernel is at 82% of a 31.5 TFLOPS ceiling
    that is set by K=128. Beating the vendor library there is what would move the
    needle, and it is the only remaining route to the attention number.
