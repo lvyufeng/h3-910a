@@ -4720,3 +4720,63 @@ differential that (a) **confirms the 559 ms kernel figure to within 5%**, and
 residue I have been chasing since round 3 is roughly **twice** as large as I
 estimated, while also revealing that my estimate was contaminated by a bad phase
 split. Reverted cleanly; 0 `_SKIP_ATTN_CORE` remnants, steady state unaffected.
+
+---
+
+# Round 44: timer-free 3-point decomposition -- attention 71%, MLP 7%, other 22%
+
+Extended round 43's differential with a second bypass, so the step decomposes with
+**no timers and no synchronisation anywhere**:
+
+| configuration | s/step | ms/block |
+|---|---:|---:|
+| full | 41.20 | 824 |
+| attention core skipped | 11.94 | 239 |
+| attention + MLP skipped | 9.18 | 184 |
+
+Differences:
+
+| part | s/step | ms/block | share |
+|---|---:|---:|---:|
+| **attention** | **29.26** | **585** | **71%** |
+| MLP | 2.76 | 55 | 7% |
+| everything else | 9.18 | 184 | 22% |
+
+## What this settles
+
+**Attention is 71% of the step at 585 ms/block**, against the 559 ms standalone
+benchmark -- 4.6% apart, from a completely independent method. The kernel figure that
+every claim in this record depends on is now confirmed twice over, by two bypass
+differentials agreeing with each other and with the microbenchmark.
+
+**The MLP is 55 ms**, not the 33 ms the FLOP count predicts and nowhere near the
+~195 ms round 36 claimed. A 1.7x gap between FLOP-estimate and measurement is normal
+for a real kernel, so this is unremarkable and closes the MLP question properly.
+
+**22% of the step (9.18 s) is neither attention nor MLP.** Inside that 184 ms/block,
+the FLOP-counted parts are only qkv_proj + out_proj (~19 ms) and norms/RoPE/gates
+(~3 ms). So **~162 ms/block, 8.1 s/step, is unaccounted** -- and unlike every previous
+estimate of this residue, it comes from a direct subtraction of two measured
+configurations rather than from a phase split or a bandwidth inference.
+
+Programme: (round 43) ~184 ms; (round 44, this) ~162 ms after removing the projections.
+Both are the same object being narrowed.
+
+## The DLO question, now sharper
+
+With attention and MLP both removed there is only 184 ms/block of compute to hide
+1326 MB of weight streaming behind -- which needs 7.2 GB/s, well inside PCIe. So the
+stream *should* still be hidden, and yet 184 ms remains. That is evidence **against**
+round 39's "exposed DLO" explanation and in favour of something structural in the
+non-attention path (per-block layout work, the `sp_gather` at stack end, per-block
+allocator behaviour, or the projections costing far more than their FLOPs).
+
+I am not going to guess a fifth time. The narrowing is real and reproducible; the
+cause is not identified.
+
+## Round 44 accounting
+
+No speedup. This is the decomposition the project should have had from round 3: four
+configurations, one subtraction each, no timers, each number reproducible. It fixes
+the weights of the step at 71 / 7 / 22 percent and leaves a 162 ms/block unknown that
+is now measured rather than inferred. Reverted cleanly, 0 flag remnants.
