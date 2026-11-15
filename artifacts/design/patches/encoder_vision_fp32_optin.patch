@@ -1,0 +1,94 @@
+--- a/vllm_omni/diffusion/models/minimax_h3/encoder.py
++++ b/vllm_omni/diffusion/models/minimax_h3/encoder.py
+@@ -538,15 +538,40 @@
+         return super().forward(input)
+ 
+ 
++def _vision_fp32_enabled() -> bool:
++    # Keep unvalidated whole-model generation changes opt-in. This switch changes
++    # vision compute, not stored parameter dtype or global device math settings.
++    import os
++    return os.environ.get("VLLM_OMNI_910A_VISION_FP32", "0").lower() in ("1", "true", "yes", "on")
++
++
++class _NpuBF16CompatibleLinear(nn.Linear):
++    """Keep BF16 parameters/I/O but avoid the 910A BF16 linear fallback.
++
++    On actual 8064-row vision inputs, the native BF16 linear is both much slower
++    and less accurate than FP32 compute followed by a single BF16 output cast.
++    Preserve nn.Linear's names/loaders and all CPU/non-BF16 paths. This does not
++    alter the device-global HF32 policy or cache transformed weight copies.
++    """
++
++    def forward(self, input: torch.Tensor) -> torch.Tensor:
++        if (input.device.type in ("npu", "privateuseone")
++                and input.dtype == torch.bfloat16 and self.weight.dtype == torch.bfloat16
++                and _vision_fp32_enabled()):
++            return F.linear(input.float(), self.weight.float(),
++                            self.bias.float() if self.bias is not None else None).to(input.dtype)
++        return super().forward(input)
++
++
+ class MiniMaxH3Qwen3VLVisionPatchMerger(nn.Module):
+     def __init__(self, config: Any, use_postshuffle_norm: bool = False) -> None:
+         super().__init__()
+         self.hidden_size = config.hidden_size * (config.spatial_merge_size**2)
+         self.use_postshuffle_norm = use_postshuffle_norm
+         self.norm = _NpuBF16CompatibleLayerNorm(self.hidden_size if use_postshuffle_norm else config.hidden_size, eps=1e-6)
+-        self.linear_fc1 = nn.Linear(self.hidden_size, self.hidden_size)
++        self.linear_fc1 = _NpuBF16CompatibleLinear(self.hidden_size, self.hidden_size)
+         self.act_fn = nn.GELU()
+-        self.linear_fc2 = nn.Linear(self.hidden_size, config.out_hidden_size)
++        self.linear_fc2 = _NpuBF16CompatibleLinear(self.hidden_size, config.out_hidden_size)
+ 
+     def forward(self, x: torch.Tensor) -> torch.Tensor:
+         x = self.norm(x.view(-1, self.hidden_size) if self.use_postshuffle_norm else x).view(-1, self.hidden_size)
+@@ -559,8 +584,8 @@
+         super().__init__()
+         self.hidden_size = config.hidden_size
+         self.intermediate_size = config.intermediate_size
+-        self.linear_fc1 = nn.Linear(self.hidden_size, self.intermediate_size, bias=True)
+-        self.linear_fc2 = nn.Linear(self.intermediate_size, self.hidden_size, bias=True)
++        self.linear_fc1 = _NpuBF16CompatibleLinear(self.hidden_size, self.intermediate_size, bias=True)
++        self.linear_fc2 = _NpuBF16CompatibleLinear(self.intermediate_size, self.hidden_size, bias=True)
+         # The reference vision MLP uses the tanh GELU approximation
+         # (``gelu_pytorch_tanh``), which differs from the exact erf GELU.
+         self.act_fn = nn.GELU(approximate="tanh")
+@@ -604,8 +629,8 @@
+         self.num_heads = config.num_heads
+         self.head_dim = self.dim // self.num_heads
+         self.num_key_value_groups = 1
+-        self.qkv = nn.Linear(self.dim, self.dim * 3, bias=True)
+-        self.proj = nn.Linear(self.dim, self.dim)
++        self.qkv = _NpuBF16CompatibleLinear(self.dim, self.dim * 3, bias=True)
++        self.proj = _NpuBF16CompatibleLinear(self.dim, self.dim)
+         self.scaling = self.head_dim**-0.5
+ 
+     def forward(
+@@ -752,9 +777,23 @@
+                 idx_list[i].extend(indices[i].tolist())
+                 weight_list[i].extend(weights[i].tolist())
+         idx_tensor = torch.tensor(idx_list, dtype=torch.long, device=device)
+-        weight_tensor = torch.tensor(weight_list, dtype=self.pos_embed.weight.dtype, device=device)
+-        pos_embeds = self.pos_embed(idx_tensor).to(device) * weight_tensor[:, :, None]
+-        patch_pos_embeds = pos_embeds[0] + pos_embeds[1] + pos_embeds[2] + pos_embeds[3]
++        npu_fp32_interpolation = (device.type in ("npu", "privateuseone")
++                                  and self.pos_embed.weight.dtype == torch.bfloat16
++                                  and _vision_fp32_enabled())
++        # The HF reference interpolates embedding samples with FP32 weights and
++        # sums before returning to the activation dtype. Early BF16 weight/
++        # product/add rounding caused a measurable whole-vision divergence on
++        # actual 48x84 grids. Keep other device paths unchanged here.
++        weight_dtype = torch.float32 if npu_fp32_interpolation else self.pos_embed.weight.dtype
++        weight_tensor = torch.tensor(weight_list, dtype=weight_dtype, device=device)
++        embedding_samples = self.pos_embed(idx_tensor).to(device)
++        if npu_fp32_interpolation:
++            embedding_samples = embedding_samples.float()
++        pos_embeds = embedding_samples * weight_tensor[:, :, None]
++        if npu_fp32_interpolation:
++            patch_pos_embeds = pos_embeds.sum(dim=0).to(self.pos_embed.weight.dtype)
++        else:
++            patch_pos_embeds = pos_embeds[0] + pos_embeds[1] + pos_embeds[2] + pos_embeds[3]
+         patch_pos_embeds = patch_pos_embeds.split([h * w for h, w in zip(grid_hs, grid_ws)])
+         patch_pos_embeds_permute = []
+         merge_size = self.spatial_merge_size

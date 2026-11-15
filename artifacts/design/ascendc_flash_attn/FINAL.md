@@ -100,6 +100,24 @@
 > checkpoints through layer24 are reported. See
 > [round-54 evidence](<../../diagnostics/round54/README.md>) for scopes and next checks.
 >
+> **Round 55 update:** correcting positional interpolation makes the **complete
+> CPU native vision output + three DeepStack tensors bit-exact to installed HF**
+> on the real two-image sample. Native NPU BF16 vision linears are slow/inaccurate;
+> explicit FP32 compute→BF16 retains351 BF16 parameter tensors and speeds the full
+> tower **46.410→4.832s (9.605×)**, with merged error **12.33→5.66%**. The production
+> mode is **default-off**, `VLLM_OMNI_910A_VISION_FP32=1`; residual errors are not
+> lossless. Same49-step request completes **1225.76s**, encode/conditioning296.97s,
+> denoise786.86s, decode136.50–141.80s (4records), after-first step mean14.9902s;
+> steps3–49 range14.7690–15.1255s,45/47below15s. Logo/lettering still remains.
+> A different **FP32-linear CPU text oracle** now completes50 layers in279.28s,
+> but matches old native layer49 poorly: **16.56% RMS**, visual tokens18.00%,
+> text0.12%, finite maxdiff6464. It is not an unchanged BF16 HF pass. Actual text
+> RMSNorm fallback also rounds gamma differently from HF: CPU full-tensor tests
+> on layer0/layer25 inputs show0.281/0.277% error and bit-exact agreement only when
+> normalized BF16 rounding precedes gamma. That norm fix is **not deployed**, and
+> its unique quality contribution is unproven. See
+> [round-55 evidence](<../../diagnostics/round55/README.md>) for separate scopes.
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
@@ -118,11 +136,11 @@ quality equivalence or official 49-step lossless performance comparison.
 
 | goal item | state |
 |---|---|
-| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **not completed** — reassess with a correct-workload trace, not the old residual budget |
+| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **not completed** — actual Qwen BF16 norm rounding contract differs from shared fallback; preserve the verified per-model contract before fusing |
 | (2) raise flash-attention efficiency | **partly achieved**: core-budget A/B 558.1 → 317.0 ms (bit-exact); actual-shape masked tile wrapper 421.151 → 154.391 ms (not bit-exact across tilings) |
-| (2) DiT to 15 s/step | **one warm window achieved, full goal not complete** — corrected native steps 3–49 are 14.6197–14.8396 s; after-first mean 14.8423 s, cold steps remain slow and model quality is not validated |
-| (3) VAE decode 155 s → 20 s | **not achieved** — corrected repeat captures 138.34–143.36 s decode; cold-state changes are not a decoder A/B |
-| (3) text encode 39 s → 2 s | **not achieved** — encode/conditioning is 330 s, not isolated text timing; full vision numerical discrepancy remains |
+| (2) DiT to 15 s/step | **one warm window achieved, not a sustained/full-goal pass** — round54 all47 warm steps are below15s; round55 after-first mean14.9902s but2/47 warmed steps exceed15s; cold steps/model quality remain unresolved |
+| (3) VAE decode 155 s → 20 s | **not achieved** — latest native request captures136.50–141.80s decode (4records); no controlled decoder speedup A/B |
+| (3) text encode 39 s → 2 s | **not achieved** — isolated vision improves46.410→4.832s, but encode/conditioning is296.97s, not isolated text; full vision/text numerical discrepancies remain |
 | comparable measurement vs A2/A3 | **not delivered** — actual native 49-step FL2VA exists, but official 150.06/114.19 s are warmed T2VA; precision/schedule/quality and protocol equivalence remain unverified |
 
 The older experiments below are retained as a historical record. Their numerical

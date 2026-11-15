@@ -1,0 +1,35 @@
+{
+  "cases": [
+    {
+      "normalization_layer": 0,
+      "actual_input_capture": "text_inputs",
+      "native_fp32_gamma_then_cast_vs_hf": {
+        "bit_exact": false,
+        "max_abs_error": 0.001953125,
+        "relative_rms": 0.002812598366290331
+      },
+      "bf16_normalized_then_gamma_vs_hf": {
+        "bit_exact": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      }
+    },
+    {
+      "normalization_layer": 25,
+      "actual_input_capture": "text_layer_24",
+      "native_fp32_gamma_then_cast_vs_hf": {
+        "bit_exact": false,
+        "max_abs_error": 0.0625,
+        "relative_rms": 0.002774073975160718
+      },
+      "bf16_normalized_then_gamma_vs_hf": {
+        "bit_exact": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      }
+    }
+  ],
+  "scope": "CPU same-real-input normalization formula isolation; not a real NPU speed/layer50-cause or full-model quality pass",
+  "production_changed": false,
+  "completed": true
+}

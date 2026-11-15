@@ -1,0 +1,364 @@
+{
+  "operators": [
+    {
+      "name": "qkv",
+      "input_shape": [
+        8064,
+        1152
+      ],
+      "weight_shape": [
+        3456,
+        1152
+      ],
+      "cpu_bf16_vs_cpu_fp32_rounded": {
+        "finite": true,
+        "bit_exact": false,
+        "max_abs_error": 0.03125,
+        "relative_rms": 5.744375812355429e-05
+      },
+      "variants": {
+        "native_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.002223295159637928
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.0022233070340007544
+          },
+          "groups_ms": [
+            403.1990501098335,
+            402.71406015381217,
+            402.5813201442361
+          ],
+          "median_ms": 402.71406015381217
+        },
+        "cast_fp16_linear_then_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.0016079660272225738
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.0016079305205494165
+          },
+          "groups_ms": [
+            15.020320191979408,
+            14.830689877271652,
+            14.792169909924269
+          ],
+          "median_ms": 14.830689877271652
+        },
+        "explicit_fp32_linear_then_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 2.3306243747356348e-05
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 5.764601155533455e-05
+          },
+          "groups_ms": [
+            11.040039826184511,
+            10.642500128597021,
+            10.604559909552336
+          ],
+          "median_ms": 10.642500128597021
+        },
+        "fp32_dot_then_bias_then_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 2.3306243747356348e-05
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 5.764601155533455e-05
+          },
+          "groups_ms": [
+            10.50640968605876,
+            10.539719834923744,
+            10.60921000316739
+          ],
+          "median_ms": 10.539719834923744
+        },
+        "native_bf16_dot_then_fp32_bias": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.002223295159637928
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.0022233070340007544
+          },
+          "groups_ms": [
+            398.31023989245296,
+            398.8224798813462,
+            398.46716029569507
+          ],
+          "median_ms": 398.46716029569507
+        }
+      }
+    },
+    {
+      "name": "mlp_fc1",
+      "input_shape": [
+        8064,
+        1152
+      ],
+      "weight_shape": [
+        4304,
+        1152
+      ],
+      "cpu_bf16_vs_cpu_fp32_rounded": {
+        "finite": true,
+        "bit_exact": false,
+        "max_abs_error": 0.0625,
+        "relative_rms": 5.996843538014218e-05
+      },
+      "variants": {
+        "native_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.0625,
+            "relative_rms": 0.0019410201348364353
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.0625,
+            "relative_rms": 0.00194107077550143
+          },
+          "groups_ms": [
+            499.56298992037773,
+            499.73734002560377,
+            499.33067010715604
+          ],
+          "median_ms": 499.56298992037773
+        },
+        "cast_fp16_linear_then_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.0625,
+            "relative_rms": 0.0015948798973113298
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.0625,
+            "relative_rms": 0.0015948887448757887
+          },
+          "groups_ms": [
+            17.645900137722492,
+            17.607529647648335,
+            17.613589763641357
+          ],
+          "median_ms": 17.613589763641357
+        },
+        "explicit_fp32_linear_then_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 1.8582148186396807e-05
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.0625,
+            "relative_rms": 5.977338514639996e-05
+          },
+          "groups_ms": [
+            12.60989997535944,
+            12.500470038503408,
+            12.394180055707693
+          ],
+          "median_ms": 12.500470038503408
+        },
+        "fp32_dot_then_bias_then_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 1.8582148186396807e-05
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.0625,
+            "relative_rms": 5.977338514639996e-05
+          },
+          "groups_ms": [
+            12.631429824978113,
+            12.3837199062109,
+            12.575020082294941
+          ],
+          "median_ms": 12.575020082294941
+        },
+        "native_bf16_dot_then_fp32_bias": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.0625,
+            "relative_rms": 0.0019410201348364353
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.0625,
+            "relative_rms": 0.00194107077550143
+          },
+          "groups_ms": [
+            495.27582013979554,
+            495.27601012960076,
+            495.1149900443852
+          ],
+          "median_ms": 495.27582013979554
+        }
+      }
+    },
+    {
+      "name": "mlp_fc2",
+      "input_shape": [
+        8064,
+        4304
+      ],
+      "weight_shape": [
+        1152,
+        4304
+      ],
+      "cpu_bf16_vs_cpu_fp32_rounded": {
+        "finite": true,
+        "bit_exact": false,
+        "max_abs_error": 0.03125,
+        "relative_rms": 9.70850232988596e-05
+      },
+      "variants": {
+        "native_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.002616779413074255
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.002617410384118557
+          },
+          "groups_ms": [
+            416.7073299176991,
+            416.5939399972558,
+            416.74960032105446
+          ],
+          "median_ms": 416.7073299176991
+        },
+        "cast_fp16_linear_then_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.0016449540853500366
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.0016446978552266955
+          },
+          "groups_ms": [
+            18.05107994005084,
+            22.79078960418701,
+            18.890620209276676
+          ],
+          "median_ms": 18.890620209276676
+        },
+        "explicit_fp32_linear_then_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.015625,
+            "relative_rms": 2.9651808290509507e-05
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 9.868313645711169e-05
+          },
+          "groups_ms": [
+            9.438550099730492,
+            9.24201961606741,
+            9.27583035081625
+          ],
+          "median_ms": 9.27583035081625
+        },
+        "fp32_dot_then_bias_then_bf16": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.015625,
+            "relative_rms": 2.9651808290509507e-05
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 9.868313645711169e-05
+          },
+          "groups_ms": [
+            9.03315981850028,
+            8.957150392234325,
+            9.079379960894585
+          ],
+          "median_ms": 9.03315981850028
+        },
+        "native_bf16_dot_then_fp32_bias": {
+          "to_hf_bf16": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.002616779413074255
+          },
+          "to_fp32_rounded": {
+            "finite": true,
+            "bit_exact": false,
+            "max_abs_error": 0.03125,
+            "relative_rms": 0.002617410384118557
+          },
+          "groups_ms": [
+            403.55156967416406,
+            403.46761979162693,
+            403.38107012212276
+          ],
+          "median_ms": 403.46761979162693
+        }
+      }
+    }
+  ],
+  "npu_matmul_allow_hf32": false,
+  "scope": "Matched actual block0 vision tensor and weight comparisons. Timing includes conversion; individual linear probes are not full-model quality/performance proof.",
+  "completed": true
+}

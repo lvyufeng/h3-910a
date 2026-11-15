@@ -1,0 +1,177 @@
+{
+  "cases": {
+    "baseline": {
+      "cold_s": 62.00442356010899,
+      "merged": {
+        "shape": [
+          2016,
+          5120
+        ],
+        "finite": true,
+        "max_abs_error": 9.234375,
+        "relative_rms": 0.12330491840839386
+      },
+      "deepstack": [
+        {
+          "shape": [
+            2016,
+            5120
+          ],
+          "finite": true,
+          "max_abs_error": 0.375,
+          "relative_rms": 0.02456318959593773
+        },
+        {
+          "shape": [
+            2016,
+            5120
+          ],
+          "finite": true,
+          "max_abs_error": 1.6875,
+          "relative_rms": 0.04920879378914833
+        },
+        {
+          "shape": [
+            2016,
+            5120
+          ],
+          "finite": true,
+          "max_abs_error": 1.265625,
+          "relative_rms": 0.07731921970844269
+        }
+      ]
+    },
+    "fp32_linear_and_interpolation": {
+      "cold_s": 17.364118020050228,
+      "merged": {
+        "shape": [
+          2016,
+          5120
+        ],
+        "finite": true,
+        "max_abs_error": 3.75,
+        "relative_rms": 0.056605178862810135
+      },
+      "deepstack": [
+        {
+          "shape": [
+            2016,
+            5120
+          ],
+          "finite": true,
+          "max_abs_error": 0.125,
+          "relative_rms": 0.011360648088157177
+        },
+        {
+          "shape": [
+            2016,
+            5120
+          ],
+          "finite": true,
+          "max_abs_error": 0.8359375,
+          "relative_rms": 0.022107092663645744
+        },
+        {
+          "shape": [
+            2016,
+            5120
+          ],
+          "finite": true,
+          "max_abs_error": 0.8984375,
+          "relative_rms": 0.037688788026571274
+        }
+      ]
+    },
+    "plus_fp32_patch_projection": {
+      "warm_s": 4.710767600219697,
+      "merged": {
+        "shape": [
+          2016,
+          5120
+        ],
+        "finite": true,
+        "max_abs_error": 7.90625,
+        "relative_rms": 0.09455900639295578
+      },
+      "deepstack": [
+        {
+          "shape": [
+            2016,
+            5120
+          ],
+          "finite": true,
+          "max_abs_error": 0.25,
+          "relative_rms": 0.01789500191807747
+        },
+        {
+          "shape": [
+            2016,
+            5120
+          ],
+          "finite": true,
+          "max_abs_error": 0.875,
+          "relative_rms": 0.037020813673734665
+        },
+        {
+          "shape": [
+            2016,
+            5120
+          ],
+          "finite": true,
+          "max_abs_error": 0.921875,
+          "relative_rms": 0.05963269993662834
+        }
+      ]
+    }
+  },
+  "timings": [
+    {
+      "variant": "baseline",
+      "warm_s": 46.401313280221075
+    },
+    {
+      "variant": "fp32_linear_and_interpolation",
+      "warm_s": 4.814026880078018
+    },
+    {
+      "variant": "fp32_linear_and_interpolation",
+      "warm_s": 4.8501348197460175
+    },
+    {
+      "variant": "baseline",
+      "warm_s": 46.41894676024094
+    }
+  ],
+  "npu_matmul_allow_hf32": false,
+  "npu_conv_allow_hf32": true,
+  "scope": "Same-input/operator/config complete vision tower A/B, no whole-text-encoder or generation-quality proof",
+  "same_bf16_parameter_state": true,
+  "parameter_tensors": 351,
+  "cpu_path_interpolation_unchanged": true,
+  "patch_projection_old_vs_hf": {
+    "shape": [
+      8064,
+      1152
+    ],
+    "finite": true,
+    "max_abs_error": 0.001953125,
+    "relative_rms": 2.7118358048028313e-06
+  },
+  "patch_projection_fp32_linear_vs_hf": {
+    "shape": [
+      8064,
+      1152
+    ],
+    "finite": true,
+    "max_abs_error": 0.03125,
+    "relative_rms": 0.0014711269177496433
+  },
+  "patch_projection_recommended": false,
+  "warm_mean_s": {
+    "baseline": 46.41013002023101,
+    "fp32_linear_and_interpolation": 4.832080849912018
+  },
+  "speedup": 9.604584745529671,
+  "cpu_hf_sample_scope": "Two complete real 48x84 images, full merged and deepstack tensors, BF16 stored parameters/output",
+  "completed": true
+}

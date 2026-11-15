@@ -5404,3 +5404,75 @@ Interpolation prototype is not installed. Relevant jobs are collected, owned
 servers stopped and cards verified idle; lease released. Goal stays active for
 full encoder/vision correctness, fused kernels, encoder/decode targets and proper
 task-matched official quality/performance comparison.
+
+---
+
+# Round55: correct CPU vision port; 9.60× NPU vision compute path; text50 oracle is not a pass
+
+On the same real two1×48×84 grids, replacing BF16 interpolation with FP32 weights,
+products and sum followed by BF16 makes **full CPU native vision merged+all3
+DeepStack outputs bit-exact to installed HF**. Five matched CPU blocks0,8,16,24,26
+are also bit-exact. This corrects the previously observed9.52% CPU native/HF error;
+it was not an irreducible port budget. CPU equality is for this real sample,
+not a claim of universal/full-model validation.
+
+NPU teacher-forced **block0** separates inputs for each primitive. BF16 linears
+have0.222/0.194/0.262% RMS differences vsHF while norms are0.0029/0.0022%, GELU
+0.00053%, and same-QKV NPU FP32 vsCPU FP32 attention math0.0261%. The other four
+CPU blocks are not represented as NPU teacher-forced tests.
+
+With actual8064-row tensors, explicit **FP32 linear→BF16** out is more accurate AND
+faster than native BF16: QKV/fc1/fc2 **402.71/499.56/416.71→10.64/12.50/9.28ms**,
+errors0.2223/0.1941/0.2617→**0.00233/0.00186/0.00297%**. Conversions are included;
+FP16 compute casts are slower/less accurate in this same-input comparison. No
+transformed-weight cache or device-global HF32 policy changes are used. Bias-only
+FP32 does not reproduce the gain, so do not attribute the result merely to bias.
+
+Full same-input NPU tower, interleaved and reversed two warm calls/variant:
+**46.410→4.832s (9.605×)**, unchanged351 BF16 parameter tensors and BF16 outputs.
+Merged error **12.330→5.661%**, DeepStack2.456/4.921/7.732→**1.136/2.211/3.769%**.
+This is substantial but not lossless and not complete text encode2s. The optional
+mode `VLLM_OMNI_910A_VISION_FP32=1` is **default-off**. Default-off NPU linear and
+interpolation paths are bit-exact to baseline;8 CPU/formula regressions and9
+structural contracts verify parameter keys, non-NPU paths and limited code scope.
+An exploratory projection variant omitted BF16 pixel casting and is not a valid
+like-for-like precision ablation; a correct-cast repeat still leaves5.584% merged
+error. **Patch Conv3d is unchanged**, and this prototype is not deployed.
+
+The same original49-step native request completes **1225.764s**, encode/conditioning
+**296.97s**, denoise**786.86s**, captured decode**136.50–141.80s** (4records). Steps2–49
+rank-max mean14.9902s, steps3–49 mean14.8597s/range14.7690–15.1255s with45/47below15s;
+cold first/second62.623/21.126s. Explicit PERF drains are unchanged. CPU reference
+work/cache variation overlap this request; it is not a clean E2E speed attribution
+or globally barrier-timed step guarantee. All124 frames/5.1667s at1344×768 with audio
+decode and checksum matches, but unprompted middle-frame lettering/logo persists.
+
+A different, explicit **FP32-linear CPU HF oracle** (BF16 stored weights/I/O) now
+completes50 layers in279.281s. Shared old native visual/DeepStack inputs isolate
+language execution; it is not unchanged BF16 HF or independent all-encoder proof.
+Against round54 native captures, layer0/1/2 differences0.155/0.235/0.262%, layer24
+0.4605%, but layer49 is **16.558% overall**, **17.999% visual tokens**, **0.1196% text**,
+finite maxdiff6464. No late native input or all-late-layer teacher states are
+captured, so the mismatch is not isolated to that last block alone. Native final
+states are finite with absmax20736, many large entries in channel731. The first
+unchanged BF16 CPU50-layer reference remains incomplete after2400s timeout.
+
+Actual common text RMSNorm fallback multiplies FP32 normalized values/gamma before
+BF16 cast; HF Qwen first rounds normalized values to BF16 then multiplies BF16gamma.
+CPU same-real-input formula tests, layer0 and next-layer25 input from layer24 output,
+show **0.2813/0.2774% error**, with **bit-exact HF agreement** for the correctly ordered
+BF16-normalized→gamma formula. This proves a model-specific norm contract difference,
+not its unique role in16.56% or video errors. Production norm is **unchanged**;
+future fused text RMSNorm/AddRMSNorm must preserve the reference rounding rather
+than blindly using the shared DiT norm semantics.
+
+[Round55 evidence](<../../diagnostics/round55/README.md>) provides receipts, exact
+executed/frozen reproducer sources, completed video, references and honest scopes.
+[Optional portable vision patch](<../patches/encoder_vision_fp32_optin.patch>) installs
+source SHA `f04123afdeda7cceb9f98e84f3873644fd64d0c37e2e24d4490959a14b90ab32`;
+[final source verification](<../../diagnostics/round55/final_source_verification.json>)
+confirms exact-prefix FAunchanged, no capture imports and unchanged norm. Runtime
+is torch2.10.0+cpu/torch_npu2.10.0.post7/transformers5.14.1/CANN9.2.0 on910A. All
+relevant jobs collected, owned servers stopped and cards live-probed idle; lease
+released. Goal stays active for late-text isolation, remaining vision precision,
+fused kernels, encoder/decoder targets and official task-matched lossless comparison.

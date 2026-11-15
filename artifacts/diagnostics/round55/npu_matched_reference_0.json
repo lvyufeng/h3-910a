@@ -1,0 +1,135 @@
+{
+  "blocks": [
+    {
+      "block": 0,
+      "isolated": {
+        "norm1": {
+          "shape": [
+            8064,
+            1152
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 0.015625,
+          "relative_rms": 2.8829201255575754e-05,
+          "npu_s": 3.09665211988613
+        },
+        "qkv_linear_same_hf_norm_input": {
+          "shape": [
+            8064,
+            3456
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 0.03125,
+          "relative_rms": 0.002223295159637928,
+          "npu_s": 0.8276609401218593
+        },
+        "cpu_fp32_math_vs_cpu_sdpa_same_qkv": {
+          "shape": [
+            1,
+            16,
+            8064,
+            72
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 0.0078125,
+          "relative_rms": 0.0006909382063895464
+        },
+        "npu_fp32_math_vs_cpu_fp32_math_same_qkv": {
+          "shape": [
+            1,
+            16,
+            8064,
+            72
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 0.0078125,
+          "relative_rms": 0.00026110955514013767
+        },
+        "npu_fp32_math_vs_cpu_sdpa_same_qkv": {
+          "shape": [
+            1,
+            16,
+            8064,
+            72
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 0.0078125,
+          "relative_rms": 0.0006976985023356974
+        },
+        "attention_same_hf_norm_input": {
+          "shape": [
+            8064,
+            1152
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 0.03125,
+          "relative_rms": 0.00198406632989645,
+          "npu_s": 3.34885805984959
+        },
+        "norm2_same_hf_residual_input": {
+          "shape": [
+            8064,
+            1152
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 0.0078125,
+          "relative_rms": 2.1645604647346772e-05,
+          "npu_s": 0.007127630058676004
+        },
+        "mlp_fc1_same_hf_norm_input": {
+          "shape": [
+            8064,
+            4304
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 0.0625,
+          "relative_rms": 0.0019410201348364353,
+          "npu_s": 0.7180983000434935
+        },
+        "gelu_same_hf_fc1_input": {
+          "shape": [
+            8064,
+            4304
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 1.52587890625e-05,
+          "relative_rms": 5.344329110812396e-06,
+          "npu_s": 0.21869393019005656
+        },
+        "mlp_fc2_same_hf_gelu_input": {
+          "shape": [
+            8064,
+            1152
+          ],
+          "finite": true,
+          "bit_exact": false,
+          "max_abs_error": 0.03125,
+          "relative_rms": 0.002616779413074255,
+          "npu_s": 0.8313172697089612
+        }
+      },
+      "npu_whole_block_vs_hf_same_input": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "finite": true,
+        "bit_exact": false,
+        "max_abs_error": 0.09375,
+        "relative_rms": 0.0039718481712043285,
+        "npu_s": 1.586293799802661
+      }
+    }
+  ],
+  "scope": "Actual captured native CPU block inputs and installed HF CPU sub-operators; NPU sub-operators share exact HF inputs. Not full-model quality validation.",
+  "completed": true
+}
