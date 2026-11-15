@@ -159,7 +159,25 @@ Per block (budget 676 ms from 41.2 s / 50, which is sync-bounded):
 > ~200 GB/s**, **36 ms at 25 GB/s**, or **55 ms at 16.4 GB/s**. 36-55 ms is the right
 > order to account for most of the 81 ms gap.
 >
-> **Attempted in round 42 and the measurement failed.** Syncing before and after
+> **Round 43 replaced timers with a differential, which worked.** Bypassing the
+> attention core (collective + kernel only, keeping projections/norms/RoPE) gives
+> `steady_avg = 11.94 s/step` against the `41.2-41.4 s` baseline: a **29.3 s/step**
+> difference = **585 ms/block**, versus the **559 ms** standalone benchmark. So the
+> kernel figure is confirmed to within 5% by a measurement with no timers at all.
+>
+> The same run shows non-attention cost is **239 ms/block (11.94 s / 50)**, against an
+> expected ~55 ms (MLP 33 + projections 19 + elementwise 3). So the unaccounted cost
+> is **~184 ms/block, ~9.2 s/step (22%)** -- roughly **twice** the ~81 ms chased in
+> rounds 39-41. That earlier figure was contaminated: it subtracted from a 676 ms
+> block derived from round 23's 33.8 s phase split, which round 27 showed was built on
+> async-misattributed terms.
+>
+> **Confound, stated plainly**: removing attention also removes the compute that DLO
+> streaming was overlapping with, so 239 ms is an *upper bound* on non-attention cost.
+> The leading candidate is now exposed DLO streaming; the all-to-all is ruled out by
+> construction because the bypass removes it too.
+
+> **Round 42's timer-based attempt failed and is superseded.** Syncing before and after
 > `_run_packed_attention` at a real 7904-row block reported 8.3-8.7 s per call, which
 > is impossible (a block is 676 ms, so 50 blocks would be 435 s/step) while the
 > end-to-end average did not move at all. The entry sync blocks on everything already
