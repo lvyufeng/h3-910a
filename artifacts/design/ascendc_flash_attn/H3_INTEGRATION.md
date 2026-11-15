@@ -4643,3 +4643,80 @@ unmeasured" rather than a number.
 Restored the pre-probe source; 0 `H3PROBE`/`_A2A_PROBE` remnants, syntax checked, the
 `seq`/`local` instrumentation from round 37 kept (it is env-gated and was useful).
 Steady state unchanged at 41.34 s/step, so nothing was left disturbed.
+
+---
+
+# Round 43: differential measurement -- attention confirmed, and the residue is 3x bigger than thought
+
+Round 42's sync-based instrument was invalid. Replaced it with a **differential** that
+needs no timer at all: bypass the attention core (collective + kernel only, keeping
+qkv_proj, q/k norm, RoPE and out_proj) and compare steady-state step time against the
+41.2 s baseline. The difference is attention's true in-situ cost.
+
+```
+with attention    : steady_avg = 41.2 - 41.4 s/step   (baseline)
+without attention : steady_avg = 11.94 s/step
+difference        : 29.3 s/step = 585 ms/block
+standalone bench  : 559 ms/block
+```
+
+## First: the 559 ms benchmark was right
+
+585 ms measured in situ against 559 ms standalone is **within 5%**. Every block-time
+claim in this record rests on that benchmark, and it is now confirmed by a
+measurement that involves no synchronisation, no timers and no attribution
+assumptions. The kernel figure is solid.
+
+## Second: the non-attention cost is far larger than accounted
+
+The same experiment gives the non-attention side directly, and it is nothing like what
+round 36 or 39 assumed:
+
+```
+11.94 s / 50 blocks = 239 ms per block without attention
+```
+
+Against what should be in there:
+
+| part | per block |
+|---|---:|
+| MLP (7904 rows, 73 TFLOPS) | ~33 ms |
+| qkv_proj + out_proj | ~19 ms |
+| norms, RoPE, gates, elementwise | ~3 ms |
+| **expected** | **~55 ms** |
+| **measured** | **239 ms** |
+| **residue** | **~184 ms** |
+
+So the unattributed cost is **~184 ms per block, ~9.2 s per step -- 22% of the step**,
+not the ~81 ms I was chasing. My round 39/41 estimate was wrong by more than a factor
+of two, because it was derived by subtracting from a 676 ms block that itself came
+from dividing 33.8 s by 50 (round 23's phase split, which round 27 already showed was
+built on async-misattributed terms).
+
+## What the 239 ms could be
+
+The honest candidates, none measured:
+
+* **DLO weight streaming that is not hidden** (round 39's candidate, refuted for the
+  main path because prefetch is double-buffered -- but this measurement REMOVES the
+  559 ms of attention that the prefetch was hiding behind, so with less compute to
+  overlap, the stream becomes exposed). This is a real effect and it means the
+  239 ms is not purely additive with attention.
+* the per-block all-to-all, which the bypass also removes -- so it is inside the
+  585 ms, not the 239 ms. Ruled out for this residue by construction.
+* projections costing more than the FLOP estimate (unlikely to be 4x)
+* the `sp_gather` / reshape / layout costs per block
+
+**The confound is important and I should state it plainly**: removing attention also
+removes the compute that DLO streaming was overlapping with, so the 239 ms is an
+*upper bound* on non-attention cost rather than a clean figure. A cleaner version
+would bypass attention but keep an equivalent amount of dummy cube work.
+
+## Round 43 accounting
+
+No speedup, but the best-conditioned measurement in the record: a sync-free
+differential that (a) **confirms the 559 ms kernel figure to within 5%**, and
+(b) shows the non-attention per-block cost is **239 ms, not ~113 ms**, i.e. the
+residue I have been chasing since round 3 is roughly **twice** as large as I
+estimated, while also revealing that my estimate was contaminated by a bad phase
+split. Reverted cleanly; 0 `_SKIP_ATTN_CORE` remnants, steady state unaffected.
