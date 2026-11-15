@@ -3657,3 +3657,71 @@ No wall-time improvement, and one wrong implementation reverted. The deliverable
 the comparable measurement itself -- explicitly required by the goal since round 1
 and never produced until now -- plus a correction of the headline ratio from ~21x to
 13.5x/17.8x on a like-for-like basis.
+
+---
+
+# Round 26: the finite-check diagnostic costs 1.9 s/step, not the 15 s its own comment claims
+
+Chasing the last unattributed item (`update`, 5.7 s/step), read the two step
+functions. Both are ordinary elementwise arithmetic, but each is wrapped in
+validation helpers, and the helpers carry a comment that looked like the answer:
+
+```python
+def _require_finite_tensor(tensor: torch.Tensor, name: str) -> None:
+    # isfinite().all().item() sweeps the whole tensor and then forces a
+    # host<->device sync. These run on every large latent tensor, six times per
+    # denoise step, and cost ~15 s per step on 910A -- a pure diagnostic that
+    # never fires in practice. Keep it available but off be default when asked.
+    if not _FINITE_CHECK:
+        return
+    if not bool(torch.isfinite(tensor).all().item()):
+        raise ValueError(f"{name} must be finite")
+```
+
+and the gate defaults to **enabled**:
+
+```python
+_FINITE_CHECK = os.environ.get("VLLM_OMNI_910A_FINITE_CHECK", "1") != "0"
+```
+
+So it ran in every measurement in this record. Six full-tensor reductions with a
+device sync each, per step, on ~5.8M-element latents.
+
+## Measured: the comment is wrong by roughly 8x
+
+Ran with `VLLM_OMNI_910A_FINITE_CHECK=0`:
+
+| | enabled | disabled |
+|---|---:|---:|
+| update | 10.1 s | **8.2 s** |
+| dstep 1 model | 73.1 s | 70.9 s |
+| denoise steady_avg | 41.32 s | **41.18 s** |
+| dstep 1 | 85.34 s | 81.5 s |
+| wall | 423 s | **412 s** |
+
+So it is worth about **1.9 s per step in `update`**, not 15 s. In the steady-state
+average the change is 0.14 s -- inside noise.
+
+The likely reason the comment overstates it: `update` measured 10.1 s in the old
+instrumentation largely because of the **async misattribution found in round 20**
+(4.4 s of it was the model's device tail). The diagnostic's synchronisation changes
+*where* time is attributed as well as how much is spent, so a measurement taken
+without that correction would have credited the sync with the model's tail.
+
+That is the same failure mode as rounds 2, 15, 17 and 18: a number in the code (or
+in my notes) that was never re-derived after the measurement method improved.
+
+## Decision
+
+Left as a configuration option rather than a code change:
+`VLLM_OMNI_910A_FINITE_CHECK=0` recovers ~2 s/step (~1% of wall) and is zero-risk
+since the check never fires in practice and is purely diagnostic. It is not
+enabled by default because keeping the safety net on is worth more than 1%.
+
+## Round 26 accounting
+
+No code change, no durable speedup. One more candidate eliminated from the `update`
+budget, and a wrong figure in a code comment corrected against measurement. The
+remaining `update` cost of ~8.2 s is **not** explained by mask ops (0.003 s, round
+20) or by the finite check (1.9 s) -- roughly 6 s is still unattributed there, making
+it the last substantial unexplained item after attention.
