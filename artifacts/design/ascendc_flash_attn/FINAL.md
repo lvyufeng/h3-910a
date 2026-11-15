@@ -150,6 +150,8 @@ shape-limited ceiling, which cannot mostly be silicon.
 | text encode fixable via `on_demand` / device / `encoder_block_attrs` | all three | **all three failed**; it is 62.13 GB streamed per request |
 | DLO residency would remove the warmup ramp | `--dlo-resident-layers` | knob works, **OOM** at 50 *and* 30 blocks |
 | `--vae-fast-path channels_last` would speed decode | measured | no change; it is a **Wan-only** flag, zero references in `minimax_h3/*.py` |
+| VAE tiling is a lever we can tune | `--vae-use-tiling`, then config `vae_tile_size` | flag is **inert** (tiling lives in the model config); 512 and **320 both deadlock**, only the shipped 256 works |
+| row sharding would avoid the tile deadlock | `--vae-parallel-mode spatial_shard_height` | **fails at startup** (`Orchestrator initialization failed`) |
 
 ---
 
@@ -223,10 +225,20 @@ Log markers: `[H3PERFP]` encode/denoise/decode, `[H3PERF] phase pre/blocks/post`
 
 Ranked by expected value, with the honest expectation attached:
 
-1. **Fused H3 VAE decoder** — decode is 37% of wall time (157 s) and exists in no
-   fast path. This is the largest single item and the only one where a big multiple
-   is plausible (official 6.56 s). But it is a rewrite of a conv/norm/upsample
+1. **Fused H3 VAE decoder** — decode is 37% of wall time (155-157 s) and exists in
+   no fast path. This is the largest single item and the only one where a big
+   multiple is plausible (official 6.56 s). But it is a rewrite of a conv/norm/upsample
    stack, far larger than anything else here.
+   **Known entry point** (rounds 32-33): the decoder is a Wan-family
+   `AutoencoderKLLegacy` with tiling baked into `FL2VA/video_vae/config.json`
+   (`vae_tile_size 256`, `vae_tile_overlap_min 64`), which costs **1.78x** the
+   frame area in redundant overlap. Total computed area by tile size:
+   `256 -> 28 tiles, 1.78x` (shipped, works); `320 -> 15 tiles, **1.49x**`
+   (best, but **deadlocks**); `384 -> 12, 1.71x`; `448 -> 8, 1.56x`;
+   `512 -> 6, 1.52x` (deadlocks). So **tile 320 is worth ~16% of the decode**
+   once the VAE parallel layer is fixed to tolerate uneven tile counts per rank
+   (or zero tiles on some ranks). That is the concrete, pre-measured first step,
+   and it is a collective-participation fix, not a config value.
 2. **Short-K matmul efficiency** — the kernel is at 82% of a 31.5 TFLOPS ceiling
    that is set by K=128. Beating the vendor library there is what would move the
    needle, and it is the only remaining route to the attention number.
