@@ -5327,3 +5327,80 @@ the tested alias and the same physical components, but not separately rerun afte
 publication. All owned processes are stopped and all cards verified idle; lease
 released. Goal stays active for quality correctness, strict step margin, fused ops,
 encoder/decode optimization and a genuinely task-matched official comparison.
+
+---
+
+# Round 54: actual padding-contract bug fixed; warm step window below15s, quality still unresolved
+
+Default-disabled rank-zero captures record real processor inputs, embedding,
+vision/DeepStack outputs, language input/rotary/selected layer states and two long
+DiT attention wrapper calls from the native 49-step first/last-image request. Calls
+are ordinals **0/49 among matching long attention calls**, not denoise step49.
+Bounded captures include seven rank-local heads and all41792 rows. Five AST
+capture contracts and CPU hook checks preserve no-capture math, write-once/detached
+outputs and unchanged first/second invocations. Base text-SDPA capture is correctly
+identified as ineffective: the actual NPU patch replaces it with native GQA;
+no text-attention tensors are claimed.
+
+Real K/V show the old original-tail zero assumption is false after modulation:
+23 invalid keys have K/V maxabs **7.660/2.346** in call0 and **80.875/240.625** in
+call49. Full-key FP32 references on eight valid queries per captured head measure
+old RMS errors **0.41736%/1.53803%** after matching FP16 Q scaling. Inputs and
+outputs are finite; sampled scores −10.32…15.51 and −54.32…129.85 are not actual
+FP16 overflow evidence. The nonzero padded numerator/denominator assumption is a
+specific semantic defect, not a proven sole cause of unprompted lettering.
+
+The deployed v3 kernel masks the true **valid prefix41769**, including arbitrary
+partial NZ columns through a repeated vector bitmask, before rowmax and after exp
+before rowsum/PV. It removes zero-key LSE subtraction for original AND internally
+added keys; cache identity includes full valid boundary/v3/corebudget. Seven actual
+NPU boundary/adversarial tests (valid1,15,17,303,305,2417,2431) return exact uniform
+one, and last-valid-key impulses verify retained valid columns. Five host mask/cache
+tests pass. On the same captured QKV, RMS errors become **0.06323%/0.20122%**,
+maxabs **0.00894/0.64761**. Fixed-order complete-wrapper timing is
+**155.356→154.475ms**, a limited no-slowdown check, not a reverse-order/full-model
+speed attribution. Remaining FP16 numerical errors are not an official lossless
+quality proof.
+
+After restoring encoder capture sites, the same native49-step request completes
+with prefix41769 on all8 ranks, 30cores/128x304 compiled N43776. Actual video is
+1344x768,124frames/5.1667s with audio and full decode/checksum verification. Request
+wall is **1255.82s**, encode/conditioning **330s**, denoise **780.42s**, captured
+decode **138.34–143.36s** (7records). First/second complete rank-max steps are
+62.863/20.747s; after-first mean **14.8423s**, steps3–49 mean **14.7167s**, range
+**14.6197–14.8396s**, all **47/47 below15s**. This is one observed explicit local-drain
+warm window, not cold latency/stability or global barrier timing. CPU-reference
+load/cache changes prevent attributing E2E variation solely to this patch.
+
+The middle frame still contains unprompted logo/lettering. Prefix correction is
+an operator correctness improvement, not a full model-quality pass or unique-cause
+resolution. Independent installed HF CPU BF16 vision with actual pixels/weights
+shows **12.330% merged RMS** and **2.456/4.921/7.732% DeepStack** versus captured NPU.
+Multimodal positions match bit-exactly. Original native vision on CPU itself differs
+from CPU HF by **9.523%** and from captured NPU by **10.824%**; these different-reference
+ratios are not additive error components or solely NPU blame.
+
+BF16 interpolation weights/products/four adds differ from installed HF by0.2886%
+RMS. FP32 interpolation then BF16 matches the CPU HF table exactly; visual RoPE
+already matches. An isolated NPU-only interpolation candidate preserves the CPU
+path, but still leaves **10.777% merged RMS**, DeepStack **2.130/4.193/6.632%**, with
+first observed standalone forward64.998s. It is **not deployed** because large whole
+vision discrepancies remain; table equality is not entire vision correctness.
+
+HF CPU language layers with shared captured visual/DeepStack inputs compare to
+TP8 at0.155/0.233/0.260% RMS for first3 layers. The attempted50-layer CPU reference
+hits2400s timeout; last reported checkpoint layer24 is0.458% RMS (visual positions
+1.074%), later unreported progress unknown. It is not a full50-layer pass. Executed
+source and partial stdout checkpoints are retained separately; future script
+progress/SIGTERM persistence was not retroactively applied to that run.
+
+[Round-54 evidence](<../../diagnostics/round54/README.md>) contains real captures'
+receipts, independent references, masks/tests, both completed requests and honest
+quality reviews. [Canonical deployed wrapper](<../patches/fa910a.py>) matches tested
+SHA256 `937671efa50e20ce57c94477946d89e69b6c5e82d905ba41e5d5a203508853f1`;
+[portable diff](<../patches/fa910a_exact_prefix.patch>) is provided. Encoder is
+restored to pre-capture `ac48b620...`; helper remains on disk but unreferenced.
+Interpolation prototype is not installed. Relevant jobs are collected, owned
+servers stopped and cards verified idle; lease released. Goal stays active for
+full encoder/vision correctness, fused kernels, encoder/decode targets and proper
+task-matched official quality/performance comparison.

@@ -1,0 +1,147 @@
+--- a/vllm_omni/diffusion/attention/backends/fa910a.py
++++ b/vllm_omni/diffusion/attention/backends/fa910a.py
+@@ -113,14 +113,22 @@
+     return padded if (padded - n) * 10 <= n else n
+ 
+ 
++def _partial_column_mask(first_invalid):
++    """128-bit vector mask for an invalid suffix of each FP16 NZ row of 16."""
++    if not isinstance(first_invalid, int) or not 1 <= first_invalid < 16:
++        raise FlashAttn910AError("invalid partial NZ column mask")
++    lane = ((1 << 16) - 1) ^ ((1 << first_invalid) - 1)
++    word = sum(lane << (16 * i) for i in range(4))
++    return [word, word]
++
++
+ def _install_key_sequence_limit(instance, key_limit):
+-    """Exclude added columns before rowmax and explicitly before probability sum.
+-
+-    TIK h_duplicate rejects -inf immediates. FP16's finite minimum cannot increase
+-    any finite valid score max; explicitly zeroing those probabilities after exp
+-    then removes their mass even if a valid score is also at the finite minimum.
+-    This avoids ill-conditioned zero-key LSE subtraction for the added tail.
+-    Original caller padding retains its existing correction contract.
++    """Exclude every invalid prefix-tail key, including sub-16-column tails.
++
++    Modulation makes original padded K/V nonzero in actual H3 layers. Mask all
++    columns beyond the metadata's true valid-key length, not a zero-key LSE
++    subtraction. Use finite-min scores before rowmax and exact zero probabilities
++    before both rowsum and P@V. The packed score tile remains FP16.
+     """
+     import types
+     from flash_attention.ops.flash_attention.constants import FP16, L1
+@@ -129,11 +137,17 @@
+     def fill_tail(self, scores, kv_index, value):
+         # Bc is finalized by compute_process, not by the constructor.
+         cutoff, remainder = divmod(key_limit, self.Bc)
+-        if remainder % 16:
+-            raise FlashAttn910AError("key limit must align to an NZ column block")
+         if remainder:
++            block, column = divmod(remainder, 16)
+             with self.tik_instance.if_scope(kv_index == cutoff):
+-                self.tik_instance.h_duplicate(scores[remainder // 16:, :, :], value)
++                if column:
++                    # Each vector repeat is eight 16-column FP16 NZ rows. A
++                    # repeated bitmask fills only invalid columns in each row.
++                    self.tik_instance.vector_dup(_partial_column_mask(column), scores[block, 0, 0],
++                                                 value, scores.shape[1] // 8, 1, 8)
++                    block += 1
++                if block < scores.shape[0]:
++                    self.tik_instance.h_duplicate(scores[block:, :, :], value)
+             with self.tik_instance.if_scope(kv_index > cutoff):
+                 self.tik_instance.h_duplicate(scores, value)
+         else:
+@@ -170,15 +184,15 @@
+     # Partition AND clipped-key geometry are baked into the binary. Never reuse
+     # either a 32-core binary or the unmasked zero-pad prototype for this kernel.
+     key = "b%d_h%d_n%d_d%d_br%d_bc%d_c%d" % (b, h, n, d, br, bc, core_budget)
+-    return key if key_seq_limit is None else key + "_k%d" % key_seq_limit
++    return key if key_seq_limit is None else key + "_k%d_v3" % key_seq_limit
+ 
+ 
+ def _build(b, h, n, d, br_cap=128, bc_cap=304, key_seq_limit=None):
+     """Build/reuse by shape, tiles AND physical core budget. Return (.o, symbol, blockDim)."""
+     if key_seq_limit is not None:
+         key_seq_limit = operator.index(key_seq_limit)
+-        if key_seq_limit <= 0 or key_seq_limit > n or key_seq_limit % 16:
+-            raise FlashAttn910AError("invalid aligned key sequence limit")
++        if key_seq_limit <= 0 or key_seq_limit > n:
++            raise FlashAttn910AError("invalid key sequence limit")
+         if key_seq_limit == n:
+             key_seq_limit = None
+     br = pick_tile(n, br_cap)
+@@ -234,7 +248,7 @@
+                         with open(meta_path) as f:
+                             meta = json.load(f)
+                         meta["fa910a_key_seq_limit"] = key_seq_limit
+-                        meta["fa910a_kernel_version"] = 2
++                        meta["fa910a_kernel_version"] = 3
+                         with open(meta_path, "w") as f:
+                             json.dump(meta, f)
+                     os.makedirs(dpath, exist_ok=True)
+@@ -254,7 +268,7 @@
+         meta = json.load(f)
+     bd = meta["blockDim"]
+     if key_seq_limit is not None and (meta.get("fa910a_key_seq_limit") != key_seq_limit
+-                                      or meta.get("fa910a_kernel_version") != 2):
++                                      or meta.get("fa910a_kernel_version") != 3):
+         raise FlashAttn910AError("cached kernel lacks its requested key-tail mask")
+     if not isinstance(bd, int) or not 1 <= bd <= core_budget:
+         raise FlashAttn910AError("cached blockDim=%r exceeds runtime core budget=%d" % (bd, core_budget))
+@@ -306,34 +320,28 @@
+     b, h, source_n, d = q.shape
+     if b <= 0 or h <= 0 or d <= 0 or d % 16 or n_pad < 0 or n_pad >= source_n:
+         raise FlashAttn910AError("invalid shape or original padding count")
++    valid_keys = source_n - n_pad
+     kernel_n = _kernel_sequence_length(source_n, d, enabled=_USE_TILE_PADDING)
+     if kernel_n == source_n:
+-        return _flash_attention_core(q, k, v, scale=scale, stream=stream, n_pad=n_pad)
++        return _flash_attention_core(q, k, v, scale=scale, stream=stream,
++                                      key_seq_limit=valid_keys if n_pad else None)
+     pq, pk, pv = _pad_qkv(q, k, v, kernel_n)
+     tag = (b, h, source_n, kernel_n, d, n_pad, q.device)
+     if os.environ.get("VLLM_OMNI_910A_PERF", "0") != "0" and tag not in _PLAN_LOGGED:
+         _PLAN_LOGGED.add(tag)
+         print("[FA910A] plan input_N=%d kernel_N=%d key_limit=%d original_pad=%d"
+-              % (source_n, kernel_n, source_n, n_pad), file=sys.stderr, flush=True)
+-    out = _flash_attention_core(pq, pk, pv, scale=scale, stream=stream, n_pad=n_pad,
+-                                key_seq_limit=source_n)
++              % (source_n, kernel_n, valid_keys, n_pad), file=sys.stderr, flush=True)
++    out = _flash_attention_core(pq, pk, pv, scale=scale, stream=stream,
++                                key_seq_limit=valid_keys)
+     return out[:, :, :source_n, :].contiguous()
+ 
+ 
+-def _flash_attention_core(q, k, v, scale=None, stream=None, n_pad=0, key_seq_limit=None):
+-    """q,k,v: torch_npu fp16 (B,H,N,D) NDS. Returns (B,H,N,D) fp16.
+-
+-    Applies `scale` to q (default 1/sqrt(D)), because the kernel does not.
+-
+-    `n_pad` is the number of trailing padded keys. The packed batch is allocated
+-    with torch.zeros, so a padded key row contributes k=0 and v=0: its score is
+-    q.0 = 0, so exp(0)=1 to the softmax denominator, and nothing to the
+-    numerator. The kernel therefore returns
+-
+-        O_kernel = num / (den_valid + n_pad)
+-
+-    and the exact result is recovered by dividing by (1 - n_pad*exp(-l)), using
+-    the log-sum-exp `l` the kernel already produces. No mask, no extra matmul.
++def _flash_attention_core(q, k, v, scale=None, stream=None, key_seq_limit=None):
++    """FP16 NZ launch with exact compiled valid-key prefix masking.
++
++    Scale Q because the raw kernel does not. Original and internally added
++    invalid keys are excluded in the score/probability tiles; no assumption
++    about zero-valued modulated padding and no LSE subtraction is needed.
+     """
+     b, h, n, d = q.shape
+     if scale is None:
+@@ -400,9 +408,4 @@
+     if _SYNC_EACH_CALL:
+         lib.fa910a_sync(ctypes.c_void_p(st))
+     out = o_nz.permute(0, 1, 3, 4, 2, 5).reshape(b, h, n, d)
+-    if n_pad:
+-        # out was num/(den_valid+n_pad); rescale to num/den_valid. Only the
+-        # padded case pays the float32 round trip.
+-        corr = 1.0 - float(n_pad) * torch.exp(-l.float())
+-        out = (out.float() / corr.unsqueeze(-1)).to(q.dtype)
+     return out.contiguous()

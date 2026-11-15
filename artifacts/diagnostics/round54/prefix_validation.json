@@ -1,0 +1,127 @@
+{
+  "tail_tests": [
+    {
+      "valid_keys": 1,
+      "original_pad": 2431,
+      "max_error_to_one": 0.0,
+      "finite": true,
+      "last_valid_key_impulse_error": 0.0
+    },
+    {
+      "valid_keys": 15,
+      "original_pad": 2417,
+      "max_error_to_one": 0.0,
+      "finite": true,
+      "last_valid_key_impulse_error": 0.0
+    },
+    {
+      "valid_keys": 17,
+      "original_pad": 2415,
+      "max_error_to_one": 0.0,
+      "finite": true,
+      "last_valid_key_impulse_error": 0.0
+    },
+    {
+      "valid_keys": 303,
+      "original_pad": 2129,
+      "max_error_to_one": 0.0,
+      "finite": true,
+      "last_valid_key_impulse_error": 0.0
+    },
+    {
+      "valid_keys": 305,
+      "original_pad": 2127,
+      "max_error_to_one": 0.0,
+      "finite": true,
+      "last_valid_key_impulse_error": 0.0
+    },
+    {
+      "valid_keys": 2417,
+      "original_pad": 15,
+      "max_error_to_one": 0.0,
+      "finite": true,
+      "last_valid_key_impulse_error": 7.456541061401367e-05
+    },
+    {
+      "valid_keys": 2431,
+      "original_pad": 1,
+      "max_error_to_one": 0.0,
+      "finite": true,
+      "last_valid_key_impulse_error": 0.0004113912582397461
+    }
+  ],
+  "real_cases": [
+    {
+      "name": "dit_attention0",
+      "valid_keys": 41769,
+      "query_indices": [
+        0,
+        1,
+        2,
+        7,
+        31,
+        20884,
+        41767,
+        41768
+      ],
+      "old": {
+        "finite": true,
+        "max_abs_error": 0.06506824493408203,
+        "relative_rms": 0.004173626191914082
+      },
+      "new": {
+        "finite": true,
+        "max_abs_error": 0.008936882019042969,
+        "relative_rms": 0.0006322551053017378
+      }
+    },
+    {
+      "name": "dit_attention49",
+      "valid_keys": 41769,
+      "query_indices": [
+        0,
+        1,
+        2,
+        7,
+        31,
+        20884,
+        41767,
+        41768
+      ],
+      "old": {
+        "finite": true,
+        "max_abs_error": 8.422012329101562,
+        "relative_rms": 0.015380331315100193
+      },
+      "new": {
+        "finite": true,
+        "max_abs_error": 0.6476058959960938,
+        "relative_rms": 0.0020122327841818333
+      }
+    }
+  ],
+  "timings": [
+    {
+      "name": "dit_attention49",
+      "variant": "old_zero_key_lse",
+      "groups_ms": [
+        155.35599986712137,
+        155.31541345020136,
+        155.37713995824257
+      ],
+      "median_ms": 155.35599986712137
+    },
+    {
+      "name": "dit_attention49",
+      "variant": "new_exact_prefix",
+      "groups_ms": [
+        154.53754334400097,
+        154.4622234068811,
+        154.47488659992814
+      ],
+      "median_ms": 154.47488659992814
+    }
+  ],
+  "scope": "Operator prefix correctness and same-input wrapper A/B; not generation-quality proof",
+  "completed": true
+}

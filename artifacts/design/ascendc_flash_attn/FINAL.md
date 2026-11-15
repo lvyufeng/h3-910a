@@ -83,6 +83,23 @@
 > See [round-53 evidence](<../../diagnostics/round53/README.md>) for corrected scope,
 > actual device-drained timings and preserved rejected timing assumptions.
 >
+> **Round 54 update:** actual modulated K/V tail rows are **not zero**, disproving
+> the old n_pad LSE-correction contract. A v3 kernel masks the true valid prefix
+> **41769**, including partial NZ columns. Seven adversarial NPU tails and real
+> captured full-key reference checks pass; sampled errors improve **0.417→0.063%**
+> and **1.538→0.201% RMS**. Corrected same-input wrapper is 155.356→154.475 ms.
+> A complete 49-step repeat records steps 3–49 **14.6197–14.8396 s**, all 47 below
+> 15 s, after-first mean **14.8423 s**; first/second remain 62.863/20.747 s. Request
+> wall **1255.82 s**, encode **330 s**, denoise **780.42 s**, captured decode
+> **138.34–143.36 s**. This is one explicit-drain warm window, not full-objective
+> completion, a hardware-only A/B, or a quality/lossless pass: lettering remains.
+> Independent CPU HF vision differs from deployed NPU by **12.33% RMS**; CPU native
+> port itself differs from CPU HF by **9.52%**. FP32 interpolation matches the HF
+> position table but an isolated NPU prototype still leaves **10.78%** whole-vision
+> error and is **not deployed**. Full 50-layer CPU text reference times out; only
+> checkpoints through layer24 are reported. See
+> [round-54 evidence](<../../diagnostics/round54/README.md>) for scopes and next checks.
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
@@ -103,9 +120,9 @@ quality equivalence or official 49-step lossless performance comparison.
 |---|---|
 | (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **not completed** — reassess with a correct-workload trace, not the old residual budget |
 | (2) raise flash-attention efficiency | **partly achieved**: core-budget A/B 558.1 → 317.0 ms (bit-exact); actual-shape masked tile wrapper 421.151 → 154.391 ms (not bit-exact across tilings) |
-| (2) DiT to 15 s/step | **near target, not strictly met** — actual synchronized native steps 3–49 mean 14.9592 s; 12/47 exceed 15 s and after-first average is 15.0810 s |
-| (3) VAE decode 155 s → 20 s | **not achieved** — native 49-step run captures 135.27–139.35 s decode; cold-state changes are not a decoder A/B |
-| (3) text encode 39 s → 2 s | **not achieved** — complete encode/conditioning is 332.59 s, not isolated text timing |
+| (2) DiT to 15 s/step | **one warm window achieved, full goal not complete** — corrected native steps 3–49 are 14.6197–14.8396 s; after-first mean 14.8423 s, cold steps remain slow and model quality is not validated |
+| (3) VAE decode 155 s → 20 s | **not achieved** — corrected repeat captures 138.34–143.36 s decode; cold-state changes are not a decoder A/B |
+| (3) text encode 39 s → 2 s | **not achieved** — encode/conditioning is 330 s, not isolated text timing; full vision numerical discrepancy remains |
 | comparable measurement vs A2/A3 | **not delivered** — actual native 49-step FL2VA exists, but official 150.06/114.19 s are warmed T2VA; precision/schedule/quality and protocol equivalence remain unverified |
 
 The older experiments below are retained as a historical record. Their numerical
