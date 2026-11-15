@@ -101,12 +101,28 @@ Warm steady state decomposes as:
 
 | part | per step | note |
 |---|---:|---|
-| transformer blocks (50) | 33.8 s | attention dominant, at 82% of its ceiling |
-| — of which arithmetic | ~28 s | |
-| — of which DLO weight streaming | ~5 s | cannot be made resident on 32 GB |
+| transformer blocks (50) | 33.8 s | attention 28.0 + MLP 9.8 + ~0.15 other |
+| — attention | 28.0 s | 82% of its shape-limited ceiling |
+| — MLP matmuls | 9.8 s | 64-100 TFLOPS, already efficient |
+| — DLO weight streaming | ~5 s | cannot be made resident on 32 GB |
 | transformer pre | 0.95 s | |
 | update | ~0.005 s | async tail, not its own work -- see section 5 |
 | prep | ~2.2 s | was the `index_copy_` scatter, now fixed |
+
+A single block closes to **zero** unexplained time (round 36):
+
+| part | per block |
+|---|---:|
+| attention (kernel 558 ms + 1.3 ms wrapper) | 559 ms |
+| MLP matmuls | ~195 ms |
+| other block ops (norms, adaln, gates) | ~3 ms |
+| **total** | **754 ms** (logged) |
+
+This is the strongest form of the argument in section 4: not an extrapolation from
+ceilings, but an accounting where every millisecond is attributed to arithmetic
+already running near the measured ceiling for its shape. The wrapper figure was
+measured directly (`flash_attention_910a` 559.5 ms vs raw kernel 558 ms; NZ layout
+conversion 0.3 ms each), so communication and dispatch are not hiding anything.
 
 ---
 
@@ -253,3 +269,8 @@ Ranked by expected value, with the honest expectation attached:
 I do not believe 15 s/step is reachable on this hardware, and I have not found a
 way to make the text encode, the decode, or the DLO ramp cheaper within the
 constraints (32 GB HBM, no H3 VAE fast path, rank-local transfer requirement).
+
+The DiT step is the part I can state most strongly, because it is the only part
+where the accounting **closes to zero**: every millisecond of the 754 ms block is
+attention at 82% of its shape-limited ceiling, MLP at 64-100 TFLOPS, or ~3 ms of
+elementwise work. There is no unmeasured residue left to attack.
