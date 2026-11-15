@@ -1,0 +1,23 @@
+--- a/vllm_omni/diffusion/models/minimax_h3/encoder.py
++++ b/vllm_omni/diffusion/models/minimax_h3/encoder.py
+@@ -125,8 +125,9 @@
+         masked_input.masked_fill_(input_mask, 0)
+         output = F.embedding(masked_input, self.weight)
+         output.masked_fill_(input_mask.unsqueeze(-1), 0.0)
+-        self.group.all_reduce(output)
+-        return output
++        # A coordinator may return a fresh contiguous/reduced tensor. Preserve
++        # its return value even when today's contiguous HCCL path is in-place.
++        return self.group.all_reduce(output)
+ 
+     def weight_loader(
+         self, param: nn.Parameter, loaded_weight: torch.Tensor, loaded_shard_id: str | None = None
+@@ -353,7 +354,7 @@
+             # A bf16 all-reduce of the per-rank partial GEMMs would round twice
+             # and amplify error on this model's large-magnitude activations.
+             output_parallel = output_parallel.float()
+-            self.group.all_reduce(output_parallel)
++            output_parallel = self.group.all_reduce(output_parallel)
+             output_parallel = output_parallel.to(self.output_dtype)
+         return output_parallel
+ 

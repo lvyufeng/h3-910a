@@ -1,0 +1,30 @@
+{
+  "source_url": "https://raw.githubusercontent.com/vllm-project/vllm-omni/8ff8b02c152a6217c169719d56a4d581782fd1af/recipes/MiniMaxAI/MiniMax-H3-NPU.md",
+  "commit": "8ff8b02c152a6217c169719d56a4d581782fd1af",
+  "git_blob_sha1": "2062aa0fe9f13b35480cd42c13e91b584f9d4411",
+  "sha256": "9aed7d620edac70bc3538825f3bb2f2a9a9fccda583375f8e30d232dd44cb31f",
+  "benchmark_scope": "vLLM-Omni 0.28.0; warmed lossless T2VA; 1344x768;124frames;49 DiT steps;8cardUSP/encoderTP8/VAEtile/DLO",
+  "A2_t2va_lossless": {
+    "e2e_s": 150.06,
+    "dit_total_s": 139.9,
+    "dit_per_step_s": 2.85,
+    "text_encode_s": 0.83,
+    "vae_decode_s": 6.76
+  },
+  "A3_t2va_lossless": {
+    "e2e_s": 114.19,
+    "dit_total_s": 105.87,
+    "dit_per_step_s": 2.16,
+    "text_encode_s": 0.48,
+    "vae_decode_s": 6.56
+  },
+  "FL2VA_lossless_table_row_present": false,
+  "official_http_example_num_inference_steps": 50,
+  "current_runtime_schedule_contract": "num_steps counts evaluations and generates N+1 sigma boundaries; this request asks 49 and executes 49; the 0.28 official table/example do not establish identical sigma ladders across versions",
+  "reference_key_points": [
+    "FlashGen four-step only supports T2VA",
+    "lossless uses fused ops plus dense FLASH_ATTN/LaserAttention, not sparse/int8",
+    "LaserAttention uses exact power-of-two input pre-scaling 256 to avoid FP16-workspace overflow"
+  ],
+  "comparison_qualification": "Our cold native FL2VA reference has different task, FP16 implementation and measurement drains; do not present direct hardware-only ratios or an official lossless success."
+}

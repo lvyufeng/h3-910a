@@ -124,8 +124,11 @@ they are not complete synchronized step latency and do **not** prove the 15 s
 whole-step target. The old `steady_avg=29.99` averages steps 2–4 and still includes
 step-2 cold effects (~60.56 s by sub-timers). Its `steady_total` is average×all
 steps, not an actual measured total; its 49-step projection is not an official
-lossless benchmark. A follow-up should place the complete-step timer after the
-existing synchronization and validate on more steps without changing the work.
+lossless benchmark. Round 53 additionally verifies that the cancellation helper's
+`synchronize=True` drains only cancelled work, not normal steps. A complete-step
+measurement therefore requires an explicit PERF-only device drain, not merely
+moving this timer past that conditional checkpoint. See
+[corrected protocol](<../round53/README.md>).
 
 This run uses the **four-step distilled checkpoint**, not the original official
 49-step lossless schedule. Completion proves the real FL2VA path works, not that

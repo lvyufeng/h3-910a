@@ -5224,8 +5224,10 @@ completes: actual MP4 is **124 frames / 5.1667 s with audio**. Request wall is
 128×304 tiles, 30 cores, and original caller padding 23. No reference-precision,
 weights, schedule or global layout-setting change is made by this wrapper fix.
 
-Source inspection finds step subtimers end **before** the existing synchronization.
-Late subtimer sums **14.674/14.736 s** therefore do not establish synchronized
+Source inspection finds step subtimers end before callbacks/cancellation checks
+and do not ensure device completion. Round 53 later verifies that the cancellation
+helper drains only cancelled work, not normal steps. Late subtimer sums
+**14.674/14.736 s** therefore do not establish synchronized
 15 s/step. The old steady_avg=29.99 averages steps 2–4, including step-2 cold effects;
 steady_total is an extrapolated average×steps, not measured total. The 49-step
 projection is not an official lossless comparison; this is a four-step distilled
@@ -5246,3 +5248,82 @@ frames, and explicit step-timing qualifications. The
 `VLLM_OMNI_910A_FA_PAD_TILES=0`. All owned processes are stopped and cards verified
 idle; the lease is released. Goal remains active for quality verification,
 synchronized timing and the still-unmet encoder/decode targets.
+
+---
+
+# Round 53: actual native 49-step request, corrected device-drain timing, quality still fails
+
+The initial ignored-all_reduce suspicion was not enough: H3 uses Omni's coordinator,
+not vLLM's out-of-place coordinator. Exact small CPU/HCCL tests on all eight ranks
+show the old and return-value-fixed contiguous embedding/row-linear paths are
+correct. A noncontiguous HCCL input and a return-only mock demonstrate why the
+return must still be honored. The patch fixes that contract without changing
+weight loaders, BF16 storage or FP32 row-output reduction. It is not an identified
+cause of the prior video's lettering or a full Qwen quality-reference pass.
+
+The previous fused FlashGen artifact has **tasks=t2va**, but was used for FL2VA.
+Its four-step quality result was therefore not a task-correct baseline. Original
+unfused FL2VA weights are retained. A private native alias removes the locally
+pinned student sigma ladder without touching original metadata or fusing a LoRA.
+The HTTP request explicitly sets **num_inference_steps=49** at the top level.
+
+First native startup rejects checkpoint mmap because BF16 source differs from
+FP16 runtime, falls back to ordinary per-worker materialization, and reaches
+**605 GiB RAM / 111 GiB swap** before the manager's 600 s startup timeout. No
+inference request is submitted. Cleanup restores 8.5 GiB used / 46 MiB swap and
+all cards idle; this is not a measured hardware floor. Separate unfused storage
+is then converted to the unchanged FP16-runtime cast, retaining FP32 tensors.
+All **535 tensors across 13 shards / 66,280,485,328 bytes** are checked against
+online cast raw bits, including signed zero. BF16 roundtrip changes **1,119,754
+elements**, so this is not a BF16 lossless inference claim. Actual startup confirms
+all eight ranks realize 535 checkpoint_mmap views without ordinary materialization.
+
+A key timing correction follows reading the actual cancellation helper:
+`synchronize=True` drains **only cancelled work**, not successful steps. The first
+synthetic timer assumption was wrong and its receipt/patch are preserved as
+rejected. The second engine attempt is intentionally stopped before submitting.
+The final timer explicitly invokes the real platform's `torch.npu.synchronize()`
+**only under PERF=1** after callbacks/cancellation checks. PERF=0 stays asynchronous;
+measurement-mode cross-step overlap can differ. Nine structural tests and the
+corrected synthetic-clock loop verify exact outputs, original PERF-off behavior,
+and the explicit measurement drain. No per-step global barrier is added.
+
+The final request executes **49 actual evaluations**, each with eight complete
+step records, and outputs a verified **1344×768,124-frame/5.1667 s MP4 with audio**.
+Startup **305.05 s** is excluded from **1265.77 s** request wall. Encode/conditioning
+is **332.59 s**, full denoise **791.34 s**, captured decode **135.27–139.35 s** (five
+rank records). The first/second rank-max complete steps are **62.404/20.805 s**;
+steps 2–49 rank-max mean is **15.0810 s**, steps 3–49 mean **14.9592 s**, range
+14.8276–15.0832 s, with **35/47 below 15 s**. Last step is **14.8843 s**. Thus the
+strict every-step target is not met despite substantially improved actual warm
+step evidence. Per-rank maxima are a proxy rather than globally barrier-timed
+latency. Decode variation from the earlier four-step cold request is not a clean
+decoder optimization A/B and receives no causal attribution.
+
+All 124 frames decode and checksum matches. First/last frames retain the red-ball
+anchors, but the native middle frame **still has unprompted logo/lettering**. The
+T2VA-student mismatch alone cannot explain the common issue; full encoder hidden
+states and actual attention Q/K/V must be checked against references next. No
+quality/lossless pass or unique cause is established.
+
+The pinned official NPU recipe (commit `8ff8b02c152a6217c169719d56a4d581782fd1af`)
+confirms **150.06/114.19 s are warmed T2VA** A2/A3 lossless E2E, with DiT totals
+139.90/105.87 s and per-step 2.85/2.16 s. No FL2VA table row exists. Its HTTP example
+asks 50 whereas its 0.28 table reports 49 forwards; our runtime explicitly counts
+N evaluations with N+1 sigma boundaries. Equal observed forwards/resolution does
+not establish task, sigma, precision, quality or protocol equivalence. No direct
+hardware-only ratio is asserted. Its power-of-two LaserAttention input guard
+(scale256) documents an outlier/FP16-workspace concern to check on real tensors,
+not a proven cause of the current quality issue.
+
+[Round-53 evidence](<../../diagnostics/round53/README.md>) preserves all attempts,
+actual 392 complete-step records, source/metadata checks, full bitwise conversion,
+manual frame review, and the pinned official recipe. The
+[collective return patch](<../patches/encoder_collective_return.patch>) and
+[final explicit-drain metric patch](<../patches/denoise_complete_timer.patch>) are
+deployed with exclusive original backups. The native model has persistent metadata
+at `/home/mseco/models/MiniMax-H3-native-fp16-audit53`, verified byte-identical with
+the tested alias and the same physical components, but not separately rerun after
+publication. All owned processes are stopped and all cards verified idle; lease
+released. Goal stays active for quality correctness, strict step margin, fused ops,
+encoder/decode optimization and a genuinely task-matched official comparison.

@@ -60,12 +60,28 @@
 > 2.7278×**, including buffer copies, clearing and trimming. The same true FL2VA
 > form now completes a verified **1344×768, 124-frame/5.1667 s MP4 with audio**.
 > Request wall **975.59 s**, encode/conditioning **333.59 s**, denoise **166.99 s**,
-> decode **465.52–466.88 s**. Last-step sub-timers near 14.7 s stop before the
-> existing synchronization, so they do not prove a synchronized 15 s step.
+> decode **465.52–466.88 s**. Last-step sub-timers near 14.7 s do not ensure
+> device completion, so they do not prove a synchronized 15 s step. Round 53 finds
+> the cancellation checkpoint drains only cancelled work, not successful steps.
 > Visual inspection finds prominent unprompted lettering in the middle frame;
 > runtime success is not a quality/lossless pass. This remains a four-step
 > distilled-checkpoint result, not the official original 49-step comparison.
 > See [round-52 evidence](<../../diagnostics/round52/README.md>).
+>
+> **Round 53 update:** task metadata identifies the old FlashGen student as T2VA
+> only. The original unfused FL2VA checkpoint now runs **49 actual evaluations**
+> through verified FP16-runtime storage/mmap. All **535 tensors** match the online
+> runtime cast bitwise; that is not BF16-lossless inference. The actual cancellation
+> helper does not drain successful work, so final PERF timers explicitly drain the
+> NPU, with PERF=0 remaining asynchronous. The native complete request is
+> **1265.77 s**, encode/conditioning **332.59 s**, denoise **791.34 s**, captured
+> decode **135.27–139.35 s** (five records). Steps 3–49 rank-max mean is **14.9592 s**
+> but the range is 14.8276–15.0832 s; only 35/47 are below 15 s. After-first mean is
+> **15.0810 s**, so the strict step target is not met. The 124-frame native video
+> still has unprompted logo/text at mid-frame; no quality/lossless pass is claimed.
+> Official **150.06/114.19 s** are warmed **T2VA** rows, not this cold FL2VA form.
+> See [round-53 evidence](<../../diagnostics/round53/README.md>) for corrected scope,
+> actual device-drained timings and preserved rejected timing assumptions.
 >
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
@@ -87,10 +103,10 @@ quality equivalence or official 49-step lossless performance comparison.
 |---|---|
 | (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **not completed** — reassess with a correct-workload trace, not the old residual budget |
 | (2) raise flash-attention efficiency | **partly achieved**: core-budget A/B 558.1 → 317.0 ms (bit-exact); actual-shape masked tile wrapper 421.151 → 154.391 ms (not bit-exact across tilings) |
-| (2) DiT to 15 s/step | **not yet established** — late sub-timers near 14.7 s exclude synchronization; impossibility claim withdrawn |
-| (3) VAE decode 155 s → 20 s | **not achieved** — the completed real FL2VA run reports 465.52–466.88 s decode |
-| (3) text encode 39 s → 2 s | **not achieved** — runtime defects repaired; complete encode/conditioning is 333.59 s, not isolated text timing |
-| comparable measurement vs A2/A3 | **not delivered** — the old text-only 209-frame/4-step run is not the official 5s/49-step lossless workload |
+| (2) DiT to 15 s/step | **near target, not strictly met** — actual synchronized native steps 3–49 mean 14.9592 s; 12/47 exceed 15 s and after-first average is 15.0810 s |
+| (3) VAE decode 155 s → 20 s | **not achieved** — native 49-step run captures 135.27–139.35 s decode; cold-state changes are not a decoder A/B |
+| (3) text encode 39 s → 2 s | **not achieved** — complete encode/conditioning is 332.59 s, not isolated text timing |
+| comparable measurement vs A2/A3 | **not delivered** — actual native 49-step FL2VA exists, but official 150.06/114.19 s are warmed T2VA; precision/schedule/quality and protocol equivalence remain unverified |
 
 The older experiments below are retained as a historical record. Their numerical
 observations are not automatic proof of attribution, rooflines, or goal completion.

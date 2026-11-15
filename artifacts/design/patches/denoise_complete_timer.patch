@@ -1,0 +1,59 @@
+--- a/vllm_omni/diffusion/models/minimax_h3/denoise_loop.py
++++ b/vllm_omni/diffusion/models/minimax_h3/denoise_loop.py
+@@ -385,6 +385,7 @@
+ 
+     num_steps = len(sigmas_video) - 1
+     _step_times: list[float] = []
++    _complete_step_times: list[float] = []
+     for step in range(num_steps):
+         check_request_cancellation()
+         import time as _time_dt
+@@ -495,19 +496,36 @@
+             if on_step is not None:
+                 on_step(step, video_rows, audio_rows)
+             check_request_cancellation(synchronize=True)
+-
+-    if _perf_d and len(_step_times) > 1:
+-        _warm1 = _step_times[0]
+-        _steady = sum(_step_times[1:]) / len(_step_times[1:])
++            if _perf_d:
++                # Cooperative cancellation drains only when cancellation is
++                # requested; successful steps otherwise remain asynchronous.
++                # An explicit measurement-mode drain is required for this wall
++                # timer. PERF=0 retains the original asynchronous execution.
++                current_omni_platform.synchronize()
++                _complete_end = _time_d.perf_counter()
++                _complete_step_times.append(_complete_end - _dstep_t0)
++                print(
++                    f"[H3PERF] dstep_complete {step + 1} total={_complete_end - _dstep_t0:.6f}s"
++                    f" callback_and_sync={_complete_end - _dend:.6f}s",
++                    file=_sys_d.stderr,
++                    flush=True,
++                )
++
++    if _perf_d and len(_complete_step_times) > 1:
++        _observed_total = sum(_complete_step_times)
++        _after_first = sum(_complete_step_times[1:]) / len(_complete_step_times[1:])
+         print(
+-            "[H3PERF] denoise_steady step1=%.2fs steady_avg=%.2fs"
+-            " steady_total=%.2fs projected_49steps=%.0fs"
+-            % (
+-                _warm1,
+-                _steady,
+-                _steady * len(_step_times),
+-                _steady * 49,
+-            ),
++            f"[H3PERF] denoise_complete steps={len(_complete_step_times)}"
++            f" first={_complete_step_times[0]:.6f}s after_first_avg={_after_first:.6f}s"
++            f" observed_total={_observed_total:.6f}s last={_complete_step_times[-1]:.6f}s",
++            file=_sys_d.stderr,
++            flush=True,
++        )
++
++    if _perf_d and _step_times:
++        print(
++            f"[H3PERF] denoise_enqueue_subtimers steps={len(_step_times)}"
++            f" first={_step_times[0]:.6f}s observed_subtimer_sum={sum(_step_times):.6f}s",
+             file=_sys_d.stderr,
+             flush=True,
+         )
