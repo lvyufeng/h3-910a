@@ -151,11 +151,20 @@ Per block (budget 676 ms from 41.2 s / 50, which is sync-bounded):
 >   with `slot = index % 2`, i.e. double-buffered, and hiding 1326 MB behind 559 ms
 >   needs only 2.4 GB/s.
 >
-> The correct next experiment is sync-bounded per-component timers inside a live
-> block: the gap is either serialisation the prefetch does not cover (first block of
-> each step, a per-block stream sync, the end-of-stack `sp_gather`) or attention
-> costing more in situ than the standalone 559 ms. The existing per-block timer reads
-> 33 ms because it never syncs, so it cannot answer this.
+> **A sized candidate exists but is unconfirmed** (round 41). The block's own
+> docstring shows a **per-block all-to-all and its inverse** inside
+> `_run_packed_attention` (Ulysses trades sequence for heads, so each rank attends the
+> full sequence with 7 local heads). Per rank per block that moves **906 MB**
+> (q+k+v forward plus the inverse for the output), which costs **4.5 ms at HCCS
+> ~200 GB/s**, **36 ms at 25 GB/s**, or **55 ms at 16.4 GB/s**. 36-55 ms is the right
+> order to account for most of the 81 ms gap.
+>
+> This has not been measured in isolation, so it is recorded as a candidate rather
+> than a closure -- after three wrong attributions it would be dishonest to assert a
+> fourth. The experiment is small: sync-bound `_run_packed_attention` at one block.
+> The 12x spread between HCCS and PCIe-like rates is itself the most concrete
+> remaining lever: if the collective runs at PCIe-like rates, ~50 ms/block where
+> ~5 ms is achievable means **~2.2 s/step (5%)** recoverable in the collective path.
 
 ---
 
