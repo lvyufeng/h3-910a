@@ -122,10 +122,10 @@ Warm steady state decomposes as:
 
 | part | per step | note |
 |---|---:|---|
-| transformer blocks (50) | 33.8 s | attention 28.0 + DLO 4.0 + MLP 1.6 + 0.15 other |
+| transformer blocks (50) | 33.8 s | attention 28.0 + MLP 1.6 + unexplained ~4.0 |
 | — attention | 28.0 s | the only implementation that fits (section 1b) |
-| — DLO weight streaming | ~4.0 s | 1326 MB/block over PCIe, cannot be resident |
 | — MLP matmuls | ~1.6 s | 33 ms/block: only 7904 rows are local per rank |
+| — unexplained | ~4.0 s | 81 ms/block; see the note above |
 | transformer pre | 0.95 s | |
 | update | ~0.005 s | async tail, not its own work -- see section 5 |
 | prep | ~2.2 s | was the `index_copy_` scatter, now fixed |
@@ -135,22 +135,27 @@ Per block (budget 676 ms from 41.2 s / 50, which is sync-bounded):
 | part | per block | source |
 |---|---:|---|
 | attention | 559 ms | kernel benchmark, Q=K=V=63232 |
-| DLO weight streaming | ~81 ms | 1326 MB/block over PCIe at ~16 GB/s |
 | MLP | ~33 ms | 7904 local rows at 73 TFLOPS |
 | other (norms, adaln, gates, conversions) | ~3 ms | round 3 |
-| **total** | **676 ms** | = 41.2 s / 50, closes |
+| **unexplained** | **~81 ms** | see below |
+| **total** | **676 ms** | = 41.2 s / 50 |
 
-The DLO term was identified in round 39 by arithmetic rather than instrumentation:
-the DiT is **66.28 GB** over 50 blocks = **1326 MB per block**, and streaming that in
-81 ms implies **16.4 GB/s** — squarely in the PCIe H2D range, versus 2 ms if it were
-HBM (534 GB/s measured) or 53 ms at a clean 25 GB/s. The Q all-gather I had guessed
-in round 37 is ruled out by magnitude (679 MB, 1-2 ms).
-
-> **Two corrections stand in this record.** Round 36 claimed this closed to zero and
-> blamed the MLP; that was wrong because `local=7904` per rank, not 63232, so the MLP
-> is ~33 ms. Round 37 then left ~81 ms unplaced and guessed the Q all-gather, also
-> wrong. Round 39 closes it with the DLO stream. The block is now accounted by four
-> terms, each measured or bounded.
+> **The ~81 ms does not close, and three attempts to close it failed** — recorded
+> here rather than papered over:
+> - round 36 blamed the MLP; refuted, because instrumentation showed `local=7904`
+>   per rank rather than 63232, making the MLP ~33 ms not ~195 ms;
+> - round 37 blamed the pre-attention Q all-gather; refuted by magnitude, 679 MB
+>   being 1-2 ms at any plausible rate;
+> - round 39 blamed DLO weight streaming at 16.4 GB/s; refuted in round 40, because
+>   `distributed_layerwise_backend.py` prefetches asynchronously on dedicated streams
+>   with `slot = index % 2`, i.e. double-buffered, and hiding 1326 MB behind 559 ms
+>   needs only 2.4 GB/s.
+>
+> The correct next experiment is sync-bounded per-component timers inside a live
+> block: the gap is either serialisation the prefetch does not cover (first block of
+> each step, a per-block stream sync, the end-of-stack `sp_gather`) or attention
+> costing more in situ than the standalone 559 ms. The existing per-block timer reads
+> 33 ms because it never syncs, so it cannot answer this.
 
 ---
 
