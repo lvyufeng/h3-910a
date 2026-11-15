@@ -3875,3 +3875,63 @@ on 32 GB.
 The 15 s/step target is unreachable by three independent arguments: the
 FLOP/bandwidth budget, the measured K-length ceiling requiring 47.8 TFLOPS against
 31.5 available, and the exhaustive elimination of every non-attention component.
+
+---
+
+# Round 29: the kernel already pipelines K -- my round-6 claim was wrong
+
+Before attempting the `if_scope` double-buffering for a fourth time, read the whole
+of `compute_in_each_kv_block` instead of reasoning from grep results. The tail of
+that function is:
+
+```python
+        # do Sij = matmul(Qi, Kj.T) for next inner loop
+        with self.tik_instance.if_scope(kv_blk_idx < self.Tc - 2):
+            kv_gm_offset = self.get_gm_offset(..., kv_blk_idx + 1)
+            KjT_l1_zN = self.tik_instance.Tensor(FP16, (self.d // self.N0, self.Bc, self.N0), ...)
+            self.unroll_data_move(dst=KjT_l1_zN, ...)          # prefetch K[i+1]
+            Sij_ub_zN = self.tik_ops_utils.matmul_compute(
+                Qi_l1_zN, KjT_l1_zN, ..., workspace=Sij_ub_zN)  # precompute QK^T[i+1]
+
+        Oi_l1_zN = self.output_compute(Oi_l1_zN, Pij_l1_zN, Vj_l1_zN, ...)  # then PV[i]
+```
+
+**There is a software pipeline, for K.** Each iteration prefetches K for block
+`i+1` and precomputes its `QK^T` *before* doing block `i`'s PV, and the `workspace`
+parameter -- which I had twice mis-read as a path that skips the matmul -- is
+precisely the mechanism for threading that precomputed `Sij` forward. The prologue
+in `compute_in_each_q_block` preloads block 0 to prime it.
+
+## Retracting round 6
+
+Round 6 stated the kernel "has no software pipeline at all: no double buffering and
+no `set_flag`/`wait_flag` anywhere". The grep was accurate but the conclusion was
+not: the kernel pipelines through **manual prefetch with an explicitly threaded
+workspace**, not through TIK's double-buffer/set_flag machinery. Two rounds of work
+(14, 15) and one conceptual premise were built on that wrong conclusion.
+
+The 55-60% cube duty cycle from round 6 is still a real observation, but "no
+pipelining exists" is not the explanation.
+
+## What is actually missing: V
+
+Compare the two tensors:
+
+* **K** is prefetched for `i+1`, and `QK^T` for `i+1` is computed before PV of `i`.
+* **V** (`Vj_l1_zN`, lines 324-335) is loaded at the **top** of the iteration and
+  consumed only by `output_compute` at the **bottom**. It has no prefetch and no
+  second buffer, so its MTE2 cannot overlap with the previous iteration's PV.
+
+So the remaining half of the pipeline is exactly one thing: **prefetch V[i+1] into a
+second buffer while block i's PV runs**. And the pattern to copy already exists --
+`sij` is threaded through `workspace`, so V can be threaded the same way.
+
+That is a much smaller and better-specified change than "add double buffering and
+set_flag everywhere", and it is the change to attempt next.
+
+## Round 29 accounting
+
+No speedup and no code change. The contribution is a correction: an existing
+pipeline was missed, two earlier rounds of work rested on a false premise, and the
+remaining work is now reduced from "implement a software pipeline" to "add a second
+V buffer and thread it exactly as `Sij` is already threaded".
