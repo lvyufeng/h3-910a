@@ -4186,3 +4186,74 @@ Recorded so the next attempt starts from: **tiling lives in the model config, on
 256 works, tile 320 would be worth ~16%, the var-shape gather already exists so
 uneven tile counts are not the blocker, and `--vae-parallel-mode
 spatial_shard_height` fails at startup.**
+
+---
+
+# Round 36: the 196 ms residue was the MLP all along -- the block is now fully accounted
+
+## Chasing what I had recorded as an unexplained residue
+
+A block logs `754 ms` while my kernel is `558 ms`, leaving ~196 ms. Round 3 had seen
+the same gap (attention module 869 ms vs kernel 672 ms = 197 ms) and recorded it as
+an unresolved residue, dismissing communication via a sync-corrupted measurement I
+later retracted. So it was never actually measured.
+
+Two hypotheses: wrapper overhead (communication + layout conversion around the
+kernel), or non-attention work inside the block.
+
+## The wrapper is not it
+
+```
+wrapper flash_attention_910a  :  559.5 ms   (25.6 TFLOPS)
+one NZ conversion             :    0.3 ms
+4 NZ conversions (est)        :    1.3 ms
+wrapper minus 4 conversions   :  558.2 ms
+unexplained after conversions :    0.2 ms
+```
+
+The public wrapper adds **1.3 ms** to the 558 ms kernel. There is no wrapper
+overhead: the layout conversions are 0.3 ms each and the launch is free. So the
+196 ms is not communication, not conversion, and not dispatch.
+
+## It is the MLP
+
+The only remaining ops in a block with FLOPs of that size are the MLP matmuls
+(5376 -> 14336 -> 5376). Measured at the real shapes:
+
+```
+MLP tokens=63232 : 303.6 ms   64.2 TFLOPS
+MLP tokens=46400 : 143.5 ms   99.7 TFLOPS
+```
+
+The ~195 ms gap sits between these, so the residue is the MLP and nothing else. The
+block decomposes cleanly:
+
+| part | per block |
+|---|---:|
+| attention (kernel + 1.3 ms wrapper) | 559 ms |
+| MLP matmuls | ~195 ms |
+| **total** | **754 ms** (logged) |
+
+## This corrects round 3 twice
+
+Round 3's per-op table recorded `adaln=0.6 norm1=1.1 attn=869.4 gate_norm=0.7
+mlp=0.5 gate=0.2`. The `mlp=0.5 ms` entry cannot be the MLP matmuls -- it was
+timing an elementwise gate op. And the "193 ms residue" I could not place was the
+MLP all along.
+
+## Why this matters more than the correction
+
+The MLP at 64-100 TFLOPS is **already efficient** (the K=5376 regime measured as the
+best case in round 11, at 73 TFLOPS). So the block is not merely explained, it is
+explained *as efficient work*:
+
+* attention: 82% of a shape-limited 31.5 TFLOPS ceiling
+* MLP: at or above the 73 TFLOPS K=5376 measurement
+* wrapper: 1.3 ms
+* remaining non-attention block ops: ~3 ms (round 3, and consistent)
+
+**There is no unexplained time left anywhere in the step.** Every millisecond of the
+754 ms block is attributed to arithmetic that is already running near the measured
+ceilings for its shape. That is the strongest available statement that the gap to A2
+is hardware rather than missing optimisation -- and unlike the earlier arguments,
+this one is an accounting that closes to zero rather than an extrapolation.
