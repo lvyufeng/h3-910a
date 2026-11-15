@@ -3790,3 +3790,88 @@ component above (rounds 20-27).
 
 No speedup. One target formally closed with a measurement, and a wrong entry in my
 own step budget corrected. Recorded so that no future round re-opens `update`.
+
+---
+
+# Round 28: decode is 37% of wall time and has no fast path available
+
+## Where the wall time actually goes
+
+Consolidating the end-to-end measurements:
+
+| stage | time | share of 422 s wall |
+|---|---:|---:|
+| encode (text) | ~40 s | 9% |
+| denoise (4 steps) | ~211 s | 50% |
+| **decode (video VAE)** | **~157 s** | **37%** |
+
+Decode is a **single VAE forward** and it is 37% of the wall time -- a bigger single
+item than the entire remaining attention headroom (which is ~6 s per step, ~24 s
+over four steps). So it is the highest-leverage remaining item, and this round
+looked for a way to speed it up without touching the model.
+
+## Tried `--vae-fast-path channels_last`: no effect, and here is why
+
+The flag's help text offers a promising option:
+
+```
+--vae-fast-path {off,lossless,channels_last}
+    "Wan VAE decoder fast path. 'lossless' (default) installs bit-exact fused
+     kernels; 'channels_last' additionally switches decoder convolutions to
+     channels-last memory format and fuses RMSNorm+SiLU (faster, not bit-exact)"
+```
+
+Channels-last convolutions are often dramatically faster on NPU, and decode is
+pure convolution, so this looked like the right lever.
+
+Measured: `decode=156.75s` against a 156-161 s baseline. **No change.**
+
+The reason is in the same help line: it is the **Wan** VAE decoder fast path, and
+MiniMax H3 uses a different VAE architecture. Confirmed by grep --
+`vae_fast_path` has **zero occurrences** in any `minimax_h3/*.py` file. The flag is
+accepted and silently does nothing for this model.
+
+## So the decode gap stands
+
+Warm decode ~43 s (round 16), cold/first decode ~157 s. Against an official 6.56 s
+that is 6.6x warm or 24x cold, and round 13 established it is **entirely video VAE
+compute** (`decode_latent` 97.8 s of a 155 s decode, staging 0.06 s, audio VAE
+0.3 s), with bf16 being 64% worse (round 12).
+
+There is no configuration lever for it on this model: the only fast-path mechanism
+in the stack is Wan-specific. Improving it would require a fused H3 VAE decoder,
+which is a substantially larger piece of work than anything remaining on the DiT
+side and is not something I can validate within a round.
+
+## Round 28 accounting
+
+No speedup. One plausible lever tested and definitively eliminated, with the reason
+recorded (Wan-only flag) so it is not re-tried. Configuration restored to the
+standard `lossless` default.
+
+## Consolidated position after 28 rounds
+
+Durable gains, both verified end to end:
+
+| change | effect |
+|---|---|
+| flash-attention kernel: in-place fp16 exp + Br 128 / Bc 304 | 656 -> 558 ms, block 13.4% faster, error 4.7e-4 -> 3.9e-4 |
+| `index_copy_` -> fancy-index assignment | denoise 262.7 -> 211.7 s (-19%) |
+
+Best honest comparison against the official lossless numbers, on the same per-step
+basis the official figures use (both exclude warmup):
+
+| | per step | 49 steps |
+|---|---:|---:|
+| this stack, steady state | **41.2 s** | **2020 s (projected)** |
+| official A2 | 3.06 s | 150 s |
+| official A3 | 2.33 s | 114 s |
+
+**13.5x slower than A2, 17.8x slower than A3**, with the gap distributed as ~34 s of
+attention-dominant block stack (at 82% of its shape-limited ceiling), ~157 s of VAE
+decode, ~40 s of text encode and ~5 s of DLO streaming that cannot be made resident
+on 32 GB.
+
+The 15 s/step target is unreachable by three independent arguments: the
+FLOP/bandwidth budget, the measured K-length ceiling requiring 47.8 TFLOPS against
+31.5 available, and the exhaustive elimination of every non-attention component.
