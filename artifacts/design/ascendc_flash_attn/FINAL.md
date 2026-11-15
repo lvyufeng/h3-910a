@@ -304,7 +304,8 @@ way to make the text encode, the decode, or the DLO ramp cheaper within the
 constraints (32 GB HBM, no H3 VAE fast path, rank-local transfer requirement).
 
 The DiT step is the best-characterised part: a 676 ms block is attention (559 ms,
-at 82% of its shape-limited ceiling) plus MLP (33 ms) plus ~3 ms of elementwise
-work, leaving **~81 ms unplaced** per block -- about 4 s per step -- whose leading
-candidate is the Q all-gather that must precede attention. Round 36's claim that
-this closed to zero was wrong and is retracted above.
+the only implementation that fits) plus MLP (33 ms) plus ~3 ms of elementwise work,
+leaving **~81 ms unexplained** per block -- about 4 s per step. Three candidate
+explanations were tried and each was refuted (MLP, Q all-gather, DLO streaming; see
+the note in section 3). Finding it needs sync-bounded per-component timers inside a
+live block, which is the one experiment I would run first if continuing.
