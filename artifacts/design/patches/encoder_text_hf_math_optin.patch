@@ -1,0 +1,123 @@
+--- a/vllm_omni/diffusion/models/minimax_h3/encoder.py
++++ b/vllm_omni/diffusion/models/minimax_h3/encoder.py
+@@ -127,7 +127,7 @@
+         output.masked_fill_(input_mask.unsqueeze(-1), 0.0)
+         # A coordinator may return a fresh contiguous/reduced tensor. Preserve
+         # its return value even when today's contiguous HCCL path is in-place.
+-        return self.group.all_reduce(output)
++        return _text_hf_embedding_all_reduce(self.group, output)
+ 
+     def weight_loader(
+         self, param: nn.Parameter, loaded_weight: torch.Tensor, loaded_shard_id: str | None = None
+@@ -372,13 +372,29 @@
+ # ---------------------------------------------------------------------------
+ 
+ 
++def _text_hf_math_enabled() -> bool:
++    # Model-specific compatibility; do not change the shared DiT norm contract.
++    import os
++    return os.environ.get("VLLM_OMNI_910A_TEXT_HF_MATH", "0").lower() in ("1", "true", "yes", "on")
++
++
++def _text_hf_embedding_all_reduce(group: Any, value: torch.Tensor) -> torch.Tensor:
++    if (_text_hf_math_enabled() and value.device.type in ("npu", "privateuseone")
++            and value.dtype == torch.bfloat16):
++        # Only the vocabulary embedding reaches the common coordinator as
++        # BF16. Text row projections already promote their partials to FP32.
++        # Preserve the embedding's BF16 range instead of a FP16 round trip.
++        return group.all_reduce(value.float()).to(value.dtype)
++    return group.all_reduce(value)
++
++
+ class MiniMaxH3Qwen3VLRMSNorm(DiffusionRMSNorm):
+     """Qwen3-VL RMSNorm using the common implementation.
+ 
+-    The model-specific name keeps checkpoint weight keys stable, while the
+-    common RMSNorm dispatches to torch_npu.npu_rms_norm on Ascend. Gamma uses
+-    the checkpoint/model dtype, but native fallbacks keep the RMS variance
+-    reduction and scaling in float32.
++    The model-specific name keeps checkpoint weight keys stable. The common
++    910A fallback uses a FP32 gamma multiplication before output conversion;
++    the default-off HF-math option instead preserves Qwen3-VL's two BF16 rounding
++    points without changing the shared DiT norm implementation.
+     """
+ 
+     def __init__(
+@@ -388,6 +404,28 @@
+         dtype: torch.dtype = torch.float32,
+     ) -> None:
+         super().__init__(hidden_size, eps=eps, dtype=dtype)
++
++    def forward_npu(
++        self,
++        x: torch.Tensor,
++        residual: torch.Tensor | None = None,
++    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
++        if not (_text_hf_math_enabled() and x.device.type in ("npu", "privateuseone")
++                and x.dtype == torch.bfloat16 and self.weight.dtype == torch.bfloat16):
++            return super().forward_npu(x, residual)
++        input_dtype = x.dtype
++        with torch.autocast(device_type=x.device.type, enabled=False):
++            # HF rounds the residual sum to BF16 before normalization, then
++            # rounds normalized values before gamma multiplication. Use FP32
++            # point math between casts, not a native BF16 multiply fallback.
++            if residual is not None:
++                residual = (residual.float() + x.float()).to(input_dtype)
++                x = residual
++            xf = x.float()
++            variance = xf.square().mean(-1, keepdim=True)
++            normalized = (xf * torch.rsqrt(variance + self.variance_epsilon)).to(input_dtype)
++            output = (normalized.float() * self.weight.float()).to(input_dtype)
++        return (output, residual) if residual is not None else output
+ 
+ 
+ def _rotate_half(x: torch.Tensor) -> torch.Tensor:
+@@ -454,6 +492,21 @@
+ 
+     def forward(self, x: torch.Tensor, position_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+         # position_ids: (3, 1, seq)
++        if (_text_hf_math_enabled() and x.device.type in ("npu", "privateuseone")
++                and x.dtype == torch.bfloat16):
++            with torch.autocast(device_type=x.device.type, enabled=False):
++                inv_freq = self._get_inv_freq(position_ids.device)
++                # This is a K=1 batched outer product. NPU FP32 matmul produced
++                # max0.0204 frequency error on real positions even without AMP;
++                # direct FP32 multiplication matches the CPU HF frequencies.
++                freqs = position_ids[:, :, :, None].float() * inv_freq[None, None, None, :].float()
++                indices = torch.arange(self.dim // 2, dtype=torch.int32, device=position_ids.device)
++                h_mask = (indices % 3 == 1) & (indices < self.mrope_section[1] * 3)
++                w_mask = (indices % 3 == 2) & (indices < self.mrope_section[2] * 3)
++                freqs = torch.where(h_mask, freqs[1].clone(),
++                                    torch.where(w_mask, freqs[2].clone(), freqs[0].clone()))
++                emb = torch.cat((freqs, freqs), dim=-1)
++                return emb.cos().to(x.dtype), emb.sin().to(x.dtype)
+         inv_freq = self._get_inv_freq(position_ids.device)
+         inv_freq_expanded = inv_freq[None, None, :, None].float().expand(3, position_ids.shape[1], -1, 1)
+         position_ids_expanded = position_ids[:, :, None, :].float()
+@@ -558,8 +611,9 @@
+         if (input.device.type in ("npu", "privateuseone")
+                 and input.dtype == torch.bfloat16 and self.weight.dtype == torch.bfloat16
+                 and _vision_fp32_enabled()):
+-            return F.linear(input.float(), self.weight.float(),
+-                            self.bias.float() if self.bias is not None else None).to(input.dtype)
++            with torch.autocast(device_type=input.device.type, enabled=False):
++                return F.linear(input.float(), self.weight.float(),
++                                self.bias.float() if self.bias is not None else None).to(input.dtype)
+         return super().forward(input)
+ 
+ 
+@@ -1207,10 +1261,10 @@
+         self.image_token_id = int(config.image_token_id)
+         self.video_token_id = int(config.video_token_id)
+         self._tp_size = int(encoder_group.world_size) if encoder_group is not None else 1
+-        # bf16 matmul on 910A runs at ~1 TFLOPS against ~170 for fp16 (measured
+-        # on a [11250,5376]x[5376,28672] GEMM), which made a 10 s prompt cost
+-        # 40 s to encode. The encoder has no accuracy need for bf16's range here:
+-        # it is a single forward over a short prompt.
++        # Keep BF16 encoder storage by default. The real multimodal 50-layer
++        # path has large finite outliers even with a short user prompt. The
++        # historical FP16-storage mode is an explicit compatibility experiment,
++        # not a lossless alternative; compute-only options preserve BF16 I/O.
+         import os as _os_e
+         if _os_e.environ.get("VLLM_OMNI_910A_TE_DTYPE", "").lower() in ("fp16", "half"):
+             dtype = torch.float16

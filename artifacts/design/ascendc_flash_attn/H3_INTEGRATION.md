@@ -5476,3 +5476,76 @@ is torch2.10.0+cpu/torch_npu2.10.0.post7/transformers5.14.1/CANN9.2.0 on910A. Al
 relevant jobs collected, owned servers stopped and cards live-probed idle; lease
 released. Goal stays active for late-text isolation, remaining vision precision,
 fused kernels, encoder/decoder targets and official task-matched lossless comparison.
+
+---
+
+# Round56: teacher-force actual late inputs; fix operator contracts, reject inaccurate GEMM combination
+
+Four complete50-layer CPU FP32-linear/BF16-I/O teachers on identical round54
+visual/DeepStack inputs independently vary norm and RoPE. Overall final RMS vs
+old native: HF/HF16.558%, native-norm/HF4.086%, HF/native-tables8.560%, both-native
+12.384%. These are non-additive sensitivities, not unique-cause proofs or an
+unchanged BF16-HF model reference. Final CPU input/output captures are saved.
+
+Actual RoPE tables are reproduced bit-exact by NPU even **without autocast**.
+Inverse frequencies and NPU trig on exact frequencies are raw-bit equal to HF,
+but **K=1 batched FP32 matmul has max0.020401 frequency error**; contiguous inputs
+still fail. Equivalent FP32 elementwise outer product and explicit modality `where`
+make actual BF16 cos/sin **raw-byte identical**. Protected paths remain correct
+under inherited FP16autocast. BF16autocast itself is unsupported/disabled in this
+910A stack, so do not invent an actual global AMP cause from isolated context probes.
+
+A **one-step native FL2VA diagnostic**, not a49-step quality/performance benchmark,
+completes545.39s and captures10 bounded detached rank0 input/context/sub-operator
+records. Temporary hooks preserve exact outputs on first/second calls and
+write-once/512MiB caps;6 structural contracts verify no forward math changes.
+Actual initial embeddings/positions/all3 DeepStack and final output match round54
+raw bits. Contexts showautocast disabled, BF16 tensors, norm/activation fallback1.
+
+The actual final-block input **already differs16.702%** from the full CPU teacher.
+Teacher-forcing last layer on this actual input matches native within0.0686% using
+native contracts and0.084% using HF norm/RoPE. An unchanged BF16 CPU linear last-layer
+repeat matches its FP32 teacher within0.028%. Therefore the earlier16.56% output
+discrepancy is **not localized to a broken final block**. Full-input sensitivity
+and earliest upstream divergence still need investigation.
+
+Actual NPU model-specific norm rounding reduces same-input HF RMS
+**0.27825/0.28138%→0.000948/0.001530%**; updated residual is raw-byte equal. BF16
+normalized rounding before gamma is preserved with FP32 point math between explicit
+casts. Adversarial zero/constant/outlier/residual tests match raw bits; default-off
+matches old norm output exactly. This is an eager compatibility option, **not yet a
+fused AscendC/TBE norm kernel**, and does not rewrite the shared DiT norm contract.
+
+Actual group coordinator BF16→FP16 promotion applies to vocabulary embedding,
+not the text row projections which **already sum FP32**. EightHCCL ranks validate
+an embedding-only FP32 helper: actual old error1.98e-7RMS/max2.98e-8→raw-bit exact;
+tiny2.33e-10/finite131072 adversarial values preserved. These show range safety,
+not actual embedding overflow or a proven outlier/video cause. Shared comm is unchanged.
+
+Standalone **resident text-only TP8** uses actual loaders, actual Omni group setup,
+effective NPU GQA/RoPE/packed activation and same captured inputs. Baseline final
+output is byte-exact to original native. Its first call196.364s; norm/RoPE option's
+next call183.574s, still13.558% RMS vsCPU oracle. Fixed-order cold/cache effects
+prevent calling that a controlled speedup. Attempt1 lacked vLLM TP metadata; attempt2
+ran the forward but used unsupported BF16 NPUIsFinite in diagnostics. Both receipts
+are retained; attempt3 uses full Omni setup and CPU FP32 finite checks and completes8ranks.
+
+A separate **FP32 text-GEMM/FP32-partial-sum prototype** records116.888s first,
+76.341s repeat with old norm/RoPE, RMS11.595% vsCPU oracle. Combined with HF norm/RoPE:
+79.437s first/76.942s repeat, error**31.876%**. All outputs finite, but the combination
+is numerically worse and neither reaches2s. Four additional structural contracts
+check preserved constructors/loaders/quantized paths and FP32partials until HCCL.
+This prototype is **not deployed**, not a lossless or clean whole-model speed result.
+
+Only default-off `VLLM_OMNI_910A_TEXT_HF_MATH=1` is installed: model-specific norm,
+outer-product RoPE, embedding-only promotion; existing optional vision linear gets
+inherited-autocast protection. New sourceSHA
+`7c22d98c28f4e93550fd3848bfc174121250259fdf50bcd2f7920f826acf311d`; rejected
+`VLLM_OMNI_910A_TEXT_FP32_LINEAR` does not exist in production. Capture sites removed,
+exclusive backups retained, helper unreferenced. Shared norm/comm/exact-prefix FA
+remain byte-identical. [Round56 evidence](<../../diagnostics/round56/README.md>) and
+[portable math-only patch](<../patches/encoder_text_hf_math_optin.patch>) preserve
+exact scopes, failures and counterexamples. Jobs collected, owned processes stopped,
+all8 cards verified idle and lease released. Goal active for earliest text-attention
+Q/K/V/timing isolation, custom causal FA and rounding-safe fusion, encoder/decoder
+targets, validated generation quality and task-matched official lossless comparison.

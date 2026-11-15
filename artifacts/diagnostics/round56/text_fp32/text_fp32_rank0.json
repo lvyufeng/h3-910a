@@ -1,0 +1,50 @@
+{
+  "rank": 0,
+  "cases": {
+    "fp32_linear_only": {
+      "local_forward_s": 116.88763738004491,
+      "dtype": "torch.bfloat16",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "finite": true,
+      "vs_old_actual": {
+        "raw_bits_equal": false,
+        "max_abs_error": 1920.0,
+        "relative_rms": 0.0593956783413887
+      },
+      "vs_cpu_fp32_oracle": {
+        "max_abs_error": 4544.0,
+        "relative_rms": 0.11595092713832855
+      },
+      "second_forward_s": 76.34038484981284
+    },
+    "hf_math_fp32_linear": {
+      "local_forward_s": 79.43710116995499,
+      "dtype": "torch.bfloat16",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "finite": true,
+      "vs_old_actual": {
+        "raw_bits_equal": false,
+        "max_abs_error": 12256.0,
+        "relative_rms": 0.2910669445991516
+      },
+      "vs_cpu_fp32_oracle": {
+        "max_abs_error": 11488.0,
+        "relative_rms": 0.3187565207481384
+      },
+      "second_forward_s": 76.93995879031718
+    }
+  },
+  "fp32_linear_compute": true,
+  "scope": "Complete text-only TP8 encoder on shared round54 real visual/DeepStack inputs; BF16 stored weights/output, optional FP32 GEMM and partial sums, not independent vision/video quality or clean whole-request timing",
+  "load_s": 3.720485740341246,
+  "loaded_parameter_tensors": 401,
+  "completed": true
+}

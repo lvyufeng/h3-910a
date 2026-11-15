@@ -1,0 +1,201 @@
+{
+  "cases": {
+    "native_norm_native_rope": {
+      "wall_s": 5.491082590073347,
+      "output_vs_native": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "a_rms": 13.453574180603027,
+        "b_rms": 13.453575134277344,
+        "max_abs_error": 1.0,
+        "relative_rms": 0.0006855843239463866
+      }
+    },
+    "hf_norm_native_rope": {
+      "wall_s": 6.16314132977277,
+      "output_vs_native": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "a_rms": 13.453566551208496,
+        "b_rms": 13.453575134277344,
+        "max_abs_error": 2.0,
+        "relative_rms": 0.0008418204379267991
+      }
+    },
+    "hf_norm_hf_rope": {
+      "wall_s": 5.803425450343639,
+      "output_vs_native": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "a_rms": 13.453570365905762,
+        "b_rms": 13.453575134277344,
+        "max_abs_error": 2.0,
+        "relative_rms": 0.0008399944636039436
+      }
+    },
+    "native_norm_native_rope_cpu_bf16_linear": {
+      "wall_s": 88.84830820001662,
+      "output_vs_native": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "a_rms": 13.453574180603027,
+        "b_rms": 13.453575134277344,
+        "max_abs_error": 1.0,
+        "relative_rms": 0.0006866221665404737
+      },
+      "vs_fp32_linear_oracle": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "a_rms": 13.453574180603027,
+        "b_rms": 13.453574180603027,
+        "max_abs_error": 1.0,
+        "relative_rms": 0.0002795112959574908
+      }
+    }
+  },
+  "suboperators": {
+    "attention_native_qk_norm": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "finite": true,
+      "a_rms": 0.42610812187194824,
+      "b_rms": 0.42609354853630066,
+      "max_abs_error": 1.0,
+      "relative_rms": 0.011380589567124844
+    },
+    "attention_hf_qk_norm": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "finite": true,
+      "a_rms": 0.42584744095802307,
+      "b_rms": 0.42609354853630066,
+      "max_abs_error": 1.5,
+      "relative_rms": 0.014732726849615574
+    },
+    "packed_gate_up_rank0_vs_full_fp32_reference": {
+      "shape": [
+        1,
+        2043,
+        6400
+      ],
+      "finite": true,
+      "a_rms": 0.7836683988571167,
+      "b_rms": 0.7836683392524719,
+      "max_abs_error": 0.03125,
+      "relative_rms": 5.654265987686813e-05
+    },
+    "full_down_vs_actual_reduced_down": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "finite": true,
+      "a_rms": 0.8429083228111267,
+      "b_rms": 0.8429103493690491,
+      "max_abs_error": 0.25,
+      "relative_rms": 0.0024680255446583033
+    },
+    "fp32_sum_of_bf16_partials_vs_actual_down": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "finite": true,
+      "a_rms": 0.8429083228111267,
+      "b_rms": 0.8429089784622192,
+      "max_abs_error": 0.125,
+      "relative_rms": 0.0005126121686771512
+    },
+    "bf16_partials_fp32_sum_vs_unsharded_reference": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "finite": true,
+      "a_rms": 0.8429089784622192,
+      "b_rms": 0.8429103493690491,
+      "max_abs_error": 0.25,
+      "relative_rms": 0.0024664660450071096
+    }
+  },
+  "scope": "Actual captured NPU input with original last-layer weights; teacher-forced CPU reference, not whole-encoder/video-quality validation",
+  "actual_native_input_vs_full_hf_input": {
+    "shape": [
+      1,
+      2043,
+      5120
+    ],
+    "finite": true,
+    "a_rms": 13.322426795959473,
+    "b_rms": 12.647027015686035,
+    "max_abs_error": 6464.0,
+    "relative_rms": 0.16702094674110413
+  },
+  "actual_context": {
+    "autocast_enabled": false,
+    "autocast_dtype": "torch.float16",
+    "default_device": "cpu",
+    "selected_environment": {
+      "VLLM_OMNI_910A_NO_FUSED_NORM": "1",
+      "VLLM_OMNI_910A_NO_FUSED_ACT": "1",
+      "VLLM_OMNI_910A_VISION_FP32": "0",
+      "VLLM_OMNI_910A_TE_DTYPE": null
+    }
+  },
+  "actual_rope_vs_cpu_hf": [
+    {
+      "shape": [
+        1,
+        2043,
+        128
+      ],
+      "finite": true,
+      "a_rms": 0.9264696836471558,
+      "b_rms": 0.9264442920684814,
+      "max_abs_error": 0.020263671875,
+      "relative_rms": 0.001500457525253296
+    },
+    {
+      "shape": [
+        1,
+        2043,
+        128
+      ],
+      "finite": true,
+      "a_rms": 0.3763318955898285,
+      "b_rms": 0.37634071707725525,
+      "max_abs_error": 0.02001953125,
+      "relative_rms": 0.003644294338300824
+    }
+  ],
+  "completed": true
+}

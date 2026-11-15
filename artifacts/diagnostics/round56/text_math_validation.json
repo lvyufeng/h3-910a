@@ -1,0 +1,208 @@
+{
+  "rope_cases": [
+    {
+      "name": "actual",
+      "fp16_autocast": false,
+      "comparisons": [
+        {
+          "shape": [
+            1,
+            2043,
+            128
+          ],
+          "finite": true,
+          "raw_bits_equal": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        {
+          "shape": [
+            1,
+            2043,
+            128
+          ],
+          "finite": true,
+          "raw_bits_equal": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      ]
+    },
+    {
+      "name": "actual",
+      "fp16_autocast": true,
+      "comparisons": [
+        {
+          "shape": [
+            1,
+            2043,
+            128
+          ],
+          "finite": true,
+          "raw_bits_equal": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        {
+          "shape": [
+            1,
+            2043,
+            128
+          ],
+          "finite": true,
+          "raw_bits_equal": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      ]
+    },
+    {
+      "name": "small_two_batch",
+      "fp16_autocast": false,
+      "comparisons": [
+        {
+          "shape": [
+            2,
+            17,
+            128
+          ],
+          "finite": true,
+          "raw_bits_equal": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        {
+          "shape": [
+            2,
+            17,
+            128
+          ],
+          "finite": true,
+          "raw_bits_equal": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      ]
+    },
+    {
+      "name": "small_two_batch",
+      "fp16_autocast": true,
+      "comparisons": [
+        {
+          "shape": [
+            2,
+            17,
+            128
+          ],
+          "finite": true,
+          "raw_bits_equal": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        {
+          "shape": [
+            2,
+            17,
+            128
+          ],
+          "finite": true,
+          "raw_bits_equal": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      ]
+    }
+  ],
+  "norm_cases": [
+    {
+      "capture": "layer49_norm1",
+      "forward_dispatch": "MiniMaxH3Qwen3VLRMSNorm.forward_npu",
+      "old_vs_hf": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "raw_bits_equal": false,
+        "max_abs_error": 0.125,
+        "relative_rms": 0.0027825150173157454
+      },
+      "new_vs_hf": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "raw_bits_equal": false,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 9.48482374951709e-06
+      },
+      "disabled_exactly_original": true
+    },
+    {
+      "capture": "layer49_norm2",
+      "forward_dispatch": "MiniMaxH3Qwen3VLRMSNorm.forward_npu",
+      "old_vs_hf": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "raw_bits_equal": false,
+        "max_abs_error": 0.0625,
+        "relative_rms": 0.0028138430789113045
+      },
+      "new_vs_hf": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "raw_bits_equal": false,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.5297720892704092e-05
+      },
+      "updated_residual_vs_hf": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "finite": true,
+        "raw_bits_equal": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      },
+      "disabled_exactly_original": true
+    }
+  ],
+  "scope": "Actual NPU model-specific formulas on same real tensors; isolated operators not complete encoder/lossless-video proof",
+  "cpu_rope_unchanged": true,
+  "adversarial_norm": {
+    "output": {
+      "shape": [
+        7,
+        128
+      ],
+      "finite": true,
+      "raw_bits_equal": true,
+      "max_abs_error": 0.0,
+      "relative_rms": 0.0
+    },
+    "residual": {
+      "shape": [
+        7,
+        128
+      ],
+      "finite": true,
+      "raw_bits_equal": true,
+      "max_abs_error": 0.0,
+      "relative_rms": 0.0
+    }
+  },
+  "completed": true
+}

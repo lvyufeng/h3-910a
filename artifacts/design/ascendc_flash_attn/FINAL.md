@@ -118,6 +118,25 @@
 > its unique quality contribution is unproven. See
 > [round-55 evidence](<../../diagnostics/round55/README.md>) for separate scopes.
 >
+> **Round 56 update:** actual late text inputs prove the **16.7% mismatch exists
+> before the final block**; teacher-forcing that block on actual input differs
+> only0.069–0.084%. A real one-step capture exactly reproduces round54's input/
+> final states and confirms **autocast disabled**. The text K=1 NPU FP32 matmul
+> generates max0.020401 frequency error; direct FP32 outer products make actual
+> BF16 cos/sin **raw-byte identical** to HF. Model-specific norm rounding reduces
+> actual NPU norm errors0.278/0.281%→**0.000948/0.001530%**. CPU norm/RoPE ablations
+> are strongly non-additive, not sole-cause proofs. Only vocabulary embedding
+> uses the BF16→FP16 coordinator path; row projections were already FP32. Eight
+> HCCL tests validate embedding-only FP32 promotion, preserving tiny/large BF16
+> values; actual old embedding error was only1.98e-7 RMS, not overflow evidence.
+> Default-off `VLLM_OMNI_910A_TEXT_HF_MATH=1` is installed, shared norm/comm/FA
+> unchanged. Standalone resident TP8 default output is exactly the old native
+> capture; option still has13.56% full-text oracle error. A separate FP32-GEMM
+> prototype records76–77s repeat forwards, **not2s**, and its combined oracle error
+> worsens to31.88%; it is **NOT deployed**. No new49-step quality/performance pass
+> or fused-kernel completion is claimed. See
+> [round-56 evidence](<../../diagnostics/round56/README.md>) for exact scopes.
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
