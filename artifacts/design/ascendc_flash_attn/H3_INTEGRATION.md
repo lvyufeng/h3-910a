@@ -4458,3 +4458,63 @@ Removed a junk file from the model directory (``, {k:v for k,v in m.items() if
 "schedule" in k or "step" in k})\n``, 86 bytes) -- a Python `SyntaxError` message
 written by a broken heredoc in an earlier round. Model dir now contains only
 `FL2VA`, `fused_lora.json`, `model_index.json`, `model_index.json.bak`.
+
+---
+
+# Round 40: retracting the round-39 closure -- the ~81 ms is unexplained
+
+Round 39 closed the block accounting by attributing the ~81 ms residue to DLO weight
+streaming (1326 MB/block at 16.4 GB/s, comfortably inside the PCIe range). Before
+leaving that in the record, checked whether the offloader actually exposes that cost.
+
+It does not, and the code says so plainly:
+
+```
+distributed_layerwise_backend.py:14   dedicated streams, overlapping them with computation
+distributed_layerwise_backend.py:120  H2D and AllGather run asynchronously on dedicated
+                                      streams, overlapped
+distributed_layerwise_backend.py:527  def prefetch_layer(self, slot, non_blocking=True)
+distributed_layerwise_backend.py:899  slot = index % 2
+```
+
+DLO is **double-buffered with asynchronous prefetch on dedicated streams**: block
+`i+1`'s weights transfer while block `i` computes. To hide 1326 MB behind a 559 ms
+block needs only **2.4 GB/s**, which any PCIe link delivers with two orders of
+magnitude to spare. So the transfer should be almost entirely hidden, and a visible
+81 ms cost is **not** what an async double-buffered prefetch would produce.
+
+## Three attempts, three failures
+
+| round | explanation | what refuted it |
+|---|---|---|
+| 36 | MLP matmuls, ~195 ms | `local=7904` not 63232, so MLP is ~33 ms |
+| 37 | pre-attention Q all-gather | magnitude: 679 MB is 1-2 ms, not 81 |
+| 39 | DLO weight streaming over PCIe | prefetch is async + double-buffered; needs only 2.4 GB/s |
+
+**The ~81 ms per block (≈4 s per step) is unexplained.** I am recording it that way
+rather than with a fourth plausible-sounding attribution.
+
+## What is still worth trying, and why I am not guessing again
+
+The residue is real and bounded: 676 ms/block total, with attention 559 ms measured
+standalone, MLP ~33 ms computed from the real row count, and ~3 ms of elementwise
+ops from round 3. The gap is ~81 ms, and it must be either
+
+* serialisation that the prefetch does not actually cover (e.g. the first block of
+  each step, a stream sync per block, or the `sp_gather` at stack end), or
+* attention costing more in situ than the 559 ms standalone benchmark (competing
+  streams, cache pressure, or a different effective shape).
+
+Distinguishing those needs **sync-bounded per-component timers inside a live block**,
+not more arithmetic. Round 37 already showed the existing per-block timer reads 33 ms
+because it never syncs, so the instrumentation has to place `torch.npu.synchronize()`
+deliberately and accept the perturbation that round 20 warned about.
+
+That is the correct next experiment and it is well-specified. I am not running it
+this round because it needs a full 12-minute job and careful attribution, and I would
+rather record the honest gap than start something I cannot finish and verify.
+
+## Correction to FINAL.md
+
+Reverted FINAL.md's block table to mark the DLO term as **unproven**, keeping the
+676 ms total and the three solid terms.
