@@ -162,6 +162,22 @@ Arguments against the exposed-DLO explanation: with attention and MLP removed th
 only 184 ms/block of compute to hide 1326 MB of weights behind, needing 7.2 GB/s --
 well inside PCIe -- so the stream should still hide, and yet 184 ms remains.
 
+**A likely answer, though unproven** (round 45): the stack has a **Host Weight
+Runtime** -- a node-local pinned store enabling **direct H2D** weight transfer
+(`--host-weight-runtime-mode`, `--host-weight-runtime-root`,
+`--dlo-host-registration-limit-gib`) -- and it is **disabled by default**. That is
+exactly the mechanism that would make a 1326 MB/block transfer fast, and we are
+measured to be paying the slow path for it (~8 GB/s effective). Enabling it is not
+possible here: `preferred` fails with "requires enabled no-AllGather DLO", and adding
+`--dlo-no-use-allgather` fails with an empty `Orchestrator initialization failed`
+(workers torn down, no diagnostic) -- the same failure shape as
+`spatial_shard_height`.
+
+So the 162 ms/block is best explained as **a default-off fast weight path that this
+deployment cannot turn on**, which would make it a genuine residual opportunity rather
+than a dead end -- but that remains a hypothesis. Two startup attempts, no error text,
+~15 min each: not a place to keep guessing.
+
 ---|---:|---|
 | attention | 559 ms | kernel benchmark, Q=K=V=63232 |
 | MLP | ~33 ms | 7904 local rows at 73 TFLOPS |
