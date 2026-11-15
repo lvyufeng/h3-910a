@@ -1,0 +1,51 @@
+{
+  "torch": "2.10.0+cpu",
+  "torch_npu": "2.10.0.post7",
+  "device": 0,
+  "input_output_dtype": "bfloat16",
+  "compute_dtype": "float32",
+  "cases": [
+    {
+      "width": 1152,
+      "rows": 64,
+      "mode": "normal",
+      "median_ms": 0.8339960128068924,
+      "finite": true,
+      "cpu_native_vs_composed_exact": true,
+      "npu_vs_cpu_native_exact": true,
+      "max_abs_error": 0.0,
+      "relative_rms": 0.0,
+      "dtype": "torch.bfloat16"
+    },
+    {
+      "width": 4608,
+      "rows": 16,
+      "mode": "normal",
+      "median_ms": 0.8620440028607845,
+      "finite": true,
+      "cpu_native_vs_composed_exact": false,
+      "npu_vs_cpu_native_exact": false,
+      "max_abs_error": 0.015625,
+      "relative_rms": 5.7442801335128024e-05,
+      "dtype": "torch.bfloat16"
+    },
+    {
+      "width": 1152,
+      "rows": 64,
+      "mode": "constant",
+      "median_ms": 0.836046040058136,
+      "finite": true,
+      "cpu_native_vs_composed_exact": false,
+      "npu_vs_cpu_native_exact": false,
+      "max_abs_error": 0.0013427734375,
+      "relative_rms": 0.11227010935544968,
+      "dtype": "torch.bfloat16"
+    }
+  ],
+  "cast_roundtrip_exact": true,
+  "cast_fp32_exact": true,
+  "failure": {
+    "type": "AssertionError",
+    "message": "{'width': 1152, 'rows': 64, 'mode': 'constant', 'median_ms': 0.836046040058136, 'finite': True, 'cpu_native_vs_composed_exact': False, 'npu_vs_cpu_native_exact': False, 'max_abs_error': 0.0013427734375, 'relative_rms': 0.11227010935544968, 'dtype': 'torch.bfloat16'}"
+  }
+}

@@ -5105,3 +5105,44 @@ precision and model/schedule are unchanged. All managed engines are stopped, all
 eight devices are verified without processes, and the lease is released. The goal
 remains active; next priority is a reference-validated BF16-compatible LayerNorm
 path, followed by a completed real-workload measurement.
+
+---
+
+# Round 50: BF16-preserving vision repairs reach VAE image encoding
+
+Explicit BF16↔FP32 torch casts work on the actual 910A. The first native-FP32
+LayerNorm composition ran but produced ~1e-3 spurious output on a constant row
+with eps=1e-6, so it was not deployed. A first-element shift followed by two-pass
+FP32 centered variance retains BF16 weights/I/O and fixes that degenerate case.
+Six actual-width normal/zero/constant/high-offset cases give max relative RMS
+**2.896e-5** vs float64; constant/zero rows are exactly bias. This is not a claim of
+bitwise identity to all native backends or a full model-quality evaluation.
+
+The entire vision block then exposed a second defect: unmasked head_dim=72 SDPA
+fails an internal format-alias check with original BF16, contiguous BF16 and
+contiguous FP32 inputs. Explicit QK→softmax→PV in FP32, returning the original BF16
+dtype, runs successfully. A complete synthetic vision block has **0.2013%** RMS
+difference from CPU BF16 and stays finite. No FP16 model/activation substitution,
+mask/dropout/sparsity change, or inference-schedule change is used.
+
+**21 final CPU/NPU regressions pass** (9 norm, 9 mask, 3 attention). The norm tests'
+first harness version incorrectly invoked unsupported BF16 IsFinite on NPU; finite
+checks were moved to CPU and rerun in a fresh process, rather than ignoring the
+poisoned context. The final checked encoder is deployed with a unique backup;
+its SHA256 is `9d25561d952b910a9202a4241ece4075a149b0c8eab8c20f1e4b4e532614abe1`.
+
+The actual 8-rank 1344×768, seconds=5, first/last-image FL2VA request passes the
+former vision errors and reaches VAE conditioning. It then fails at
+`Downsample3D.forward:79`, reflection_pad3d on an internal NPU format. The failed
+request reports **534.68 s**, not a successful encode/DiT/video measurement. The
+cached and canonical VAE code are byte-identical and snapshotted for the next
+repair. A targeted base ND/NCDHW format conversion must be tested against exact
+CPU padding; globally disabling internal formats would affect all convolutions
+and is not the chosen fix.
+
+[Round-50 code and evidence](<../../diagnostics/round50/README.md>) include negative
+probes, stable numerical results, final tests, the failed real request, and the
+[portable vision compatibility patch](<../patches/encoder_bf16_layernorm.patch>).
+All owned engine processes are stopped, eight cards are verified idle and the
+lease is released. The goal remains active; the real workload is not yet complete,
+and no official lossless comparison or 15 s/2 s/20 s target achievement is claimed.

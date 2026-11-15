@@ -32,6 +32,15 @@
 > BF16 visual LayerNorm compile failure. It has not yet reached DiT successfully.
 > See the [round-49 evidence](<../../diagnostics/round49/README.md>).
 >
+> **Round 50 update:** stable FP32 normalization with BF16 storage/I/O and an
+> explicit unmasked vision-attention formula are tested and deployed. There are
+> 21 passing CPU/NPU regressions. Norm relative RMS vs float64 is at most 2.896e-5;
+> the complete synthetic vision block differs by 0.2013% RMS from CPU BF16. These
+> are not bit-exact model-quality or official lossless proofs.
+> The actual first/last-image request now reaches VAE image encoding, but fails
+> at reflection_pad3d on an internal NPU storage format after ~535 s. No DiT/video
+> result exists yet. See [round-50 evidence](<../../diagnostics/round50/README.md>).
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
@@ -53,7 +62,7 @@ reference images remains under repair and is not yet a completed benchmark.
 | (2) raise flash-attention efficiency | **partly achieved**: controlled same-math 32/30-core A/B is 558.1 → 317.0 ms, bit-exact |
 | (2) DiT to 15 s/step | **not yet achieved; impossibility claim withdrawn** — the old 31.5 TFLOPS ceiling was invalid |
 | (3) VAE decode 155 s → 20 s | **not achieved** — a verified real FL2VA encode/decode benchmark is pending |
-| (3) text encode 39 s → 2 s | **not achieved** — real image-conditioned encoding exposed indexing and BF16 LayerNorm defects |
+| (3) text encode 39 s → 2 s | **not achieved** — indexing, BF16 vision normalization and attention runtime defects repaired; real VAE conditioning remains blocked by a padding-format defect |
 | comparable measurement vs A2/A3 | **not delivered** — the old text-only 209-frame/4-step run is not the official 5s/49-step lossless workload |
 
 The older experiments below are retained as a historical record. Their numerical

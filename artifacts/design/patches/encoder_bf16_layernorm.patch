@@ -1,0 +1,92 @@
+--- a/vllm_omni/diffusion/models/minimax_h3/encoder.py
++++ b/vllm_omni/diffusion/models/minimax_h3/encoder.py
+@@ -504,12 +504,45 @@
+         return freqs
+ 
+ 
++class _NpuBF16CompatibleLayerNorm(nn.LayerNorm):
++    """Keep BF16 storage/I/O while avoiding the 910A legacy LayerNorm cast.
++
++    The installed BF16 LayerNorm TBE implementation fails to compile its internal
++    BF16->FP32 cast on Ascend910A. Explicit torch casts and stable FP32 reductions
++    work; this is the same normalization formula, not an FP16 model conversion. Native
++    CPU/CUDA and non-BF16 behavior remain unchanged. Parameter names/layout stay
++    identical to nn.LayerNorm so checkpoint loading is unaffected.
++    """
++
++    def _stable_bf16_forward(self, input: torch.Tensor) -> torch.Tensor:
++        # Offset cancellation is important for constant/high-offset rows with
++        # eps=1e-6: the first simple FP32 LayerNorm probe showed a 1e-3 spurious
++        # output on a constant row. Center before reducing, then use a two-pass
++        # variance. The BF16 input values are exactly representable in FP32.
++        x = input.float()
++        flat = x.flatten(start_dim=x.ndim - len(self.normalized_shape))
++        shifted = flat - flat[..., :1]
++        centered = shifted - shifted.mean(dim=-1, keepdim=True)
++        variance = centered.square().mean(dim=-1, keepdim=True)
++        normalized = (centered * torch.rsqrt(variance + self.eps)).reshape(input.shape)
++        if self.weight is not None:
++            normalized = normalized * self.weight.float()
++        if self.bias is not None:
++            normalized = normalized + self.bias.float()
++        return normalized.to(input.dtype)
++
++    def forward(self, input: torch.Tensor) -> torch.Tensor:
++        if input.device.type in ("npu", "privateuseone") and input.dtype == torch.bfloat16:
++            return self._stable_bf16_forward(input)
++        return super().forward(input)
++
++
+ class MiniMaxH3Qwen3VLVisionPatchMerger(nn.Module):
+     def __init__(self, config: Any, use_postshuffle_norm: bool = False) -> None:
+         super().__init__()
+         self.hidden_size = config.hidden_size * (config.spatial_merge_size**2)
+         self.use_postshuffle_norm = use_postshuffle_norm
+-        self.norm = nn.LayerNorm(self.hidden_size if use_postshuffle_norm else config.hidden_size, eps=1e-6)
++        self.norm = _NpuBF16CompatibleLayerNorm(self.hidden_size if use_postshuffle_norm else config.hidden_size, eps=1e-6)
+         self.linear_fc1 = nn.Linear(self.hidden_size, self.hidden_size)
+         self.act_fn = nn.GELU()
+         self.linear_fc2 = nn.Linear(self.hidden_size, config.out_hidden_size)
+@@ -549,6 +582,20 @@
+     return q_embed, k_embed
+ 
+ 
++def _vision_sdpa_bf16_compatible(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
++    # This stack's vision SDPA math path hits an internal format-alias error at
++    # head_dim=72 with BF16 and FP32, even on contiguous inputs. Avoid that path
++    # for unmasked vision attention using the same QK/softmax/PV formula. Retain
++    # BF16/FP16 storage and result dtype, with FP32 arithmetic (no FP16 cast).
++    if q.device.type in ("npu", "privateuseone"):
++        compute_dtype = torch.float32 if q.dtype in (torch.bfloat16, torch.float16) else q.dtype
++        qf, kf, vf = (tensor.to(compute_dtype).contiguous() for tensor in (q, k, v))
++        scores = torch.matmul(qf, kf.transpose(-2, -1)) * (q.shape[-1] ** -0.5)
++        probabilities = torch.softmax(scores, dim=-1)
++        return torch.matmul(probabilities, vf).to(q.dtype)
++    return F.scaled_dot_product_attention(q.contiguous(), k.contiguous(), v.contiguous(), dropout_p=0.0, is_causal=False)
++
++
+ class MiniMaxH3Qwen3VLVisionAttention(nn.Module):
+     def __init__(self, config: Any) -> None:
+         super().__init__()
+@@ -579,9 +626,7 @@
+ 
+         lengths = cu_seqlens[1:] - cu_seqlens[:-1]
+         splits = [torch.split(tensor, lengths.tolist(), dim=2) for tensor in (query_states, key_states, value_states)]
+-        attn_outputs = [
+-            F.scaled_dot_product_attention(q, k, v, dropout_p=0.0, is_causal=False) for q, k, v in zip(*splits)
+-        ]
++        attn_outputs = [_vision_sdpa_bf16_compatible(q, k, v) for q, k, v in zip(*splits)]
+         attn_output = torch.cat(attn_outputs, dim=2)
+         # The SDPA kernel may return a non-contiguous (1, num_heads, seq_len, head_dim)
+         # tensor whose memory layout is seq-major; transpose before flattening exactly
+@@ -595,8 +640,8 @@
+ class MiniMaxH3Qwen3VLVisionBlock(nn.Module):
+     def __init__(self, config: Any) -> None:
+         super().__init__()
+-        self.norm1 = nn.LayerNorm(config.hidden_size, eps=1e-6)
+-        self.norm2 = nn.LayerNorm(config.hidden_size, eps=1e-6)
++        self.norm1 = _NpuBF16CompatibleLayerNorm(config.hidden_size, eps=1e-6)
++        self.norm2 = _NpuBF16CompatibleLayerNorm(config.hidden_size, eps=1e-6)
+         self.attn = MiniMaxH3Qwen3VLVisionAttention(config=config)
+         self.mlp = MiniMaxH3Qwen3VLVisionMLP(config=config)
+ 

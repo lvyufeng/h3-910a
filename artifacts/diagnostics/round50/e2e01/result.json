@@ -1,0 +1,108 @@
+{
+  "command": [
+    "/home/mseco/vllm910a/bin/python",
+    "/home/mseco/vllm910a/bin/vllm-omni",
+    "serve",
+    "/home/mseco/models/MiniMax-H3-fp16",
+    "--omni",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "9198",
+    "--trust-remote-code",
+    "--task-type",
+    "fl2va",
+    "--num-gpus",
+    "8",
+    "--usp",
+    "8",
+    "--ring",
+    "1",
+    "--text-encoder-tp-size",
+    "8",
+    "--vae-parallel-mode",
+    "tile",
+    "--vae-use-tiling",
+    "--vae-patch-parallel-size",
+    "8",
+    "--diffusion-attention-backend",
+    "TORCH_SDPA",
+    "--stage-init-timeout",
+    "2400",
+    "--init-timeout",
+    "2400",
+    "--dtype",
+    "half",
+    "--enable-distributed-layerwise-offload"
+  ],
+  "run_dir": "/tmp/h3_round50_e2e01",
+  "server_pid": 3445715,
+  "startup_seconds": 245.03892904007807,
+  "request_fields": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "seconds": "5",
+    "size": "1344x768",
+    "fps": "24",
+    "seed": "1234",
+    "extra_params": "{\"task\": \"fl2va\"}"
+  },
+  "expected_frame_alignment": {
+    "requested_frames": 120,
+    "aligned_frames": 124,
+    "duration_s": 5.166666666666667,
+    "rule": "17n+5"
+  },
+  "reference_images": [
+    {
+      "filename": "first.png",
+      "sha256": "aef653db0fde05489b1bad708062727881019bfefac3452fd5f9f0c1c6045118",
+      "width": 1344,
+      "height": 768
+    },
+    {
+      "filename": "last.png",
+      "sha256": "bfe0ecf871a793d7056e1e2a09126b985df1047c6237609cad5386b89de4497e",
+      "width": 1344,
+      "height": 768
+    }
+  ],
+  "submitted": {
+    "model": "/home/mseco/models/MiniMax-H3-fp16",
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "id": "video_gen_2b812f0d0285482d992a69f13e74aaf4",
+    "object": "video",
+    "status": "queued",
+    "size": "1344x768",
+    "progress": 0,
+    "seconds": "5",
+    "quality": "default",
+    "completed_at": null,
+    "created_at": 1794739523,
+    "remixed_from_video_id": null,
+    "error": null,
+    "media_type": "video/mp4",
+    "expires_at": null,
+    "file_name": null,
+    "inference_time_s": null,
+    "fps": 24.0,
+    "num_frames": 120,
+    "duration_s": 5.0,
+    "metrics": null,
+    "stage_durations": {},
+    "peak_memory_mb": 0.0,
+    "action": null
+  },
+  "failure": {
+    "type": "HTTPError",
+    "message": "HTTP Error 500: Internal Server Error",
+    "response_body": "{\"model\":\"/home/mseco/models/MiniMax-H3-fp16\",\"prompt\":\"a red ball bouncing from left to right on the floor\",\"id\":\"video_gen_2b812f0d0285482d992a69f13e74aaf4\",\"object\":\"video\",\"status\":\"failed\",\"size\":\"1344x768\",\"progress\":0,\"seconds\":\"5\",\"quality\":\"default\",\"completed_at\":1794740057,\"created_at\":1794739523,\"remixed_from_video_id\":null,\"error\":{\"code\":500,\"message\":\"Current operator reflection_pad3d do not support internal format. \\n[ERROR] 2026-11-15-10:53:50 (PID:3446306, Device:3, RankID:3) ERR00007 PTA feature not supported\"},\"media_type\":\"video/mp4\",\"expires_at\":null,\"file_name\":null,\"inference_time_s\":534.6817965400405,\"fps\":24.0,\"num_frames\":120,\"duration_s\":5.0,\"metrics\":null,\"stage_durations\":{},\"peak_memory_mb\":0.0,\"action\":null}"
+  },
+  "server_exit_after_cleanup": -9,
+  "steady_rows": [],
+  "fa_core_rows": [],
+  "stage_times": {
+    "encode": [],
+    "denoise": [],
+    "decode": []
+  }
+}
