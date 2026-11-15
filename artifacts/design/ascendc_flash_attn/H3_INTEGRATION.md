@@ -5070,3 +5070,38 @@ The fixed runtime-budgeted wrapper is deployed; model config/precision are
 unchanged; all eight devices were verified to have no processes after managed
 cleanup and the fleet lease was released. Reproducible scripts and evidence are
 under `artifacts/diagnostics/910a-core-audit/`.
+
+---
+
+# Round 49: hardware pipe counters and a real FL2VA request
+
+Hardware profiling of the fixed 30-core FA produces three complete ~316.95 ms
+launches. The exported activity ratios are vector **55.1%**, scalar **22.4%**,
+MAC **22.9%**, MTE1 16.6–16.7%, MTE2 11.4%, MTE3 9.7%. These overlap and cannot
+be added as component shares. AI Core activity is not the same as MAC duty cycle.
+
+An exact-math private scalar-broadcast unroll improves **316.63 → 313.20 ms**,
+**1.083%**, with reversed-order repetitions and bit-exact output. It is not deployed.
+The rejected TIK column-broadcast API does not prove a hardware limitation.
+
+The full old MP4 is confirmed as **1344×768, 209 frames, 8.7083 s**. The actual form
+field is `seconds`, not `duration`; the native 17n+5 frame contract maps a requested
+5s/120 frames to **124 frames / 5.1667 s**. True FL2VA requires reference images.
+The old text-only runs are therefore not a completed FL2VA/5s lossless comparison.
+
+A correct request with first/last images fails at Boolean IndexPutV2 in encoder
+input setup. Three exactly equivalent masked_fill substitutions are deployed with
+a checked backup; **nine CPU/NPU tests pass** for int64 embedding masks, int32 token
+masks, shard reconstruction, boundaries, and token override order. A fresh request
+then passes the former point but fails at visual **BF16 LayerNorm** compilation:
+TBE reports an unsupported bfloat16-to-float32 cast. It never reaches DiT, so no
+new full-model timing or official lossless success is claimed. This is a concrete
+implementation defect to repair, not an impossibility conclusion.
+
+[Round-49 scripts and evidence](<../../diagnostics/round49/README.md>) include both
+failed request receipts, hardware CSVs, A/B timings, regression tests and the
+[portable encoder mask patch](<../patches/encoder_masked_fill.patch>). The encoder
+precision and model/schedule are unchanged. All managed engines are stopped, all
+eight devices are verified without processes, and the lease is released. The goal
+remains active; next priority is a reference-validated BF16-compatible LayerNorm
+path, followed by a completed real-workload measurement.

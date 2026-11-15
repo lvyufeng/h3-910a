@@ -24,13 +24,24 @@
 > HBM remained at 1200 MHz. The driver does not expose the queried throttle-cause
 > getter here, so this is not proof that every possible power/firmware limit is absent.
 >
+> **Round 49 update:** hardware pipe counters on the fixed 30-core kernel report
+> 55.1% vector, 22.4% scalar and 22.9% MAC activity (overlapped, not additive).
+> Exact scalar-broadcast unrolling gains only 1.08% and is not deployed.
+> Actual FL2VA with first/last images exposes Boolean IndexPutV2 failures (three
+> equivalent masked_fill substitutions are tested and deployed), followed by a
+> BF16 visual LayerNorm compile failure. It has not yet reached DiT successfully.
+> See the [round-49 evidence](<../../diagnostics/round49/README.md>).
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
 > experiment notes, not as a settled physical-limit argument.
 
-Benchmark configuration: 768p / 5s / fl2va / USP8 / 8×910A (32 GB each), CANN 9.2.0,
+Historical run label (not a verified official-equivalent workload):
+768p / 5s / fl2va / USP8 / 8×910A (32 GB each), CANN 9.2.0,
 torch_npu 2.10.0, vLLM-Omni 0.30.0, 4-step distilled checkpoint.
+The old text-only form actually produced 209 frames / 8.7083 s; real FL2VA with
+reference images remains under repair and is not yet a completed benchmark.
 
 ---
 
@@ -38,15 +49,15 @@ torch_npu 2.10.0, vLLM-Omni 0.30.0, 4-step distilled checkpoint.
 
 | goal item | state |
 |---|---|
-| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **refuted as worthwhile** — measured at 0.3% of a block |
-| (2) raise flash-attention efficiency | **partly achieved**: 656.8 → 558 ms kernel, block −13.4% end to end |
+| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **not completed** — reassess with a correct-workload trace, not the old residual budget |
+| (2) raise flash-attention efficiency | **partly achieved**: controlled same-math 32/30-core A/B is 558.1 → 317.0 ms, bit-exact |
 | (2) DiT to 15 s/step | **not yet achieved; impossibility claim withdrawn** — the old 31.5 TFLOPS ceiling was invalid |
-| (3) VAE decode 155 s → 20 s | **diagnosed, not fixed** — 100% video-VAE compute, no fast path exists for H3 |
-| (3) text encode 39 s → 2 s | **diagnosed, not fixed** — 62.13 GB streamed per request; 3 fixes tried, all failed |
-| comparable measurement vs A2/A3 | **delivered** (section 3) |
+| (3) VAE decode 155 s → 20 s | **not achieved** — a verified real FL2VA encode/decode benchmark is pending |
+| (3) text encode 39 s → 2 s | **not achieved** — real image-conditioned encoding exposed indexing and BF16 LayerNorm defects |
+| comparable measurement vs A2/A3 | **not delivered** — the old text-only 209-frame/4-step run is not the official 5s/49-step lossless workload |
 
-Two durable, end-to-end-verified speedups landed. Everything else in this report is
-a measurement, a refutation, or a retraction.
+The older experiments below are retained as a historical record. Their numerical
+observations are not automatic proof of attribution, rooflines, or goal completion.
 
 ---
 

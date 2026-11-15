@@ -1,0 +1,108 @@
+{
+  "command": [
+    "/home/mseco/vllm910a/bin/python",
+    "/home/mseco/vllm910a/bin/vllm-omni",
+    "serve",
+    "/home/mseco/models/MiniMax-H3-fp16",
+    "--omni",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "9198",
+    "--trust-remote-code",
+    "--task-type",
+    "fl2va",
+    "--num-gpus",
+    "8",
+    "--usp",
+    "8",
+    "--ring",
+    "1",
+    "--text-encoder-tp-size",
+    "8",
+    "--vae-parallel-mode",
+    "tile",
+    "--vae-use-tiling",
+    "--vae-patch-parallel-size",
+    "8",
+    "--diffusion-attention-backend",
+    "TORCH_SDPA",
+    "--stage-init-timeout",
+    "2400",
+    "--init-timeout",
+    "2400",
+    "--dtype",
+    "half",
+    "--enable-distributed-layerwise-offload"
+  ],
+  "run_dir": "/tmp/h3_round49_e2e5s02",
+  "server_pid": 3349315,
+  "startup_seconds": 230.03369044978172,
+  "request_fields": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "seconds": "5",
+    "size": "1344x768",
+    "fps": "24",
+    "seed": "1234",
+    "extra_params": "{\"task\": \"fl2va\"}"
+  },
+  "expected_frame_alignment": {
+    "requested_frames": 120,
+    "aligned_frames": 124,
+    "duration_s": 5.166666666666667,
+    "rule": "17n+5"
+  },
+  "reference_images": [
+    {
+      "filename": "first.png",
+      "sha256": "aef653db0fde05489b1bad708062727881019bfefac3452fd5f9f0c1c6045118",
+      "width": 1344,
+      "height": 768
+    },
+    {
+      "filename": "last.png",
+      "sha256": "bfe0ecf871a793d7056e1e2a09126b985df1047c6237609cad5386b89de4497e",
+      "width": 1344,
+      "height": 768
+    }
+  ],
+  "submitted": {
+    "model": "/home/mseco/models/MiniMax-H3-fp16",
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "id": "video_gen_0f302250e76f4079b064bc53b21d5471",
+    "object": "video",
+    "status": "queued",
+    "size": "1344x768",
+    "progress": 0,
+    "seconds": "5",
+    "quality": "default",
+    "completed_at": null,
+    "created_at": 1794736585,
+    "remixed_from_video_id": null,
+    "error": null,
+    "media_type": "video/mp4",
+    "expires_at": null,
+    "file_name": null,
+    "inference_time_s": null,
+    "fps": 24.0,
+    "num_frames": 120,
+    "duration_s": 5.0,
+    "metrics": null,
+    "stage_durations": {},
+    "peak_memory_mb": 0.0,
+    "action": null
+  },
+  "failure": {
+    "type": "HTTPError",
+    "message": "HTTP Error 500: Internal Server Error",
+    "response_body": "{\"model\":\"/home/mseco/models/MiniMax-H3-fp16\",\"prompt\":\"a red ball bouncing from left to right on the floor\",\"id\":\"video_gen_0f302250e76f4079b064bc53b21d5471\",\"object\":\"video\",\"status\":\"failed\",\"size\":\"1344x768\",\"progress\":0,\"seconds\":\"5\",\"quality\":\"default\",\"completed_at\":1794736719,\"created_at\":1794736585,\"remixed_from_video_id\":null,\"error\":{\"code\":500,\"message\":\"The Inner error is reported as above. The process exits for this inner error, and the current working operator name is LayerNorm.\\nSince the operator is called asynchronously, the stacktrace may be inaccurate. If you want to get the accurate stacktrace, please set the environment variable ASCEND_LAUNCH_BLOCKING=1.\\nNote: ASCEND_LAUNCH_BLOCKING=1 will force ops to run in synchronous mode, resulting in performance degradation. Please unset ASCEND_LAUNCH_BLOCKING in time after debugging.\\n[ERROR] 2026-11-15-09:58:38 (PID:3349898, Device:0, RankID:0) ERR00100 PTA call acl api failed.\\n[PID: 3349898] 2026-11-15-09:56:26.660.536 Invalid_Argument(EH0012): aclrtAllocatorGetByStream failed. Parameter stream is invalid. Reason: The stream is not registered with any allocator.\\nTraceBack (most recent call last):\\n        Compile operator failed, cause: The limitation of instruction, detailed information: Unsupported cast type! src_dtype: bfloat16, dst_dtype: float32.\\n        Failed to compile Op LayerNorm51. oppath is /home/mseco/Ascend/cann-9.2.0/opp/built-in/op_impl/ai_core/tbe/impl/ops_legacy/dynamic/layer_norm.py Compile failed with errormsg/stack: File \\\"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/compute/cast.py\\\", line 116, in _cast\\n    raise RuntimeError(dict_args, get_error_message(dict_args))\\nRuntimeError: ({'errCode': 'E90002', 'detailed_cause': 'Unsupported cast type! src_dtype: bfloat16, dst_dtype: float32'}, 'Compile operator failed, cause: The limitation of instruction, detailed information: Unsupported cast type! src_dtype: bfloat16, dst_dtype: float32.')\\n and optype is LayerNorm.\\n        Compile op[LayerNorm51] failed, oppath[/home/mseco/Ascend/cann-9.2.0/opp/built-in/op_impl/ai_core/tbe/impl/ops_legacy/dynamic/layer_norm.py], optype[LayerNorm], taskID[92]. Please check op's compilation error message.[FUNC:ReportBuildErrMessage][FILE:fusion_manager.cc][LINE:351]\\n        [SubGraphOpt][Compile][ProcFailedCompTask] Thread[281337688355072] failed to recompile single op[LayerNorm51][FUNC:ProcessAllFailedCompileTasks][FILE:tbe_op_store_adapter.cc][LINE:1169]\\n        [SubGraphOpt][Compile][ParalCompOp] Thread[281337688355072] failed when processing the task that had failed to compile.[FUNC:ParallelCompileOp][FILE:tbe_op_store_adapter.cc][LINE:1219]\\n        [SubGraphOpt][Compile][CompOpOnly] CompileOp failed.[FUNC:CompileOpOnly][FILE:op_compiler.cc][LINE:1179]\\n        [GraphOpt][FusedGraph][RunCompile] Failed to compile graph with compiler Normal mode Op Compiler[FUNC:SubGraphCompile][FILE:fe_graph_optimizer.cc][LINE:1459]\\n        Call OptimizeFusedGraph failed, ret:4294967295, engine_name:AIcoreEngine, graph_name:partition0_rank1_new_sub_graph3[FUNC:OptimizeSubGraph][FILE:graph_optimize.cc][LINE:125]\\n        subgraph 0 optimize failed[FUNC:OptimizeSubGraphWithMultiThreads][FILE:graph_manager.cc][LINE:1091]\\n        Assert ((DoSubgraphPartitionWithMode(graph_node, compute_graph, session_id, EnginePartitioner::Mode::kAtomicEnginePartitioning, \\\"AtomicEngine\\\")) == ge::SUCCESS) failed[FUNC:OptimizeSubgraph][FILE:graph_manager.cc][LINE:4153]\\n        build graph failed, graph id:50, ret:1343225857[FUNC:BuildModelWithGraphId][FILE:ge_generator.cc][LINE:1665]\\n        [Build][SingleOpModel]call ge interface generator.BuildSingleOpModel failed. ge result = 1343225857[FUNC:ReportCallError][FILE:log_inner.cpp][LINE:138]\\n        [Build][Op]Fail to build op model[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:123]\\n        build op model failed, result = 500002[FUNC:ReportInnerError][FILE:log_inner.cpp][LINE:123]\\n\"},\"media_type\":\"video/mp4\",\"expires_at\":null,\"file_name\":null,\"inference_time_s\":133.94159294012934,\"fps\":24.0,\"num_frames\":120,\"duration_s\":5.0,\"metrics\":null,\"stage_durations\":{},\"peak_memory_mb\":0.0,\"action\":null}"
+  },
+  "server_exit_after_cleanup": -9,
+  "steady_rows": [],
+  "fa_core_rows": [],
+  "stage_times": {
+    "encode": [],
+    "denoise": [],
+    "decode": []
+  }
+}

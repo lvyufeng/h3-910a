@@ -1,0 +1,26 @@
+--- a/vllm_omni/diffusion/models/minimax_h3/encoder.py
++++ b/vllm_omni/diffusion/models/minimax_h3/encoder.py
+@@ -119,7 +119,10 @@
+         end_idx = start_idx + self.num_embeddings_per_partition
+         input_mask = (input_ < start_idx) | (input_ >= end_idx)
+         masked_input = input_.clone() - start_idx
+-        masked_input[input_mask] = 0
++        # Boolean index assignment dispatches IndexPutV2/NonZero through AICPU
++        # on 910A and fails for the multi-image FL2VA encoder input. Elementwise
++        # masked_fill performs exactly the same zeroing without dynamic indices.
++        masked_input.masked_fill_(input_mask, 0)
+         output = F.embedding(masked_input, self.weight)
+         output.masked_fill_(input_mask.unsqueeze(-1), 0.0)
+         self.group.all_reduce(output)
+@@ -1296,8 +1299,9 @@
+         ids = input_ids.to(device, torch.long)[None]
+         attention_mask = torch.ones_like(ids)
+         mm_types = torch.zeros_like(ids, dtype=torch.int32)
+-        mm_types[ids == self.image_token_id] = 1
+-        mm_types[ids == self.video_token_id] = 2
++        # Preserve token-type overrides without dynamic Boolean IndexPutV2.
++        mm_types.masked_fill_(ids == self.image_token_id, 1)
++        mm_types.masked_fill_(ids == self.video_token_id, 2)
+ 
+         inputs_embeds = self.text_model.embed_tokens(ids)
+         image_mask = None
