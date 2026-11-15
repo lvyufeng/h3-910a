@@ -4856,3 +4856,58 @@ decode = 159.50 s
 
 All matching baseline. No code changed this round; the only side effect is an empty
 `/home/mseco/hwr` directory left behind, which is harmless.
+
+---
+
+# Round 46: HWR needs BF16, our kernel is FP16-only -- the 162 ms is gated behind a bf16 kernel
+
+Round 45 left HWR failing at startup with an empty orchestrator message. Read the
+traceback to the bottom and found the workers' own error, which the orchestrator had
+swallowed:
+
+```
+vllm_omni.diffusion.model_loader.host_weights.contracts.FinalLayoutContractError:
+'transformer.condition_proj.weight' must be BF16 or an explicitly preserved FP32
+parameter, got torch.float16
+```
+
+So the Host Weight Runtime **refuses fp16 weights outright**: it accepts BF16, or FP32
+only as an explicitly preserved parameter. We serve with `--dtype half`, which the
+loader materialises as `torch.float16`. That is the entire startup failure -- not a
+missing flag, not a deployment incompatibility, just a dtype contract.
+
+## Why this closes the avenue rather than opening it
+
+The obvious move is to serve BF16 and get the fast weight path. That does not work on
+this stack, and the reason is specific and checkable:
+
+| fact | evidence |
+|---|---|
+| HWR requires BF16 (or FP32) weights | the contract error above |
+| the only attention implementation that fits is my kernel | round 38: SDPA OOMs, 104.26 GiB across all three backends |
+| **my kernel is FP16-only** | **16 `Tensor(FP16, ...)` declarations, 0 occurrences of BF16/bfloat16** |
+
+So switching the model to BF16 to enable HWR would disable the one attention
+implementation that fits in 32 GB, and the fallback is the OOM path. **HWR and a
+working attention cannot coexist on 910A without a bf16 build of the kernel.**
+
+## What this establishes about the 162 ms
+
+The residue is not a mystery in the sense of "unknown code doing unknown work". It is
+the **slow weight-transfer path**, and the fast path exists but demands a dtype that
+the fitting attention kernel cannot serve.
+
+So the last 20% of the step (8.1 s) is gated behind one concrete piece of work:
+**make the AscendC/TBE kernel dtype-parametric (or write a bf16 twin), then serve
+BF16 + HWR.** That is a real, bounded engineering task with a measured prize, and it
+is the only remaining path with a large multiple in it.
+
+## Round 46 accounting
+
+No speedup and no code changed -- the deployment was already restored and verified last
+round. The contribution is **closing the loop on the biggest remaining item**: the
+162 ms/block is explained as the slow weight path, the fast path's activation
+condition is identified exactly (BF16 weights), and the reason we cannot use it today
+is confirmed by inspection (fp16-only kernel, 16 TIB buffer declarations, no bf16
+branch). What would unlock it is now a well-specified task rather than an unexplained
+gap.
