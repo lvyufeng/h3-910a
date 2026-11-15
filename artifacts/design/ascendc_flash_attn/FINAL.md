@@ -1,4 +1,33 @@
-# MiniMax H3 on 8x910A — final report after 31 rounds
+# MiniMax H3 on 8x910A — historical report, under performance re-audit
+
+> **2026-11-15 audit correction:** the claims below that 15 s/step was "proven
+> unreachable", that 31.5 TFLOPS was a hardware ceiling, and that the bypass
+> differences fully attributed the step are withdrawn. They were not established
+> by those experiments. The original goal has been resumed.
+>
+> Fresh, otherwise-idle 910A measurements: ACL and DCMI report **30 available AI
+> Cores on all eight cards**, while the old TBE binary used **blockDim=32**.
+> Keeping the FA mathematics and Br=128/Bc=304 unchanged, fresh 32/30/16-core
+> builds measure **558.1 / 317.0 / 565.8 ms**, with two reversed-order repetitions.
+> The 30-core output is **bit-exact** to the 32-core output. The production wrapper
+> with runtime core detection measures **318.3 ms** vs **559.6 ms** for the old
+> wrapper. The same historical API request form completes successfully: steady
+> reporter **29.32 s/step** (old 41.2–41.4 s), full denoise **164.91 s**, request wall
+> **365.25 s** (old 412–423 s). These end-to-end old baselines are historical, not a
+> new randomized A/B. All eight workers confirmed the 30-core artifact.
+> **Workload caveat:** the old `duration=5` form produces an API response with
+> `seconds="4"`, 209 frames, and 8.7083 seconds. The token shape N=63232 is verified,
+> but this is not yet a verified literal 768p/5s or official-equivalent benchmark.
+> An independent FP16 GEMM reaches **169.4 TFLOPS**; another shape gives
+> 75.9 TFLOPS. None of these measurements is a universal hardware roofline.
+> Loaded AI Core clocks remained at the device-reported maximum of **900 MHz**;
+> HBM remained at 1200 MHz. The driver does not expose the queried throttle-cause
+> getter here, so this is not proof that every possible power/firmware limit is absent.
+>
+> The 162 ms "slow weight path" attribution and its predicted HWR gain were also
+> unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
+> does not measure transfer time. The content below is retained as historical
+> experiment notes, not as a settled physical-limit argument.
 
 Benchmark configuration: 768p / 5s / fl2va / USP8 / 8×910A (32 GB each), CANN 9.2.0,
 torch_npu 2.10.0, vLLM-Omni 0.30.0, 4-step distilled checkpoint.
@@ -11,7 +40,7 @@ torch_npu 2.10.0, vLLM-Omni 0.30.0, 4-step distilled checkpoint.
 |---|---|
 | (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **refuted as worthwhile** — measured at 0.3% of a block |
 | (2) raise flash-attention efficiency | **partly achieved**: 656.8 → 558 ms kernel, block −13.4% end to end |
-| (2) DiT to 15 s/step | **proven unreachable** — needs 47.8 TFLOPS against a 31.5 ceiling |
+| (2) DiT to 15 s/step | **not yet achieved; impossibility claim withdrawn** — the old 31.5 TFLOPS ceiling was invalid |
 | (3) VAE decode 155 s → 20 s | **diagnosed, not fixed** — 100% video-VAE compute, no fast path exists for H3 |
 | (3) text encode 39 s → 2 s | **diagnosed, not fixed** — 62.13 GB streamed per request; 3 fixes tried, all failed |
 | comparable measurement vs A2/A3 | **delivered** (section 3) |

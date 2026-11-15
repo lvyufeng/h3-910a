@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+"""One controlled 8x910A request; manage and clean up our server process group."""
+from __future__ import annotations
+import json
+import os
+from pathlib import Path
+import re
+import signal
+import subprocess
+import time
+import urllib.request
+import uuid
+
+ROOT = Path("/home/mseco/h3-910a")
+RUN = Path("/tmp/h3_corebudget_e2e_run01")
+PORT = 9198
+API = f"http://127.0.0.1:{PORT}"
+
+
+def get(path, timeout=8):
+    with urllib.request.urlopen(API + path, timeout=timeout) as response:
+        return json.load(response)
+
+
+def interrupted(signum, frame):
+    raise SystemExit(f"manager interrupted by signal {signum}")
+
+
+def main():
+    if RUN.exists():
+        raise RuntimeError("Refuse to overwrite earlier end-to-end evidence")
+    try:
+        get("/health", 2)
+    except Exception:
+        pass
+    else:
+        raise RuntimeError("Port already serves an existing engine; do not interfere")
+    RUN.mkdir()
+    env = os.environ.copy()
+    env.update({"VLLM_OMNI_910A_PERF": "1", "VLLM_OMNI_910A_FLASH_ATTN": "1",
+                "TBE_PARALLEL_COMPILER": "1", "VLLM_OMNI_DLO_DP_WAVE_TIMEOUT": "14400",
+                "PYTORCH_NPU_ALLOC_CONF": "expandable_segments:True"})
+    for key in ("VLLM_OMNI_910A_SKIP_ATTN", "VLLM_OMNI_910A_SKIP_MLP", "VLLM_OMNI_910A_A2A_PROBE",
+                "VLLM_OMNI_910A_FLASH_SYNC", "VLLM_OMNI_910A_WARMUP"):
+        env.pop(key, None)
+    cmd = ["/home/mseco/vllm910a/bin/python", "/home/mseco/vllm910a/bin/vllm-omni", "serve",
+           "/home/mseco/models/MiniMax-H3-fp16", "--omni", "--host", "127.0.0.1", "--port", str(PORT),
+           "--trust-remote-code", "--task-type", "fl2va", "--num-gpus", "8", "--usp", "8", "--ring", "1",
+           "--text-encoder-tp-size", "8", "--vae-parallel-mode", "tile", "--vae-use-tiling",
+           "--vae-patch-parallel-size", "8", "--diffusion-attention-backend", "TORCH_SDPA",
+           "--stage-init-timeout", "2400", "--init-timeout", "2400", "--dtype", "half",
+           "--enable-distributed-layerwise-offload"]
+    result = {"command": cmd, "run_dir": str(RUN)}
+    log_path = RUN / "serve.log"
+    server = None
+    signal.signal(signal.SIGTERM, interrupted)
+    signal.signal(signal.SIGINT, interrupted)
+    try:
+        with log_path.open("xb") as log:
+            start = time.perf_counter()
+            server = subprocess.Popen(cmd, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT,
+                                      start_new_session=True)
+            assert os.getpgid(server.pid) == server.pid
+            result["server_pid"] = server.pid
+            (RUN / "server.pid").write_text(str(server.pid) + "\n")
+            deadline = time.monotonic() + 600
+            while time.monotonic() < deadline:
+                if server.poll() is not None:
+                    raise RuntimeError(f"engine exited during startup, rc={server.returncode}; inspect {log_path}")
+                try:
+                    if get("/health").get("status") == "healthy":
+                        break
+                except Exception:
+                    pass
+                time.sleep(5)
+            else:
+                raise TimeoutError(f"startup timed out; inspect {log_path}")
+            result["startup_seconds"] = time.perf_counter() - start
+            print("Engine healthy; startup_s=%.1f" % result["startup_seconds"], flush=True)
+            fields = {"prompt": "a red ball bouncing", "aspect_ratio": "16:9", "duration": "5"}
+            result["request_fields"] = fields
+            boundary = "h3audit" + uuid.uuid4().hex
+            body = b"".join((f"--{boundary}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n").encode()
+                             for k, v in fields.items()) + f"--{boundary}--\r\n".encode()
+            start = time.perf_counter()
+            req = urllib.request.Request(API + "/v1/videos", data=body,
+                                         headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
+            with urllib.request.urlopen(req, timeout=300) as response:
+                submitted = json.load(response)
+            result["submitted"] = submitted
+            vid = submitted["id"]
+            print("Submitted:", vid, flush=True)
+            deadline = time.monotonic() + 900
+            while time.monotonic() < deadline:
+                status = get("/v1/videos/" + vid)
+                if status.get("status") in ("completed", "failed"):
+                    break
+                if server.poll() is not None:
+                    raise RuntimeError("engine exited during request")
+                time.sleep(5)
+            else:
+                raise TimeoutError("request timed out")
+            result["request_wall_seconds"] = time.perf_counter() - start
+            result["response"] = status
+            if status.get("status") != "completed":
+                raise RuntimeError(f"inference failed: {status}")
+            video_path = RUN / "video.mp4"
+            with urllib.request.urlopen(API + "/v1/videos/" + vid + "/content", timeout=90) as response:
+                with video_path.open("xb") as f:
+                    written = 0
+                    while chunk := response.read(1024 * 1024):
+                        written += len(chunk)
+                        if written > 32 * 1024**2:
+                            raise RuntimeError("output exceeded 32 MiB audit limit")
+                        f.write(chunk)
+            result["video_bytes"] = video_path.stat().st_size
+            try:
+                fp = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                                     "stream=width,height,duration,nb_frames", "-of", "json", str(video_path)],
+                                    capture_output=True, text=True, timeout=20)
+                result["ffprobe"] = {"rc": fp.returncode, "result": json.loads(fp.stdout) if fp.returncode == 0 else fp.stderr}
+            except FileNotFoundError:
+                result["ffprobe"] = {"unavailable": True}
+    finally:
+        if server is not None:
+            # Only our own start_new_session process group; never pkill shared workers.
+            try:
+                os.killpg(server.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            try:
+                server.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                pass
+            try:
+                os.killpg(server.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            server.wait(timeout=10)
+            result["server_exit_after_cleanup"] = server.returncode
+        if log_path.exists():
+            text = log_path.read_text(errors="replace")
+            result["steady_rows"] = [{"step1_s": float(a), "steady_avg_s": float(b)}
+                                     for a, b in re.findall(r"denoise_steady step1=([0-9.]+)s steady_avg=([0-9.]+)s", text)]
+            result["fa_core_rows"] = [list(map(int, row)) for row in
+                re.findall(r"\[FA910A\] core_budget=(\d+) blockDim=(\d+) B=(\d+) H=(\d+) N=(\d+) D=(\d+) Br=(\d+) Bc=(\d+)", text)]
+            result["stage_times"] = {stage: [float(x) for x in re.findall(r"\[H3PERFP\] " + stage + r"=([0-9.]+)s", text)]
+                                     for stage in ("encode", "denoise", "decode")}
+        (RUN / "result.json").write_text(json.dumps(result, indent=2) + "\n")
+        print(json.dumps({k: v for k, v in result.items() if k not in ("command", "submitted")}, indent=2), flush=True)
+
+
+if __name__ == "__main__":
+    main()

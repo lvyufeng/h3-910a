@@ -4975,3 +4975,98 @@ configuration change, and it is the only remaining work with a large multiple (4
 
 Nothing was deployed or changed this round; host verified clean (0 NPU procs, kernel
 and index fixes intact).
+
+---
+
+# Re-audit 2026-11-15: 32-task partition on a 30-core device caused a real slowdown
+
+The user's objection to the earlier physical-limit conclusion was correct. This
+check uses the actual 910A host, not A2/910B benchmark extrapolation.
+
+## Runtime capacity differs from the architecture default
+
+- Old TBE binary metadata: `blockDim=32`, `coreType=AiCore`.
+- TBE `CORE_NUM`: 32 (compile-time SoC value).
+- ACL `ACL_DEV_ATTR_AICORE_CORE_NUM=101`: **30** on all eight devices.
+- DCMI `dcmi_get_device_chip_info(...).aicore_cnt`: **30** on all eight devices.
+- The old static task map assigned 3458 query tiles across 32 equal-work tasks
+  (108 or 109 query tiles per task). It did not account for the runtime budget.
+
+## Controlled fresh-build A/B — only core_num changes
+
+B=1, H=7, N=63232, D=128, Br=128, Bc=304, same FP16/FP32-accumulator mathematics:
+
+| tasks in launch | raw kernel time, first order | reversed order |
+|---:|---:|---:|
+| 32 | 558.047 ms | 558.069 ms |
+| **30** | **316.983 ms** | **316.985 ms** |
+| 16 | 565.814 ms | 565.818 ms |
+
+The 30-task version is **1.761x faster** (43.2% less latency), and full output is
+**bit-exact** to both controls, max absolute difference 0. Fresh builds use unique
+names and a private directory, so no cached-binary false success is possible.
+
+The runtime 30-core reports, the 32-task low-utilization tail, and the 16-task
+control support the second-wave explanation: 30 tasks run together, while two
+long tasks of a 32-task equal-work launch remain for another wave. This is not a
+proof from hardware instruction traces; the exact per-core timeline was not
+captured, and that limitation is explicit.
+
+## Production fix and end-to-end check
+
+The wrapper now queries ACL's available core budget, partitions TIK before build,
+and keys both disk and memory cache by the core budget. Old source and binary are
+preserved. A runtime-query failure is explicit, never a silent fallback to 32.
+Eight host tests pass, including invalid query handling and rejecting a stale
+32-core binary under a 30-core cache key.
+
+Corrected wrapper: **318.252 ms** vs **559.603 ms**, same inputs and bit-exact output.
+One normal 8-rank request then completed with all eight ranks reporting
+`core_budget=30 blockDim=30`:
+
+- steady step reporter: **29.32 s** (historical old runs: 41.2–41.4 s);
+- full denoise: **164.91 s** (historical old runs: approximately 211–213 s);
+- request wall: **365.25 s** (historical old runs: 412–423 s);
+- encode 39.47 s; decode 156.11–160.12 s.
+
+This end-to-end comparison is against prior same-request-form runs, not a fresh
+randomized whole-model A/B. The kernel and wrapper comparisons are controlled A/B.
+
+### Workload qualification
+
+The same old form used `duration=5`, but the response reports `seconds="4"`,
+`num_frames=209`, and `duration_s=8.7083`, with `size=null`. The actual FA shape
+N=63232 is verified. That API form is **not** a verified literal 768p/5s contract,
+so the old report's official-equivalent lossless wording is withdrawn pending
+correct API fields and output-metadata checks. This does not invalidate the
+same-shape kernel A/B or the same-form integration success.
+
+## No evidence for the asserted system-wide 73 TFLOPS ceiling
+
+At the same stable 900 MHz AI Core clock, FP16 GEMM M=11250 K=5376 N=28672 reaches
+**169.37 TFLOPS**; M=4096 K=5376 N=8192 gives 75.87 TFLOPS. Another short-K shape
+(M=8192 K=128 N=28672) reaches 41.25 TFLOPS. The 30-task FA itself reaches
+**45.21 TFLOPS**, above the supposed 31.5 TFLOPS ceiling.
+
+Loaded AI Core frequency remained **900 MHz**, equal to the reported maximum;
+HBM stayed 1200 MHz. No sampled dynamic clock drop occurred. Unsupported
+throttle-cause getters mean absence of every power/firmware constraint is not
+proved. DCMI power corresponds to roughly 127 W peak for FA versus 289 W for the
+large GEMM; low FA power is not itself proof of a power cap. The reported DDRA
+health event `80F18003` remains unmodified, relevance unknown.
+
+## Retractions
+
+- "15 s/step proven impossible" is withdrawn: these benchmarks did not establish
+  a physical limit. The goal is resumed, not completed or blocked.
+- "82% of a hardware ceiling" is withdrawn. Shape/API throughput is not a roofline.
+- Bypass differences were not additive per-component timings: removing compute
+  changes offload overlap. The inferred 162 ms HWR term and 20% gain were never
+  measured; HWR rejecting a dtype does not prove them.
+- The configured accumulator type is FP32 in the FA kernel. No universal 2x
+  FP16-to-FP32-accumulation throughput penalty was established.
+
+The fixed runtime-budgeted wrapper is deployed; model config/precision are
+unchanged; all eight devices were verified to have no processes after managed
+cleanup and the fleet lease was released. Reproducible scripts and evidence are
+under `artifacts/diagnostics/910a-core-audit/`.
