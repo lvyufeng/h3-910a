@@ -4780,3 +4780,79 @@ No speedup. This is the decomposition the project should have had from round 3: 
 configurations, one subtraction each, no timers, each number reproducible. It fixes
 the weights of the step at 71 / 7 / 22 percent and leaves a 162 ms/block unknown that
 is now measured rather than inferred. Reverted cleanly, 0 flag remnants.
+
+---
+
+# Round 45: Host Weight Runtime exists and targets exactly this bottleneck, but will not start here
+
+Round 44 narrowed the residue to ~162 ms/block of non-attention, non-MLP cost, and
+argued against "exposed DLO" because 1326 MB would hide behind even 184 ms of compute.
+Looking through the DLO flags for a way to attack it directly turned up a feature that
+has never been used in this project:
+
+```
+--host-weight-runtime-mode {disabled,preferred,required}     default: disabled
+--host-weight-runtime-root <path>
+--dlo-host-registration-limit-gib <float>
+```
+
+with the documentation stating that HWR is a *"writable node-local Host Weight Runtime
+store shared by workers in one storage domain"* and that the registration limit is a
+*"per-worker GiB ceiling for registering an HWR mmap for **direct H2D**"*, falling back
+to *"bounded staging"* when registration is unavailable.
+
+That is aimed precisely at the measured bottleneck: 1326 MB/block of weights crossing
+host-to-device, at the ~8 GB/s effective rate the round-44 arithmetic implies.
+
+## Two attempts, both rejected at startup
+
+**Attempt 1** (`preferred` + root + 8 GiB registration) fails validation with a precise
+message:
+
+```
+Value error, dlo_host_registration_limit_gib requires enabled no-AllGather DLO
+and Host Weight Runtime
+```
+
+so HWR requires `--dlo-no-use-allgather` too.
+
+**Attempt 2** adds `--dlo-no-use-allgather`. Result:
+
+```
+RuntimeError: Orchestrator initialization failed:
+(workers log "Shutdown signal received, starting cleanup")
+```
+
+An empty failure message, workers torn down, port never serves. This is the same
+shape of failure as `--vae-parallel-mode spatial_shard_height` in round 34: accepted
+by the argument parser, rejected during engine construction, with no diagnostic.
+
+So HWR is **not usable in this deployment** in either mode. I did not pursue it
+further: two startup failures with no error text is not a productive place to
+guess, and each attempt costs ~15 minutes.
+
+## Why this was still worth the round
+
+The feature's existence and its documented purpose (*direct H2D* versus *bounded
+staging*) is evidence about the intended architecture: the stack **expects** a
+node-local pinned HWR store to make weight transfer fast, and it is **off by default**.
+Round 44 measured that we are paying a slow path for exactly that transfer. So the
+162 ms/block is plausibly "HWR is not enabled / cannot be enabled here" rather than a
+mystery.
+
+That is a hypothesis, not a measurement, and it stays recorded as such.
+
+## Restored and verified
+
+Reverted to the known-good configuration and re-verified end to end rather than
+assuming:
+
+```
+status = completed, wall 422 s
+denoise_steady steady_avg = 41.25 s/step -> 2021 s projected for 49 steps
+decode = 159.50 s
+0 NPU processes
+```
+
+All matching baseline. No code changed this round; the only side effect is an empty
+`/home/mseco/hwr` directory left behind, which is harmless.
