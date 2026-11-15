@@ -132,8 +132,37 @@ Warm steady state decomposes as:
 
 Per block (budget 676 ms from 41.2 s / 50, which is sync-bounded):
 
-| part | per block | source |
-|---|---:|---|
+| configuration | s/step | ms/block |
+|---|---:|---:|
+| full | 41.20 | 824 |
+| attention core skipped | 11.94 | 239 |
+| attention + MLP skipped | 9.18 | 184 |
+
+Differences, all from **bypass differentials with no timers or synchronisation**
+(rounds 43-44):
+
+| part | s/step | ms/block | share |
+|---|---:|---:|---:|
+| **attention** | **29.26** | **585** | **71%** |
+| MLP | 2.76 | 55 | 7% |
+| everything else | 9.18 | 184 | 22% |
+
+The attention figure (585 ms) agrees with the 559 ms standalone kernel benchmark to
+4.6%, so that benchmark -- which every claim here depends on -- is confirmed
+independently twice. The MLP is 55 ms, not the 33 ms the FLOPs predict and far from
+the ~195 ms round 36 claimed.
+
+**22% of the step is neither attention nor MLP.** Of that 184 ms/block, only ~19 ms is
+qkv/out projections and ~3 ms norms/RoPE/gates, leaving **~162 ms/block (8.1 s/step,
+20%) unaccounted**. This is the project's one remaining unknown, and unlike earlier
+estimates it comes from subtracting two measured configurations rather than from a
+phase split or a bandwidth inference.
+
+Arguments against the exposed-DLO explanation: with attention and MLP removed there is
+only 184 ms/block of compute to hide 1326 MB of weights behind, needing 7.2 GB/s --
+well inside PCIe -- so the stream should still hide, and yet 184 ms remains.
+
+---|---:|---|
 | attention | 559 ms | kernel benchmark, Q=K=V=63232 |
 | MLP | ~33 ms | 7904 local rows at 73 TFLOPS |
 | other (norms, adaln, gates, conversions) | ~3 ms | round 3 |
