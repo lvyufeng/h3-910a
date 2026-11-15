@@ -173,10 +173,31 @@ possible here: `preferred` fails with "requires enabled no-AllGather DLO", and a
 (workers torn down, no diagnostic) -- the same failure shape as
 `spatial_shard_height`.
 
-So the 162 ms/block is best explained as **a default-off fast weight path that this
-deployment cannot turn on**, which would make it a genuine residual opportunity rather
-than a dead end -- but that remains a hypothesis. Two startup attempts, no error text,
-~15 min each: not a place to keep guessing.
+**Root cause confirmed** (round 46): the workers' error, which the orchestrator
+swallowed, is
+
+```
+FinalLayoutContractError: 'transformer.condition_proj.weight' must be BF16 or an
+explicitly preserved FP32 parameter, got torch.float16
+```
+
+HWR **refuses fp16 weights outright**. And it cannot simply be switched on by serving
+BF16, because of this chain:
+
+| fact | evidence |
+|---|---|
+| HWR requires BF16 (or FP32) weights | the contract error above |
+| the only attention implementation that fits is the custom kernel | round 38: SDPA OOMs at 104.26 GiB on all three backends |
+| **that kernel is FP16-only** | **16 `Tensor(FP16, ...)` declarations, 0 BF16 occurrences** |
+
+So **HWR and a working attention cannot coexist on 910A without a bf16 build of the
+kernel.** The 162 ms/block (8.1 s/step, 20%) is the slow weight-transfer path, and the
+fast path demands a dtype the fitting attention kernel cannot serve.
+
+**This is the one remaining path with a large multiple in it**, and it is now a
+well-specified task rather than an unexplained gap: make the AscendC/TBE kernel
+dtype-parametric (or write a bf16 twin), then serve `--dtype bfloat16` with
+`--host-weight-runtime-mode preferred`.
 
 ---|---:|---|
 | attention | 559 ms | kernel benchmark, Q=K=V=63232 |
