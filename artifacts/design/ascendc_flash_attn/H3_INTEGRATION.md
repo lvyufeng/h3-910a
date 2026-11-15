@@ -4518,3 +4518,65 @@ rather record the honest gap than start something I cannot finish and verify.
 
 Reverted FINAL.md's block table to mark the DLO term as **unproven**, keeping the
 676 ms total and the three solid terms.
+
+---
+
+# Round 41: the residue now has a sized mechanism -- the per-block all-to-all
+
+Read the transformer block's forward and its own docstring names the mechanism:
+
+> With Ulysses sequence parallelism, x holds this rank's row shard; qkv/norm/RoPE run
+> locally, **an all-to-all trades sequence for heads**. Each rank attends the full
+> sequence with heads/world_size local heads, so cu_seqlens retains global
+> packed-document semantics. **The inverse all-to-all** restores the row shard before
+> the output projection.
+
+So there is a per-block all-to-all **and its inverse**, inside `_run_packed_attention`,
+and that is what turns 7904 local rows into a full 63232-row attention. My round-37
+instinct ("something gathers Q") was directionally right; the mechanism is an
+all-to-all, not an all-gather, and it moves considerably more data than I guessed.
+
+Sizing it, per rank per block:
+
+```
+q before a2a : 113.3 MB   (7904 local rows x all 56 heads)
+q after  a2a : 113.3 MB   (63232 full rows x 7 local heads)
+q+k+v forward + inverse for out : 906 MB
+```
+
+| rate | 906 MB takes |
+|---|---:|
+| HCCS ~200 GB/s | **4.5 ms** |
+| PCIe-like 25 GB/s | **36.3 ms** |
+| 16.4 GB/s | **55.3 ms** |
+
+## What this does and does not establish
+
+**Does**: the residue finally has a candidate of the **right magnitude**. 36-55 ms of
+the 81 ms is exactly what a 906 MB collective would cost at the rates this machine has
+demonstrated. Add rounding on the MLP term and the ~3 ms of elementwise ops, and the
+block's 676 ms is plausibly accounted.
+
+**Does not**: I have **not measured** the all-to-all in isolation, and after three
+wrong attributions (rounds 36, 37, 39) I am not going to assert a fourth. The honest
+statement is: *sized mechanism identified, confirmation pending*. It is recorded as a
+candidate, not a closure.
+
+## The interesting part is the spread
+
+The 4.5 ms HCCS figure versus the 36-55 ms PCIe-ish figures is a **12x spread**. If
+the all-to-all is running at PCIe-like rates rather than intra-node HCCS rates, then
+it costs ~50 ms/block where ~5 ms is achievable, i.e. **~2.2 s per step (5%)** is
+recoverable in the collective path alone.
+
+That is now the single most concrete remaining opportunity, and unlike the previous
+four candidates it is bounded by two measured reference rates rather than a guess. The
+experiment is small: time `_run_packed_attention` with a synchronisation before and
+after, at one block.
+
+## Round 41 accounting
+
+No speedup. Three candidate explanations for the residue were refuted in rounds 36-40;
+this round replaces the third refutation with a **mechanism of the correct size** and
+an explicit statement that it is unconfirmed. Also identifies a 12x spread between the
+achievable and observed collective cost as the most concrete remaining lever.
