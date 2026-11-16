@@ -1,0 +1,14 @@
+--- a/vllm_omni/diffusion/models/minimax_h3/vae.py
++++ b/vllm_omni/diffusion/models/minimax_h3/vae.py
+@@ -364,6 +364,11 @@
+             )
+         install_temporal_stream_patches(self.remote.model)
+         self.model = self.remote.model
++        # Explicit default-off 910A-only, decoder-instance-local finite-select.
++        # No global F/SDPA, encoder, DiT or parameter dtype is modified.
++        if os.environ.get("VLLM_OMNI_910A_VAE_FINITE_SELECT", "0") == "1":
++            from .h3_910a_vae import install as install_910a_vae
++            install_910a_vae(self, device)
+         self._stager = None
+         self._encoder_stager = None
+         self._decoder_stager = None

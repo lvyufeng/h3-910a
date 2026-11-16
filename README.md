@@ -1,7 +1,8 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
-> [Round63 VAE investigation and measured acceptance limits](<artifacts/diagnostics/round63/README.md>)
+> [Round64 measured service decode and rejected whole-A/V acceptance](<artifacts/diagnostics/round64/README.md>),
+> [Round63 VAE kernel investigation](<artifacts/diagnostics/round63/README.md>)
 > and [native49-step baseline](<artifacts/diagnostics/round53/README.md>).
 > The older four-step/low-step latency tables below use an additional FlashGen
 > LoRA; they are **not** official-lossless native-H3 benchmark results.
