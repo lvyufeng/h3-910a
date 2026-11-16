@@ -169,6 +169,21 @@
 > Production files unchanged, no fullencoder2s/decoder20s/official matched pass.
 > See [round-58 evidence](<../../diagnostics/round58/README.md>).
 >
+> **Round 59 update:** full byte hashes prove all inputs/DeepStack and**3200
+> rank-parameter tensors unchanged** despite repeated text variation. Earliest
+> changes are local layer0**128-channel FP32 K/V projections before communication**;
+> Q/norm/tables stay exact.20same-input replays give20different FP32/BF16 outputs,
+> even resident/explicitMM/row-aligned/deterministic-mode. Padding output width
+> to1024+crop gives1exact result and makes all8-rank50-layer first/second/third
+> outputs repeat-exact in the measured shape. Accumulation order changes; no
+> untraced atomic/split-K mechanism or general hardware limit is asserted.
+> Stable padded eager5.007/4.999s, customSwiGLU4.223/4.167s; **rank0 final tensor
+> is byte-identical**, all800local checks remain exact. Norm+SwiGLU2.725/2.724s
+> stays repeatable but**6.318% RMS different** from stable eager; not lossless.
+> CPU FP32-HF oracle still7.22/7.45% different, padding cache1.953GiB/rank.
+> Production unchanged; encoder2s/decoder20s/official matched quality unmet.
+> See [round-59 evidence](<../../diagnostics/round59/README.md>).
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
@@ -187,11 +202,11 @@ quality equivalence or official 49-step lossless performance comparison.
 
 | goal item | state |
 |---|---|
-| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **partly achieved, not completed** — native BF16-GM TBE norm/add/SwiGLU prototypes measured; finite SwiGLU matches NPU bits, norm retains tiny differences; RoPE/AdaLN fusion and whole-stack lossless acceptance remain |
+| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **partly achieved, not completed** — stable experimental full-text SwiGLU ablation is bit-exact; Norm fusion has6.318% whole-text difference; RoPE/AdaLN fusion and generation-quality acceptance remain |
 | (2) raise flash-attention efficiency | **partly achieved**: core-budget558.1→317.0ms bit-exact; actual DiT masked wrapper421.151→154.391ms; causal text TBE prototype3.33–3.39ms but whole-text quality not passed |
 | (2) DiT to 15 s/step | **one warm window achieved, not a sustained/full-goal pass** — round54 all47 warm steps are below15s; round55 after-first mean14.9902s but2/47 warmed steps exceed15s; cold steps/model quality remain unresolved |
 | (3) VAE decode 155 s → 20 s | **not achieved** — latest native request captures136.50–141.80s decode (4records); no controlled decoder speedup A/B |
-| (3) text encode 39 s → 2 s | **not achieved** — experimental resident text stack repeats2.709s with native vector fusion, excludes vision/preprocessing and baseline itself is repeat-unstable; vision4.832s/fullconditioning296.97s are separate results |
+| (3) text encode 39 s → 2 s | **not achieved** — measured K/V padding makes experimental text repeat-stable:4.167s lossless SwiGLU ablation/2.724s nonlossless Norm combination; excludes vision/preprocessing and CPU-reference errors remain |
 | comparable measurement vs A2/A3 | **not delivered** — actual native 49-step FL2VA exists, but official 150.06/114.19 s are warmed T2VA; precision/schedule/quality and protocol equivalence remain unverified |
 
 The older experiments below are retained as a historical record. Their numerical

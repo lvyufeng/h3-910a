@@ -5666,3 +5666,58 @@ collected, isolated groups stopped, all8cards live-probed idle and lease release
 GitHub read-only head again times out, pending local commits not blindly replayed.
 Goal active for earliest stable repeated-forward/precision isolation, remaining
 RoPE/AdaLNfusion, encoder/decoder targets and task-matched officiallossless comparison.
+
+---
+
+# Round59: local narrow FP32 K/V repeat variation; stable full-text SwiGLU identity
+
+All8ranks run8unchanged experimental50-layer text forwards, using actual round54
+inputs/shared visual/DeepStack, FP32linears/causal andHFmath. Every input/mask/position/
+DeepStack buffer is fully hashed before/after each call;400parameter tensors/rank
+fully hashed before/after sequence. All3200parameter/input identities are unchanged.
+Clean0/1/2 rankmax20.545/4.980/4.990s, final differences6.650/11.537% vsfirst. Hooks
+and fresh allocations do not fix it. Final hashes agree acrossranks at eachcall,
+but differ acrosscalls; not a single cold-to-warm transition or proved input mutation.
+
+Full layer hashes cover all50layers/allranks; metrics fullrank0/sampledother ranks.
+Earliest layer is0. InitialNorm/Qprojection/Qnorm/cos/sin areexact, **K/V localFP32
+projections change on identicalNorminput before first attention rowallreduce**.
+Hook1 K/V RMSchanges0.000464/0.000747%, firstlayer0output0.023%; amplifieddownstream.
+No vectorfusionenabled. It is not correct to attribute this earliest change to
+HCCL, dropout, finalblock ornewSwiGLU. ActualproductionBF16encoder is a different path.
+
+Same actualrank0normalizedinputSHA is matched by direct replay withoutattention/
+collectives.20repeatsQwidth1024 areexact; K/Vwidth128 eachhave20uniqueFP32andBF16
+outputs under percallcasts, residentcontiguousFP32, explicitMM, rowpad2043->2048
+anddeterministic_algorithms(True). Widthpad256/512stillvaries. Outputwidthpad1024
+withzero rows thenvalidcrop gives1uniqueFP32/BF16 result, nearCPUFP32within~8.6e-7/
+7.6e-7RMS. The tinyvariable low bits crossBF16boundaries. Padding changesaccumulation
+order; atomic/split-K internals are **not proven withoutkerneltrace**, and no general
+910A physical limit orA2interpretation is made. Deterministicflag restored afterprobe.
+
+Only localFP32helper is changed in an **uninstalled default-off candidate**:
+VLLM_OMNI_910A_TEXT_PAD_KV. ExactmeasuredNPU BF16shape1x2043x5120/128x5120inference
+is supported, other/quantized/trainingpaths unchanged. Originalsource views and
+version/storage/stride/device key cached;100padded matrices add1.953GiB/rank.
+This is not co-residency withDiT/VAE or a fullpipeline offload measurement.
+
+Completecontrolled text cases, eachfirst/second/third/all8:
+unpadded20.459/5.025/5.006s stillunstable (31.4/31.3%RMS inthisrun);
+padded5.741/5.007/4.999s **repeat-exact**;
+padded+customSwiGLU9.786/4.223/4.167s **repeat-exact**;
+padded+Norm/SwiGLU8.324/2.725/2.724s **repeat-exact**.
+SwiGLU rank0**complete final output byte-exact** tostablepadded eager. All800real
+same-input layer/rank checks (5.23008billion scalars) exactandfinite; checks/copies
+excluded fromsecond/thirdtiming. Normcombination differs**6.318%RMS** vsstableeager
+(max1920), notlossless. CPUFP32-linearHForacle still7.220% padded/SwiGLU,7.454%both.
+No BF16CPU-HF/generationquality/fullencoder2s claim; no49stepvideoorofficialmatchedpass.
+
+[Round59 evidence](<../../diagnostics/round59/README.md>) preservesfullinput/parameter
+hashes, selectedbounded tensors, earliestlayer/suboperators,20repeat narrow/wide/
+rejectedalternative receipts, isolatedcandidate/cache, allrankstablefusionresults,
+nonzeroNormcounterexample and structuraltestcontracts. Encoder/noncausalFA/shared
+norm/comm/rotaryproductionhashes unchanged, noFP32padding/fusions installed. Alljobs
+collected/groupsdestroyed; transientfleetSSHtimeout is followed byactual8cardidle
+probe andlease release. GitHubread-onlybranch checkstillfailsSSL, no uncertainpush
+replay. Goal active forstable Norm/RoPE/reference validation, remainingRoPE/AdaLN
+fusion, encoder/decoder targets and genuine matchedlosslessvideo/performance.
