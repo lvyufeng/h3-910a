@@ -104,8 +104,9 @@ be a particular reduction or cast bottleneck.
 - NPU event elapsed is a **current-stream interval**, potentially including
   device work, stalls, host enqueue gaps, dispatch and dependency waits. It is
   not a pure kernel occupancy or compute-utilization measurement.
-- CPU `perf_counter` around the original function is dispatch/call wall, not
-  pure CPU work. It overlaps the device interval and cannot be added to it.
+- The `host_dispatch_s` field is **wrapped host-call wall including both
+  Event.record calls' host overhead**, not pure CPU work or uninstrumented
+  dispatch time. It overlaps the device interval and cannot be added to it.
 - HCCL may use internal communication streams. Current-stream event intervals
   around `all_reduce` measure only what is visible there; waits may appear in
   subsequent output casts/consumers. They do **not** identify network bandwidth,
