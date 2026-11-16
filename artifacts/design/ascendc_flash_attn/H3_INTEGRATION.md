@@ -5770,3 +5770,62 @@ isolatedgroupsstopped, cardslive-probedidle andlease released. Previousverified
 round59evidencecommittedaa94244; GitHubread-onlyreconciliationstillSSLfails, no
 uncertainpushreplay. GoalactiveforAdaLN, stablereferenceprecision, encoder/decoder
 and genuineofficialmatchedlosslessgeneration, notjustoperatoridentity.
+
+---
+
+# Rounds61–62: indexed FP16 AdaLN point identity, complete block verification
+
+Read actual transformer/indexed-modulation source before coding. DiT uses5376
+hidden width and5224 local rows onUSP8 at the real768p/5s/FL2VA shape. The eager
+FP16 path rounds normalized output before affine, rounds1+scale, product and gated
+residual independently; it is not the official Triton FP32-intermediate/BF16
+formula. Self-developed TIK/TBE directFP16GM point kernels cache tiny indexed
+parameter tables inUB, preserve those roundings and read actual chunk row strides
+32256(block) or10752(final), including offset-adjusted pointers. Compile target
+Ascend910A, livecore budget, private cache and isolated variadic C launch ABI;
+shared production five-pointer FA launcher untouched.
+
+[Round61](<../../diagnostics/round61/README.md>) retains actual captured operators,
+initial slower FP32-point/per-call-index-sync attempt, prepared snapshot and true
+chunk-stride proofs. Final affine functional comparison0.727ms(eager includes
+clone)->0.261ms, gate0.359–0.363->0.248–0.262ms, actual words exact. Production's
+in-place final affine requires copy-back, whose return pointer/alias identity is
+verified separately. All63488 finite FP16 words across33 point scenarios exact to
+actualNPU eager; not idealIEEECPU or arbitrary nonfinite certification. Snapshot
+owns int32metadata/paddedtail and rejects mutation/crossstream; wrong currentNPU,
+misalignedbase/stride, illegalindices and gradient-bearing operands rejected.
+Eight portable tests include a fake-runtime65th-registration boundary, not64
+hardware registrations. Concurrency/general epsilon/nonfinite norms unvalidated.
+
+Norm-containing fused variants reduceoperator wrappers~1.58->0.74ms and
+~1.88->1.02ms, but localRMS~6–7e-6 differences remain unaccepted. To verify beyond
+that local error, [round62](<../../diagnostics/round62/README.md>) captures complete
+actual DiT block inputs/outputs atlayers0/24/49, all8ranks, all5224rows, unchanged
+FP32timesteps/96-wideRoPE/globalpacked41792/validkeys41769. Instrumentedone-step
+capture is notcleanperformance/videoquality evidence. Native10-tensor one-block
+loader preservesgroupedQKV/fc1packing and isverified by actualcapture identity.
+
+First replay failure isretained: currentdiffusionconfig alone didnot establish
+constructionforwardcontext, so Attentionfactory cachedNoParallel and globalmask
+mismatchedlocalrows. Correctreplay creates context duringconstruction andforward,
+assertsUlysses8, TP1, ring1, anddoesnot split already-localfixturesagain. All24
+nativeblocks now matchactualcapture byte-for-byte. Point-gate and original-Norm
+pluspointmodulation variants each check**674,021,376scalaroutputs** exact against
+actualcapture/nativebaseline; allfourforwardspercase repeat-exact. This isthree
+teacher-forcedblocks, notwhole50-layeror49-step losslessgeneration.
+
+Warmcompleteblock latency includesnativeQKV/norm/RoPE/FA/Ulysses/projections/MLP,
+excludesDLO/stages/requestoverhead. Medianofthree max-rank calltimes: baseline
+216.215/217.044/216.312ms; exactsplit215.554/216.349/215.722ms. Only~0.3% andfixed
+modeorder—no materialnewfullstep/E2Egain or extrapolatedgoalpass. Point-gatealone
+isattiming-noisescale. FusedNorm214.024/214.666/214.758ms butall24outputs differ:
+layer0RMS0.00786–0.02688%,layer24 0.01063–0.01427%,layer49 0.03188–0.12346%;
+maxabsoluteerrors2/32/1840. SmalllocalNormdifferences amplified; repeat-exactdoes
+notmeanreference-correct. FusedNormisnot installed orlabelledlossless.
+
+Bothtemporarycapturetransformers restoredbyte-for-byte. Finalsource receiptpins
+executeddiagnosticfiles and unchangedproductionDiT/encoder/FA/norm/coordinator/
+rotary, plusindexedmodulation/QKnormRoPE/Attention/factorysnapshots. Alljobscollected,
+isolatedgroupsstopped, liveeightcard0%/zeroprocesses, ownedlease released. No new
+49stepvideo, fullencoder≤2s, decoder≤20s, originalBF16quality orofficialmatchedwarm
+benchmark. Goalremainsactive; AdaLNpointproofisprogress, notwholeobjectiveclosure.

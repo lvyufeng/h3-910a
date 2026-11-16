@@ -198,6 +198,23 @@
 > encoder/decoder/official matched generation remain unmet. See
 > [round-60 evidence](<../../diagnostics/round60/README.md>).
 >
+> **Rounds61–62 update:** self-developed **FP16 indexed AdaLN/gated-residual**
+> point kernels preserve the current eager intermediate roundings and consume
+> actual non-contiguous chunk-table strides. Final affine functional wrapper
+> (eager includes input clone)0.727→0.261ms; gated residual0.359–0.363→0.248–0.262ms,
+> actual words exact. Norm-containing fusion changes FP32 reduction and remains
+> unaccepted. Complete teacher-forced DiT blocks0/24/49 onall8ranks first reproduce
+> actual capture byte-for-byte; point and original-Norm-plus-point modes also
+> match **674,021,376 scalar outputs per mode**, all4forwards repeat-exact.
+> Critical-path warmed block medians: baseline216.215/217.044/216.312ms → exact
+> split215.554/216.349/215.722ms, only~0.3%, three calls/fixedorder; **not a new
+> DLO/step/E2E gain**. Fused Norm saves~2ms but differs up to0.12346%RMS/max1840
+> afterone actual block, rejected. Source/device/stride/metadata/gradient guards
+> and finite-point sweeps checked; production restored unchanged and lease
+> released. OriginalBF16/official-matched quality, encoder≤2s and decoder≤20s
+> remain unmet. See [round61](<../../diagnostics/round61/README.md>) and
+> [round62](<../../diagnostics/round62/README.md>).
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
@@ -216,10 +233,10 @@ quality equivalence or official 49-step lossless performance comparison.
 
 | goal item | state |
 |---|---|
-| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **partly achieved, not completed** — stable full-text SwiGLU and native RoPE ablations bit-exact; Norm fusion has6.318% difference, HF RoPE worsens oracle comparison; AdaLN and generation-quality acceptance remain |
+| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **partly achieved, not completed** — stable text SwiGLU/native RoPE and three actual DiT-block FP16 AdaLN split ablations bit-exact; full Norm fusion remains nonlossless, official BF16/generation-quality acceptance and production integration remain |
 | (2) raise flash-attention efficiency | **partly achieved**: core-budget558.1→317.0ms bit-exact; actual DiT masked wrapper421.151→154.391ms; causal text TBE prototype3.33–3.39ms but whole-text quality not passed |
 | (2) DiT to 15 s/step | **one warm window achieved, not a sustained/full-goal pass** — round54 all47 warm steps are below15s; round55 after-first mean14.9902s but2/47 warmed steps exceed15s; cold steps/model quality remain unresolved |
-| (3) VAE decode 155 s → 20 s | **not achieved** — latest native request captures136.50–141.80s decode (4records); no controlled decoder speedup A/B |
+| (3) VAE decode 155 s → 20 s | **not achieved** — last49-step native request recorded136.50–141.80s; instrumented one-step captures are not decoder speedup A/B |
 | (3) text encode 39 s → 2 s | **not achieved** — stable experimental text4.096s with bit-exact native TBE RoPE/SwiGLU; prior Norm combination2.724s is nonlossless, timings exclude vision/preprocessing and CPU-reference errors remain |
 | comparable measurement vs A2/A3 | **not delivered** — actual native 49-step FL2VA exists, but official 150.06/114.19 s are warmed T2VA; precision/schedule/quality and protocol equivalence remain unverified |
 

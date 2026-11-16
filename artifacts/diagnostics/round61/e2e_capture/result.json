@@ -1,0 +1,418 @@
+{
+  "command": [
+    "/home/mseco/vllm910a/bin/python",
+    "/home/mseco/vllm910a/bin/vllm-omni",
+    "serve",
+    "/home/mseco/models/MiniMax-H3-native-fp16-audit53",
+    "--omni",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "9198",
+    "--trust-remote-code",
+    "--task-type",
+    "fl2va",
+    "--num-gpus",
+    "8",
+    "--usp",
+    "8",
+    "--ring",
+    "1",
+    "--text-encoder-tp-size",
+    "8",
+    "--vae-parallel-mode",
+    "tile",
+    "--vae-use-tiling",
+    "--vae-patch-parallel-size",
+    "8",
+    "--diffusion-attention-backend",
+    "TORCH_SDPA",
+    "--stage-init-timeout",
+    "2400",
+    "--init-timeout",
+    "2400",
+    "--dtype",
+    "half",
+    "--enable-distributed-layerwise-offload"
+  ],
+  "run_dir": "/tmp/h3_round61_e2e01_capture",
+  "request_limit_seconds": 5400,
+  "startup_limit_seconds": 1800,
+  "diagnostic_only": true,
+  "denoise_steps": 1,
+  "vision_fp32_compute": false,
+  "stored_encoder_dtype_changed": false,
+  "server_pid": 1816248,
+  "startup_seconds": 230.03746928973123,
+  "request_fields": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "seconds": "5",
+    "size": "1344x768",
+    "fps": "24",
+    "seed": "1234",
+    "num_inference_steps": "1",
+    "extra_params": "{\"task\": \"fl2va\"}"
+  },
+  "expected_frame_alignment": {
+    "requested_frames": 120,
+    "aligned_frames": 124,
+    "duration_s": 5.166666666666667,
+    "rule": "17n+5"
+  },
+  "reference_images": [
+    {
+      "filename": "first.png",
+      "sha256": "aef653db0fde05489b1bad708062727881019bfefac3452fd5f9f0c1c6045118",
+      "width": 1344,
+      "height": 768
+    },
+    {
+      "filename": "last.png",
+      "sha256": "bfe0ecf871a793d7056e1e2a09126b985df1047c6237609cad5386b89de4497e",
+      "width": 1344,
+      "height": 768
+    }
+  ],
+  "submitted": {
+    "model": "/home/mseco/models/MiniMax-H3-native-fp16-audit53",
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "id": "video_gen_a2dd87c4f5bc41ffb32b40e087e611b8",
+    "object": "video",
+    "status": "queued",
+    "size": "1344x768",
+    "progress": 0,
+    "seconds": "5",
+    "quality": "default",
+    "completed_at": null,
+    "created_at": 1794809737,
+    "remixed_from_video_id": null,
+    "error": null,
+    "media_type": "video/mp4",
+    "expires_at": null,
+    "file_name": null,
+    "inference_time_s": null,
+    "fps": 24.0,
+    "num_frames": 120,
+    "duration_s": 5.0,
+    "metrics": null,
+    "stage_durations": {},
+    "peak_memory_mb": 0.0,
+    "action": null
+  },
+  "request_wall_seconds": 555.3593985498883,
+  "response": {
+    "model": "/home/mseco/models/MiniMax-H3-native-fp16-audit53",
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "id": "video_gen_a2dd87c4f5bc41ffb32b40e087e611b8",
+    "object": "video",
+    "status": "completed",
+    "size": "1344x768",
+    "progress": 100,
+    "seconds": "5",
+    "quality": "default",
+    "completed_at": 1794810290,
+    "created_at": 1794809737,
+    "remixed_from_video_id": null,
+    "error": null,
+    "media_type": "video/mp4",
+    "expires_at": null,
+    "file_name": "video_gen_a2dd87c4f5bc41ffb32b40e087e611b8.mp4",
+    "inference_time_s": 552.4880158300512,
+    "fps": 24.0,
+    "num_frames": 124,
+    "duration_s": 5.166666666666667,
+    "metrics": null,
+    "stage_durations": {
+      "queue_wait_ms": 0.5873199552297592,
+      "stage_0_gen_ms": 551251.5494823456
+    },
+    "peak_memory_mb": 20820.0,
+    "action": null
+  },
+  "video_bytes": 1452917,
+  "mp4_metadata": {
+    "file": "/tmp/h3_round61_e2e01_capture/video.mp4",
+    "bytes": 1452917,
+    "tracks": [
+      {
+        "handler": "vide",
+        "width": 1344.0,
+        "height": 768.0,
+        "timescale": 12288,
+        "duration_seconds": 5.166666666666667,
+        "sample_count": 124,
+        "frames_per_second": 24.0
+      },
+      {
+        "handler": "soun",
+        "width": 0.0,
+        "height": 0.0,
+        "timescale": 32000,
+        "duration_seconds": 5.207,
+        "sample_count": 163
+      }
+    ]
+  },
+  "verified_768p_5s_frame_alignment": true,
+  "ffprobe": {
+    "unavailable": true
+  },
+  "server_exit_after_cleanup": -9,
+  "steady_rows": [],
+  "fa_core_rows": [
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ]
+  ],
+  "fa_padding_plans": [
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ]
+  ],
+  "step_rows": [
+    {
+      "step": 1,
+      "prep_s": 0.35,
+      "model_s": 65.74,
+      "update_s": 9.78
+    },
+    {
+      "step": 1,
+      "prep_s": 0.36,
+      "model_s": 65.73,
+      "update_s": 9.78
+    },
+    {
+      "step": 1,
+      "prep_s": 0.43,
+      "model_s": 65.67,
+      "update_s": 9.95
+    },
+    {
+      "step": 1,
+      "prep_s": 0.39,
+      "model_s": 65.7,
+      "update_s": 9.99
+    },
+    {
+      "step": 1,
+      "prep_s": 0.43,
+      "model_s": 65.66,
+      "update_s": 10.07
+    },
+    {
+      "step": 1,
+      "prep_s": 0.43,
+      "model_s": 65.66,
+      "update_s": 10.28
+    },
+    {
+      "step": 1,
+      "prep_s": 0.53,
+      "model_s": 65.56,
+      "update_s": 10.7
+    },
+    {
+      "step": 1,
+      "prep_s": 0.38,
+      "model_s": 70.31,
+      "update_s": 6.44
+    }
+  ],
+  "complete_step_rows": [
+    {
+      "step": 1,
+      "total_s": 77.141769,
+      "callback_and_sync_s": 1.27135
+    },
+    {
+      "step": 1,
+      "total_s": 77.141655,
+      "callback_and_sync_s": 1.264419
+    },
+    {
+      "step": 1,
+      "total_s": 77.142411,
+      "callback_and_sync_s": 0.975497
+    },
+    {
+      "step": 1,
+      "total_s": 77.143461,
+      "callback_and_sync_s": 1.060651
+    },
+    {
+      "step": 1,
+      "total_s": 77.144328,
+      "callback_and_sync_s": 0.012002
+    },
+    {
+      "step": 1,
+      "total_s": 77.144294,
+      "callback_and_sync_s": 0.767026
+    },
+    {
+      "step": 1,
+      "total_s": 77.144858,
+      "callback_and_sync_s": 1.098062
+    },
+    {
+      "step": 1,
+      "total_s": 77.157481,
+      "callback_and_sync_s": 0.359718
+    }
+  ],
+  "complete_denoise_rows": [],
+  "stage_times": {
+    "encode": [
+      331.65,
+      331.65,
+      331.65,
+      331.65,
+      331.65,
+      331.65,
+      331.65,
+      331.65
+    ],
+    "denoise": [
+      81.47,
+      81.47,
+      81.47,
+      81.47,
+      81.47,
+      81.47,
+      81.47,
+      81.47
+    ],
+    "decode": [
+      136.55,
+      137.23,
+      137.72,
+      138.05,
+      138.25,
+      141.44,
+      141.6
+    ]
+  }
+}

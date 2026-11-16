@@ -1,0 +1,419 @@
+{
+  "command": [
+    "/home/mseco/vllm910a/bin/python",
+    "/home/mseco/vllm910a/bin/vllm-omni",
+    "serve",
+    "/home/mseco/models/MiniMax-H3-native-fp16-audit53",
+    "--omni",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "9198",
+    "--trust-remote-code",
+    "--task-type",
+    "fl2va",
+    "--num-gpus",
+    "8",
+    "--usp",
+    "8",
+    "--ring",
+    "1",
+    "--text-encoder-tp-size",
+    "8",
+    "--vae-parallel-mode",
+    "tile",
+    "--vae-use-tiling",
+    "--vae-patch-parallel-size",
+    "8",
+    "--diffusion-attention-backend",
+    "TORCH_SDPA",
+    "--stage-init-timeout",
+    "2400",
+    "--init-timeout",
+    "2400",
+    "--dtype",
+    "half",
+    "--enable-distributed-layerwise-offload"
+  ],
+  "run_dir": "/tmp/h3_round62_e2e01_blocks",
+  "request_limit_seconds": 5400,
+  "startup_limit_seconds": 1800,
+  "diagnostic_only": true,
+  "denoise_steps": 1,
+  "vision_fp32_compute": false,
+  "stored_encoder_dtype_changed": false,
+  "server_pid": 2616583,
+  "startup_seconds": 260.0398936099373,
+  "request_fields": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "seconds": "5",
+    "size": "1344x768",
+    "fps": "24",
+    "seed": "1234",
+    "num_inference_steps": "1",
+    "extra_params": "{\"task\": \"fl2va\"}"
+  },
+  "expected_frame_alignment": {
+    "requested_frames": 120,
+    "aligned_frames": 124,
+    "duration_s": 5.166666666666667,
+    "rule": "17n+5"
+  },
+  "reference_images": [
+    {
+      "filename": "first.png",
+      "sha256": "aef653db0fde05489b1bad708062727881019bfefac3452fd5f9f0c1c6045118",
+      "width": 1344,
+      "height": 768
+    },
+    {
+      "filename": "last.png",
+      "sha256": "bfe0ecf871a793d7056e1e2a09126b985df1047c6237609cad5386b89de4497e",
+      "width": 1344,
+      "height": 768
+    }
+  ],
+  "submitted": {
+    "model": "/home/mseco/models/MiniMax-H3-native-fp16-audit53",
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "id": "video_gen_cb320d938a854a2e8d2fa57b34213c8b",
+    "object": "video",
+    "status": "queued",
+    "size": "1344x768",
+    "progress": 0,
+    "seconds": "5",
+    "quality": "default",
+    "completed_at": null,
+    "created_at": 1794813527,
+    "remixed_from_video_id": null,
+    "error": null,
+    "media_type": "video/mp4",
+    "expires_at": null,
+    "file_name": null,
+    "inference_time_s": null,
+    "fps": 24.0,
+    "num_frames": 120,
+    "duration_s": 5.0,
+    "metrics": null,
+    "stage_durations": {},
+    "peak_memory_mb": 0.0,
+    "action": null
+  },
+  "request_wall_seconds": 555.4049982400611,
+  "response": {
+    "model": "/home/mseco/models/MiniMax-H3-native-fp16-audit53",
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "id": "video_gen_cb320d938a854a2e8d2fa57b34213c8b",
+    "object": "video",
+    "status": "completed",
+    "size": "1344x768",
+    "progress": 100,
+    "seconds": "5",
+    "quality": "default",
+    "completed_at": 1794814080,
+    "created_at": 1794813527,
+    "remixed_from_video_id": null,
+    "error": null,
+    "media_type": "video/mp4",
+    "expires_at": null,
+    "file_name": "video_gen_cb320d938a854a2e8d2fa57b34213c8b.mp4",
+    "inference_time_s": 553.0785594801418,
+    "fps": 24.0,
+    "num_frames": 124,
+    "duration_s": 5.166666666666667,
+    "metrics": null,
+    "stage_durations": {
+      "queue_wait_ms": 0.5966401658952236,
+      "stage_0_gen_ms": 551867.8224086761
+    },
+    "peak_memory_mb": 20820.0,
+    "action": null
+  },
+  "video_bytes": 1458451,
+  "mp4_metadata": {
+    "file": "/tmp/h3_round62_e2e01_blocks/video.mp4",
+    "bytes": 1458451,
+    "tracks": [
+      {
+        "handler": "vide",
+        "width": 1344.0,
+        "height": 768.0,
+        "timescale": 12288,
+        "duration_seconds": 5.166666666666667,
+        "sample_count": 124,
+        "frames_per_second": 24.0
+      },
+      {
+        "handler": "soun",
+        "width": 0.0,
+        "height": 0.0,
+        "timescale": 32000,
+        "duration_seconds": 5.207,
+        "sample_count": 163
+      }
+    ]
+  },
+  "verified_768p_5s_frame_alignment": true,
+  "ffprobe": {
+    "unavailable": true
+  },
+  "server_exit_after_cleanup": -9,
+  "steady_rows": [],
+  "fa_core_rows": [
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ],
+    [
+      30,
+      30,
+      1,
+      7,
+      43776,
+      128,
+      128,
+      304
+    ]
+  ],
+  "fa_padding_plans": [
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ],
+    [
+      41792,
+      43776,
+      41769,
+      23
+    ]
+  ],
+  "step_rows": [
+    {
+      "step": 1,
+      "prep_s": 0.45,
+      "model_s": 55.08,
+      "update_s": 8.08
+    },
+    {
+      "step": 1,
+      "prep_s": 0.39,
+      "model_s": 55.11,
+      "update_s": 8.17
+    },
+    {
+      "step": 1,
+      "prep_s": 0.32,
+      "model_s": 55.19,
+      "update_s": 8.4
+    },
+    {
+      "step": 1,
+      "prep_s": 0.46,
+      "model_s": 55.06,
+      "update_s": 8.71
+    },
+    {
+      "step": 1,
+      "prep_s": 0.27,
+      "model_s": 55.24,
+      "update_s": 8.77
+    },
+    {
+      "step": 1,
+      "prep_s": 0.65,
+      "model_s": 54.87,
+      "update_s": 9.42
+    },
+    {
+      "step": 1,
+      "prep_s": 0.5,
+      "model_s": 55.03,
+      "update_s": 9.92
+    },
+    {
+      "step": 1,
+      "prep_s": 0.4,
+      "model_s": 55.09,
+      "update_s": 10.43
+    }
+  ],
+  "complete_step_rows": [
+    {
+      "step": 1,
+      "total_s": 65.924885,
+      "callback_and_sync_s": 1.650958
+    },
+    {
+      "step": 1,
+      "total_s": 65.925102,
+      "callback_and_sync_s": 1.690399
+    },
+    {
+      "step": 1,
+      "total_s": 65.926024,
+      "callback_and_sync_s": 2.31565
+    },
+    {
+      "step": 1,
+      "total_s": 65.926358,
+      "callback_and_sync_s": 2.019349
+    },
+    {
+      "step": 1,
+      "total_s": 65.926534,
+      "callback_and_sync_s": 0.012884
+    },
+    {
+      "step": 1,
+      "total_s": 65.927578,
+      "callback_and_sync_s": 0.480663
+    },
+    {
+      "step": 1,
+      "total_s": 65.927297,
+      "callback_and_sync_s": 0.986474
+    },
+    {
+      "step": 1,
+      "total_s": 65.929816,
+      "callback_and_sync_s": 2.265561
+    }
+  ],
+  "complete_denoise_rows": [],
+  "stage_times": {
+    "encode": [
+      333.88,
+      333.88,
+      333.88,
+      333.88,
+      333.88,
+      333.88,
+      333.88,
+      333.88
+    ],
+    "denoise": [
+      70.85,
+      70.85,
+      70.85,
+      70.85,
+      70.85,
+      70.85,
+      70.85,
+      70.85
+    ],
+    "decode": [
+      136.98,
+      139.81,
+      142.76,
+      143.82,
+      145.21,
+      145.78,
+      146.08,
+      147.09
+    ]
+  }
+}
