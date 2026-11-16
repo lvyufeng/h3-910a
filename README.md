@@ -1,6 +1,7 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round71 exact vision Linear factors: complete encode6.927s→6.556s and measured attention/RoPE bottlenecks](<artifacts/diagnostics/round71/README.md>),
 > [Round70 complete multimodal encoder A/B: 8.835s→7.050s, not yet2s](<artifacts/diagnostics/round70/README.md>),
 > [Round69 exact resident text-only1.829s gate](<artifacts/diagnostics/round69/README.md>),
 > [Round64 measured service decode and rejected whole-A/V acceptance](<artifacts/diagnostics/round64/README.md>),
