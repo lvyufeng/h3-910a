@@ -1,0 +1,161 @@
+{
+  "cases": {
+    "sanitize_only_native": {
+      "timing": {
+        "groups_ms": [
+          8.549799956381321,
+          8.566416008397937,
+          8.520609000697732
+        ],
+        "median_ms": 8.549799956381321,
+        "first_vs_repeat": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "vs_actual": {
+        "raw_bits_equal": true,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 0,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      }
+    },
+    "sanitize_only_tbe": {
+      "timing": {
+        "groups_ms": [
+          0.23449701257050037,
+          0.21627796813845634,
+          0.21519199945032597
+        ],
+        "median_ms": 0.21627796813845634,
+        "first_vs_repeat": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "vs_actual": {
+        "raw_bits_equal": true,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 0,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      }
+    },
+    "full_attention_native": {
+      "timing": {
+        "groups_ms": [
+          15.923810005187988,
+          15.909798024222255,
+          16.057233000174165
+        ],
+        "median_ms": 15.923810005187988,
+        "first_vs_repeat": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "vs_actual": {
+        "raw_bits_equal": true,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 0,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      }
+    },
+    "full_attention_tbe_sanitize": {
+      "timing": {
+        "groups_ms": [
+          8.163761999458075,
+          8.167968969792128,
+          8.121088985353708
+        ],
+        "median_ms": 8.163761999458075,
+        "first_vs_repeat": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "vs_actual": {
+        "raw_bits_equal": true,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 0,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      }
+    }
+  },
+  "sources": {
+    "sanitize_validation02.py": "286fc32357337ab7db670aea3ca839b10a057898201b9486b53c452894f8d4b6",
+    "sanitize_vector63.py": "39ca87e11596f93abbd7940676c165ed0a47960ed8ab9b77e631188dc067b5b4",
+    "evidence_io63.py": "56ae294f3be10b7e07103e5bde0e056c25c1172828cc683882ad40570578b97d"
+  },
+  "scope": "Documented FP16 finite-select contract and finite actual VAE attention. Native NPU nonfinite-word behavior is separately retained; no full video/service acceptance yet.",
+  "exhaustive": {
+    "all_half_bit_patterns": 65536,
+    "nonfinite_words": 2048,
+    "vs_integer_bit_oracle": {
+      "raw_bits_equal": true,
+      "elements": 65536,
+      "finite": true,
+      "word_mismatches": 0,
+      "max_abs_error": 0.0,
+      "relative_rms": 0.0
+    },
+    "vs_native_npu": {
+      "raw_bits_equal": false,
+      "elements": 65536,
+      "finite": false,
+      "word_mismatches": 2048,
+      "max_abs_error": "nonfinite",
+      "relative_rms": "nonfinite"
+    },
+    "native_npu_matches_documented_finite_select": false,
+    "native_output_vs_unfiltered_words": {
+      "raw_bits_equal": true,
+      "elements": 65536,
+      "finite": false,
+      "word_mismatches": 0,
+      "max_abs_error": "nonfinite",
+      "relative_rms": "nonfinite"
+    },
+    "finite_words_vs_native": {
+      "raw_bits_equal": true,
+      "elements": 63488,
+      "finite": true,
+      "word_mismatches": 0,
+      "max_abs_error": 0.0,
+      "relative_rms": 0.0
+    }
+  },
+  "actual_raw_output_nonfinite_count_cpu": 0,
+  "raw_output_stride": [
+    3680256,
+    64,
+    115008,
+    1
+  ],
+  "raw_output_format": 0,
+  "completed": true,
+  "production_installed": false
+}

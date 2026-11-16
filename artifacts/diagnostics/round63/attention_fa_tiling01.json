@@ -1,0 +1,101 @@
+{
+  "cases": [
+    {
+      "br": 128,
+      "bc": 256,
+      "build_or_cache_s": 0.00046163005754351616,
+      "object": "/tmp/fa910a_kernels/b1_h32_n2048_d64_br128_bc256_c30_k1797_v3/b1_h32_n2048_d64_br128_bc256_c30_k1797_v3.o",
+      "symbol": "b1_h32_n2048_d64_br128_bc256_c30_k1797_v3__kernel0",
+      "block_dim": 30,
+      "raw_groups_ms": [
+        1.463974080979824,
+        1.455118041485548,
+        1.4558959752321243
+      ],
+      "median_raw_ms": 1.4558959752321243,
+      "first_vs_repeat": {
+        "raw_bits_equal": true,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 0,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      },
+      "vs_actual": {
+        "raw_bits_equal": false,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 293102,
+        "max_abs_error": 0.00390625,
+        "relative_rms": 0.00016062592009186038
+      }
+    },
+    {
+      "br": 128,
+      "bc": 512,
+      "build_or_cache_s": 23.9323187796399,
+      "object": "/tmp/fa910a_kernels/b1_h32_n2048_d64_br128_bc512_c30_k1797_v3/b1_h32_n2048_d64_br128_bc512_c30_k1797_v3.o",
+      "symbol": "b1_h32_n2048_d64_br128_bc512_c30_k1797_v3__kernel0",
+      "block_dim": 30,
+      "raw_groups_ms": [
+        1.1875220574438572,
+        1.1831499636173248,
+        1.1823680251836777
+      ],
+      "median_raw_ms": 1.1831499636173248,
+      "first_vs_repeat": {
+        "raw_bits_equal": true,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 0,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      },
+      "vs_actual": {
+        "raw_bits_equal": false,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 294877,
+        "max_abs_error": 0.00390625,
+        "relative_rms": 0.0001605945839276545
+      }
+    },
+    {
+      "br": 64,
+      "bc": 1024,
+      "build_or_cache_s": 21.334822450298816,
+      "object": "/tmp/fa910a_kernels/b1_h32_n2048_d64_br64_bc1024_c30_k1797_v3/b1_h32_n2048_d64_br64_bc1024_c30_k1797_v3.o",
+      "symbol": "b1_h32_n2048_d64_br64_bc1024_c30_k1797_v3__kernel0",
+      "block_dim": 30,
+      "raw_groups_ms": [
+        1.0629380121827126,
+        1.0605559684336185,
+        1.060095988214016
+      ],
+      "median_raw_ms": 1.0605559684336185,
+      "first_vs_repeat": {
+        "raw_bits_equal": true,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 0,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      },
+      "vs_actual": {
+        "raw_bits_equal": false,
+        "elements": 3680256,
+        "finite": true,
+        "word_mismatches": 297042,
+        "max_abs_error": 0.00390625,
+        "relative_rms": 0.0001607350082357216
+      }
+    }
+  ],
+  "source_sha256": "b872d84e494a8fe9ada2214b9f6ef39fdfcf5abafe9214e78cd813009d8f09e4",
+  "evidence_writer_sha256": "56ae294f3be10b7e07103e5bde0e056c25c1172828cc683882ad40570578b97d",
+  "scope": "Exploratory actual VAE D64 attention TBE tiling; raw-NZ timings exclude packing/allocation. Different from legacy FP16 softmax arithmetic. Not accepted lossless or whole-video.",
+  "failure": {
+    "type": "SystemExit",
+    "message": "Traceback:\n  File /tmp/h3_round63_decode01/attention_fa_tiling.py, line 63, in <module>\n                 obj, symbol, blocks = fa._build(1, heads, padded, d, br_cap=br, bc_cap=bc, key_seq_limit=n)\n  File /home/mseco/vllm-omni/vllm_omni/diffusion/attention/backends/fa910a.py, line 242, in _build\n                     instance.compute_process()\n  File /tmp/fa_pkg/flash_attention/ops/flash_attention/attention.py, line 410, in compute_process\n             self.compute_one_core(batch_start_s, batch_num_s, core_idx_to_tr_info, core_idx)\n  File /tmp/fa_pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py, line 477, in compute_one_core\n                 self.compute_in_each_q_block(batch_start_sc, batch_idx, q_blk_idx, self.Br)\n  File /tmp/fa_pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py, line 453, in compute_in_each_q_block\n                     Oi_l1_zN, li_ub, mi_ub = self.compute_in_each_kv_block(Qi_l1_zN, Oi_l1_zN, li_ub, mi_ub,\n  File /tmp/fa_pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py, line 381, in compute_in_each_kv_block\n             KjT_l1_zN = self.tik_instance.Tensor(FP16, (self.d // self.N0, self.Bc, self.N0),"
+  }
+}

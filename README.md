@@ -1,5 +1,11 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
+> **Current native/lossless optimization work:** see the
+> [Round63 VAE investigation and measured acceptance limits](<artifacts/diagnostics/round63/README.md>)
+> and [native49-step baseline](<artifacts/diagnostics/round53/README.md>).
+> The older four-step/low-step latency tables below use an additional FlashGen
+> LoRA; they are **not** official-lossless native-H3 benchmark results.
+
 Running [MiniMax-H3](https://github.com/MiniMax-AI/MiniMax-H3) video generation on
 Ascend **910A**-generation NPUs (`910B` without a suffix), 8×32 GiB, CANN 9.2.0,
 through **vLLM-Omni** — and making it fast enough to serve.

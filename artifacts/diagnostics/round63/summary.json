@@ -1,0 +1,486 @@
+{
+  "scope": "Round63 actual VAE diagnosis, local integration and clean resident decode; no official lossless/E2E completion.",
+  "loader_contract": {
+    "default_fp32_construction_matches_capture": false,
+    "default_half_then_fp32_storage_matches_capture": true,
+    "final_parameter_dtypes": {
+      "torch.float32": 439
+    },
+    "note": "Final FP32 parameter metadata does not undo the ambient half construction/load-state rounding."
+  },
+  "actual_tile": {
+    "shape": [
+      1,
+      24,
+      7,
+      16,
+      16
+    ],
+    "decoder_layers": 36,
+    "output_elements": 5505024,
+    "cases": {
+      "c128": {
+        "median_warm_s": 0.7281407900154591,
+        "all_repeats_equal": true,
+        "raw_bits_equal_to_actual_capture": true
+      },
+      "c256": {
+        "median_warm_s": 0.6757160201668739,
+        "all_repeats_equal": true,
+        "raw_bits_equal_to_actual_capture": true
+      },
+      "c512": {
+        "median_warm_s": 0.6932379701174796,
+        "all_repeats_equal": true,
+        "raw_bits_equal_to_actual_capture": true
+      }
+    }
+  },
+  "actual_attention": {
+    "shape_bshd": [
+      1,
+      1797,
+      32,
+      64
+    ],
+    "baseline_capture_exact": true,
+    "baseline_ms": 16.577363945543766,
+    "chunk256_ms": 15.284696035087109,
+    "custom_fa_ms_separate_card_run": 10.13535801321268,
+    "custom_fa_vs_capture": {
+      "raw_bits_equal": false,
+      "elements": 3680256,
+      "finite": true,
+      "word_mismatches": 293102,
+      "max_abs_error": 0.00390625,
+      "relative_rms": 0.00016062592009186038
+    },
+    "custom_fa_vs_fp32_oracle": {
+      "raw_bits_equal": false,
+      "elements": 3680256,
+      "finite": true,
+      "word_mismatches": 654532,
+      "max_abs_error": 0.0087890625,
+      "relative_rms": 0.0002501894590527923
+    },
+    "legacy_vs_fp32_oracle": {
+      "raw_bits_equal": false,
+      "elements": 3680256,
+      "finite": true,
+      "word_mismatches": 676459,
+      "max_abs_error": 0.009765625,
+      "relative_rms": 0.00027298827935206025
+    },
+    "custom_fa_lossless_accepted": false
+  },
+  "production_fast_path_installed": false,
+  "official_quality_or_task_matched_comparison_achieved": false,
+  "strict_goal_complete": false,
+  "complete_resident_decoder": {
+    "rank_count": 8,
+    "cases": {
+      "baseline_c128": {
+        "per_call_rank_max_wall_s": [
+          20.620553629938513,
+          20.590607460122555,
+          20.595028120093048
+        ],
+        "median_rank_max_wall_s": 20.595028120093048,
+        "per_call_rank_max_stream_s": [
+          20.620474609375,
+          20.590453125,
+          20.59492578125
+        ],
+        "median_rank_max_stream_s": 20.59492578125,
+        "first_call_rank_max_wall_s": 116.72246034024283,
+        "all_calls_capture_exact": true,
+        "expected_full_video_contract": true,
+        "all_repeats_exact": true,
+        "accepted_for_this_captured_latent": true,
+        "warm_calls_all_under_20s_resident_only": false,
+        "speedup_vs_first_baseline": 1.0
+      },
+      "candidate_c256": {
+        "per_call_rank_max_wall_s": [
+          19.992632400244474,
+          19.980225489940494,
+          19.98413078021258
+        ],
+        "median_rank_max_wall_s": 19.98413078021258,
+        "per_call_rank_max_stream_s": [
+          19.9925625,
+          19.980162109375,
+          19.9839609375
+        ],
+        "median_rank_max_stream_s": 19.9839609375,
+        "first_call_rank_max_wall_s": 24.087760909926146,
+        "all_calls_capture_exact": true,
+        "expected_full_video_contract": true,
+        "all_repeats_exact": true,
+        "accepted_for_this_captured_latent": true,
+        "warm_calls_all_under_20s_resident_only": true,
+        "speedup_vs_first_baseline": 1.0305691224001272
+      },
+      "candidate_c256_linear_fp16": {
+        "per_call_rank_max_wall_s": [
+          20.034740529954433,
+          20.038679880090058,
+          20.02261669980362
+        ],
+        "median_rank_max_wall_s": 20.034740529954433,
+        "per_call_rank_max_stream_s": [
+          20.034466796875,
+          20.03853125,
+          20.022294921875
+        ],
+        "median_rank_max_stream_s": 20.034466796875,
+        "first_call_rank_max_wall_s": 20.015313759911805,
+        "all_calls_capture_exact": true,
+        "expected_full_video_contract": true,
+        "all_repeats_exact": true,
+        "accepted_for_this_captured_latent": true,
+        "warm_calls_all_under_20s_resident_only": false,
+        "speedup_vs_first_baseline": 1.0279658021675357
+      },
+      "baseline_restored": {
+        "per_call_rank_max_wall_s": [
+          20.572975799907,
+          20.562203510198742,
+          20.574037939775735
+        ],
+        "median_rank_max_wall_s": 20.572975799907,
+        "per_call_rank_max_stream_s": [
+          20.572837890625,
+          20.56196484375,
+          20.573751953125
+        ],
+        "median_rank_max_stream_s": 20.572837890625,
+        "first_call_rank_max_wall_s": 20.57967569027096,
+        "all_calls_capture_exact": true,
+        "expected_full_video_contract": true,
+        "all_repeats_exact": true,
+        "accepted_for_this_captured_latent": true,
+        "warm_calls_all_under_20s_resident_only": false,
+        "speedup_vs_first_baseline": 1.001071907166009
+      }
+    },
+    "measurement": "median over three calls of per-call rank maximum; barrier start, NPU drain end; first call excluded",
+    "scope": "Complete resident video VAE decode on one actual normalized FL2VA latent. Not service decode stage/audio/MP4 or full 49-step generation quality.",
+    "baseline_restored_relative_timing_drift": -0.0010707594113228414
+  },
+  "exploratory_raw_fa_tiling": {
+    "cases": [
+      {
+        "br": 128,
+        "bc": 256,
+        "build_or_cache_s": 0.00046163005754351616,
+        "object": "/tmp/fa910a_kernels/b1_h32_n2048_d64_br128_bc256_c30_k1797_v3/b1_h32_n2048_d64_br128_bc256_c30_k1797_v3.o",
+        "symbol": "b1_h32_n2048_d64_br128_bc256_c30_k1797_v3__kernel0",
+        "block_dim": 30,
+        "raw_groups_ms": [
+          1.463974080979824,
+          1.455118041485548,
+          1.4558959752321243
+        ],
+        "median_raw_ms": 1.4558959752321243,
+        "first_vs_repeat": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "vs_actual": {
+          "raw_bits_equal": false,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 293102,
+          "max_abs_error": 0.00390625,
+          "relative_rms": 0.00016062592009186038
+        }
+      },
+      {
+        "br": 128,
+        "bc": 512,
+        "build_or_cache_s": 23.9323187796399,
+        "object": "/tmp/fa910a_kernels/b1_h32_n2048_d64_br128_bc512_c30_k1797_v3/b1_h32_n2048_d64_br128_bc512_c30_k1797_v3.o",
+        "symbol": "b1_h32_n2048_d64_br128_bc512_c30_k1797_v3__kernel0",
+        "block_dim": 30,
+        "raw_groups_ms": [
+          1.1875220574438572,
+          1.1831499636173248,
+          1.1823680251836777
+        ],
+        "median_raw_ms": 1.1831499636173248,
+        "first_vs_repeat": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "vs_actual": {
+          "raw_bits_equal": false,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 294877,
+          "max_abs_error": 0.00390625,
+          "relative_rms": 0.0001605945839276545
+        }
+      },
+      {
+        "br": 64,
+        "bc": 1024,
+        "build_or_cache_s": 21.334822450298816,
+        "object": "/tmp/fa910a_kernels/b1_h32_n2048_d64_br64_bc1024_c30_k1797_v3/b1_h32_n2048_d64_br64_bc1024_c30_k1797_v3.o",
+        "symbol": "b1_h32_n2048_d64_br64_bc1024_c30_k1797_v3__kernel0",
+        "block_dim": 30,
+        "raw_groups_ms": [
+          1.0629380121827126,
+          1.0605559684336185,
+          1.060095988214016
+        ],
+        "median_raw_ms": 1.0605559684336185,
+        "first_vs_repeat": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "vs_actual": {
+          "raw_bits_equal": false,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 297042,
+          "max_abs_error": 0.00390625,
+          "relative_rms": 0.0001607350082357216
+        }
+      }
+    ],
+    "failure_retained": {
+      "type": "SystemExit",
+      "message": "Traceback:\n  File /tmp/h3_round63_decode01/attention_fa_tiling.py, line 63, in <module>\n                 obj, symbol, blocks = fa._build(1, heads, padded, d, br_cap=br, bc_cap=bc, key_seq_limit=n)\n  File /home/mseco/vllm-omni/vllm_omni/diffusion/attention/backends/fa910a.py, line 242, in _build\n                     instance.compute_process()\n  File /tmp/fa_pkg/flash_attention/ops/flash_attention/attention.py, line 410, in compute_process\n             self.compute_one_core(batch_start_s, batch_num_s, core_idx_to_tr_info, core_idx)\n  File /tmp/fa_pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py, line 477, in compute_one_core\n                 self.compute_in_each_q_block(batch_start_sc, batch_idx, q_blk_idx, self.Br)\n  File /tmp/fa_pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py, line 453, in compute_in_each_q_block\n                     Oi_l1_zN, li_ub, mi_ub = self.compute_in_each_kv_block(Qi_l1_zN, Oi_l1_zN, li_ub, mi_ub,\n  File /tmp/fa_pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py, line 381, in compute_in_each_kv_block\n             KjT_l1_zN = self.tik_instance.Tensor(FP16, (self.d // self.N0, self.Bc, self.N0),"
+    },
+    "raw_kernel_only_not_wrapper_ms": true,
+    "lossless_accepted": false
+  },
+  "packing_experiment": {
+    "pack_bits_equal": true,
+    "unpack_bits_equal": true,
+    "original_fa_wrapper_ms": 10.316054988652468,
+    "fused_pack_same_fa_wrapper_ms": 10.332116996869445,
+    "same_kernel_fa_output_bits_equal": true,
+    "material_latency_benefit_demonstrated": false,
+    "scope": "Prepared device must stay current; finite captured outputs only; not arbitrary nonfinite FA behavior."
+  },
+  "tbe_finite_select": {
+    "all_65536_half_words_match_integer_oracle": true,
+    "finite_words_match_configured_native": true,
+    "configured_native_is_identity_on_all_half_words": true,
+    "nonfinite_words_with_deliberately_different_handling": 2048,
+    "actual_capture_raw_nonfinite_count": 0,
+    "cases": {
+      "sanitize_only_native": {
+        "timing": {
+          "groups_ms": [
+            8.549799956381321,
+            8.566416008397937,
+            8.520609000697732
+          ],
+          "median_ms": 8.549799956381321,
+          "first_vs_repeat": {
+            "raw_bits_equal": true,
+            "elements": 3680256,
+            "finite": true,
+            "word_mismatches": 0,
+            "max_abs_error": 0.0,
+            "relative_rms": 0.0
+          }
+        },
+        "vs_actual": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "sanitize_only_tbe": {
+        "timing": {
+          "groups_ms": [
+            0.23449701257050037,
+            0.21627796813845634,
+            0.21519199945032597
+          ],
+          "median_ms": 0.21627796813845634,
+          "first_vs_repeat": {
+            "raw_bits_equal": true,
+            "elements": 3680256,
+            "finite": true,
+            "word_mismatches": 0,
+            "max_abs_error": 0.0,
+            "relative_rms": 0.0
+          }
+        },
+        "vs_actual": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "full_attention_native": {
+        "timing": {
+          "groups_ms": [
+            15.923810005187988,
+            15.909798024222255,
+            16.057233000174165
+          ],
+          "median_ms": 15.923810005187988,
+          "first_vs_repeat": {
+            "raw_bits_equal": true,
+            "elements": 3680256,
+            "finite": true,
+            "word_mismatches": 0,
+            "max_abs_error": 0.0,
+            "relative_rms": 0.0
+          }
+        },
+        "vs_actual": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "full_attention_tbe_sanitize": {
+        "timing": {
+          "groups_ms": [
+            8.163761999458075,
+            8.167968969792128,
+            8.121088985353708
+          ],
+          "median_ms": 8.163761999458075,
+          "first_vs_repeat": {
+            "raw_bits_equal": true,
+            "elements": 3680256,
+            "finite": true,
+            "word_mismatches": 0,
+            "max_abs_error": 0.0,
+            "relative_rms": 0.0
+          }
+        },
+        "vs_actual": {
+          "raw_bits_equal": true,
+          "elements": 3680256,
+          "finite": true,
+          "word_mismatches": 0,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      }
+    },
+    "scope": "Documented finite-select semantics; not native equivalence on NaN/Inf. Actual finite fixture is bit-exact."
+  },
+  "complete_resident_decoder_with_tbe_finite_select": {
+    "rank_count": 8,
+    "cases": {
+      "baseline_c128": {
+        "per_call_rank_max_wall_s": [
+          20.64764600014314,
+          20.65434730006382,
+          20.630394630134106
+        ],
+        "median_rank_max_wall_s": 20.64764600014314,
+        "per_call_rank_max_stream_s": [
+          20.647435546875,
+          20.654046875,
+          20.6303359375
+        ],
+        "median_rank_max_stream_s": 20.647435546875,
+        "first_call_rank_max_wall_s": 82.1590943899937,
+        "all_calls_capture_exact": true,
+        "expected_full_video_contract": true,
+        "all_repeats_exact": true,
+        "accepted_for_this_captured_latent": true,
+        "warm_calls_all_under_20s_resident_only": false,
+        "speedup_vs_first_baseline": 1.0
+      },
+      "sanitize_c128": {
+        "per_call_rank_max_wall_s": [
+          13.748119989875704,
+          13.920429210178554,
+          14.222563289571553
+        ],
+        "median_rank_max_wall_s": 13.920429210178554,
+        "per_call_rank_max_stream_s": [
+          13.7479462890625,
+          13.9202880859375,
+          14.2223583984375
+        ],
+        "median_rank_max_stream_s": 13.9202880859375,
+        "first_call_rank_max_wall_s": 14.532239789608866,
+        "all_calls_capture_exact": true,
+        "expected_full_video_contract": true,
+        "all_repeats_exact": true,
+        "accepted_for_this_captured_latent": true,
+        "warm_calls_all_under_20s_resident_only": true,
+        "speedup_vs_first_baseline": 1.4832621673077204
+      },
+      "sanitize_c256": {
+        "per_call_rank_max_wall_s": [
+          11.604085929691792,
+          11.589749170001596,
+          11.585703909862787
+        ],
+        "median_rank_max_wall_s": 11.589749170001596,
+        "per_call_rank_max_stream_s": [
+          11.6036787109375,
+          11.5891787109375,
+          11.585337890625
+        ],
+        "median_rank_max_stream_s": 11.5891787109375,
+        "first_call_rank_max_wall_s": 16.031738969963044,
+        "all_calls_capture_exact": true,
+        "expected_full_video_contract": true,
+        "all_repeats_exact": true,
+        "accepted_for_this_captured_latent": true,
+        "warm_calls_all_under_20s_resident_only": true,
+        "speedup_vs_first_baseline": 1.7815438192214386
+      },
+      "baseline_restored": {
+        "per_call_rank_max_wall_s": [
+          20.648082959931344,
+          20.64820070983842,
+          20.659474730025977
+        ],
+        "median_rank_max_wall_s": 20.64820070983842,
+        "per_call_rank_max_stream_s": [
+          20.647830078125,
+          20.648076171875,
+          20.65878515625
+        ],
+        "median_rank_max_stream_s": 20.648076171875,
+        "first_call_rank_max_wall_s": 20.66831350978464,
+        "all_calls_capture_exact": true,
+        "expected_full_video_contract": true,
+        "all_repeats_exact": true,
+        "accepted_for_this_captured_latent": true,
+        "warm_calls_all_under_20s_resident_only": false,
+        "speedup_vs_first_baseline": 0.9999731352042207
+      }
+    },
+    "measurement": "median over three calls of per-call rank maximum; barrier start, NPU drain end; first call excluded",
+    "scope": "Complete resident video VAE decode on one actual normalized FL2VA latent. Not service decode stage/audio/MP4 or full 49-step generation quality.",
+    "baseline_restored_relative_timing_drift": 2.6865517515961557e-05
+  }
+}

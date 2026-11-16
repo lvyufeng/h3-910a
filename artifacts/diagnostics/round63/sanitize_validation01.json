@@ -1,0 +1,33 @@
+{
+  "cases": {},
+  "sources": {
+    "sanitize_validation.py": "f2120af14442fa01c4af2b036463b2c353de883546aaec83d36e0513f01afe98",
+    "sanitize_vector63.py": "39ca87e11596f93abbd7940676c165ed0a47960ed8ab9b77e631188dc067b5b4",
+    "evidence_io63.py": "56ae294f3be10b7e07103e5bde0e056c25c1172828cc683882ad40570578b97d"
+  },
+  "scope": "FP16 finite-select identity and actual same-input VAE attention; no attention math change, not yet complete video/service acceptance.",
+  "exhaustive": {
+    "all_half_bit_patterns": 65536,
+    "nonfinite_words": 2048,
+    "vs_integer_bit_oracle": {
+      "raw_bits_equal": true,
+      "elements": 65536,
+      "finite": true,
+      "word_mismatches": 0,
+      "max_abs_error": 0.0,
+      "relative_rms": 0.0
+    },
+    "vs_native_npu": {
+      "raw_bits_equal": false,
+      "elements": 65536,
+      "finite": false,
+      "word_mismatches": 2048,
+      "max_abs_error": NaN,
+      "relative_rms": NaN
+    }
+  },
+  "failure": {
+    "type": "AssertionError",
+    "message": ""
+  }
+}
