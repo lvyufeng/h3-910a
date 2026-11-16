@@ -1,0 +1,154 @@
+{
+  "scope": "Partial vision RoPE tail only: original Torch packed BF16->FP32 cast and half36 cat/negate remain. TBE separateFP32mul/mul/add+oneBF16RNE. FixedR71bothvisionLinear/R70fasttext, true fresh fullencoder and CPUoutput; excludes upstreamHTTPprocessor/broadcast/load/offload. Stableexperimentalreference, not HForofficialquality.",
+  "cases": {
+    "native": {
+      "warm_complete_encode_ids_rank_max_s": [
+        6.589313549920917,
+        6.5471210796386,
+        6.617984630167484
+      ],
+      "median_complete_encode_ids_s": 6.589313549920917,
+      "first_rank_max_s_excluded_checks_compile": 52.247069830074906,
+      "allocated_hbm_bytes_per_rank": [
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736
+      ],
+      "reserved_hbm_bytes_per_rank": [
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400
+      ]
+    },
+    "tail": {
+      "warm_complete_encode_ids_rank_max_s": [
+        6.450951190199703,
+        6.4630467696115375,
+        6.467967700213194
+      ],
+      "median_complete_encode_ids_s": 6.4630467696115375,
+      "first_rank_max_s_excluded_checks_compile": 22.486992499791086,
+      "allocated_hbm_bytes_per_rank": [
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736
+      ],
+      "reserved_hbm_bytes_per_rank": [
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400
+      ]
+    },
+    "restored": {
+      "warm_complete_encode_ids_rank_max_s": [
+        6.563368030358106,
+        6.590249440167099,
+        6.582836179994047
+      ],
+      "median_complete_encode_ids_s": 6.582836179994047,
+      "first_rank_max_s_excluded_checks_compile": 6.749264889862388,
+      "allocated_hbm_bytes_per_rank": [
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736
+      ],
+      "reserved_hbm_bytes_per_rank": [
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400,
+        27944550400
+      ]
+    }
+  },
+  "actual_rope_pair_checks": 216,
+  "actual_query_key_output_checks": 432,
+  "complete_output_identity_accepted": true,
+  "complete_encode_ids_under2s_accepted": false,
+  "whole_service_text_under2s_proven": false,
+  "official_goal_complete": false,
+  "production_deployed": false,
+  "full_packed_gather_fusion_supported": false,
+  "complete_outputs_compared": 96,
+  "intermediate_identity_against_round71": {
+    "embedding_ids": true,
+    "embedding_output": true,
+    "vision_inputs": true,
+    "vision_output": true,
+    "text_inputs": true,
+    "text_output": true,
+    "complete_output": true
+  },
+  "speedup_vs_same_run_native": 1.0195367269974078,
+  "restored_timing_drift": -0.0009830113376450011,
+  "runtime_math_flags": {
+    "matmul_allow_hf32": false,
+    "conv_allow_hf32": true
+  },
+  "real_fixture_gate": {
+    "captured_layers": [
+      0,
+      8,
+      16,
+      26
+    ],
+    "fullpacked_capture_file_bytes": 390178148,
+    "tiny_and_odd_micro_tokens": [
+      1,
+      5,
+      8,
+      61
+    ],
+    "runtime_core_budget": 30,
+    "multistep_inactive_rows_and_direct_fp32_readonly_verified": true,
+    "unsupported_gather_counterexample_retained": true,
+    "all_real_standalone_outputs_exact": true,
+    "wrong_pitch_and_alignment_counterexamples_retained": true,
+    "standalone_wrapper_medians": {
+      "0": {
+        "native_s": 0.02253547962754965,
+        "tail_s": 0.01688802009448409
+      },
+      "8": {
+        "native_s": 0.02244373969733715,
+        "tail_s": 0.016775719821453094
+      },
+      "16": {
+        "native_s": 0.02254736004397273,
+        "tail_s": 0.016921070404350758
+      },
+      "26": {
+        "native_s": 0.022463550325483084,
+        "tail_s": 0.016910070087760687
+      }
+    }
+  }
+}
