@@ -1,6 +1,8 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round70 complete multimodal encoder A/B: 8.835s→7.050s, not yet2s](<artifacts/diagnostics/round70/README.md>),
+> [Round69 exact resident text-only1.829s gate](<artifacts/diagnostics/round69/README.md>),
 > [Round64 measured service decode and rejected whole-A/V acceptance](<artifacts/diagnostics/round64/README.md>),
 > [Round63 VAE kernel investigation](<artifacts/diagnostics/round63/README.md>)
 > and [native49-step baseline](<artifacts/diagnostics/round53/README.md>).

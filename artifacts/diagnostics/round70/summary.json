@@ -1,0 +1,186 @@
+{
+  "scope": "Complete resident encode_ids, actual original FP16 transport pixels+IDs/grids, real BF16 checkpoint embedding and fresh replicated vision, positions/DeepStack/text50 and CPUoutput. Fixed experimental FP32vision/text math. Excludes outerHTTPprocessor/tokenization/TPinputdistribute/finalFP16broadcast/load/offload; not originalBF16/HF or official generation quality.",
+  "all_actual_inputs_and_parameters_immutable": true,
+  "cases": {
+    "baseline": {
+      "warm_complete_encode_ids_rank_max_s": [
+        8.83435586001724,
+        8.834894619882107,
+        8.849450069945306
+      ],
+      "median_complete_encode_ids_s": 8.834894619882107,
+      "all_warm_complete_encode_ids_under2s": false,
+      "first_rank_max_s_excluded_component_probes_checks": 54.986807299777865,
+      "allocated_hbm_bytes_per_rank": [
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192
+      ],
+      "reserved_hbm_bytes_per_rank": [
+        25341984768,
+        25341984768,
+        25341984768,
+        25341984768,
+        25341984768,
+        25341984768,
+        25341984768,
+        25341984768
+      ]
+    },
+    "fast": {
+      "warm_complete_encode_ids_rank_max_s": [
+        7.019652449991554,
+        7.086546820122749,
+        7.0500054997392
+      ],
+      "median_complete_encode_ids_s": 7.0500054997392,
+      "all_warm_complete_encode_ids_under2s": false,
+      "first_rank_max_s_excluded_component_probes_checks": 135.44878474995494,
+      "allocated_hbm_bytes_per_rank": [
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192
+      ],
+      "reserved_hbm_bytes_per_rank": [
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920
+      ]
+    },
+    "restored": {
+      "warm_complete_encode_ids_rank_max_s": [
+        8.86830389034003,
+        8.81911853980273,
+        8.870717590209097
+      ],
+      "median_complete_encode_ids_s": 8.86830389034003,
+      "all_warm_complete_encode_ids_under2s": false,
+      "first_rank_max_s_excluded_component_probes_checks": 8.861555289942771,
+      "allocated_hbm_bytes_per_rank": [
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192,
+        21525576192
+      ],
+      "reserved_hbm_bytes_per_rank": [
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920,
+        25344081920
+      ]
+    }
+  },
+  "complete_output_identity_accepted": true,
+  "complete_encode_ids_under2s_accepted": false,
+  "whole_service_text_under2s_proven": false,
+  "official_goal_complete": false,
+  "production_deployed": false,
+  "actual_norm_checks": 1600,
+  "actual_residual_checks": 400,
+  "actual_cast_checks": 1600,
+  "actual_projection_checks": 2400,
+  "intermediate_identity": {
+    "embedding_ids": true,
+    "embedding_output": true,
+    "vision_inputs": true,
+    "vision_output": true,
+    "text_inputs": true,
+    "text_output": true,
+    "complete_output": true
+  },
+  "complete_outputs_compared": 96,
+  "same_input_mode_rank_repeat_complete_output_identity": true,
+  "speedup_vs_same_run_experimental_baseline": 1.2531755642189124,
+  "restored_timing_drift": 0.0037815131810106095,
+  "full_embedding_vision_text_parameter_bytes_per_rank": [
+    7480909280,
+    7480909280,
+    7480909280,
+    7480909280,
+    7480909280,
+    7480909280,
+    7480909280,
+    7480909280
+  ],
+  "component_parameter_bytes_rank0": {
+    "vision": 1190533600,
+    "embedding": 194478080,
+    "text_all_including_embedding": 6290375680
+  },
+  "first_component_probes_rank0_excluded_not_warm_attribution": {
+    "baseline": [
+      {
+        "name": "embedding",
+        "synchronized_wall_s": 3.174247580114752,
+        "current_stream_elapsed_ms": 3172.93994140625
+      },
+      {
+        "name": "vision",
+        "synchronized_wall_s": 24.807933719828725,
+        "current_stream_elapsed_ms": 24807.984375
+      },
+      {
+        "name": "text",
+        "synchronized_wall_s": 18.12553332000971,
+        "current_stream_elapsed_ms": 18125.068359375
+      }
+    ],
+    "fast": [
+      {
+        "name": "embedding",
+        "synchronized_wall_s": 0.02669268986210227,
+        "current_stream_elapsed_ms": 26.40399932861328
+      },
+      {
+        "name": "vision",
+        "synchronized_wall_s": 4.968002009671181,
+        "current_stream_elapsed_ms": 4967.80078125
+      },
+      {
+        "name": "text",
+        "synchronized_wall_s": 130.39546899031848,
+        "current_stream_elapsed_ms": 130396.34375
+      }
+    ],
+    "restored": [
+      {
+        "name": "embedding",
+        "synchronized_wall_s": 0.026798369828611612,
+        "current_stream_elapsed_ms": 26.615999221801758
+      },
+      {
+        "name": "vision",
+        "synchronized_wall_s": 4.997346960008144,
+        "current_stream_elapsed_ms": 4997.1650390625
+      },
+      {
+        "name": "text",
+        "synchronized_wall_s": 3.793774759862572,
+        "current_stream_elapsed_ms": 3793.301025390625
+      }
+    ]
+  }
+}
