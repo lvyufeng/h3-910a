@@ -137,6 +137,21 @@
 > or fused-kernel completion is claimed. See
 > [round-56 evidence](<../../diagnostics/round56/README.md>) for exact scopes.
 >
+> **Round 57 update:** actual50 native-GQA text calls dominate the experimental
+> FP32-linear resident text stack: **70.4–71.8s of76.2s** (synchronizing diagnostics).
+> Real Q shapes1×8×2043×128, KV1head. Full-key CPU FP32 oracle on5 layers shows
+> captured native RMS0.38–1.17%, explicit NPUFP32 math0.16–0.17% at5.85–5.98ms.
+> Standalone SDPA copy/layout replays fail format aliasing; no general runtime
+> failure is inferred. Self-developed **causal TBE v4** masks diagonal/future/tail
+> keys, passes3 exact prefix tests, and complete BF16 wrapper is3.63–3.67ms with
+> RMS0.17–0.21%. **v5** skips future tiles and repartitions prefix work: packed
+> core0.575–0.582ms, full wrapper3.33–3.39ms. No production changes. Complete
+> experimental50-layer stacks repeat in **4.53/5.13s** with eager causal FP32,
+> **4.41/4.95s** withv4 TBE, not full encoder2s. Whole-text reference errors remain
+> large; TBE+HFmath worsens to**42.18%**, so it is **NOT deployed**. v5 full-stack
+> quality is untested. Goal remains active; see
+> [round-57 evidence](<../../diagnostics/round57/README.md>) for exact limitations.
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
@@ -156,10 +171,10 @@ quality equivalence or official 49-step lossless performance comparison.
 | goal item | state |
 |---|---|
 | (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **not completed** — actual Qwen BF16 norm rounding contract differs from shared fallback; preserve the verified per-model contract before fusing |
-| (2) raise flash-attention efficiency | **partly achieved**: core-budget A/B 558.1 → 317.0 ms (bit-exact); actual-shape masked tile wrapper 421.151 → 154.391 ms (not bit-exact across tilings) |
+| (2) raise flash-attention efficiency | **partly achieved**: core-budget558.1→317.0ms bit-exact; actual DiT masked wrapper421.151→154.391ms; causal text TBE prototype3.33–3.39ms but whole-text quality not passed |
 | (2) DiT to 15 s/step | **one warm window achieved, not a sustained/full-goal pass** — round54 all47 warm steps are below15s; round55 after-first mean14.9902s but2/47 warmed steps exceed15s; cold steps/model quality remain unresolved |
 | (3) VAE decode 155 s → 20 s | **not achieved** — latest native request captures136.50–141.80s decode (4records); no controlled decoder speedup A/B |
-| (3) text encode 39 s → 2 s | **not achieved** — isolated vision improves46.410→4.832s, but encode/conditioning is296.97s, not isolated text; full vision/text numerical discrepancies remain |
+| (3) text encode 39 s → 2 s | **not achieved** — experimental resident text stack4.41–5.13s with causal FA and FP32-linears, still large reference errors; vision4.832s and full encode/conditioning296.97s are separate measurements |
 | comparable measurement vs A2/A3 | **not delivered** — actual native 49-step FL2VA exists, but official 150.06/114.19 s are warmed T2VA; precision/schedule/quality and protocol equivalence remain unverified |
 
 The older experiments below are retained as a historical record. Their numerical

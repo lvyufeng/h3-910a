@@ -5549,3 +5549,59 @@ exact scopes, failures and counterexamples. Jobs collected, owned processes stop
 all8 cards verified idle and lease released. Goal active for earliest text-attention
 Q/K/V/timing isolation, custom causal FA and rounding-safe fusion, encoder/decoder
 targets, validated generation quality and task-matched official lossless comparison.
+
+---
+
+# Round57: measured text GQA bottleneck and self-developed causal TBE prototype
+
+Resident text-only50-layer TP8 experiment retains BF16 weights/I-O but uses the
+uninstalled round56 FP32-linear prototype. Synchronizing attention diagnostics
+measure full rank-max76.164s, attention sums70.409–71.843s across8ranks (~92–94%).
+Actual rank0 Q is1×8×2043×128, KV1×1×2043×128. Selected calls0/24/40/48/49 each
+~1.435–1.439s; nonattention last-block module calls only5.7–12.1ms. The nonquantized
+Q/K/V F.linear path bypasses qkv-module hooks, so no qkv module duration is claimed.
+Captured QKV are detached contiguous copies; timing synchronization changes overlap.
+This is a measured path bottleneck, not a physical910A ceiling or production encoder A/B.
+
+Full query/head/causal-key CPU FP32 references on5real captures: native output
+RMS0.38–1.17%, explicit NPUFP32 math0.16–0.17% withBF16 output at5.85–5.98ms complete
+calls. These retain full attention, no sparsity/truncation. Standalone nativeBF16/
+FP32/FP16SDPA replays fail format aliasing; reconstructed transpose/repeatedKV also
+fail, while production/complete-stack nativeGQA does run. An isolated format-policy
+API probe fails before modification because allow_internal_format is unavailable;
+no policy or package workaround is attempted and runtime mismatch cause remains open.
+
+A self-developed **causal TBE v4** extends the existing dense910A TIK algorithm with
+square Br/Bc, compile-time upper-triangular score masks and exact zeros after exp,
+true-prefix tail masks2043→2048, 30core mapping, and isolated causal cache/version.
+Three real uniform causal-prefix tests at128/127,256/243,512/511 are bit-exact with
+large invalid values. Real layer49 FP16 output is finite0.0817% RMS vsFP32; cold
+145.81s includes compilation, not kernel runtime. Full wrapper, includingBF16 casts/
+GQA repeat/pad/NZ/crop/return, measures3.627–3.674ms on5captures, vsFP32eager5.716–5.766ms,
+BF16 output RMS0.168–0.210%. It is not BF16-lossless or a universal error bound.
+
+**v5** avoids future tiles and changes static work counts to prefix workloads;
+new cacheID prevents noncausal/v4 reuse. Three NPU mask tests still match exactly.
+Real layer49 FP16 output retains0.0817% error;113.82s cold compile+call excluded.
+Warm packed core calls0.575/0.582ms (firstgroup1.000), complete5-layer wrappers
+3.332–3.393ms vsFP32eager5.760–5.796ms withsameBF16-output errors. This isolated
+fixed-order comparison is not a v5 full-stack/lossless result.
+
+Complete experimental text stacks (shared old actual visual inputs, original50-layer
+loaders/effectiveNPU patches andFP32-linears) record first/repeated rank-max:
+FP32causal+oldmath18.996/4.533s, FP32causal+HFmath8.201/5.134s; v4TBE+oldmath18.827/4.409s,
+v4TBE+HFmath8.058/4.954s. Final CPUFP32oracle RMS respectively15.616/11.257/11.495/**42.179%**.
+All ranks finish/finite, but final combination is numerically worse. Timing does
+not include vision/preprocessing and cannot be called complete encoder2s, clean
+whole-model attribution, or generation-quality pass. This counterexample blocks
+promotion of isolated gains; **nothing is deployed** and v5 full-stack is untested.
+
+[Round57 evidence](<../../diagnostics/round57/README.md>) contains raw rank timing,
+actual QKV references, causal mask code/tests, full-stack successes and numerical
+failures, separate v4/v5 cache geometry, and unchanged production source hashes.
+Original encoderSHA7c22d98c/noncausalFASHA937671ef/sharednorm+comm stay byte-identical.
+All relevant jobs collected, owned groups stopped and cards probed idle; lease
+released. GitHub remote-head still times out, so prior local9967e31 publication
+remains unconfirmed; no blind uncertain push replay. Goal stays active for rounding-
+safe fused kernels, whole-text precision, text2s/decoder20s and official task-matched
+quality/performance comparison.

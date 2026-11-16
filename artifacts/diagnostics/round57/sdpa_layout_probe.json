@@ -1,0 +1,87 @@
+{
+  "cases": [
+    {
+      "label": "contiguous_bnsd",
+      "strides": [
+        [
+          2092032,
+          261504,
+          128,
+          1
+        ],
+        [
+          261504,
+          261504,
+          128,
+          1
+        ],
+        [
+          261504,
+          128,
+          128,
+          1
+        ]
+      ],
+      "failure": {
+        "type": "RuntimeError",
+        "message": "can not cast format when output is input\n[ERROR] 2026-11-15-23:48:47 (PID:1521464, Device:0, RankID:-1) ERR01007 OPS feature not supported"
+      }
+    },
+    {
+      "label": "runtime_like_transpose_views",
+      "strides": [
+        [
+          2092032,
+          128,
+          1024,
+          1
+        ],
+        [
+          261504,
+          261504,
+          128,
+          1
+        ],
+        [
+          261504,
+          128,
+          128,
+          1
+        ]
+      ],
+      "failure": {
+        "type": "RuntimeError",
+        "message": "can not cast format when output is input\n[ERROR] 2026-11-15-23:48:53 (PID:1521464, Device:0, RankID:-1) ERR01007 OPS feature not supported"
+      }
+    },
+    {
+      "label": "explicit_repeated_kv",
+      "strides": [
+        [
+          2092032,
+          261504,
+          128,
+          1
+        ],
+        [
+          2092032,
+          261504,
+          128,
+          1
+        ],
+        [
+          2092032,
+          261504,
+          128,
+          1
+        ]
+      ],
+      "failure": {
+        "type": "RuntimeError",
+        "message": "can not cast format when output is input\n[ERROR] 2026-11-15-23:48:53 (PID:1521464, Device:0, RankID:-1) ERR01007 OPS feature not supported"
+      }
+    }
+  ],
+  "scope": "Standalone actual QKV with explicit layout replays; production timings measured separately",
+  "completed": true
+}

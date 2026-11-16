@@ -1,0 +1,51 @@
+{
+  "rank": 0,
+  "cases": {
+    "causal_fp32_old_math": {
+      "local_forward_s": 18.99509965023026,
+      "dtype": "torch.bfloat16",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "finite": true,
+      "vs_old_actual": {
+        "raw_bits_equal": false,
+        "max_abs_error": 1088.0,
+        "relative_rms": 0.04445961117744446
+      },
+      "vs_cpu_fp32_oracle": {
+        "max_abs_error": 5824.0,
+        "relative_rms": 0.1561587154865265
+      },
+      "second_forward_s": 4.532662920188159
+    },
+    "causal_fp32_hf_math": {
+      "local_forward_s": 8.200497759971768,
+      "dtype": "torch.bfloat16",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "finite": true,
+      "vs_old_actual": {
+        "raw_bits_equal": false,
+        "max_abs_error": 2048.0,
+        "relative_rms": 0.07093815505504608
+      },
+      "vs_cpu_fp32_oracle": {
+        "max_abs_error": 4416.0,
+        "relative_rms": 0.11257211118936539
+      },
+      "second_forward_s": 5.133443100377917
+    }
+  },
+  "fp32_linear_compute": true,
+  "causal_fp32_compute": true,
+  "scope": "Complete text-only TP8 on shared actual visual input, FP32 causal attention/linears with BF16 storage/I-O; experimental stack, not whole generation quality or pure attention attribution",
+  "load_s": 4.004231819882989,
+  "loaded_parameter_tensors": 401,
+  "completed": true
+}
