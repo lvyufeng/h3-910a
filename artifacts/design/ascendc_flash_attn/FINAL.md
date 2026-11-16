@@ -184,6 +184,20 @@
 > Production unchanged; encoder2s/decoder20s/official matched quality unmet.
 > See [round-59 evidence](<../../diagnostics/round59/README.md>).
 >
+> **Round 60 update:** self-developed **native-BF16 GM RoPE** batches token heads
+> inUB and preserves two distinct rounding contracts. Actual native call equals
+> FP32 products+sum then oneBF16round; HF rounds each product before sum. On6real
+> Q/K samples nativeTBE isbit-exact toactualnative, HFTBEbit-exact toCPUHF, short/
+> tail/head boundarycases exact. NativeQ2.03–2.05→0.198–0.203ms (~10×), K0.97–1.01
+> →0.191–0.203ms (~5×); HF TBE~0.19–0.21ms vsHF eager2.27–7.22ms. Full50-layerTP8
+> all8repeat-exact; **1600same-input RoPE checks/1.8828billion scalar outputs** exact
+> torespective references. Rank0 completefinalTBE/native andTBEHF/HFeager tensors
+> arebyte-identical. Warmnative4.218/4.235→TBEnative4.096/4.109s, notencoder2s.
+> HFcontractwholeCPUoracle error **worsens7.22→16.48%** despitecorrectlocalmath,
+> so no globalprecision/quality fix isclaimed. Production unchanged, AdaLN and
+> encoder/decoder/official matched generation remain unmet. See
+> [round-60 evidence](<../../diagnostics/round60/README.md>).
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
@@ -202,11 +216,11 @@ quality equivalence or official 49-step lossless performance comparison.
 
 | goal item | state |
 |---|---|
-| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **partly achieved, not completed** — stable experimental full-text SwiGLU ablation is bit-exact; Norm fusion has6.318% whole-text difference; RoPE/AdaLN fusion and generation-quality acceptance remain |
+| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **partly achieved, not completed** — stable full-text SwiGLU and native RoPE ablations bit-exact; Norm fusion has6.318% difference, HF RoPE worsens oracle comparison; AdaLN and generation-quality acceptance remain |
 | (2) raise flash-attention efficiency | **partly achieved**: core-budget558.1→317.0ms bit-exact; actual DiT masked wrapper421.151→154.391ms; causal text TBE prototype3.33–3.39ms but whole-text quality not passed |
 | (2) DiT to 15 s/step | **one warm window achieved, not a sustained/full-goal pass** — round54 all47 warm steps are below15s; round55 after-first mean14.9902s but2/47 warmed steps exceed15s; cold steps/model quality remain unresolved |
 | (3) VAE decode 155 s → 20 s | **not achieved** — latest native request captures136.50–141.80s decode (4records); no controlled decoder speedup A/B |
-| (3) text encode 39 s → 2 s | **not achieved** — measured K/V padding makes experimental text repeat-stable:4.167s lossless SwiGLU ablation/2.724s nonlossless Norm combination; excludes vision/preprocessing and CPU-reference errors remain |
+| (3) text encode 39 s → 2 s | **not achieved** — stable experimental text4.096s with bit-exact native TBE RoPE/SwiGLU; prior Norm combination2.724s is nonlossless, timings exclude vision/preprocessing and CPU-reference errors remain |
 | comparable measurement vs A2/A3 | **not delivered** — actual native 49-step FL2VA exists, but official 150.06/114.19 s are warmed T2VA; precision/schedule/quality and protocol equivalence remain unverified |
 
 The older experiments below are retained as a historical record. Their numerical

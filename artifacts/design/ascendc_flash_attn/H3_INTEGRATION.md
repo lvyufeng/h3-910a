@@ -5721,3 +5721,52 @@ collected/groupsdestroyed; transientfleetSSHtimeout is followed byactual8cardidl
 probe andlease release. GitHubread-onlybranch checkstillfailsSSL, no uncertainpush
 replay. Goal active forstable Norm/RoPE/reference validation, remainingRoPE/AdaLN
 fusion, encoder/decoder targets and genuine matchedlosslessvideo/performance.
+
+---
+
+# Round60: self-developed native BF16 RoPE, two explicit reference contracts
+
+A stable padded experimental50-layer textTP8 run withFP32linears/causal/HFmath
+andnativeSwiGLU capturesactualpre-RoPEQ/K/cos/sin atlayers0/24/49. Inputs unchanged;
+Q1x8x2043x128 hasactual BSND-backedtranspose stride, K1head. Nativecall isbyte-exact
+onall6captures toFP32products+sum followed byoneBF16round, but differs0.123–0.167%Q/
+0.0345–0.0996%K RMS fromHF'sseparatelyroundedBF16products. Tables stayfixed; no AMP,
+frequency/trig/overflow uniquecause claim. Originalcaptureharness pre-copyoverhead
+isretained; finalABskipscopiesonexistingfiles/second/thirdforwards.
+
+Self-developedTIK **nativeBF16GM RoPE** reusesintegercodec/RNE, batchestokenheads
+inUB, broadcasts128tablesperhead and rotateshalveswithinheads. HFmode roundsboth
+productsbeforeadd; nativemode onlyfinalround. Cacheidentity includesrounding/
+shape/source/live30cores, privateverifiedbuild/lock, existing5pointerABI/current
+Torchstream/freshoutputs. Batch1/H1or8/D128/<=4096tokens/denseND/BF16inferenceis
+bounded; noexternalFP32cast, noarbitrarynonfinite/crossstream/servicecertification.
+Nativewrapper remainsuninstalleddiagnosticcode, compileSoCAscend910A.
+
+Finalsame-input3x10warmgroups on6realcases: nativeQ2.034–2.047ms->TBE0.198–0.203ms
+(~10x), nativeK0.974–1.010->TBE0.191–0.203ms (~5x). HFTBE0.190–0.207ms vsHFeager
+2.270–7.223ms. EveryelementnativeTBE==actualnative; HFTBE==CPUHFtwo-productformula.
+Short/tailN1/7/129,H1/8areexacttotheirrespectivereferences. Theseoperatorratios
+arenotwholeencoder/video/original39sspeedups orhardware-ceiling evidence.
+
+Completecontrolledresidenttext cases(native/HFeager/TBEnative/TBEHF), all8ranks,
+first/second/thirdoutputsrepeat-exact. All**1600actual layer/rank/side RoPE checks,
+1.8828288billion scalaroutputs**, raw-bit equaltoappropriateref. Extraeagercalls/
+CPUcopies onlyfirstforward, excludedfromwarmtiming. Directsavedrank0fullfinaltensor
+comparison provesTBEnative==native, TBEHF==HFeager, nojustequal-summary inference.
+Warmsecond/third: native4.218/4.235s, HFeager4.465/4.530s, TBEnative4.096/4.109s,
+TBEHF4.097/4.101s. Sharedvisual inputs/unusedvocabulary/loaders/scopesunchanged.
+
+**HFroundingwholeCPUFP32-linearHForacleerror worsens7.220->16.477%**, despiteexact
+operatorcontracts. Rank0HFeager/TBEHF vsnativefinal12.204%RMS,max4672; notlossless
+relativetonative, notauniqueprecision/video-qualityfix. Normfusion'sprior6.318%
+fulltextdifference remainsunaccepted. Timingsexcludevision/preprocess/offload/DiT/
+VAE, exceed2s, no49stepvideoorofficialtaskmatchedwarmbenchmark. Productionunchanged.
+
+[Round60 evidence](<../../diagnostics/round60/README.md>) pinsactualcapture/initial-
+vsfinalreproducer, explicitformulas, TBEcode/structuraltests, fullrankreceipts,
+directfinaltensoridentity andworseningHFcounterexample. Encoder/noncausalFA/shared
+norm/comm/rotaryhashesunchanged; reusedcodecdependenciespinned. Alljobscollected,
+isolatedgroupsstopped, cardslive-probedidle andlease released. Previousverified
+round59evidencecommittedaa94244; GitHubread-onlyreconciliationstillSSLfails, no
+uncertainpushreplay. GoalactiveforAdaLN, stablereferenceprecision, encoder/decoder
+and genuineofficialmatchedlosslessgeneration, notjustoperatoridentity.
