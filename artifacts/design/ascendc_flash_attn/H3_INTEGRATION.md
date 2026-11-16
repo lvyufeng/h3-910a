@@ -5605,3 +5605,64 @@ released. GitHub remote-head still times out, so prior local9967e31 publication
 remains unconfirmed; no blind uncertain push replay. Goal stays active for rounding-
 safe fused kernels, whole-text precision, text2s/decoder20s and official task-matched
 quality/performance comparison.
+
+---
+
+# Round58: native BF16-GM vector fusion; prove operator identity, expose unstable whole text
+
+Self-developed Ascend910A TIK kernels now fuse RMSNorm/AddRMSNorm/SwiGLU. Qwen BF16
+residual and normalized-before-gamma rounding are explicit, while shared DiT-style
+FP32-normalize/gamma contract stays separate. The first FP32-GM prototype retains
+external dtype casts and only modest speedups. Native BF16-GM uint16 codec then
+uses3 matrix transposes each way to interleave/extract high halfwords without
+native BF16 ISA or external conversions. All65536rawBF16word patterns (including
+NaN payloads) are exact at128/3200/5120widths; true width, not padded256/3328UBwidth,
+controls mean/stores. SoftwareRNE via int32add/conversion+uint16AND passes195840
+finite midpoint cases. Shape/source/contract/eps/core-budget cache and shared compile
+lock prevent unrelated binary reuse and cross-rank publication races. Existing
+five-pointer launcher/current stream reused, fresh outputs, no global sync inside.
+
+Actual late same-input warmed medians: RMSNorm9.958→0.538ms (**18.5×**), AddRMSNorm
+16.151→0.662ms (**24.4×**), packedSwiGLU15.415→0.454ms (**34.0×**). Norm output RMS
+vsCPU0.001291/0.002044%,95/156 changed BF16words out of10.46million; updated residual
+is bit-exact. SwiGLU actual6.5376million elements are bit-exact CPU/NPU. Reusing real
+post-RoPE Q as same-shape norm test gives3.097→0.850ms; this is NOT pre-QNorm capture.
+
+The first native norm fails huge finite1e20outliers; retained counterexamplemax196.
+Raw stage isolation shows 910A vectorFP32square/sum saturate tofloatMAX rather than
+CPUinfinity; mean division then creates a false nonzero inverse. Guarding the
+observed saturated marker yields CPU-exact tested signed zeros/minsubnormal/
+131072/20736/1e19/1e20/2^64cases. Exactly legitimately-maximal sums and arbitrary
+nonfinite arithmetic remain uncertified; neither is a general physical ceiling.
+Rawrsqrt998vsCPU1000 illustrates why Newton refinement is needed.
+
+CPU finite-gate/up sweep initially has85numerical differences: gates−89…−97 with
+large up. CPU BF16SiLU returns zero in its exp-overflow regime while NPU retains
+tiny terms; CPU/NPU also differ in15537zero signs. Preserve nativeNPUzero behavior,
+not CPUbit-sign repair. Final **actual NPU** reference sweep (65280finite gate
+words×8up factors) matches all522240outputs bit-exact, including33375valid infinity
+outputs and no nonfinite inputs. CPUcomparison still differs85numerical/127488zero
+sign outputs; reference scopes are explicit, no false CPU-pass claim.
+
+Complete resident experimentaltextTP8 fixes shared captured visual inputs, original
+50-layer loaders and BF16storage/I-O, FP32linears/causal attention andHFmath. Only
+norm/activation implementations change. All8ranks finish. All800same-inputSwiGLU
+layer/rank checks pass (**5.23008billion scalar outputs**), packed inputs finite.
+Checks/copies/extraeagercalls only on first forwards; repeated timings exclude them.
+First/repeat rankmax: baseline20.130/4.971s, SwiGLU12.098/4.179s, norm12.134/3.490s,
+both8.239/**2.709s**. But **unchanged baseline first/repeat differs6.718%RMS**; other
+cases6.580–13.097%. First CPUFP32HF-oracle RMS7.904/10.259/17.721/21.485%. This newly
+observed repeatability failure is not proof of fusion corruption, HCCL/GEMM/input
+mutation or a unique last-layer cause. No clean whole-model quality/lossless acceptance
+is inferred;2.709s excludesvision/preprocessing and still misses2s. No new49stepvideo.
+
+Preserve failed scalarTensor×float smoke, compilerUBname`half` shadowing type, corrected
+completed FP16/FP32 boundary variants, codec/midpoint/width/cache/sign/storage tests,
+raw allrank receipts and overflow/CPUreference counterexamples. [Round58 evidence](<../../diagnostics/round58/README.md>)
+records exact final source hashes; encoder7c22d98c/noncausalFA937671ef/sharednorm+comm
+unchanged, native helpers/FP32GEMMprototype **not installed in production**. CANN9.2.0
+sourced, compileSoCAscend910A, noComfyUI/packages/replacement server. All relevant jobs
+collected, isolated groups stopped, all8cards live-probed idle and lease released.
+GitHub read-only head again times out, pending local commits not blindly replayed.
+Goal active for earliest stable repeated-forward/precision isolation, remaining
+RoPE/AdaLNfusion, encoder/decoder targets and task-matched officiallossless comparison.

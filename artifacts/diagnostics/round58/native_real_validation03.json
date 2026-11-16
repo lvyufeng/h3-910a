@@ -1,0 +1,236 @@
+{
+  "norm_cases": [
+    {
+      "name": "layer49_norm1",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_compile_and_call_s": 0.005903089884668589,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.2914566852006124e-05,
+        "word_mismatches": 95,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.1005274462765189e-05,
+        "word_mismatches": 74,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.5306140054017305,
+          0.537711987271905,
+          0.5381840281188488
+        ],
+        "median_ms": 0.537711987271905
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          9.958017989993095,
+          9.963989024981856,
+          9.841988002881408
+        ],
+        "median_ms": 9.958017989993095
+      }
+    },
+    {
+      "name": "layer49_norm2",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_compile_and_call_s": 0.0025195199996232986,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 2.0438906270198582e-05,
+        "word_mismatches": 156,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00390625,
+        "relative_rms": 1.3554653552356687e-05,
+        "word_mismatches": 82,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.684077013283968,
+          0.6618840154260397,
+          0.6621859967708588
+        ],
+        "median_ms": 0.6621859967708588
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          16.150785004720092,
+          16.179433977231383,
+          16.119452007114887
+        ],
+        "median_ms": 16.150785004720092
+      },
+      "updated_residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      }
+    },
+    {
+      "name": "post_rope_query_reused_as_same_shape_norm_input",
+      "shape": [
+        1,
+        2043,
+        8,
+        128
+      ],
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.015625,
+        "relative_rms": 9.946505323949601e-06,
+        "word_mismatches": 10,
+        "signed_zero_mismatches": 0,
+        "elements": 2092032
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.015625,
+        "relative_rms": 8.410307269875394e-06,
+        "word_mismatches": 9,
+        "signed_zero_mismatches": 0,
+        "elements": 2092032
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.851823017001152,
+          0.8495320100337267,
+          0.849231006577611
+        ],
+        "median_ms": 0.8495320100337267
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          3.145291982218623,
+          3.0974550172686577,
+          3.091115038841963
+        ],
+        "median_ms": 3.0974550172686577
+      }
+    }
+  ],
+  "activation_cases": [
+    {
+      "name": "actual_layer49_packed_swiglu",
+      "packed_shape": [
+        1,
+        2043,
+        6400
+      ],
+      "cold_compile_and_call_s": 0.0021832501515746117,
+      "cpu_reference": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 6537600
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 6537600
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.4541280213743448,
+          0.4537450149655342,
+          0.45260400511324406
+        ],
+        "median_ms": 0.4537450149655342
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          15.415224013850093,
+          15.416831010952592,
+          15.36283497698605
+        ],
+        "median_ms": 15.415224013850093
+      }
+    }
+  ],
+  "boundary_cases": [
+    {
+      "name": "bf16_range_signed_zero_overflow_plain",
+      "output": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      }
+    },
+    {
+      "name": "bf16_range_signed_zero_overflow_add",
+      "output": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      },
+      "residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      }
+    },
+    {
+      "name": "bf16_swiglu_signed_zero_outliers",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 7,
+        "signed_zero_mismatches": 7,
+        "elements": 2048
+      }
+    }
+  ],
+  "scope": "Native BF16 GM codec plus FP32 math on actual/boundary inputs; no external casts, isolated operators not whole quality/lossless proof",
+  "completed": true
+}

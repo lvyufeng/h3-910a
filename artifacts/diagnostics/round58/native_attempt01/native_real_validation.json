@@ -1,0 +1,236 @@
+{
+  "norm_cases": [
+    {
+      "name": "layer49_norm1",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_compile_and_call_s": 2.731693389825523,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.2914566852006124e-05,
+        "word_mismatches": 95,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.1005274462765189e-05,
+        "word_mismatches": 74,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.5195470061153173,
+          0.5190580151975155,
+          0.5182570312172174
+        ],
+        "median_ms": 0.5190580151975155
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          9.869738016277552,
+          9.907671995460987,
+          9.843003004789352
+        ],
+        "median_ms": 9.869738016277552
+      }
+    },
+    {
+      "name": "layer49_norm2",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_compile_and_call_s": 2.6111055300571024,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 2.0438906270198582e-05,
+        "word_mismatches": 156,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00390625,
+        "relative_rms": 1.3554653552356687e-05,
+        "word_mismatches": 82,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.6719710305333138,
+          0.6610970012843609,
+          0.6624459754675627
+        ],
+        "median_ms": 0.6624459754675627
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          15.99065400660038,
+          16.009641997516155,
+          16.022370010614395
+        ],
+        "median_ms": 16.009641997516155
+      },
+      "updated_residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      }
+    },
+    {
+      "name": "post_rope_query_reused_as_same_shape_norm_input",
+      "shape": [
+        1,
+        2043,
+        8,
+        128
+      ],
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.015625,
+        "relative_rms": 9.946505323949601e-06,
+        "word_mismatches": 10,
+        "signed_zero_mismatches": 0,
+        "elements": 2092032
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.015625,
+        "relative_rms": 8.410307269875394e-06,
+        "word_mismatches": 9,
+        "signed_zero_mismatches": 0,
+        "elements": 2092032
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.8502520155161619,
+          0.8468679618090391,
+          0.8448109962046146
+        ],
+        "median_ms": 0.8468679618090391
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          3.150979010388255,
+          3.085468988865614,
+          3.0712769832462072
+        ],
+        "median_ms": 3.085468988865614
+      }
+    }
+  ],
+  "activation_cases": [
+    {
+      "name": "actual_layer49_packed_swiglu",
+      "packed_shape": [
+        1,
+        2043,
+        6400
+      ],
+      "cold_compile_and_call_s": 2.704360949806869,
+      "cpu_reference": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 6537600
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 6537600
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.5475169979035854,
+          0.5501270294189453,
+          0.5476230289787054
+        ],
+        "median_ms": 0.5476230289787054
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          15.428271004930139,
+          15.389293991029263,
+          15.352017991244793
+        ],
+        "median_ms": 15.389293991029263
+      }
+    }
+  ],
+  "boundary_cases": [
+    {
+      "name": "bf16_range_signed_zero_overflow_plain",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 196.0,
+        "relative_rms": 28.398269777890363,
+        "word_mismatches": 256,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      }
+    },
+    {
+      "name": "bf16_range_signed_zero_overflow_add",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 196.0,
+        "relative_rms": 25.73402586903571,
+        "word_mismatches": 256,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      },
+      "residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      }
+    },
+    {
+      "name": "bf16_swiglu_signed_zero_outliers",
+      "output": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      }
+    }
+  ],
+  "scope": "Native BF16 GM codec plus FP32 math on actual/boundary inputs; no external casts, isolated operators not whole quality/lossless proof",
+  "completed": true
+}

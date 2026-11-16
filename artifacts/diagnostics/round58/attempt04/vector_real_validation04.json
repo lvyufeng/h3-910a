@@ -1,0 +1,284 @@
+{
+  "norm_cases": [
+    {
+      "name": "layer49_norm1",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_build_and_call_s": 2.449609410017729,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.2914566852006124e-05,
+        "word_mismatches": 95,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.1005274462765189e-05,
+        "word_mismatches": 74,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "fused_wrapper": {
+        "groups_ms": [
+          5.424991995096207,
+          5.326880048960447,
+          5.283978022634983
+        ],
+        "median_ms": 5.326880048960447
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          10.10567406192422,
+          9.942874033004045,
+          9.800206031650305
+        ],
+        "median_ms": 9.942874033004045
+      },
+      "default_off_exact_eager": true
+    },
+    {
+      "name": "layer49_norm2",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_build_and_call_s": 1.6500940900295973,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 2.0438906270198582e-05,
+        "word_mismatches": 156,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00390625,
+        "relative_rms": 1.3554653552356687e-05,
+        "word_mismatches": 82,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "fused_wrapper": {
+        "groups_ms": [
+          10.012304037809372,
+          9.994793962687254,
+          10.04289798438549
+        ],
+        "median_ms": 10.012304037809372
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          16.29850408062339,
+          16.100674029439688,
+          16.090308036655188
+        ],
+        "median_ms": 16.100674029439688
+      },
+      "updated_residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "default_off_exact_eager": true
+    },
+    {
+      "name": "bf16_boundaries_plain",
+      "output": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 46080
+      }
+    },
+    {
+      "name": "bf16_boundaries_add",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.03125,
+        "relative_rms": 0.000208638606999453,
+        "word_mismatches": 27,
+        "signed_zero_mismatches": 0,
+        "elements": 46080
+      },
+      "residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 46080
+      }
+    },
+    {
+      "name": "torch.float16_plain",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00048828125,
+        "relative_rms": 2.1287679487863126e-06,
+        "word_mismatches": 2,
+        "signed_zero_mismatches": 0,
+        "elements": 52224
+      }
+    },
+    {
+      "name": "torch.float16_add",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00048828125,
+        "relative_rms": 2.363535414942955e-06,
+        "word_mismatches": 2,
+        "signed_zero_mismatches": 0,
+        "elements": 52224
+      },
+      "residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 52224
+      }
+    },
+    {
+      "name": "torch.float32_plain",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 1.430511474609375e-06,
+        "relative_rms": 6.88536357556611e-08,
+        "word_mismatches": 17923,
+        "signed_zero_mismatches": 0,
+        "elements": 52224
+      }
+    },
+    {
+      "name": "torch.float32_add",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 9.5367431640625e-07,
+        "relative_rms": 7.967350874699857e-08,
+        "word_mismatches": 25721,
+        "signed_zero_mismatches": 0,
+        "elements": 52224
+      },
+      "residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 52224
+      }
+    }
+  ],
+  "activation_cases": [
+    {
+      "name": "actual_layer49_packed_swiglu",
+      "packed_shape": [
+        1,
+        2043,
+        6400
+      ],
+      "cold_build_and_call_s": 1.7871783901937306,
+      "cpu_reference": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 6537600
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 6537600
+      },
+      "fused_wrapper": {
+        "groups_ms": [
+          12.850925978273153,
+          12.756354082375765,
+          12.839278019964695
+        ],
+        "median_ms": 12.839278019964695
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          15.620000008493662,
+          15.616444032639265,
+          15.597546007484198
+        ],
+        "median_ms": 15.616444032639265
+      },
+      "default_off_exact_eager": true
+    },
+    {
+      "name": "torch.bfloat16_swiglu_boundaries",
+      "output": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 41600
+      }
+    },
+    {
+      "name": "torch.float16_swiglu_boundaries",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0001220703125,
+        "relative_rms": 8.399324054968344e-09,
+        "word_mismatches": 2,
+        "signed_zero_mismatches": 0,
+        "elements": 41600
+      }
+    },
+    {
+      "name": "torch.float32_swiglu_boundaries",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 7.152557373046875e-07,
+        "relative_rms": 2.2769749729207416e-10,
+        "word_mismatches": 20287,
+        "signed_zero_mismatches": 0,
+        "elements": 41600
+      }
+    }
+  ],
+  "scope": "Same actual/boundary inputs, complete wrapper including dtype casts; isolated operators, not full model/lossless video",
+  "completed": true
+}

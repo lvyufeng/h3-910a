@@ -1,0 +1,152 @@
+{
+  "norm_cases": [
+    {
+      "name": "layer49_norm1",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_build_and_call_s": 2.448192649986595,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.2914566852006124e-05,
+        "word_mismatches": 95,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.1005274462765189e-05,
+        "word_mismatches": 74,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "fused_wrapper": {
+        "groups_ms": [
+          5.434138048440218,
+          5.370431952178478,
+          5.285474006086588
+        ],
+        "median_ms": 5.370431952178478
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          9.913424029946327,
+          9.958948008716106,
+          9.833861980587244
+        ],
+        "median_ms": 9.913424029946327
+      },
+      "default_off_exact_eager": true
+    },
+    {
+      "name": "layer49_norm2",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_build_and_call_s": 1.6328331301920116,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 2.0438906270198582e-05,
+        "word_mismatches": 156,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00390625,
+        "relative_rms": 1.3554653552356687e-05,
+        "word_mismatches": 82,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "fused_wrapper": {
+        "groups_ms": [
+          10.080340038985014,
+          10.101509932428598,
+          10.055392049252987
+        ],
+        "median_ms": 10.080340038985014
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          16.510603949427605,
+          16.287181992083788,
+          16.228470019996166
+        ],
+        "median_ms": 16.287181992083788
+      },
+      "updated_residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "default_off_exact_eager": true
+    },
+    {
+      "name": "bf16_boundaries_plain",
+      "output": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 46080
+      }
+    },
+    {
+      "name": "bf16_boundaries_add",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.03125,
+        "relative_rms": 0.000208638606999453,
+        "word_mismatches": 27,
+        "signed_zero_mismatches": 0,
+        "elements": 46080
+      },
+      "residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 46080
+      }
+    },
+    {
+      "name": "torch.float16_plain",
+      "output": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00048828125,
+        "relative_rms": 2.1287679487863126e-06,
+        "word_mismatches": 2,
+        "signed_zero_mismatches": 0,
+        "elements": 52224
+      }
+    }
+  ],
+  "activation_cases": [],
+  "scope": "Same actual/boundary inputs, complete wrapper including dtype casts; isolated operators, not full model/lossless video",
+  "failure": {
+    "type": "TBEPythonError",
+    "message": "\n[errClass:N/A]\n[errCode:EB9999]\n[message: Traceback (most recent call last):\n  9: TVMFuncCall\n  8: 0x0000fffd6cac0507\n  7: ascend_tvm::PreProcessModuleForBuild(ascend_tvm::runtime::Map<ascend_tvm::Target, ascend_tvm::IRModule, void, void> const&, ascend_tvm::Target const&)\n  6: ascend_tvm::codegen::Build(ascend_tvm::IRModule, ascend_tvm::Target)\n  5: 0x0000fffd6f036617\n  4: ascend_tvm::tir::CCECodegenImpl(ascend_tvm::IRModule const&, ascend_tvm::Target)\n  3: ascend_tvm::codegen::BuildCCE(std::vector<ascend_tvm::tir::CCEPrimFunc, std::allocator<ascend_tvm::tir::CCEPrimFunc> >&)\n  2: 0x0000fffd6f020d33\n  1: 0x0000fffd6f4d0ab3\n  0: ascend_tvm::runtime::Backtrace()\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/runtime/cce_runtime.py\", line 293, in tvm_callback_cce_compile\n    ccebin = ccec.compile_cce(\n             ^^^^^^^^^^^^^^^^^\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/driver/cce_build_module.py\", line 109, in wrapper\n    r = fn(*args, **kw)\n        ^^^^^^^^^^^^^^^\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/contrib/ccec.py\", line 1111, in compile_cce\n    run_cmd(compile_cmd, \"compile\", real_cce_file_path)\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/contrib/ccec.py\", line 805, in run_cmd\n    _run_cmd_stackoverflow_case(cmd, cmd_type, cce_file)\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/contrib/ccec.py\", line 756, in _run_cmd_stackoverflow_case\n    _run_cmd_stack_spill_case(cmd, cmd_type, cce_file)\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/contrib/ccec.py\", line 713, in _run_cmd_stack_spill_case\n    raise_tbe_python_err(TBE_DEFAULT_PYTHON_ERROR_CODE, msg)\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/error_mgr/tbe_python_error_mgr.py\", line 111, in raise_tbe_python_err\n    raise TBEPythonError(args_dict)\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/_ffi/_ctypes/packed_func.py\", line 83, in cfun\n    rv = local_pyfunc(*pyargs)\n         ^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/runtime/cce_runtime.py\", line 302, in tvm_callback_cce_compile\n    raise_tbe_python_err(TBE_DEFAULT_PYTHON_ERROR_CODE,\n  File \"/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/error_mgr/tbe_python_error_mgr.py\", line 111, in raise_tbe_python_err\n    raise TBEPythonError(args_dict)\n\ntvm.error_mgr.tbe_python_error_mgr.TBEPythonError: [EB9999] [errClass:N/A][errCode:EB0500][message:compile error /tmp/tmpdy_xlzj8/my_kernel_core.cce:4:9: warning: '__aicore__' macro redefined [-Wmacro-redefined]#define __aicore__ [aicore]        ^/home/mseco/Ascend/cann-9.2.0/tools/bisheng_compiler/lib/clang/15.0.5/include/__clang_cce_defines.h:96:9: note: previous definition is here#define __aicore__ __attribute__((cce_aicore))        ^/tmp/tmpdy_xlzj8/my_kernel_core.cce:21:38: error: unknown type name 'half'; did you mean '::half'?__ubuf__     half* half = (__ubuf__  half *)get_imm(38400);                                     ^~~~                                     ::half/home/mseco/Ascend/cann-9.2.0/tools/bisheng_compiler/lib/clang/15.0.5/include/__clang_cce_runtime_wrapper.h:139:20: note: '::half' declared heretypedef __cce_half half;                   ^/tmp/tmpdy_xlzj8/my_kernel_core.cce:46:30: error: unknown type name 'half'; did you mean '::half'?    vconv_f322f16(((__ubuf__ half *)half), ((__ubuf__ float *)x), 48, 1, 1, 4, 8);                             ^~~~                             ::half/home/mseco/Ascend/cann-9.2.0/tools/bisheng_compiler/lib/clang/15.0.5/include/__clang_cce_runtime_wrapper.h:139:20: note: '::half' declared heretypedef __cce_half half;                   ^/tmp/tmpdy_xlzj8/my_kernel_core.cce:48:53: error: unknown type name 'half'; did you mean '::half'?    vconv_f162f32(((__ubuf__ float *)x), ((__ubuf__ half *)half), 48, 1, 1, 8, 4);                                                    ^~~~                                                    ::half/home/mseco/Ascend/cann-9.2.0/tools/bisheng_compiler/lib/clang/15.0.5/include/__clang_cce_runtime_wrapper.h:139:20: note: '::half' declared heretypedef __cce_half half;                   ^1 warning and 3 errors generated.:][errPcause:N/A][errSolution:N/A]During handling of the above exception, another exception occurred:tvm.error_mgr.tbe_python_error_mgr.TBEPythonError: [errClass:N/A][errCode:EB0500][message:compile cce error : , dirpath: /tmp/tmpdy_xlzj8/, path_target: ./kernel_meta/vec58_addrms_r17_d3072_fp16_q0_c17_abe9158e8bf9_e11871324.o][errPcause:N/A][errSolution:N/A]]\n[errPcause:N/A]\n[errSolution:N/A]"
+  }
+}

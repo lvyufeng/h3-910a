@@ -1,0 +1,44 @@
+{
+  "scope": "All finite BF16 gate words times eight up factors, explicitly actual NPU reference; no nonfinite-input or full-model claim",
+  "cases": [
+    {
+      "name": "finite_bf16_midpoints",
+      "inputs": 195840,
+      "raw_bits_exact": true
+    },
+    {
+      "name": "finite_bf16_gate_up_sweep",
+      "gate_words": 65280,
+      "up_factors": 8,
+      "outputs": 522240,
+      "input_format": 2,
+      "vs_cpu": {
+        "raw_bits_exact": false,
+        "word_mismatches": 127573,
+        "numeric_mismatches": 85,
+        "signed_zero_mismatches": 127488,
+        "infinity_outputs": 33375,
+        "nan_outputs": 0
+      },
+      "vs_actual_npu": {
+        "raw_bits_exact": true,
+        "word_mismatches": 0,
+        "numeric_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "infinity_outputs": 33375,
+        "nan_outputs": 0
+      },
+      "cpu_silu_vs_npu_silu": {
+        "raw_bits_exact": false,
+        "word_mismatches": 15554,
+        "numeric_mismatches": 17,
+        "signed_zero_mismatches": 15537,
+        "infinity_outputs": 0,
+        "nan_outputs": 0
+      },
+      "npu_numeric_examples": []
+    }
+  ],
+  "completed": true,
+  "npu_raw_bits_exact": true
+}

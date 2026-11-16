@@ -1,0 +1,236 @@
+{
+  "norm_cases": [
+    {
+      "name": "layer49_norm1",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_compile_and_call_s": 2.773767590057105,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.2914566852006124e-05,
+        "word_mismatches": 95,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 1.1005274462765189e-05,
+        "word_mismatches": 74,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.5212789867073298,
+          0.5210030358284712,
+          0.5198460072278976
+        ],
+        "median_ms": 0.5210030358284712
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          10.094938986003399,
+          9.887418011203408,
+          9.959108987823129
+        ],
+        "median_ms": 9.959108987823129
+      }
+    },
+    {
+      "name": "layer49_norm2",
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "cold_compile_and_call_s": 2.655632050242275,
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0078125,
+        "relative_rms": 2.0438906270198582e-05,
+        "word_mismatches": 156,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00390625,
+        "relative_rms": 1.3554653552356687e-05,
+        "word_mismatches": 82,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.6732440087944269,
+          0.6601759698241949,
+          0.6619809661060572
+        ],
+        "median_ms": 0.6619809661060572
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          16.100971028208733,
+          16.195335006341338,
+          16.150970989838243
+        ],
+        "median_ms": 16.150970989838243
+      },
+      "updated_residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 10460160
+      }
+    },
+    {
+      "name": "post_rope_query_reused_as_same_shape_norm_input",
+      "shape": [
+        1,
+        2043,
+        8,
+        128
+      ],
+      "cpu_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.015625,
+        "relative_rms": 9.946505323949601e-06,
+        "word_mismatches": 10,
+        "signed_zero_mismatches": 0,
+        "elements": 2092032
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.015625,
+        "relative_rms": 8.410307269875394e-06,
+        "word_mismatches": 9,
+        "signed_zero_mismatches": 0,
+        "elements": 2092032
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.8592430036514997,
+          0.8557649794965982,
+          0.8538309950381517
+        ],
+        "median_ms": 0.8557649794965982
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          3.177177021279931,
+          3.1464810017496347,
+          3.140232991427183
+        ],
+        "median_ms": 3.1464810017496347
+      }
+    }
+  ],
+  "activation_cases": [
+    {
+      "name": "actual_layer49_packed_swiglu",
+      "packed_shape": [
+        1,
+        2043,
+        6400
+      ],
+      "cold_compile_and_call_s": 2.788248830009252,
+      "cpu_reference": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 6537600
+      },
+      "npu_eager_reference": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 6537600
+      },
+      "native_wrapper": {
+        "groups_ms": [
+          0.5523239728063345,
+          0.5505200009793043,
+          0.5507839843630791
+        ],
+        "median_ms": 0.5507839843630791
+      },
+      "eager_wrapper": {
+        "groups_ms": [
+          15.587106999009848,
+          15.571856033056974,
+          15.551684005185962
+        ],
+        "median_ms": 15.571856033056974
+      }
+    }
+  ],
+  "boundary_cases": [
+    {
+      "name": "bf16_range_signed_zero_overflow_plain",
+      "output": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      }
+    },
+    {
+      "name": "bf16_range_signed_zero_overflow_add",
+      "output": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      },
+      "residual": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      }
+    },
+    {
+      "name": "bf16_swiglu_signed_zero_outliers",
+      "output": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0,
+        "word_mismatches": 0,
+        "signed_zero_mismatches": 0,
+        "elements": 2048
+      }
+    }
+  ],
+  "scope": "Native BF16 GM codec plus FP32 math on actual/boundary inputs; no external casts, isolated operators not whole quality/lossless proof",
+  "completed": true
+}

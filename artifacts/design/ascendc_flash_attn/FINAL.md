@@ -152,6 +152,23 @@
 > quality is untested. Goal remains active; see
 > [round-57 evidence](<../../diagnostics/round57/README.md>) for exact limitations.
 >
+> **Round 58 update:** self-developed TBE vector kernels now use **native BF16 GM
+> codec** (uint16/FP32 bits, three transpose passes each way), exact on all65536
+> word patterns at128/3200/5120 widths. Software BF16 RNE passes195840 finite
+> midpoint boundaries. Actual wrappers: RMSNorm9.958→**0.538ms (18.5×)**,
+> AddRMSNorm16.151→**0.662ms (24.4×)**, SwiGLU15.415→**0.454ms (34.0×)**.
+> SwiGLU matches the actual NPU reference on65280finite gate words×8up factors
+> and all800 checked layer/rank calls (**5.23billion scalar outputs**). CPU extreme
+> SiLU/zero signs differ; they are not erased to force a false CPU-reference pass.
+> Norm retains tiny95/156word differences vsCPU out of10.46million, not bitwise
+> lossless. Tested FP32 saturation guards handle huge finite outliers; exactly
+> maximal finite sums/nonfinite arithmetic remain uncertified. Experimental
+> resident text repeats4.971/4.179/3.490/**2.709s** forbaseline/SwiGLU/norm/both,
+> but the **unchanged baseline first/repeat differs6.718% RMS**. Other cases also
+> vary, so no settled attribution or full-model lossless acceptance is made.
+> Production files unchanged, no fullencoder2s/decoder20s/official matched pass.
+> See [round-58 evidence](<../../diagnostics/round58/README.md>).
+>
 > The 162 ms "slow weight path" attribution and its predicted HWR gain were also
 > unproven: removing attention changes overlap, and rejecting an FP16 HWR layout
 > does not measure transfer time. The content below is retained as historical
@@ -170,11 +187,11 @@ quality equivalence or official 49-step lossless performance comparison.
 
 | goal item | state |
 |---|---|
-| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **not completed** — actual Qwen BF16 norm rounding contract differs from shared fallback; preserve the verified per-model contract before fusing |
+| (1) fused RMSNorm/AddRMSNorm, SwiGLU, RoPE, AdaLN kernels | **partly achieved, not completed** — native BF16-GM TBE norm/add/SwiGLU prototypes measured; finite SwiGLU matches NPU bits, norm retains tiny differences; RoPE/AdaLN fusion and whole-stack lossless acceptance remain |
 | (2) raise flash-attention efficiency | **partly achieved**: core-budget558.1→317.0ms bit-exact; actual DiT masked wrapper421.151→154.391ms; causal text TBE prototype3.33–3.39ms but whole-text quality not passed |
 | (2) DiT to 15 s/step | **one warm window achieved, not a sustained/full-goal pass** — round54 all47 warm steps are below15s; round55 after-first mean14.9902s but2/47 warmed steps exceed15s; cold steps/model quality remain unresolved |
 | (3) VAE decode 155 s → 20 s | **not achieved** — latest native request captures136.50–141.80s decode (4records); no controlled decoder speedup A/B |
-| (3) text encode 39 s → 2 s | **not achieved** — experimental resident text stack4.41–5.13s with causal FA and FP32-linears, still large reference errors; vision4.832s and full encode/conditioning296.97s are separate measurements |
+| (3) text encode 39 s → 2 s | **not achieved** — experimental resident text stack repeats2.709s with native vector fusion, excludes vision/preprocessing and baseline itself is repeat-unstable; vision4.832s/fullconditioning296.97s are separate results |
 | comparable measurement vs A2/A3 | **not delivered** — actual native 49-step FL2VA exists, but official 150.06/114.19 s are warmed T2VA; precision/schedule/quality and protocol equivalence remain unverified |
 
 The older experiments below are retained as a historical record. Their numerical
