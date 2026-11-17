@@ -1,0 +1,62 @@
+{
+  "round": 82,
+  "task": "task-20",
+  "owner": "gemm82-fresh",
+  "author_snapshot_only": true,
+  "root_actual_execution_receipt": "runtime06/probe_fp32_out.json",
+  "root_bias_rejection_receipt": "runtime06/probe_fp32_bias_fp16_out.json",
+  "root_result": "DirectTIKFP16operandFP32outputmicrocompiledandran;FP32repeatbitidentityand4.081e-7diagnosticRRverified. OriginalTIKbiasgatefailedonshortAscend910beforelaunch;nextportableFP32UBbiasadd/singleHalfcast.",
+  "scope": "artifacts/diagnostics/round82/gemm only",
+  "status": "source_only_prototype_ready_for_root_to_compile_and_micro_execute",
+  "executed_on_npu": false,
+  "compiled": false,
+  "proves_precision": false,
+  "proves_speed": false,
+  "claims_h3_improvement": false,
+  "no_remote_writes_or_compiles_performed": true,
+  "no_npu_or_gpu_compute_performed": true,
+  "no_production_files_modified": true,
+  "sdk_access": "read-only ssh to ts-217; sources copied into scope for review",
+  "headline_finding": "CANN 9.2.0 te/platform/cce_params.py 'matmul' table lists f16f16f32 for both ASCEND_910AIC and ASCEND_910BAIC and no f16f16f16, so FP16 operands into an FP32 destination is the native hardware mode. The framework npu_grouped_matmul 161002 rejection of output_dtype=float32 is an op-interface restriction, not a hardware limitation.",
+  "supporting_findings": {
+    "fixpipe_accepts_fp32_destination": "te/tik/api/cube/tik_cube_api.py fixpipe docstring: dst float16/float32/int32, src float32/int32",
+    "bias_is_fp32_in_l1_and_910b_gated": "te/tik/api/cube/cube_common.py check_params_bias: is_910b_soc() and bias.dtype==dst.dtype and bias.scope==L1 and 1-D length N",
+    "device_soc_matches_bias_gate": "ASCEND_910B == 'Ascend910B' == runtime-reported device soc",
+    "dsl_exposes_same_knobs": "tbe/dsl/api.py matmul(dst_dtype float16/float32, tensor_bias); gemm_compute keeps FP32 uncached when dst_dtype=float32"
+  },
+  "artifacts": {
+    "findings": "SDK_FINDINGS.md",
+    "sdk_receipts": "sdk_receipts82.json",
+    "sdk_copies": "sdk/ (13 files, hashes verified on disk)",
+    "prototype_builder": "gemm_fp16_fp32out82.py",
+    "launcher": "gemm_launcher82.c",
+    "probe_for_root": "run_gemm_probe82.py",
+    "contract_tests": "test_gemm82.py",
+    "manifest": "manifest82.json",
+    "readme": "README.md"
+  },
+  "prototype_contract": {
+    "variants": ["fp32_out", "fp32_bias_fp16_out"],
+    "micro_geometry": {"m": 128, "k": 512, "n": 128},
+    "single_tile_budget_ok": true,
+    "compile_soc": "Ascend910B",
+    "launch_path": "rtDevBinaryRegister -> rtFunctionRegister -> rtKernelLaunch",
+    "rejected_launch_path": "aclrtBinary* (507015 on the same .o)"
+  },
+  "tests": {"file": "test_gemm82.py", "count": 13, "passed": true, "stdlib_only": true, "device_required": false},
+  "hash_integrity": {"hashes_quoted_in_findings": 6, "all_backed_by_copied_file": true, "sdk_receipts_reverified_on_disk": 13},
+  "not_established": [
+    "Nothing compiled: DSL build call, kernel_meta artefact names and tbe.dsl.build config keys are read from SDK source, not observed",
+    "Nothing executed: Intrinsic_mmad/f162f32 is a runtime query, not yet answered on this device",
+    "H3 geometry (M=2043,K=5120) needs explicit blocked tiling; that kernel does not exist",
+    "No claim this closes the Round81 7.42% CPU FP16 gap",
+    "Grouped/batched matmul not prototyped"
+  ],
+  "next_steps_for_root": [
+    "python3 gemm_fp16_fp32out82.py --plan (stdlib only, no device)",
+    "python3 gemm_fp16_fp32out82.py --capability (answers Intrinsic_mmad/f162f32)",
+    "python3 gemm_fp16_fp32out82.py --build fp32_out and --build fp32_bias_fp16_out; record any compiler error verbatim",
+    "compile gemm_launcher82.c and run run_gemm_probe82.py for both variants under torch_npu",
+    "only if micro probe matches the FP32 golden, attempt blocked tiling for the real H3 shapes"
+  ]
+}

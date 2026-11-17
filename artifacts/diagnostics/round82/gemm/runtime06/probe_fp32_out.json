@@ -1,0 +1,100 @@
+{
+  "scope": "Round82 direct TIK GEMM: explicit layouts, FP32 output and original CPU Half control.\n\nNOT EXECUTED by its author. The root runs this after reviewing the source; every\nresult it writes is device evidence, and none of it exists yet.\n\nWhat it answers, in order\n-------------------------\n1. Does direct TIK emit an `f16f16f32` matmul for this SoC at all\n   (`build_kernel` returns a kernel_meta pair)?\n2. Does the legacy rtDevBinary launch run it without an AI Core exception?\n3. Is the FP32 output bit-identical across two launches (repeatability), and how\n   far is it from a float64/float32 numpy golden?\n4. For the biased variant: is the result equal to `fp32(accum) + fp32(bias)`\n   with a single FP16 cast, rather than the native Half-bias-add ordering?\n\nWhat it deliberately does NOT answer\n------------------------------------\n* It is not the H3 geometry (M=2043, K=5120); that needs blocked tiling and is a\n  separate, larger piece of work.\n* A rounding match here does not by itself prove the full encoder agrees with the\n  CPU FP16 reference. It only removes one identified error source.\n* No speed claim: one micro kernel launch on one core is not an H3 measurement.\n",
+  "variant": "fp32_out",
+  "geometry": {
+    "m": 128,
+    "k": 512,
+    "n": 128
+  },
+  "executed": true,
+  "not_h3_geometry": true,
+  "not_a_speed_claim": true,
+  "full_encoder_precision_accepted": false,
+  "cases": {
+    "first_launch_s_including_sync": 0.00018137972801923752,
+    "second_launch_s_including_sync": 0.00021268008276820183,
+    "repeat_vs_first": {
+      "finite": true,
+      "raw_bits_equal": true,
+      "max_abs_error": 0.0,
+      "relative_rms": 0.0,
+      "elements": 16384
+    },
+    "vs_fp32_golden": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "max_abs_error": 9.1552734375e-05,
+      "relative_rms": 4.081047061834728e-07,
+      "elements": 16384
+    },
+    "kernel_cast_to_half_vs_CPU_FP16_linear": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "max_abs_error": 0.03125,
+      "relative_rms": 1.3247272195004748e-05,
+      "elements": 16384
+    },
+    "native_half_vs_CPU_FP16_linear": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "max_abs_error": 0.03125,
+      "relative_rms": 1.3247272195004748e-05,
+      "elements": 16384
+    }
+  },
+  "source_sha256": "64203496002ea2afbed0ba111c16df82edf9a12551885430697ef46a766df8e6",
+  "builder_sha256": "5e870dfa73b6a78b2cb25921202778d555dae38f3713580c52bea89de72dc059",
+  "launcher_abi": "provenexistingfa910a5GM",
+  "kernel_launch_executed": true,
+  "capability": {
+    "compile_soc": "Ascend910B",
+    "Intrinsic_mmad_f162f32": true,
+    "core_num": 30,
+    "l1_size": 1048576,
+    "l0c_size": 262144,
+    "note": "Intrinsic_mmad/f162f32 is a runtime query; it is the same gate gemm_compute._get_output_type uses to decide float32 vs float16 accumulation"
+  },
+  "build": {
+    "variant": "fp32_out",
+    "dst_dtype": "float32",
+    "uses_fp32_bias": false,
+    "geometry": {
+      "m": 128,
+      "k": 512,
+      "n": 128
+    },
+    "compile_soc": "Ascend910B",
+    "kernel_name": "tik_gemm82_legacy5_fp32_out_m128_k512_n128",
+    "kernel_symbol": "tik_gemm82_legacy5_fp32_out_m128_k512_n128__kernel0",
+    "block_dim": 1,
+    "obj_path": "/tmp/h3_round82_gemm06/kernels/tik_gemm82_build_s40d4_rq/kernel_meta/tik_gemm82_legacy5_fp32_out_m128_k512_n128.o",
+    "obj_sha256": "68ead0e7ef150c229b12e48ec4bfef40e3482e80a043eb29ec3ac718c5a5cc85",
+    "json_path": "/tmp/h3_round82_gemm06/kernels/tik_gemm82_build_s40d4_rq/kernel_meta/tik_gemm82_legacy5_fp32_out_m128_k512_n128.json",
+    "core_type": "AiCore",
+    "input_layout": "K1_M_16",
+    "weight_layout": "K1_N_16",
+    "output_layout": "N1_M_16",
+    "bias_dtype": null,
+    "GM_argument_count": 5,
+    "unused_aux_inputs": 2,
+    "built": true,
+    "executed": false,
+    "contract_source_sha256": "77bded8de7aa362640c57af68e2298d3e8a2a930fb59420cc7997b5eac276245"
+  },
+  "launcher": {
+    "path": "/tmp/libfa910a.so",
+    "reused_existing": true,
+    "compiled_by_this_probe": false,
+    "sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043"
+  },
+  "torch_context_initialized_before_registration": true,
+  "registration": {
+    "handle_nonnull": true,
+    "kernel_symbol": "tik_gemm82_legacy5_fp32_out_m128_k512_n128__kernel0"
+  },
+  "current_stream_source": "torch.npu.current_stream().npu_stream",
+  "unused_auxiliary_GM_inputs": 2,
+  "CPU_FP16_reference_operator": "torch.nn.functional.linear(Half input,Half weight,Half bias)",
+  "FP32_numpy_golden_is_only_accumulator_diagnostic": true,
+  "completed": true
+}

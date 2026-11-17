@@ -1,0 +1,28 @@
+{
+  "receipt": "/tmp/h3_round82_gemm02/probe_fp32_out.json"
+}
+Traceback (most recent call last):
+  File "/tmp/h3_round82_gemm02/run_gemm_probe82.py", line 248, in <module>
+    main()
+  File "/tmp/h3_round82_gemm02/run_gemm_probe82.py", line 108, in main
+    build = proto.build_kernel(args.variant, args.m, args.k, args.n,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/h3_round82_gemm02/gemm_fp16_fp32out82.py", line 180, in build_kernel
+    tbe.dsl.build(schedule, {"name": kernel_name, "tensor_list": tensor_list})
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/api.py", line 1144, in build
+    return tbe_build(sch, config_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/vllm910a/lib/python3.12/site-packages/decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/base/record/decorators/schedule.py", line 59, in build
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/unify_schedule/build.py", line 77, in build
+    return static_build(sch, config_map)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/static_schedule/cce_schedule.py", line 1482, in cce_build_code
+    real_out_tensors = sch.cce_special["real_out_tensor"]
+                       ^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'cce_special'
+[ERROR] 2026-11-17-12:47:47 (PID:610539, Device:-1, RankID:-1) ERR99999 UNKNOWN applicaiton exception

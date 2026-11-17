@@ -1,0 +1,18 @@
+{
+  "scope":"Root compile-profile guard rejected the uncompiled GEMM candidate before any NPU launch",
+  "job":"bash-3999e25933504103",
+  "exit_code":1,
+  "failure":"GemmPrototypeError:compile profile does not match the verified 910A-generation hardware",
+  "requested_compile_profile":"Ascend910B",
+  "runtime_device_label":"Ascend910B",
+  "root_guard_expected":{"core_num":32,"L1_SIZE":1048576},
+  "why_guard_exists":"RuntimeSoClabelwith910Bdoesnotauthorizeemittinga2/a3ISA.TheSDKprofilemustmatchactual910Agenerationhardware,e.g32core1MiBL1,andCANNdefinitionmaymapBprofiletoA2.",
+  "kernel_compiled":false,
+  "kernel_launched":false,
+  "does_not_prove_FP32_accumulator_unavailable":true,
+  "next":"Readactualprofile_compare82.json;pinverifiedAscend910Acompileprofileifthatmatcheshardware,anduseDSLsoftwareFP32biasepilogue—notTIK910B-onlyhardwarebiasgate.",
+  "verified_correction_after_failure":"live_core_count82.jsonconfirmsall8original910Bchipshave30usablecores,matchingSDKAscend910Bprofile30.The32coreexpectedguardwasarootfalsepositive,notA2mismatch;32GiBmemorymustnotbeconfusedwith32cores.",
+  "production_changed":false,
+  "CPU_FP16_reference_changed":false,
+  "whole_goal_complete":false
+}

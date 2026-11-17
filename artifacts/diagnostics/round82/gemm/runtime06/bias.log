@@ -1,0 +1,21 @@
+Error: matmul param bias, not support Ascend910.
+File path: /tmp/h3_round82_gemm06/tik_gemm_legacy5_82.py, line 45
+The context code cause the exception is:
+ 42            if use_bias:
+ 43                biasl=t.Tensor('float32',(n,),name='bias_l1',scope=tik.scope_cbuf)
+ 44                t.data_move(biasl,biasg,0,1,n*4//32,0,0)
+ 45 ->         t.matmul(c0,al,bl,m,k,n,init_l1out=True,bias=biasl)
+ 46            # The source burst is FP32 L0C bytes. When cu is Half,this is the
+ 47            # one final conversion;the unbiased variant retains allFP32 bits.
+ 48            t.tensor_mov(cu,c0,'m',1,m*n*4//1024,0,0)
+
+{
+  "receipt": "/tmp/h3_round82_gemm06/probe_fp32_bias_fp16_out.json"
+}
+Traceback:
+  File /tmp/h3_round82_gemm06/run_tik_legacy_probe82.py, line 244, in <module>
+     main()
+  File /tmp/h3_round82_gemm06/run_tik_legacy_probe82.py, line 108, in main
+         build = proto.build_kernel(args.variant, args.m, args.k, args.n,
+  File /tmp/h3_round82_gemm06/tik_gemm_legacy5_82.py, line 45, in build_kernel
+         t.matmul(c0,al,bl,m,k,n,init_l1out=True,bias=biasl)

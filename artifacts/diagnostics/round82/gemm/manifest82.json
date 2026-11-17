@@ -1,0 +1,143 @@
+{
+  "round": 82,
+  "scope": "artifacts/diagnostics/round82/gemm only (disjoint from root R82 isolation driver)",
+  "task": "task-20",
+  "owner": "gemm82-fresh",
+  "author_snapshot_only": true,
+  "root_current_state": "../STATE.json",
+  "root_executed_builder": "tik_gemm_legacy5_82.py",
+  "root_execution_receipt": "runtime06/probe_fp32_out.json",
+  "root_note": "Originalfiles/hashes/source-onlyflagsbelongtofreshforkdelivery;rootreviewaddedexecutedTIK5GMroute,CPUHalfcontrols,andbiasAPIrejectionevidence. Followactualruntimereceiptsforresults.",
+  "kind": "FP16 operand -> FP32 accumulator GEMM custom-kernel prototype; source only",
+  "executed_on_npu": false,
+  "compiled": false,
+  "proves_precision": false,
+  "proves_speed": false,
+  "claims_h3_improvement": false,
+  "why": "Round80 measured extra Half bias rounding in native biased Linear and Half partial-output rounding in TP row GEMMs;framework npu_grouped_matmul refused output_dtype=float32 with 161002.This establishes that FP32 accumulation is the hardware-native mode and is expressible in a custom kernel.",
+  "sdk_findings_document": "SDK_FINDINGS.md",
+  "decisive_evidence": {
+    "file": "sdk/te_platform_cce_params.py",
+    "remote": "python/site-packages/te/platform/cce_params.py",
+    "table": "matmul",
+    "line": 917,
+    "ASCEND_910AIC": [
+      "s8s8s32",
+      "u8s8s32",
+      "f16f16f32"
+    ],
+    "ASCEND_910BAIC": [
+      "s8s8s32",
+      "u8s8s32",
+      "f16f16f32"
+    ],
+    "no_f16f16f16_entry": true,
+    "interpretation": "FP16 operands with FP32 destination is the only float matmul combination on these parts;there is no half-output float combination.Any half output is expressed as FP32 accumulate plus an explicit cast.The framework 161002 rejection was an op-interface restriction,not a hardware limitation."
+  },
+  "additional_evidence": {
+    "fixpipe_fp32_destination": "sdk/te_tik_api_cube_tik_cube_api.py fixpipe docstring: dst may be float16/float32/int32,src is float32/int32 -> L0C FP32 can leave the cube as FP32",
+    "bias_is_910b_gated_fp32_in_l1": "sdk/te_tik_api_cube_cube_common.py check_params_bias: requires is_910b_soc(),bias.scope L1,bias 1-D length N,and bias.dtype==dst.dtype -> for an FP32 L0C destination the bias must be float32,added in FP32",
+    "device_soc_matches": "ASCEND_910B=\"Ascend910B\" equals the runtime-reported device soc,so the bias gate passes on this host",
+    "dsl_equivalent": "tbe/dsl/api.py matmul exposes dst_dtype float16/float32 and tensor_bias used to init L0C;gemm_compute keeps FP32 without cast when dst_dtype=float32 and casts once otherwise"
+  },
+  "prototype": {
+    "builder": "gemm_fp16_fp32out82.py",
+    "variants": [
+      "fp32_out",
+      "fp32_bias_fp16_out"
+    ],
+    "micro_geometry": {
+      "m": 128,
+      "k": 512,
+      "n": 128
+    },
+    "why_micro": "TIK high-level matmul requires whole A and B in L1 (1 MiB);the real H3 geometry (M=2043,K=5120) cannot be a single tile",
+    "h3_geometry_documented_not_built": {
+      "kv_proj": {
+        "M": 2043,
+        "K": 5120,
+        "N": 128
+      },
+      "q_proj": {
+        "M": 2043,
+        "K": 5120,
+        "N": 1024
+      },
+      "mlp_up": {
+        "M": 2043,
+        "K": 5120,
+        "N": 3456
+      }
+    },
+    "compile_soc": "Ascend910B",
+    "compile_soc_reason": "bias is gated on is_910b_soc() which reads the compile soc;forcing Ascend910A (as earlier kernel work did to escape a wrong 310B default) would silently disable the bias operand",
+    "built": false
+  },
+  "launcher": {
+    "file": "gemm_launcher82.c",
+    "path": "rtDevBinaryRegister -> rtFunctionRegister -> rtKernelLaunch",
+    "rejected_path": "aclrtBinary* family faults 507015 on the same .o",
+    "compiled": false,
+    "reuse_basis": "artifacts/design/patches/fa910a_lib.c and artifacts/design/ascendc_flash_attn/KERNEL_RUNS.md"
+  },
+  "probe": {
+    "file": "run_gemm_probe82.py",
+    "root_runs_after_review": true,
+    "answers": [
+      "does the DSL emit f16f16f32 for this soc",
+      "does the legacy launch run without AI Core exception",
+      "FP32 output repeatability across two launches",
+      "distance from a numpy FP32 golden",
+      "biased variant matches FP32-bias golden rather than native Half-bias ordering"
+    ],
+    "refuses_evidence_overwrite": true
+  },
+  "tests": {
+    "file": "test_gemm82.py",
+    "count": 13,
+    "passed": true,
+    "stdlib_only": true,
+    "device_required": false
+  },
+  "sdk_receipt_files": 13,
+  "files": {
+    "gemm_fp16_fp32out82.py": {
+      "bytes": 10603,
+      "sha256": "99a6fd225958cafc733b33620f5ed7d74acebe987542e938b5bb71e13a66f90c"
+    },
+    "gemm_launcher82.c": {
+      "bytes": 4706,
+      "sha256": "2cb22886e7b6a8e859ee9ae7c4f6e23a99b209f0525f249867a0553895cdd4e8"
+    },
+    "run_gemm_probe82.py": {
+      "bytes": 9505,
+      "sha256": "ea11177607e74ea1de877ba9bc863d45912914110feb289502d14cfb7ca5e049"
+    },
+    "test_gemm82.py": {
+      "bytes": 7465,
+      "sha256": "ce673cc0fa0432bbb22278da5adf56a355824bc6ade257aafd3bb67364a4c8ff"
+    },
+    "SDK_FINDINGS.md": {
+      "bytes": 7328,
+      "sha256": "7b0accc1872acee82d56da4817b9f2a4c0f9b38cd8a87ebb0e21c9b41891413b"
+    },
+    "sdk_receipts82.json": {
+      "bytes": 4393,
+      "sha256": "6661c8be2ad545f983353f75e30c3646bc7f19eb8313b58aedbbee680f6f6cf3"
+    }
+  },
+  "unsupported_or_unverified": [
+    "Nothing was compiled:the DSL build call,the kernel_meta artefact names and tbe.dsl.build config keys are read from SDK source,not observed",
+    "Nothing was executed:Intrinsic_mmad/f162f32 is a runtime query and has not been answered on this device;the static table is supporting evidence only",
+    "H3 geometry requires explicit blocked tiling (L1 1 MiB vs ~20 MiB operand);that kernel does not exist yet",
+    "No claim that fixing this rounding closes the Round81 7.42% CPU FP16 gap;that is the root isolation experiment question",
+    "Grouped/batched matmul (the grouped_matmul sibling) was not prototyped"
+  ],
+  "next_steps_for_root": [
+    "1.Run python3 gemm_fp16_fp32out82.py --plan (stdlib only,no device) to confirm the plan.",
+    "2.Run --capability on the host:it answers Intrinsic_mmad/f162f32,the gate this whole route depends on.",
+    "3.Run --build fp32_out then --build fp32_bias_fp16_out;record kernel_meta json and any compiler error verbatim.",
+    "4.Compile gemm_launcher82.c and run run_gemm_probe82.py for both variants under a torch_npu process.",
+    "5.Only if the micro probe matches the FP32 golden should blocked tiling for M=2043,K=5120 be attempted."
+  ]
+}

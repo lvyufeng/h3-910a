@@ -1,0 +1,52 @@
+{
+  "receipt": "/tmp/h3_round82_gemm03/probe_fp32_out.json"
+}
+Traceback (most recent call last):
+  File "/tmp/h3_round82_gemm03/run_gemm_probe82.py", line 248, in <module>
+    main()
+  File "/tmp/h3_round82_gemm03/run_gemm_probe82.py", line 108, in main
+    build = proto.build_kernel(args.variant, args.m, args.k, args.n,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/h3_round82_gemm03/gemm_fp16_fp32out82.py", line 171, in build_kernel
+    schedule = tbe.dsl.auto_schedule(result)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/api.py", line 1135, in auto_schedule
+    return tbe_auto_schedule.auto_schedule(outs, option)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/vllm910a/lib/python3.12/site-packages/decorator.py", line 232, in fun
+    return caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/target/generic_func.py", line 275, in dispatch_func
+    return dispatch_dict[k](*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/unify_schedule/auto_schedule.py", line 55, in _schedule_cce
+    return static.schedule_cce(outs, option)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/static_schedule/cce_schedule.py", line 410, in schedule_cce
+    schedule, tensor_list, real_outs = global_core_schedule(outs,
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/static_schedule/cce_schedule.py", line 1225, in global_core_schedule
+    tiling_case_para = tiling_case_func(outs)
+                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/base/operation.py", line 105, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/unify_schedule/gemm_tilingcase.py", line 194, in calc_matmul
+    tiling_static = matmul_tiling.get_static_tiling(context)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/unify_schedule/gemm_tiling_util.py", line 381, in get_static_tiling
+    self._get_tiling_from_repository(current_tiling_type)
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/dsl/unify_schedule/gemm_tiling_util.py", line 586, in _get_tiling_from_repository
+    old_tiling = tiling_api.get_tiling(self.tiling_info_dict)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/common/tiling/tiling_api.py", line 155, in get_tiling
+    return internal_get_tiling(info_dict)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/common/tiling/get_tiling_cube.py", line 248, in get_tiling
+    op_bank_path = get_op_bank_path()
+                   ^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/common/tiling/tiling_api_internal_use.py", line 98, in get_op_bank_path
+    op_bank_path = get_context().get_addition("op_bank_path")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'get_addition'
+[ERROR] 2026-11-17-12:56:08 (PID:611025, Device:-1, RankID:-1) ERR99999 UNKNOWN applicaiton exception

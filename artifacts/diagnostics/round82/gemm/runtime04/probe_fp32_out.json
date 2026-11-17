@@ -1,0 +1,30 @@
+{
+  "scope": "Round82 GEMM prototype probe: build -> launch -> compare with an FP32 golden.\n\nNOT EXECUTED by its author. The root runs this after reviewing the source; every\nresult it writes is device evidence, and none of it exists yet.\n\nWhat it answers, in order\n-------------------------\n1. Does the TBE DSL emit an `f16f16f32` matmul for this SoC at all\n   (`build_kernel` returns a kernel_meta pair)?\n2. Does the legacy rtDevBinary launch run it without an AI Core exception?\n3. Is the FP32 output bit-identical across two launches (repeatability), and how\n   far is it from a float64/float32 numpy golden?\n4. For the biased variant: is the result equal to `fp32(accum) + fp32(bias)`\n   with a single FP16 cast, rather than the native Half-bias-add ordering?\n\nWhat it deliberately does NOT answer\n------------------------------------\n* It is not the H3 geometry (M=2043, K=5120); that needs blocked tiling and is a\n  separate, larger piece of work.\n* A rounding match here does not by itself prove the full encoder agrees with the\n  CPU FP16 reference. It only removes one identified error source.\n* No speed claim: one micro kernel launch on one core is not an H3 measurement.\n",
+  "variant": "fp32_out",
+  "geometry": {
+    "m": 128,
+    "k": 512,
+    "n": 128
+  },
+  "executed": true,
+  "not_h3_geometry": true,
+  "not_a_speed_claim": true,
+  "full_encoder_precision_accepted": false,
+  "cases": {},
+  "source_sha256": "af9ea0661bdbfb68f0a99075afd6ca0a0bff45ee58f287c8312d63645304eb0b",
+  "builder_sha256": "77bded8de7aa362640c57af68e2298d3e8a2a930fb59420cc7997b5eac276245",
+  "launcher_source_sha256": "5df288c280ef5eb8ba7dcb0748f1503f40dc4956a9c91e3036595e2b9a9047a6",
+  "kernel_launch_executed": false,
+  "capability": {
+    "compile_soc": "Ascend910B",
+    "Intrinsic_mmad_f162f32": true,
+    "core_num": 30,
+    "l1_size": 1048576,
+    "l0c_size": 262144,
+    "note": "Intrinsic_mmad/f162f32 is a runtime query; it is the same gate gemm_compute._get_output_type uses to decide float32 vs float16 accumulation"
+  },
+  "failure": {
+    "type": "IndexError",
+    "message": "list index out of range"
+  }
+}
