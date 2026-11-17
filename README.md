@@ -1,6 +1,7 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round81 complete TP8 KV padding: repeat fixed, full encode2.214s, CPU FP16 precision gap7.42% remains](<artifacts/diagnostics/round81/README.md>),
 > [Round80 CPU FP16 oracle verified; full TP8 repeat failed; small-N zero-padding stability candidate](<artifacts/diagnostics/round80/README.md>),
 > [Round79 real FP16 vision probe: warm1.44s, CPU FP16 difference1.46%, full precision pending](<artifacts/diagnostics/round79/README.md>),
 > [Round78 independent CPU FP16 reference: complete27+50 graph repeated bit-identically](<artifacts/diagnostics/round78/README.md>),

@@ -1,0 +1,82 @@
+{
+  "round": 81,
+  "scope": "artifacts/diagnostics/round81/kv only",
+  "kind": "private candidate diagnostic patch; source only",
+  "executed_on_npu": false,
+  "proves_full_encoder_precision": false,
+  "proves_encoder_under_2s": false,
+  "adapter_path": "kv_padding81.py",
+  "adapter_sha256": "3c1b8516afd552fd3cadec144833bb47347f65c54a66dff61b5ef5b0f37f97ee",
+  "candidate_path": "artifacts/diagnostics/round79/candidate/candidate_encoder79.py",
+  "candidate_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+  "pinned_candidate_sha256_in_adapter": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+  "candidate_class": "MiniMaxH3Qwen3VLTextAttention",
+  "original_forward_source_sha256": "dbe9edd8ffa5bf7ecec2ad66736493a9773e4a08e1fbb376dbccaeb7af5a6487",
+  "transformed_forward_source_sha256": "604442a074c5073836512615f6045041faa277c34d64ae43c26098931460bd5b",
+  "expected_matched_calls": [
+    "k_weight",
+    "v_weight"
+  ],
+  "expected_rewritten_call_count": 2,
+  "untouched_call_sites": [
+    "F.linear(hidden_states, q_weight)",
+    "MLP gate_up_proj",
+    "MLP down_proj"
+  ],
+  "global_functional_patched": false,
+  "geometry": {
+    "M": 2043,
+    "K": 5120,
+    "original_output_rows": 128,
+    "padded_output_rows": 256,
+    "layers": 50,
+    "cached_tensors": 100
+  },
+  "original_cpu_gold": {
+    "round": 78,
+    "source_sha256": "50165e77adb393b4573fbe0fdb29c62a6ddb14b8f39082d0ea67e904848010ea",
+    "receipt_sha256": "44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9",
+    "selected50_sha256": "0137a434148366c3dcbf825970274ad0faa036666561d7aecc0170cf136b3fe4",
+    "bf16_agreement_required": false
+  },
+  "round80_micro_basis": {
+    "receipt": "artifacts/diagnostics/round80/kv_padding.json",
+    "N128_repeat_bit_equal": 0,
+    "N128_calls": 8,
+    "N256_repeat_bit_equal": 8,
+    "N256_calls": 8,
+    "only_zero_rows_added": true,
+    "retained_weight_prefix_unchanged": true,
+    "CPU_relative_RMS_N128": 1.053572447692752e-05,
+    "CPU_relative_RMS_N256": 1.4611542762253208e-05
+  },
+  "install_contract": {
+    "call": "from kv_padding81 import install",
+    "returns": "KVPaddingAdapter",
+    "methods": [
+      "prime",
+      "snapshot",
+      "clear",
+      "uninstall"
+    ]
+  },
+  "honesty": {
+    "not_executed_by_author": true,
+    "no_numerical_threshold_chosen": true,
+    "not_a_precision_acceptance": true,
+    "known_limit": "micro-scale repeat stability does not prove the 50-layer graph is repeat-stable or accurate",
+    "warning": "all-zero padding changes GEMM tiling; output is mathematically identical only because trailing rows are discarded"
+  },
+  "cache_memory_note": "100 entries x 256x5120 FP16 = 262,144,000 B device; reported in snapshot cache_bytes",
+  "install_semantics": {
+    "exec_namespace": "live candidate module __dict__",
+    "extra_module_name_left": "_r81_kv_linear",
+    "restored_on_uninstall": true,
+    "resolves_late_module_patches": true
+  },
+  "pre_root_review_adapter_sha256": "59e3a27e7b79878b22aa4ae771c3f3d84d80ee643592dddbe8e32a9cf4a97d67",
+  "root_review_corrections": [
+    "KandVviews shareQKVstorage:pointeraloneisnotmutationsignature;distinctoffsetsvalid",
+    "Uninstallboundmethodidentitycheckuses__self__/__func__becauseeachattributeaccesscreatesnewwrapper"
+  ]
+}
