@@ -1,0 +1,111 @@
+{
+  "scope": "Exact finite strided BF16 cast to native contiguousFP32 BNSD only; allQK/scale/softmax/PV/BF16return unchanged. Fullresidentencode_ids originalFP16pixels/originalBF16weights and nativeCPUoutput; upstreamHTTPprocessor/broadcast/load/offload excluded. NaNpayload counterexample retained, not a genericdtype or HFlossless proof.",
+  "cases": {
+    "native": {
+      "same_call_rank_max_s": [
+        6.476306829601526,
+        6.463750440161675,
+        6.436652959790081
+      ],
+      "median_complete_encode_ids_s": 6.463750440161675,
+      "first_max_s_excluded_compile_doublecompute": 52.51842615986243,
+      "allocated_hbm_bytes_per_rank": [
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736
+      ],
+      "reserved_hbm_bytes_per_rank": [
+        27965521920,
+        27965521920,
+        27965521920,
+        27965521920,
+        27965521920,
+        27965521920,
+        27965521920,
+        27965521920
+      ]
+    },
+    "cast": {
+      "same_call_rank_max_s": [
+        5.393582829739898,
+        5.37804935965687,
+        5.384068999905139
+      ],
+      "median_complete_encode_ids_s": 5.384068999905139,
+      "first_max_s_excluded_compile_doublecompute": 45.95675391983241,
+      "allocated_hbm_bytes_per_rank": [
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736
+      ],
+      "reserved_hbm_bytes_per_rank": [
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240
+      ]
+    },
+    "restored": {
+      "same_call_rank_max_s": [
+        6.470817239955068,
+        6.436773339752108,
+        6.454900950193405
+      ],
+      "median_complete_encode_ids_s": 6.454900950193405,
+      "first_max_s_excluded_compile_doublecompute": 6.6199840400367975,
+      "allocated_hbm_bytes_per_rank": [
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736,
+        23888436736
+      ],
+      "reserved_hbm_bytes_per_rank": [
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240,
+        29873930240
+      ]
+    }
+  },
+  "complete_output_identity_accepted": true,
+  "complete_encode_ids_under2s_accepted": false,
+  "whole_service_text_under2s_proven": false,
+  "official_goal_complete": false,
+  "production_deployed": false,
+  "actual_cast_checks": 1296,
+  "actual_attention_output_checks": 432,
+  "intermediate_identity_against_round72": {
+    "embedding_ids": true,
+    "embedding_output": true,
+    "vision_inputs": true,
+    "vision_output": true,
+    "text_inputs": true,
+    "text_output": true,
+    "complete_output": true
+  },
+  "complete_outputs_compared": 96,
+  "speedup_vs_same_run_native": 1.200532615810748,
+  "restored_timing_drift": -0.0013690952412526158
+}

@@ -1,0 +1,5623 @@
+{
+  "scope": "Actual same-input full-matrix FP32 attention geometry probes, not automatic integration.\n\nZeros added to head width are mathematically neutral but may alter NPU GEMM\naccumulation/dispatch. Therefore QK, scaled score, softmax, PV and BF16 outputs\nmust independently match full raw bits. Padding allocation/copies stay timed.\n",
+  "calls": [
+    {
+      "call": 0,
+      "input_layouts_reconstructed": [
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            1152,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 0
+        },
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            1152,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 0
+        },
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            3456,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 2304
+        }
+      ],
+      "native_output_vs_capture": {
+        "shape": [
+          1,
+          16,
+          4032,
+          72
+        ],
+        "dtype": "torch.bfloat16",
+        "elements": 4644864,
+        "raw_bits_equal": true,
+        "different_words": 0,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      },
+      "native_repeat_full_stages": {
+        "unscaled_qk": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "scores": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "probabilities": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "partial_pv": {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "dtype": "torch.float32",
+          "elements": 4644864,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "output": {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "dtype": "torch.bfloat16",
+          "elements": 4644864,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "cases": {
+        "native": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03540967032313347,
+          "warm": [
+            {
+              "seconds": 0.034337049815803766,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034454349894076586,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034208159893751144,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.034337049815803766
+        },
+        "qk80": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03565840981900692,
+          "warm": [
+            {
+              "seconds": 0.034630479756742716,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.035233600065112114,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03516098018735647,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03516098018735647
+        },
+        "qk128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.035844200290739536,
+          "warm": [
+            {
+              "seconds": 0.034857879858464,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03507717000320554,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034841280430555344,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.034857879858464
+        },
+        "pv80": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.0348418103531003,
+          "warm": [
+            {
+              "seconds": 0.03412886010482907,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03489572973921895,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03485096991062164,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03485096991062164
+        },
+        "pv128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03622185019776225,
+          "warm": [
+            {
+              "seconds": 0.03549080016091466,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03504998981952667,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03536368999630213,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03536368999630213
+        },
+        "both128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.035858429968357086,
+          "warm": [
+            {
+              "seconds": 0.03593298979103565,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03578505991026759,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03606710024178028,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03593298979103565
+        },
+        "chunk1008": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.08792365016415715,
+          "warm": [
+            {
+              "seconds": 0.08699482027441263,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.08767860988155007,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.0867964499630034,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.08699482027441263
+        },
+        "chunk2016": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.05414199968799949,
+          "warm": [
+            {
+              "seconds": 0.05399551009759307,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.05411737971007824,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.053495580330491066,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.05399551009759307
+        },
+        "no_contiguous": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.035069880075752735,
+          "warm": [
+            {
+              "seconds": 0.03440155973657966,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03490907000377774,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034706530161201954,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.034706530161201954
+        }
+      },
+      "input_immutable": true
+    },
+    {
+      "call": 17,
+      "input_layouts_reconstructed": [
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            1152,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 4644864
+        },
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            1152,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 4644864
+        },
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            3456,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 13936896
+        }
+      ],
+      "native_output_vs_capture": {
+        "shape": [
+          1,
+          16,
+          4032,
+          72
+        ],
+        "dtype": "torch.bfloat16",
+        "elements": 4644864,
+        "raw_bits_equal": true,
+        "different_words": 0,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      },
+      "native_repeat_full_stages": {
+        "unscaled_qk": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "scores": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "probabilities": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "partial_pv": {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "dtype": "torch.float32",
+          "elements": 4644864,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "output": {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "dtype": "torch.bfloat16",
+          "elements": 4644864,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "cases": {
+        "native": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03542876988649368,
+          "warm": [
+            {
+              "seconds": 0.03472793009132147,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.0348789501003921,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03494451008737087,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.0348789501003921
+        },
+        "qk80": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.0354747399687767,
+          "warm": [
+            {
+              "seconds": 0.03483600029721856,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.035050240345299244,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03501241002231836,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03501241002231836
+        },
+        "qk128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.035896109882742167,
+          "warm": [
+            {
+              "seconds": 0.03537718020379543,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03509233007207513,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03515846002846956,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03515846002846956
+        },
+        "pv80": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03564275009557605,
+          "warm": [
+            {
+              "seconds": 0.03496016003191471,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03547052014619112,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034937430173158646,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03496016003191471
+        },
+        "pv128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03566134022548795,
+          "warm": [
+            {
+              "seconds": 0.03499989025294781,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03524008020758629,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03515714034438133,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03515714034438133
+        },
+        "both128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03655294002965093,
+          "warm": [
+            {
+              "seconds": 0.0353553700260818,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.035696989856660366,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03550719982013106,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03550719982013106
+        },
+        "chunk1008": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.08743153978139162,
+          "warm": [
+            {
+              "seconds": 0.08689468028023839,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.08679756009951234,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.08658583974465728,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.08679756009951234
+        },
+        "chunk2016": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.05486322985962033,
+          "warm": [
+            {
+              "seconds": 0.053858359809964895,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.05438893986865878,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.05399448983371258,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.05399448983371258
+        },
+        "no_contiguous": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03514027036726475,
+          "warm": [
+            {
+              "seconds": 0.03455788968130946,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03464704006910324,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034561390057206154,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.034561390057206154
+        }
+      },
+      "input_immutable": true
+    },
+    {
+      "call": 33,
+      "input_layouts_reconstructed": [
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            1152,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 4644864
+        },
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            1152,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 4644864
+        },
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            3456,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 13936896
+        }
+      ],
+      "native_output_vs_capture": {
+        "shape": [
+          1,
+          16,
+          4032,
+          72
+        ],
+        "dtype": "torch.bfloat16",
+        "elements": 4644864,
+        "raw_bits_equal": true,
+        "different_words": 0,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      },
+      "native_repeat_full_stages": {
+        "unscaled_qk": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "scores": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "probabilities": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "partial_pv": {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "dtype": "torch.float32",
+          "elements": 4644864,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "output": {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "dtype": "torch.bfloat16",
+          "elements": 4644864,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "cases": {
+        "native": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.0358169199898839,
+          "warm": [
+            {
+              "seconds": 0.034581939689815044,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03459937032312155,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03516980027779937,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03459937032312155
+        },
+        "qk80": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03531962027773261,
+          "warm": [
+            {
+              "seconds": 0.034930279944092035,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034779829904437065,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.0349564696662128,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.034930279944092035
+        },
+        "qk128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03556582983583212,
+          "warm": [
+            {
+              "seconds": 0.03517246013507247,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.035205960273742676,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03513358999043703,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03517246013507247
+        },
+        "pv80": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.035264269914478064,
+          "warm": [
+            {
+              "seconds": 0.03494752990081906,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03505547996610403,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03505949955433607,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03505547996610403
+        },
+        "pv128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03543421998620033,
+          "warm": [
+            {
+              "seconds": 0.03476761979982257,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034964940045028925,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03511650022119284,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.034964940045028925
+        },
+        "both128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03583496017381549,
+          "warm": [
+            {
+              "seconds": 0.035519400145858526,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.0353861004114151,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03528484981507063,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.0353861004114151
+        },
+        "chunk1008": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.0872238096781075,
+          "warm": [
+            {
+              "seconds": 0.08651566039770842,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.08639602037146688,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.08611179981380701,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.08639602037146688
+        },
+        "chunk2016": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.054239979945123196,
+          "warm": [
+            {
+              "seconds": 0.05358873028308153,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.05414937995374203,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.053600420244038105,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.053600420244038105
+        },
+        "no_contiguous": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03480643965303898,
+          "warm": [
+            {
+              "seconds": 0.0345755098387599,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034749920014292,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03479637997224927,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.034749920014292
+        }
+      },
+      "input_immutable": true
+    },
+    {
+      "call": 53,
+      "input_layouts_reconstructed": [
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            1152,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 4644864
+        },
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            1152,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 4644864
+        },
+        {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "stride": [
+            1152,
+            72,
+            3456,
+            1
+          ],
+          "dtype": "torch.bfloat16",
+          "physical_format": 2,
+          "storage_offset": 13936896
+        }
+      ],
+      "native_output_vs_capture": {
+        "shape": [
+          1,
+          16,
+          4032,
+          72
+        ],
+        "dtype": "torch.bfloat16",
+        "elements": 4644864,
+        "raw_bits_equal": true,
+        "different_words": 0,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_rms": 0.0
+      },
+      "native_repeat_full_stages": {
+        "unscaled_qk": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "scores": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "probabilities": {
+          "shape": [
+            1,
+            16,
+            4032,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "elements": 260112384,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "partial_pv": {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "dtype": "torch.float32",
+          "elements": 4644864,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        },
+        "output": {
+          "shape": [
+            1,
+            16,
+            4032,
+            72
+          ],
+          "dtype": "torch.bfloat16",
+          "elements": 4644864,
+          "raw_bits_equal": true,
+          "different_words": 0,
+          "finite": true,
+          "max_abs_error": 0.0,
+          "relative_rms": 0.0
+        }
+      },
+      "cases": {
+        "native": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03569428017362952,
+          "warm": [
+            {
+              "seconds": 0.03450135001912713,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03486204985529184,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03484464017674327,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03484464017674327
+        },
+        "qk80": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03532858984544873,
+          "warm": [
+            {
+              "seconds": 0.03491290006786585,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03471274022012949,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03465234022587538,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03471274022012949
+        },
+        "qk128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03582814987748861,
+          "warm": [
+            {
+              "seconds": 0.0352272498421371,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03503808984532952,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03518453985452652,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03518453985452652
+        },
+        "pv80": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03546722000464797,
+          "warm": [
+            {
+              "seconds": 0.03466068021953106,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03517422033473849,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.034878579899668694,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.034878579899668694
+        },
+        "pv128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03555851010605693,
+          "warm": [
+            {
+              "seconds": 0.034746089950203896,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03496406972408295,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03492187988013029,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03492187988013029
+        },
+        "both128": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03577204002067447,
+          "warm": [
+            {
+              "seconds": 0.035348520148545504,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.035855129826813936,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03554972028359771,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03554972028359771
+        },
+        "chunk1008": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.08760971017181873,
+          "warm": [
+            {
+              "seconds": 0.08632196020334959,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.08650359977036715,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.08667250024154782,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.08650359977036715
+        },
+        "chunk2016": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.05401747999712825,
+          "warm": [
+            {
+              "seconds": 0.05352976964786649,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.053851460106670856,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.05379584012553096,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.05379584012553096
+        },
+        "no_contiguous": {
+          "full_stage_proofs": {
+            "unscaled_qk": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "scores": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "probabilities": {
+              "shape": [
+                1,
+                16,
+                4032,
+                4032
+              ],
+              "dtype": "torch.float32",
+              "elements": 260112384,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "partial_pv": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.float32",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            },
+            "output": {
+              "shape": [
+                1,
+                16,
+                4032,
+                72
+              ],
+              "dtype": "torch.bfloat16",
+              "elements": 4644864,
+              "raw_bits_equal": true,
+              "different_words": 0,
+              "finite": true,
+              "max_abs_error": 0.0,
+              "relative_rms": 0.0
+            }
+          },
+          "output_native_layout_equal": true,
+          "all_stages_exact": true,
+          "first_s_excluded": 0.03476186981424689,
+          "warm": [
+            {
+              "seconds": 0.034669029992073774,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03451743023470044,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            },
+            {
+              "seconds": 0.03448541974648833,
+              "output_vs_native": {
+                "shape": [
+                  1,
+                  16,
+                  4032,
+                  72
+                ],
+                "dtype": "torch.bfloat16",
+                "elements": 4644864,
+                "raw_bits_equal": true,
+                "different_words": 0,
+                "finite": true,
+                "max_abs_error": 0.0,
+                "relative_rms": 0.0
+              }
+            }
+          ],
+          "median_s": 0.03451743023470044
+        }
+      },
+      "input_immutable": true
+    }
+  ],
+  "source_sha256": "202b10a8e77cae45cd9e595ef2238120f55abe058b2b3511c355100885aa3c6c",
+  "runtime_math_flags_before": {
+    "matmul_allow_hf32": false,
+    "conv_allow_hf32": true
+  },
+  "runtime_math_flags_after": {
+    "matmul_allow_hf32": false,
+    "conv_allow_hf32": true
+  },
+  "completed": true
+}

@@ -1,0 +1,13 @@
+{
+  "tokens": 1,
+  "input_stride": [1152, 72, 1152, 1],
+  "original_candidate_stride": [1152, 72, 72, 1],
+  "native_stride": [1152, 72, 1152, 1],
+  "candidate_format": 0,
+  "native_format": 0,
+  "different_fp32_words": 0,
+  "full_bits_equal": true,
+  "acceptance_rejected": true,
+  "reason": "The singleton token dimension is semantically unused but native to(float32).contiguous() preserves its source stride; exact layout gate correctly rejected the original standard-empty output.",
+  "resolution": "New guarded source in a new run root uses native-preserving empty_strided only for N=1; original failed executed source and receipt remain unchanged."
+}

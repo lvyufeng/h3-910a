@@ -1,0 +1,315 @@
+{
+  "scope": "Four actual real attention fixtures; full QK/scale/softmax/PV/BF16rawmatrix proof and3warm same-input standalone calls. No fullpipeline/encoderintegration or officialquality acceptance. Querychunk implementation repeats native qkv casts per chunk; its timing does not reject optimized shared-cast chunk implementations.",
+  "modes": {
+    "native": [
+      {
+        "call": 0,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.034337049815803766,
+        "same_call_native_s": 0.034337049815803766,
+        "speedup_vs_same_fixture_native": 1.0
+      },
+      {
+        "call": 17,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.0348789501003921,
+        "same_call_native_s": 0.0348789501003921,
+        "speedup_vs_same_fixture_native": 1.0
+      },
+      {
+        "call": 33,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03459937032312155,
+        "same_call_native_s": 0.03459937032312155,
+        "speedup_vs_same_fixture_native": 1.0
+      },
+      {
+        "call": 53,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03484464017674327,
+        "same_call_native_s": 0.03484464017674327,
+        "speedup_vs_same_fixture_native": 1.0
+      }
+    ],
+    "qk80": [
+      {
+        "call": 0,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03516098018735647,
+        "same_call_native_s": 0.034337049815803766,
+        "speedup_vs_same_fixture_native": 0.976566911185002
+      },
+      {
+        "call": 17,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03501241002231836,
+        "same_call_native_s": 0.0348789501003921,
+        "speedup_vs_same_fixture_native": 0.9961882109274629
+      },
+      {
+        "call": 33,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.034930279944092035,
+        "same_call_native_s": 0.03459937032312155,
+        "speedup_vs_same_fixture_native": 0.9905265683097837
+      },
+      {
+        "call": 53,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03471274022012949,
+        "same_call_native_s": 0.03484464017674327,
+        "speedup_vs_same_fixture_native": 1.0037997563942616
+      }
+    ],
+    "qk128": [
+      {
+        "call": 0,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.034857879858464,
+        "same_call_native_s": 0.034337049815803766,
+        "speedup_vs_same_fixture_native": 0.9850584704297851
+      },
+      {
+        "call": 17,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03515846002846956,
+        "same_call_native_s": 0.0348789501003921,
+        "speedup_vs_same_fixture_native": 0.9920499951405402
+      },
+      {
+        "call": 33,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03517246013507247,
+        "same_call_native_s": 0.03459937032312155,
+        "speedup_vs_same_fixture_native": 0.9837062915204086
+      },
+      {
+        "call": 53,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03518453985452652,
+        "same_call_native_s": 0.03484464017674327,
+        "speedup_vs_same_fixture_native": 0.9903395161855578
+      }
+    ],
+    "pv80": [
+      {
+        "call": 0,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03485096991062164,
+        "same_call_native_s": 0.034337049815803766,
+        "speedup_vs_same_fixture_native": 0.985253779273981
+      },
+      {
+        "call": 17,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03496016003191471,
+        "same_call_native_s": 0.0348789501003921,
+        "speedup_vs_same_fixture_native": 0.9976770720886726
+      },
+      {
+        "call": 33,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03505547996610403,
+        "same_call_native_s": 0.03459937032312155,
+        "speedup_vs_same_fixture_native": 0.9869889203222005
+      },
+      {
+        "call": 53,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.034878579899668694,
+        "same_call_native_s": 0.03484464017674327,
+        "speedup_vs_same_fixture_native": 0.9990269178669815
+      }
+    ],
+    "pv128": [
+      {
+        "call": 0,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03536368999630213,
+        "same_call_native_s": 0.034337049815803766,
+        "speedup_vs_same_fixture_native": 0.9709690877675459
+      },
+      {
+        "call": 17,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03515714034438133,
+        "same_call_native_s": 0.0348789501003921,
+        "speedup_vs_same_fixture_native": 0.9920872334534544
+      },
+      {
+        "call": 33,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.034964940045028925,
+        "same_call_native_s": 0.03459937032312155,
+        "speedup_vs_same_fixture_native": 0.989544677570258
+      },
+      {
+        "call": 53,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03492187988013029,
+        "same_call_native_s": 0.03484464017674327,
+        "speedup_vs_same_fixture_native": 0.9977882146192545
+      }
+    ],
+    "both128": [
+      {
+        "call": 0,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03593298979103565,
+        "same_call_native_s": 0.034337049815803766,
+        "speedup_vs_same_fixture_native": 0.9555856614071665
+      },
+      {
+        "call": 17,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03550719982013106,
+        "same_call_native_s": 0.0348789501003921,
+        "speedup_vs_same_fixture_native": 0.9823064132648734
+      },
+      {
+        "call": 33,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.0353861004114151,
+        "same_call_native_s": 0.03459937032312155,
+        "speedup_vs_same_fixture_native": 0.9777672566587823
+      },
+      {
+        "call": 53,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03554972028359771,
+        "same_call_native_s": 0.03484464017674327,
+        "speedup_vs_same_fixture_native": 0.9801663669578926
+      }
+    ],
+    "chunk1008": [
+      {
+        "call": 0,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.08699482027441263,
+        "same_call_native_s": 0.034337049815803766,
+        "speedup_vs_same_fixture_native": 0.39470223293171347
+      },
+      {
+        "call": 17,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.08679756009951234,
+        "same_call_native_s": 0.0348789501003921,
+        "speedup_vs_same_fixture_native": 0.40184251792796727
+      },
+      {
+        "call": 33,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.08639602037146688,
+        "same_call_native_s": 0.03459937032312155,
+        "speedup_vs_same_fixture_native": 0.40047412108056224
+      },
+      {
+        "call": 53,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.08650359977036715,
+        "same_call_native_s": 0.03484464017674327,
+        "speedup_vs_same_fixture_native": 0.40281144679807557
+      }
+    ],
+    "chunk2016": [
+      {
+        "call": 0,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.05399551009759307,
+        "same_call_native_s": 0.034337049815803766,
+        "speedup_vs_same_fixture_native": 0.6359241676528655
+      },
+      {
+        "call": 17,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.05399448983371258,
+        "same_call_native_s": 0.0348789501003921,
+        "speedup_vs_same_fixture_native": 0.6459723984393443
+      },
+      {
+        "call": 33,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.053600420244038105,
+        "same_call_native_s": 0.03459937032312155,
+        "speedup_vs_same_fixture_native": 0.645505579351684
+      },
+      {
+        "call": 53,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.05379584012553096,
+        "same_call_native_s": 0.03484464017674327,
+        "speedup_vs_same_fixture_native": 0.6477199741733628
+      }
+    ],
+    "no_contiguous": [
+      {
+        "call": 0,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.034706530161201954,
+        "same_call_native_s": 0.034337049815803766,
+        "speedup_vs_same_fixture_native": 0.9893541548612882
+      },
+      {
+        "call": 17,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.034561390057206154,
+        "same_call_native_s": 0.0348789501003921,
+        "speedup_vs_same_fixture_native": 1.0091882890896553
+      },
+      {
+        "call": 33,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.034749920014292,
+        "same_call_native_s": 0.03459937032312155,
+        "speedup_vs_same_fixture_native": 0.9956676248144302
+      },
+      {
+        "call": 53,
+        "all_full_stages_bits_equal": true,
+        "native_output_layout_equal": true,
+        "median_s": 0.03451743023470044,
+        "same_call_native_s": 0.03484464017674327,
+        "speedup_vs_same_fixture_native": 1.0094795568447006
+      }
+    ]
+  },
+  "full_stage_matrix_proofs": 180,
+  "production_deployed": false,
+  "whole_service_text_under2s_proven": false,
+  "official_goal_complete": false
+}
