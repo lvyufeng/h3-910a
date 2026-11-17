@@ -1,0 +1,31 @@
+{
+  "scope":"ReadonlyauditofactualR76encoderforfuturecleanFP16candidate;notexecuted,noNPUprecisionpass.",
+  "source":"artifacts/diagnostics/round76/source/encoder.py",
+  "source_sha256":"7c22d98c28f4e93550fd3848bfc174121250259fdf50bcd2f7920f826acf311d",
+  "production_mutations_performed":false,
+  "actual_R76_encoder_is_not_coherent_FP16":true,
+  "half_env_flag_is_not_sufficient":[
+    "VLLM_OMNI_910A_TE_DTYPE=half converts parameter dtype but _encode pixels at1453/1461 and return1492 stillhardcodeBF16.",
+    "SeveralBF16-onlynorm/embedding-reduce/MRoPE/position-interpolation compatibilitybranches becomeinertforFP16.",
+    "R73vision stridedBF16-toF32castkernel is BF16-specific and mustnotbe silently reusedasFP16kernel."
+  ],
+  "next_candidate_contract":[
+    "Standalone scoped candidate; no production overwrite while CPUreference is running.",
+    "Use originalFP16pixel fixture singlecasttoF16 and F16hiddenreturn;no BF16 intermediate roundtrip.",
+    "Keep Linear weights/inputs FP16;preserve originalHF RMSNorm sequence:F32reduction/rsqrt,castnormalizedvalue toF16,thenF16gamma multiply.",
+    "Preserve HF visionpositioninterpolation:F32bilinearweights/4termreduction then singleF16cast.",
+    "Preserve originalHF textrotary cos/sinF16andpointwiseoporder;visionrotaryF32applicationdifferentbyoriginalHFdesign.",
+    "Use FP32 reduction for tensorparallel rowprojections/embedding ifneeded;recordcollectiveorderdifferences separately.",
+    "Run visionandminimaltextboundaryagainstCPUnumericalgoldbeforecompleteTP8performancebenchmark.",
+    "Record every finite/range violation; if originalCPUFP16graphoverflows,choose explicitF32island basedonobservedfailure,notfromBF16agreement requirement.",
+    "Do not allow theNPU SDPAshim +/-50000 clamp tosilentlycountasFP16rounding;log if triggeredandavoid approximationifpossible.",
+    "Pin CPUreference MATHbackend;NPU flashattentionFP16backend alreadyrequiresF16QKV. Kernel vsCPUMATHaccumulationdifferencesneednumericalmetricsnotnames.",
+    "Treatcoldstartup/residentload/offload/multimodalvisioncostseparate;targetcompleteencoder2sstillpending."
+  ],
+  "CPU_reference_current_source":"hf_cpu_fp16_reference78.py",
+  "same_cpu_reference_precision_not_BF16":true,
+  "old_BF16_quality_gap_is_historical_not_new_gate":true,
+  "NPU_candidate_implemented":false,
+  "NPU_candidate_executed":false,
+  "whole_goal_complete":false
+}

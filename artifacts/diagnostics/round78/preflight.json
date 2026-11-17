@@ -1,0 +1,370 @@
+{
+  "scope": "Actual CPU FP16 operator coverage preflight;not model accuracy or NPU performance.",
+  "source_sha256": "18de5220f25b0df7c38a4c20c947927fbc0a9ec3f5b6512ff791334e938a946c",
+  "operators": {
+    "linear_FP16_inputs_no_adapter": {
+      "inputs": [
+        {
+          "shape": [
+            33,
+            5120
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "281de99226ae0143e0d2992d7e7511eddaf762cf0e41043aa8cb2794ecc9a0bb"
+        },
+        {
+          "shape": [
+            1024,
+            5120
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "57c4774f283f738f0de29f1f065eb0446fb0b131d5bc9e1bdd9da56d540a82d7"
+        }
+      ],
+      "expected_result_dtype": "torch.float16",
+      "seconds_excluded_performance": 0.01783805014565587,
+      "output": {
+        "shape": [
+          33,
+          1024
+        ],
+        "dtype": "torch.float16",
+        "finite": true,
+        "sha256": "53de1f559144d48dd6683c47e31f81b0424f2e3627a13f074e4132748ab409ef"
+      },
+      "repeat_bits_equal": true,
+      "supported": true
+    },
+    "SDPA_FP16_causal": {
+      "inputs": [
+        {
+          "shape": [
+            1,
+            8,
+            33,
+            128
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "f621e33a0e932d69469d2c47a16a12609e263e874eb097f14cbec0639a60551b"
+        },
+        {
+          "shape": [
+            1,
+            8,
+            33,
+            128
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "ba8bcfe583ed87ba81d674afcdadf8ec8a00ba661aa0ada85ad6530be0691896"
+        },
+        {
+          "shape": [
+            1,
+            8,
+            33,
+            128
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "fe82a7d0d75ba820ccdf9a04c3398c30618cf13d4bf4e8a5b3a1d62965427de0"
+        }
+      ],
+      "expected_result_dtype": "torch.float16",
+      "seconds_excluded_performance": 0.0017399098724126816,
+      "output": {
+        "shape": [
+          1,
+          8,
+          33,
+          128
+        ],
+        "dtype": "torch.float16",
+        "finite": true,
+        "sha256": "51281305bcb37c7fa651f6bf7dbc9b5571c7bb22d4873b2e38bb8cc120567c22"
+      },
+      "repeat_bits_equal": true,
+      "supported": true
+    },
+    "SDPA_FP16_vision_noncausal": {
+      "inputs": [
+        {
+          "shape": [
+            1,
+            8,
+            33,
+            128
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "f621e33a0e932d69469d2c47a16a12609e263e874eb097f14cbec0639a60551b"
+        },
+        {
+          "shape": [
+            1,
+            8,
+            33,
+            128
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "ba8bcfe583ed87ba81d674afcdadf8ec8a00ba661aa0ada85ad6530be0691896"
+        },
+        {
+          "shape": [
+            1,
+            8,
+            33,
+            128
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "fe82a7d0d75ba820ccdf9a04c3398c30618cf13d4bf4e8a5b3a1d62965427de0"
+        }
+      ],
+      "expected_result_dtype": "torch.float16",
+      "seconds_excluded_performance": 0.0007804497145116329,
+      "output": {
+        "shape": [
+          1,
+          8,
+          33,
+          128
+        ],
+        "dtype": "torch.float16",
+        "finite": true,
+        "sha256": "46c64d93ff02d7363c766c3c6b9214483a02e9a4019c4942f8904ad18b2550ce"
+      },
+      "repeat_bits_equal": true,
+      "supported": true
+    },
+    "LayerNorm_FP16_inputs": {
+      "inputs": [
+        {
+          "shape": [
+            33,
+            1152
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "a5893d5f791e38747d0dd2acb080dceb62f8dc0b873eb697b0bd7c72a971370e"
+        },
+        {
+          "shape": [
+            1152
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "ef2d764740c4e26ff5b8d9ec39e9d3bb4d2bfb114059856254ae25360ade11a8"
+        },
+        {
+          "shape": [
+            1152
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "cfc335996cfae29fdf14fd2db7ea853366d350a5d387aa3c322616e81dacd56b"
+        }
+      ],
+      "expected_result_dtype": "torch.float16",
+      "seconds_excluded_performance": 0.00024654995650053024,
+      "output": {
+        "shape": [
+          33,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "finite": true,
+        "sha256": "184e10c17b055080ab9a4ac6d9650b0133fa9824a82cd181450eabc06144b1bb"
+      },
+      "repeat_bits_equal": true,
+      "supported": true
+    },
+    "original_HF_RMSNorm_FP16_with_declared_FP32_reduction": {
+      "inputs": [
+        {
+          "shape": [
+            33,
+            5120
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "281de99226ae0143e0d2992d7e7511eddaf762cf0e41043aa8cb2794ecc9a0bb"
+        }
+      ],
+      "expected_result_dtype": "torch.float16",
+      "seconds_excluded_performance": 0.0009003002196550369,
+      "output": {
+        "shape": [
+          33,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "finite": true,
+        "sha256": "d58c6d306bff4861254fb405575b5736f7f409c3e293a0f47b2bde1df233836c"
+      },
+      "repeat_bits_equal": true,
+      "supported": true
+    },
+    "Conv3d_FP16_patch_embedding": {
+      "inputs": [
+        {
+          "shape": [
+            2,
+            3,
+            2,
+            16,
+            16
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "40ea49d4da5507989e9cbe3028d61d478499e0706194ced6d91ea5470d74b67c"
+        },
+        {
+          "shape": [
+            16,
+            3,
+            2,
+            16,
+            16
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "84042aaf4db14b499702d68677369e14692f204cb8c5b6bcce865442a89136f9"
+        }
+      ],
+      "expected_result_dtype": "torch.float16",
+      "seconds_excluded_performance": 0.002073900308459997,
+      "output": {
+        "shape": [
+          2,
+          16,
+          1,
+          1,
+          1
+        ],
+        "dtype": "torch.float16",
+        "finite": true,
+        "sha256": "15e22caf20aa0ddb849d64a997028ac11748ba2ee8b21ca408574f6d27b1163b"
+      },
+      "repeat_bits_equal": true,
+      "supported": true
+    },
+    "bilinear_interpolation_FP16": {
+      "inputs": [
+        {
+          "shape": [
+            1,
+            4,
+            12,
+            12
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "1611227f5172f3e1865c7293bd9ba481e0dc0dbcd21545b6473b13b85d2fd647"
+        }
+      ],
+      "expected_result_dtype": "torch.float16",
+      "seconds_excluded_performance": 0.002496920060366392,
+      "output": {
+        "shape": [
+          1,
+          4,
+          18,
+          24
+        ],
+        "dtype": "torch.float16",
+        "finite": true,
+        "sha256": "00ef209bb66ee26300fcf8407f2f4629e951079da752671564a57a93bf9cbe22"
+      },
+      "repeat_bits_equal": true,
+      "supported": true
+    },
+    "bicubic_interpolation_FP16": {
+      "inputs": [
+        {
+          "shape": [
+            1,
+            4,
+            12,
+            12
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "fabe818afe9e905279d7173a7ead82cf8ce9454d8de103a215a2ce2f6e2aa211"
+        }
+      ],
+      "expected_result_dtype": "torch.float16",
+      "seconds_excluded_performance": 0.0017021400853991508,
+      "output": {
+        "shape": [
+          1,
+          4,
+          18,
+          24
+        ],
+        "dtype": "torch.float16",
+        "finite": true,
+        "sha256": "3e02fd5e12f8d20662f811cb37a4be7d193d12db4adc1d1289676d028f3a3629"
+      },
+      "repeat_bits_equal": true,
+      "supported": true
+    },
+    "SwiGLU_FP16_original_pointwise": {
+      "inputs": [
+        {
+          "shape": [
+            33,
+            1024
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "aea3b77fad821db57fcfc5129f2265a48058baf7ed86d18c9f999374bdefebfb"
+        },
+        {
+          "shape": [
+            33,
+            1024
+          ],
+          "dtype": "torch.float16",
+          "finite": true,
+          "sha256": "ecf54462573c7e558096bb289b124d1926212e91105405954f3e939abd571b59"
+        }
+      ],
+      "expected_result_dtype": "torch.float16",
+      "seconds_excluded_performance": 0.0003741998225450516,
+      "output": {
+        "shape": [
+          33,
+          1024
+        ],
+        "dtype": "torch.float16",
+        "finite": true,
+        "sha256": "97b634e69c2411ef6db6a90b8ada17bcf47c289b5c480c50c9bd853014f578fc"
+      },
+      "repeat_bits_equal": true,
+      "supported": true
+    }
+  },
+  "versions": {
+    "torch": "2.10.0+cpu",
+    "transformers": "5.14.1",
+    "python": "3.12.13"
+  },
+  "device": "cpu",
+  "native_BF16_not_required": true,
+  "FP32_linear_teacher_adapter_used": false,
+  "cpu_reference_generated": false,
+  "NPU_precision_accepted": false,
+  "whole_goal_complete": false,
+  "torch_num_threads": 8,
+  "mkldnn_enabled": true,
+  "HF_modeling_source_sha256": "fcb5571ef95e4a6679af866ef9ef4dfa5cee017f9f91453daf28c7804c7a50fe",
+  "torch_Linear_source_sha256": "c71e0b482f21432c6353351e6220956dbee2b8eb11f6e9646b7a8ee17b6a82af",
+  "all_required_preflight_operators_supported": true,
+  "operator_coverage_does_not_prove_whole_model_accuracy": true,
+  "completed": true
+}
