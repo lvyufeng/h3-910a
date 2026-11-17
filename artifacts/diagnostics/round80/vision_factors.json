@@ -1,0 +1,631 @@
+{
+  "scope": "Same-model FP16 vision bias-rounding/LayerNorm factors; CPU teacher unchanged.\n\nCompare native-before,FP32-biased-linear factor,plus stable LayerNorm factor,\nand native-restored. FP32 weights are diagnostic caches derived from the fixed\nFP16 parameters,not new weights or a production change. A later fused FP16\nGEMM must retain FP32 accumulators through bias to remove these caches.\n",
+  "source_sha256": "6576afdba08d2d5670acf81a6eb4efa24e792c536304602af3cc5640393e0837",
+  "phases": {
+    "native_before": {
+      "excluded_first_s": 18.067303910385817,
+      "CPU_FP16_comparison": {
+        "merged": {
+          "finite": true,
+          "raw_bits_equal": false,
+          "max_abs_error": 0.7109375,
+          "relative_RMS": 0.01456805331761072,
+          "elements": 10321920
+        },
+        "deepstack": [
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.03515625,
+            "relative_RMS": 0.0028199652530662587,
+            "elements": 10321920
+          },
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.12109375,
+            "relative_RMS": 0.005658125875455447,
+            "elements": 10321920
+          },
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.095703125,
+            "relative_RMS": 0.009088246005155962,
+            "elements": 10321920
+          }
+        ]
+      },
+      "calls": [
+        {
+          "call": 0,
+          "resident_vision_s": 1.43370724003762,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        },
+        {
+          "call": 1,
+          "resident_vision_s": 1.4311980898492038,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        },
+        {
+          "call": 2,
+          "resident_vision_s": 1.47616623993963,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        }
+      ],
+      "FP32_cache_bytes": 0
+    },
+    "fp32_bias": {
+      "excluded_first_s": 23.421440970152617,
+      "CPU_FP16_comparison": {
+        "merged": {
+          "finite": true,
+          "raw_bits_equal": false,
+          "max_abs_error": 1.0625,
+          "relative_RMS": 0.012887294160849183,
+          "elements": 10321920
+        },
+        "deepstack": [
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.01953125,
+            "relative_RMS": 0.002198462223910018,
+            "elements": 10321920
+          },
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.09375,
+            "relative_RMS": 0.004358795317185865,
+            "elements": 10321920
+          },
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.068359375,
+            "relative_RMS": 0.007332098152707717,
+            "elements": 10321920
+          }
+        ]
+      },
+      "calls": [
+        {
+          "call": 0,
+          "resident_vision_s": 1.4215423204004765,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        },
+        {
+          "call": 1,
+          "resident_vision_s": 1.4171335301361978,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        },
+        {
+          "call": 2,
+          "resident_vision_s": 1.4171988400630653,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        }
+      ],
+      "FP32_cache_bytes": 2362750400
+    },
+    "fp32_bias_stable_norm": {
+      "excluded_first_s": 4.336902259849012,
+      "CPU_FP16_comparison": {
+        "merged": {
+          "finite": true,
+          "raw_bits_equal": false,
+          "max_abs_error": 0.984375,
+          "relative_RMS": 0.012497077355045636,
+          "elements": 10321920
+        },
+        "deepstack": [
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.02734375,
+            "relative_RMS": 0.002227859294600974,
+            "elements": 10321920
+          },
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.10546875,
+            "relative_RMS": 0.004379561098238082,
+            "elements": 10321920
+          },
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.072265625,
+            "relative_RMS": 0.0072716718815098195,
+            "elements": 10321920
+          }
+        ]
+      },
+      "calls": [
+        {
+          "call": 0,
+          "resident_vision_s": 1.4344327901490033,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        },
+        {
+          "call": 1,
+          "resident_vision_s": 1.432925650384277,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        },
+        {
+          "call": 2,
+          "resident_vision_s": 1.4345563896931708,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        }
+      ],
+      "FP32_cache_bytes": 2362750400
+    },
+    "native_restored": {
+      "excluded_first_s": 1.4359747101552784,
+      "CPU_FP16_comparison": {
+        "merged": {
+          "finite": true,
+          "raw_bits_equal": false,
+          "max_abs_error": 0.7109375,
+          "relative_RMS": 0.01456805331761072,
+          "elements": 10321920
+        },
+        "deepstack": [
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.03515625,
+            "relative_RMS": 0.0028199652530662587,
+            "elements": 10321920
+          },
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.12109375,
+            "relative_RMS": 0.005658125875455447,
+            "elements": 10321920
+          },
+          {
+            "finite": true,
+            "raw_bits_equal": false,
+            "max_abs_error": 0.095703125,
+            "relative_RMS": 0.009088246005155962,
+            "elements": 10321920
+          }
+        ]
+      },
+      "calls": [
+        {
+          "call": 0,
+          "resident_vision_s": 1.4266408002004027,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        },
+        {
+          "call": 1,
+          "resident_vision_s": 1.4554694900289178,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        },
+        {
+          "call": 2,
+          "resident_vision_s": 1.4256108799017966,
+          "repeat": {
+            "merged": {
+              "finite": true,
+              "raw_bits_equal": true,
+              "max_abs_error": 0.0,
+              "relative_RMS": 0.0,
+              "elements": 10321920
+            },
+            "deepstack": [
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              },
+              {
+                "finite": true,
+                "raw_bits_equal": true,
+                "max_abs_error": 0.0,
+                "relative_RMS": 0.0,
+                "elements": 10321920
+              }
+            ]
+          }
+        }
+      ],
+      "FP32_cache_bytes": 0
+    }
+  },
+  "production_changed": false,
+  "CPU_teacher_changed": false,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "parameters_before": "116bedaa90a36cb2703fa76b73aa6742ea51fb1ee2831e3e12a1f87dbcbfd000",
+  "candidate_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+  "native_restoration": {
+    "merged": {
+      "finite": true,
+      "raw_bits_equal": true,
+      "max_abs_error": 0.0,
+      "relative_RMS": 0.0,
+      "elements": 10321920
+    },
+    "deepstack": [
+      {
+        "finite": true,
+        "raw_bits_equal": true,
+        "max_abs_error": 0.0,
+        "relative_RMS": 0.0,
+        "elements": 10321920
+      },
+      {
+        "finite": true,
+        "raw_bits_equal": true,
+        "max_abs_error": 0.0,
+        "relative_RMS": 0.0,
+        "elements": 10321920
+      },
+      {
+        "finite": true,
+        "raw_bits_equal": true,
+        "max_abs_error": 0.0,
+        "relative_RMS": 0.0,
+        "elements": 10321920
+      }
+    ]
+  },
+  "parameters_after": "116bedaa90a36cb2703fa76b73aa6742ea51fb1ee2831e3e12a1f87dbcbfd000",
+  "input_unchanged": true,
+  "completed": true
+}

@@ -1,0 +1,66 @@
+{
+  "scope": "Same-input split-FP16 probability PV control,not a CPU reference change.\n\nOn this910A,arbitrary-FP32 probability matmul has a measured2e-4 gap even\nwith allow_hf32=false. Both operands are FP16-exact in each compensated GEMM;\ncombine FP32 outputs after an exact power-of-two residual scale. No bias,\nclamps,quantized weights or global math flags are changed.\n",
+  "source_sha256": "618dc5003725e844c1d1aea936dc9bce46d0c7b53ea5d25562ffd9e4783eacf3",
+  "cases": {
+    "native_FP32": {
+      "finite": true,
+      "max_abs_error": 0.0007109642028808594,
+      "RMSE": 5.488530310085536e-05,
+      "relative_RMS": 0.00020602722091280564
+    },
+    "split_scale_1": {
+      "same_input_CPU_FP32": {
+        "finite": true,
+        "max_abs_error": 2.6226043701171875e-06,
+        "RMSE": 2.859770940834782e-07,
+        "relative_RMS": 1.0734944076098348e-06
+      },
+      "FP32_probability_reconstruction": {
+        "finite": true,
+        "max_abs_error": 5.960464477539063e-08,
+        "RMSE": 1.7213073336684006e-08,
+        "relative_RMS": 1.0305782648466432e-06
+      },
+      "operand_high_is_FP16_exact": true,
+      "operand_low_is_FP16_exact": true
+    },
+    "split_scale_4096": {
+      "same_input_CPU_FP32": {
+        "finite": true,
+        "max_abs_error": 1.9073486328125e-06,
+        "RMSE": 7.973520737514846e-08,
+        "relative_RMS": 2.993082347422085e-07
+      },
+      "FP32_probability_reconstruction": {
+        "finite": true,
+        "max_abs_error": 5.960464477539063e-08,
+        "RMSE": 7.224533251451626e-10,
+        "relative_RMS": 4.325460536289224e-08
+      },
+      "operand_high_is_FP16_exact": true,
+      "operand_low_is_FP16_exact": true
+    },
+    "split_scale_65536": {
+      "same_input_CPU_FP32": {
+        "finite": true,
+        "max_abs_error": 1.9073486328125e-06,
+        "RMSE": 7.97363474707177e-08,
+        "relative_RMS": 2.993125144074091e-07
+      },
+      "FP32_probability_reconstruction": {
+        "finite": true,
+        "max_abs_error": 5.960464477539063e-08,
+        "RMSE": 7.224517744978612e-10,
+        "relative_RMS": 4.3254512522794826e-08
+      },
+      "operand_high_is_FP16_exact": true,
+      "operand_low_is_FP16_exact": true
+    }
+  },
+  "CPU_reference_changed": false,
+  "production_changed": false,
+  "whole_model_precision_accepted": false,
+  "whole_goal_complete": false,
+  "matmul_allow_hf32_observed": false,
+  "completed": true
+}

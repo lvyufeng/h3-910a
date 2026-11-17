@@ -1,8 +1,9 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round80 CPU FP16 oracle verified; full TP8 repeat failed; small-N zero-padding stability candidate](<artifacts/diagnostics/round80/README.md>),
 > [Round79 real FP16 vision probe: warm1.44s, CPU FP16 difference1.46%, full precision pending](<artifacts/diagnostics/round79/README.md>),
-> [Round78 independent CPU FP16 reference: operator checks passed, full multimodal run in progress](<artifacts/diagnostics/round78/README.md>),
+> [Round78 independent CPU FP16 reference: complete27+50 graph repeated bit-identically](<artifacts/diagnostics/round78/README.md>),
 > [Round77 user-selected CPU FP16 acceptance: public FP16 ports found, independent gold to be built](<artifacts/diagnostics/round77/README.md>),
 > [Round76 actual49-step videos: warm DiT14.66s/step, persistent logo artifacts, FP16 runtime](<artifacts/diagnostics/round76/README.md>),
 > [Round74 complete independent original-BF16 HF reference: selected50 quality mismatch retained](<artifacts/diagnostics/round74/README.md>),

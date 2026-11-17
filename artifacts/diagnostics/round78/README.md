@@ -1,4 +1,13 @@
-# Round78 — independent CPU FP16 encoder reference in progress
+# Round78 — independent CPU FP16 encoder reference verified
+
+The full27-layer vision plus50-layer text graph was executed **twice** from the
+original dense checkpoint converted toFP16. Pre-finalnorm and post-finalnorm
+outputs are repeat-bit-identical;parameters and actual inputs remain unchanged.
+[Final verification](<final_CPU_reference_verification78.json>) checks every used
+shard against the pinned official LFS hashes. [Final receipt](<reference.json>)
+records903 FP16 parameters and the originalFP32 rotary/reduction islands.
+First/second CPU compute costs1811.774/1798.312s are **not NPU performance**.
+The CPU oracle is verified;full910A precision acceptance is still separate.
 
 The user-selected acceptance is CPU FP16 agreement,not forced BF16 agreement.
 The public baseline search is complete and selected reproducible conversion
@@ -61,8 +70,8 @@ are BF16-specific. A clean FP16 candidate must remove those round trips and
 match the original HF dtype/rounding policy. No production encoder was changed
 and no NPU candidate was executed in this round.
 
-[State](<STATE.json>) and [latest archived progress](<progress01.json>) record
-whether the original CPU reference is still running or has completed. All
-wall-clock numbers here are CPU reference cost,**not910A benchmark latency**.
-The whole performance goal remains active;full encoder2s and end-to-end FP16
-precision acceptance are not claimed.
+[State](<STATE.json>) and [final verification](<final_CPU_reference_verification78.json>)
+record the completed repeat-verified CPU reference. Historical progress snapshots
+remain unchanged. All wall-clock numbers here are CPU reference cost,
+**not910A benchmark latency**. The whole performance goal remains active;
+full encoder2s and end-to-end NPU FP16 precision acceptance are not claimed.

@@ -1,0 +1,138 @@
+{
+  "scope": "Summarize measured FP16 operator factors without changing the precision reference.",
+  "CPU_reference_completed_and_verified": true,
+  "reference_receipt_sha256": "44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9",
+  "CPU_reference_unmodified_by_factor_experiments": true,
+  "native_FP16_biased_linear_equals_FP16_no_bias_GEMM_plus_FP16_bias_add": true,
+  "same_input_linear_relative_RMS": {
+    "native_no_bias": 9.74706700605686e-06,
+    "native_bias": 0.00036115180760065853,
+    "FP32_bias_proxy": 9.182122998846063e-06
+  },
+  "LayerNorm_classified": {
+    "LayerNorm_native_constant": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 1152,
+      "max_abs_error": 0.9871826171875,
+      "RMSE": 0.7046945916112143,
+      "relative_RMS": 6.985016525942557,
+      "changed_fraction": 1.0
+    },
+    "LayerNorm_stable_constant": {
+      "finite": true,
+      "raw_bits_equal": true,
+      "elements": 1152,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_RMS": 0.0,
+      "changed_fraction": 0.0
+    },
+    "LayerNorm_native_ordinary": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 34560,
+      "max_abs_error": 0.0009765625,
+      "RMSE": 7.879606981398486e-06,
+      "relative_RMS": 7.770652506646439e-06,
+      "changed_fraction": 0.00017361111531499773
+    },
+    "LayerNorm_stable_ordinary": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 34560,
+      "max_abs_error": 0.00048828125,
+      "RMSE": 4.049437543915542e-06,
+      "relative_RMS": 3.993444352671347e-06,
+      "changed_fraction": 0.0006944444612599909
+    },
+    "LayerNorm_stable_repeat": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 36864,
+      "max_abs_error": 0.00048828125,
+      "RMSE": 5.042443499359789e-06,
+      "relative_RMS": 5.0511147828741645e-06,
+      "changed_fraction": 0.0008409288129769266
+    }
+  },
+  "HF32_flag_control": {
+    "before": {
+      "matmul_allow_hf32": false,
+      "conv_allow_hf32": true
+    },
+    "restored": {
+      "matmul_allow_hf32": false,
+      "conv_allow_hf32": true
+    },
+    "PV_errors_identical_under_false_and_true": true
+  },
+  "grouped_matmul_FP16_inputs_FP32_output_supported": false,
+  "same_input_PV_relative_RMS": {
+    "native_arbitrary_FP32_probabilities": 0.00020602722091280564,
+    "split65536": 2.993125144074091e-07
+  },
+  "split65536_probability_reconstruction_not_exact": true,
+  "whole_vision_phases": {
+    "native_before": {
+      "CPU_FP16_merged_relative_RMS": 0.01456805331761072,
+      "CPU_FP16_DeepStack_relative_RMS": [
+        0.0028199652530662587,
+        0.005658125875455447,
+        0.009088246005155962
+      ],
+      "resident_vision_median_s": 1.4545579198747873,
+      "FP32_shadow_cache_bytes": 0
+    },
+    "fp32_bias": {
+      "CPU_FP16_merged_relative_RMS": 0.012887294160849183,
+      "CPU_FP16_DeepStack_relative_RMS": [
+        0.002198462223910018,
+        0.004358795317185865,
+        0.007332098152707717
+      ],
+      "resident_vision_median_s": 1.4394267001189291,
+      "FP32_shadow_cache_bytes": 2362750400
+    },
+    "fp32_bias_compensated_pv": {
+      "CPU_FP16_merged_relative_RMS": 0.011815016667650611,
+      "CPU_FP16_DeepStack_relative_RMS": [
+        0.0021924996754327276,
+        0.0043261564288040715,
+        0.00723690698774944
+      ],
+      "resident_vision_median_s": 2.2484253901056945,
+      "FP32_shadow_cache_bytes": 2362750400
+    },
+    "fp32_bias_compensated_pv_stable_norm": {
+      "CPU_FP16_merged_relative_RMS": 0.012105196771037907,
+      "CPU_FP16_DeepStack_relative_RMS": [
+        0.002189067795876717,
+        0.00429650035475906,
+        0.007194031529070925
+      ],
+      "resident_vision_median_s": 2.27238739002496,
+      "FP32_shadow_cache_bytes": 2362750400
+    },
+    "native_restored": {
+      "CPU_FP16_merged_relative_RMS": 0.01456805331761072,
+      "CPU_FP16_DeepStack_relative_RMS": [
+        0.0028199652530662587,
+        0.005658125875455447,
+        0.009088246005155962
+      ],
+      "resident_vision_median_s": 1.4545639199204743,
+      "FP32_shadow_cache_bytes": 0
+    }
+  },
+  "native_restored_bit_equal": true,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "remaining": [
+    "Theseleafcontrolsarenotfullencoderacceptance",
+    "FP32biasproxyandtwoPVgemmsnotproductionoptimizedkernels",
+    "CompensatedPVimprovesfullvisionRR1.46to1.18percentbutslowsvision1.45to2.25s",
+    "CompleteTP8baselinecurrentlyrunning",
+    "KeepCPUFP16asuserreference;noBF16requirementorafterthefactthreshold"
+  ]
+}

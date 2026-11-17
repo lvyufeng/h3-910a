@@ -1,0 +1,134 @@
+{
+  "scope": "Controlled process-local HF32 policy and FP64 diagnostic checks.\n\nThis is a private probe process;old policy values are restored in finally.\nNo model/reference source changes or machine-wide/CANN configuration edits.\nThe CPU FP16 model remains the precision acceptance reference;FP64 here is a\nlocal diagnostic for interpreting the two implementations,not a new teacher.\n",
+  "source_sha256": "4bba30fa5992170f9cff6988df9569e408470d43d87945fbdd4548adf37e1edb",
+  "cases": {
+    "Attention_PV": {
+      "CPU_FP32_vs_FP64": {
+        "finite": true,
+        "max_abs_error": 2.215639003377845e-06,
+        "RMSE": 7.632205065588091e-08,
+        "relative_RMS": 2.8649600350816125e-07
+      },
+      "default": {
+        "actual_matmul_allow_hf32": false,
+        "NPU_FP32_vs_CPU_FP32": {
+          "finite": true,
+          "max_abs_error": 0.0007109642028808594,
+          "RMSE": 5.488530310085536e-05,
+          "relative_RMS": 0.00020602722091280564
+        },
+        "NPU_FP32_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0007108952328835905,
+          "RMSE": 5.488532404796607e-05,
+          "relative_RMS": 0.0002060272995269818
+        }
+      },
+      "false": {
+        "actual_matmul_allow_hf32": false,
+        "NPU_FP32_vs_CPU_FP32": {
+          "finite": true,
+          "max_abs_error": 0.0007109642028808594,
+          "RMSE": 5.488530310085536e-05,
+          "relative_RMS": 0.00020602722091280564
+        },
+        "NPU_FP32_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0007108952328835905,
+          "RMSE": 5.488532404796607e-05,
+          "relative_RMS": 0.0002060272995269818
+        }
+      },
+      "true": {
+        "actual_matmul_allow_hf32": true,
+        "NPU_FP32_vs_CPU_FP32": {
+          "finite": true,
+          "max_abs_error": 0.0007109642028808594,
+          "RMSE": 5.488530310085536e-05,
+          "relative_RMS": 0.00020602722091280564
+        },
+        "NPU_FP32_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0007108952328835905,
+          "RMSE": 5.488532404796607e-05,
+          "relative_RMS": 0.0002060272995269818
+        }
+      }
+    },
+    "LayerNorm": {
+      "constant": {
+        "CPU_FP16_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0,
+          "RMSE": 0.0,
+          "relative_RMS": 0.0
+        },
+        "NPU_native_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.945068359375,
+          "RMSE": 0.6990893223594966,
+          "relative_RMS": 7.129408484800685
+        },
+        "NPU_stable_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0,
+          "RMSE": 0.0,
+          "relative_RMS": 0.0
+        }
+      },
+      "near_constant_high_offset": {
+        "CPU_FP16_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0008173435170206744,
+          "RMSE": 0.0002082608765458509,
+          "relative_RMS": 0.00020768812069883527
+        },
+        "NPU_native_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0008173435170206744,
+          "RMSE": 0.0002072006185259161,
+          "relative_RMS": 0.00020663077858413596
+        },
+        "NPU_stable_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0008173435170206744,
+          "RMSE": 0.000203360517847859,
+          "relative_RMS": 0.0002028012388916704
+        }
+      },
+      "ordinary": {
+        "CPU_FP16_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0013954011863219762,
+          "RMSE": 0.0002096974334715236,
+          "relative_RMS": 0.00020879251039541906
+        },
+        "NPU_native_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0013954011863219762,
+          "RMSE": 0.00020969740963370153,
+          "relative_RMS": 0.00020879248666046615
+        },
+        "NPU_stable_vs_FP64": {
+          "finite": true,
+          "max_abs_error": 0.0013954011863219762,
+          "RMSE": 0.00020969745385338503,
+          "relative_RMS": 0.00020879253068932513
+        }
+      }
+    }
+  },
+  "production_changed": false,
+  "CPU_reference_redefined": false,
+  "whole_model_precision_accepted": false,
+  "whole_goal_complete": false,
+  "policy_before": {
+    "matmul_allow_hf32": false,
+    "conv_allow_hf32": true
+  },
+  "completed": true,
+  "policy_restored": {
+    "matmul_allow_hf32": false,
+    "conv_allow_hf32": true
+  }
+}

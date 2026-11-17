@@ -1,0 +1,93 @@
+{
+  "scope": "Check native FP16 Linear with nonzero-storage-offset slices against zero-offset clones.\n\nSame-input one-device operator probe;does not replay TP8 or alter production.\nThe original TP8 log warns that nonzero storage offsets are untrustworthy.\nTorch contiguous() is insufficient when a contiguous slice already has a\nnonzero offset;clone() materializes a real zero-offset operand.\n",
+  "source_sha256": "32587a673dfac0efb6b2336556c84502be3021ddec04a3939b2487ffbca3578c",
+  "cases": [
+    {
+      "name": "kv_small",
+      "shape": {
+        "M": 2043,
+        "K": 5120,
+        "N": 128
+      },
+      "view_storage_offset": 5242880,
+      "view_is_contiguous": true,
+      "contiguous_still_offset": 5242880,
+      "clone_storage_offset": 0,
+      "view_vs_clone": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00048828125,
+        "relative_RMS": 3.256745989618751e-06
+      },
+      "view_repeat": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00048828125,
+        "relative_RMS": 4.377483103590173e-06
+      },
+      "clone_repeat": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.000244140625,
+        "relative_RMS": 2.9418687409521907e-06
+      },
+      "view_vs_CPU": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00048828125,
+        "relative_RMS": 1.0941479197883257e-05
+      },
+      "clone_vs_CPU": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.00048828125,
+        "relative_RMS": 1.1241192161590193e-05
+      }
+    },
+    {
+      "name": "mlp_up",
+      "shape": {
+        "M": 2043,
+        "K": 5120,
+        "N": 3456
+      },
+      "view_storage_offset": 17694720,
+      "view_is_contiguous": true,
+      "contiguous_still_offset": 17694720,
+      "clone_storage_offset": 0,
+      "view_vs_clone": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_RMS": 0.0
+      },
+      "view_repeat": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_RMS": 0.0
+      },
+      "clone_repeat": {
+        "raw_bits_equal": true,
+        "finite": true,
+        "max_abs_error": 0.0,
+        "relative_RMS": 0.0
+      },
+      "view_vs_CPU": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0009765625,
+        "relative_RMS": 1.3978472016421035e-05
+      },
+      "clone_vs_CPU": {
+        "raw_bits_equal": false,
+        "finite": true,
+        "max_abs_error": 0.0009765625,
+        "relative_RMS": 1.3978472016421035e-05
+      }
+    }
+  ],
+  "production_changed": false,
+  "whole_goal_complete": false,
+  "completed": true
+}

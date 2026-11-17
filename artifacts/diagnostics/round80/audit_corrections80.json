@@ -1,0 +1,11 @@
+{
+  "scope":"Root correction of fresh-fork shape and HF32 assumptions before fullNPUexecution",
+  "CPU_precision_reference_unchanged":true,
+  "candidate_original_code_unchanged":true,
+  "batch_shape_correction":{"incorrect_claim":"A bare text_model return means _encode(...)[0] always selects one token and fails","verified_actual_flow":"IDs[1,2043]→embedding[1,2043,5120]→attention/MLP/residualsamebatch→baretensor[1,2043,5120];[0]correctlyremovessingletonbatch","source":"artifacts/diagnostics/round79/candidate/candidate_encoder79.py","source_sha256":"2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78","production_bug_claim_rejected":true,"driver_fixed_before_execution":"Stockencode_idsprobedandusedforwarmingifitmatchesexplicitpath.Noassumeddefectfixorproductionedit."},
+  "HF32_hypothesis_correction":{"incorrect_assumption":"TheFP32PVgapismainlycausedbyallow_hf32defaulttrue","observed":"Defaultmatmulallow_hf32=false;forcingfalse/truewithinprivateprocessproducedidenticalPVerrors2.06e-4","process_policy_restored":true,"evidence":"policy.json","kernel_internal_precision_not_inferred_from_flag":true},
+  "LayerNorm_correction":{"bulk12percent_relative_error_is_not_ordinary_case":true,"constant_row_NPU_native_pseudo_output_is_real":"~0.987maxerror;CPUFP16andshiftedstableF32matchFP64constantresult","ordinary_rows_NPU_vs_CPU_relative_RMS":7.770652506646439e-06,"stable_decomposition_not_bit_stable_in_probe":true},
+  "Linear_correction":{"direct_NPU_Half_biasedLinear_extra_output_rounding_measured":true,"explicit_F32_proxy_keeps_originalFP16parameter_values":true,"groupedFP16inFP32out_frameworkfallback_rejected_by_device":true,"AscendC_FP16_GEMM_FP32_accumulator_output_remains_future_kernel_work":true},
+  "user_criterion":"CPUFP16agreementnotforcedBF16;FP64thirdlegisdiagnosticonlynotnewteacher",
+  "whole_goal_complete":false
+}

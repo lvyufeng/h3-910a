@@ -1,0 +1,28 @@
+{
+  "round":80,
+  "goal_revision":15,
+  "status":"CPU_FP16_gold_verified_full_TP8_baseline_repeat_failed_smallN_fix_candidate_identified",
+  "whole_goal_complete":false,
+  "precision_acceptance_reference":"IndependentofficialHFCPUFP16originaloperators;noforcedBF16agreement",
+  "CPU_gold":{"reference":"../round78/reference.json","verification":"../round78/final_CPU_reference_verification78.json","receipt_sha256":"44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9","original_job":"bash-91556f3a44cd4289","job_completed_exit_code":0,"job_collected":true,"vision_layers":27,"text_layers":50,"full_repeat_pre_and_post_norm_bit_equal":true,"parameters_and_inputs_unchanged":true,"parameter_dtype":"FP16","parameter_tensors":903,"original_F32_rotary_buffers":3,"official_used_shards_LFS_SHA_verified":12},
+  "full_TP8_attempt":{"job":"bash-2fd6ae9ed21b4a8a","root":"/tmp/h3_round80_full_fp16_01","supervisor_pid":4128719,"source_sha256":"6e07e427d4a2afa00b52aedfa7b42930541d0d5376fbbc5fbeddb3cbb9681d89","exit_code":1,"collected":true,"all8rank_receipts_saved":true,"first_full50layers_executed_finite":true,"all8_first_outputs_identical":true,"CPU_FP16_selected50_relative_RMS":0.07569804692654716,"repeat_relative_RMS":0.009011207199745425,"repeat_bits_equal":false,"failure":"repeat forward is not bit-identical to the first output on this rank","positions_and_visual_mask_match_CPU_bits":true,"embedding_hash_mismatch_needs_numeric_or_signedzero_control":true,"warmed_encoder_latency_measured":false,"stock_encode_ids_probe_reached":false,"same_run_replay_forbidden":true},
+  "full_encoder_precision_accepted":false,
+  "smallN_stability_factor":{"receipt":"kv_padding.json","summary":"kv_stability_summary80.json","M":2043,"K":5120,"N128_repeat_bit_equal":0,"repeat_calls":8,"N256_N512_N1024_zero_padding_repeat_bit_equal":8,"onlyzero_output_rows_added":true,"weight_prefix_unchanged":true,"CPU_relative_RMS_N128":1.053572447692752e-05,"CPU_relative_RMS_N256":1.4611542762253208e-05,"full_encoder_fix_proven":false},
+  "operator_findings":{"biased_Half_Linear_has_extra_FP16_bias_rounding_measured":true,"ordinary_LayerNorm_CPU_difference_relative_RMS":7.770652506646439e-06,"constant_LayerNorm_native_NPU_pseudo_output_real":true,"stable_LayerNorm_not_repeat_bit_stable":true,"arbitrary_F32_PV_gap_persists_with_allow_hf32_false_and_true":true,"split65536_PV_relative_RMS":2.993125144074091e-07,"grouped_Half_input_F32_output_not_supported_on_device":true,"storage_clone_alone_does_not_make_smallN_repeat_stable":true},
+  "vision_factor_findings":{"native_merged_RR":0.01456805331761072,"FP32_bias_proxy_RR":0.012887294160849183,"FP32_bias_and_compensatedPV_RR":0.011815016667650611,"FP32_bias_and_compensatedPV_vision_s":2.2484253901056945,"proxy_FP32_extra_cache_bytes":2362750400,"native_restored_bit_equal":true,"deployed_or_called_success":false},
+  "audit_corrections":"audit_corrections80.json:baretexttensorstillpreservesbatch;[0]legitimate.Noinventedproductionfix. HF32 flaghypothesisrejectedbyactualcontrolledprobe;noCPUgoldchange.",
+  "cleanup":{"file":"final_cleanup80.json","production_sources_unchanged":23,"installed_api_sources_unchanged":13,"CPU_and_NPU_workers_remaining":0,"all_current_background_jobs_collected":true,"ts217_owned_lease_released":true},
+  "tests_passed":{"R80_operator_evidence":7,"R80_fullTP8_source_and_failure_evidence":18,"R78_reference_contracts":7},
+  "all_required_fresh_fork_results_collected":true,
+  "next_steps":[
+    "Liveclaimownedts217again before newNPUcompute;leasewasreleased afterallR80probesandfailedTP8workersended.",
+    "RunnewprivatefullTP8attemptwithFP16K/Voutputrowspaddedfrom128to256(or512) usingonlyzerooutputrowsanddiscardextraoutputs;bothweightprefixandCPUteacher unchanged. Do not overwrite/replayR80run01orchangeexecuteddriver6e07.",
+    "Keep all50layers/vision/DeepStack real and sameCPUFP16gold; first testrepeatstability.Thencomparefullselected50andnormal/textvssinkmetrics,not justwholeRMSdominatedbyoutliers.",
+    "Fix nativeF16bias epilogue andpartialGEMMFP32output usingAscendC/TBE asneeded; npu_grouped_matmulFp32outputwasrejectedytypeF16.",
+    "Embeddinghashfalsemustbediagnosedwithsameinputactualfullvalues/signzeroCPUweightunderflow beforeclaimingincorrectembeddings.Numericalpositions/maskexactalreadyproved.",
+    "CompensatedPVfactorlowerederrorbutspeed2.25svisiononly failsfull2sencoderbudget;do notdeployproxyweightcachesasfinaloptimization.",
+    "MaintainuserCPUFP16gate—not oldBF16gap40.95—andnoafterthefactwaivernotbitrepeatforbaseline7.57percentdifference.",
+    "OfficialA2/A3benchmarkT2VAvsourFL2VA/task/thermal/offload/fullstagequalificationsandDiT/VAEgoalsremainactive.",
+    "Everynewsubagentmustbefreshfork;oldinactiveagentsmustnotberesumed."
+  ]
+}

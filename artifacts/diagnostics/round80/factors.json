@@ -1,0 +1,134 @@
+{
+  "scope": "Same-input FP16 LayerNorm stability and Linear bias-rounding factor controls.\n\nCPU nativeFP16 remains the reference. Stable FP32 LayerNorm is a candidate\noperator decomposition,not a replacement teacher;native no-bias GEMM and explicit\nFP16-bias-after-GEMM controls distinguish an extra rounding from GEMM error.\nNo production edits,global precision toggles or BF16 requirement.\n",
+  "source_sha256": "88a0820f4e4fea7e8af43ca12f7d8651ba114fcd31242472635a74b6d8f6a3cf",
+  "cases": {
+    "LayerNorm_native_constant": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 1152,
+      "max_abs_error": 0.9871826171875,
+      "RMSE": 0.7046945916112143,
+      "relative_RMS": 6.985016525942557,
+      "changed_fraction": 1.0
+    },
+    "LayerNorm_stable_constant": {
+      "finite": true,
+      "raw_bits_equal": true,
+      "elements": 1152,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_RMS": 0.0,
+      "changed_fraction": 0.0
+    },
+    "LayerNorm_native_high_offset_nonconstant": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 1152,
+      "max_abs_error": 0.0009765625,
+      "RMSE": 0.0002285611456024813,
+      "relative_RMS": 0.00022489395117090356,
+      "changed_fraction": 0.2708333432674408
+    },
+    "LayerNorm_stable_high_offset_nonconstant": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 1152,
+      "max_abs_error": 0.0009765625,
+      "RMSE": 0.0001633691234531862,
+      "relative_RMS": 0.0001607479152935927,
+      "changed_fraction": 0.1848958283662796
+    },
+    "LayerNorm_native_ordinary": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 34560,
+      "max_abs_error": 0.0009765625,
+      "RMSE": 7.879606981398486e-06,
+      "relative_RMS": 7.770652506646439e-06,
+      "changed_fraction": 0.00017361111531499773
+    },
+    "LayerNorm_stable_ordinary": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 34560,
+      "max_abs_error": 0.00048828125,
+      "RMSE": 4.049437543915542e-06,
+      "relative_RMS": 3.993444352671347e-06,
+      "changed_fraction": 0.0006944444612599909
+    },
+    "LayerNorm_stable_repeat": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 36864,
+      "max_abs_error": 0.00048828125,
+      "RMSE": 5.042443499359789e-06,
+      "relative_RMS": 5.0511147828741645e-06,
+      "changed_fraction": 0.0008409288129769266
+    },
+    "Linear_no_bias_native_vs_CPU": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 442368,
+      "max_abs_error": 0.00390625,
+      "RMSE": 1.9818183549512475e-05,
+      "relative_RMS": 9.74706700605686e-06,
+      "changed_fraction": 0.0012636537430807948
+    },
+    "Linear_with_bias_native_vs_CPU": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 442368,
+      "max_abs_error": 0.0078125,
+      "RMSE": 0.0007343403685564665,
+      "relative_RMS": 0.00036115180760065853,
+      "changed_fraction": 0.25563785433769226
+    },
+    "Linear_native_with_bias_vs_CPU_two_rounding_factor": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 442368,
+      "max_abs_error": 0.00390625,
+      "RMSE": 1.9883417451308482e-05,
+      "relative_RMS": 9.778735243284694e-06,
+      "changed_fraction": 0.0008205837802961469
+    },
+    "Linear_native_with_bias_vs_NPU_two_rounding_factor": {
+      "finite": true,
+      "raw_bits_equal": true,
+      "elements": 442368,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_RMS": 0.0,
+      "changed_fraction": 0.0
+    },
+    "CPU_two_rounding_factor_vs_CPU_native_fused_bias": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 442368,
+      "max_abs_error": 0.0078125,
+      "RMSE": 0.0007343318612384362,
+      "relative_RMS": 0.00036114762366441317,
+      "changed_fraction": 0.25557681918144226
+    },
+    "Linear_FP32_bias_island_vs_CPU": {
+      "finite": true,
+      "raw_bits_equal": false,
+      "elements": 442368,
+      "max_abs_error": 0.00390625,
+      "RMSE": 1.8670275062167873e-05,
+      "relative_RMS": 9.182122998846063e-06,
+      "changed_fraction": 0.0011777525069192052
+    }
+  },
+  "production_changed": false,
+  "whole_model_precision_accepted": false,
+  "whole_goal_complete": false,
+  "grouped_matmul_FP16_inputs_FP32_output": {
+    "supported": false,
+    "failure": {
+      "type": "RuntimeError",
+      "message": "npu_grouped_matmul:../third_party/op-plugin/op_plugin/ops/opapi/GroupedMatmulKernelNpuOpApi.cpp:349 NPU function error: call aclnnGroupedMatmulV5 failed, error code is 161002\n[ERROR] 2026-11-17-09:11:10 (PID:4096003, Device:0, RankID:-1) ERR00100 PTA call acl api failed.\n[PID: 4096003] 2026-11-17-09:11:10.205.505 AclNN_Parameter_Error(EZ1001): Tensor tensor expected dtype is DT_FLOAT16 but found DT_FLOAT.\nTraceBack (most recent call last):\n        In op [grouped_matmul], when non-quant, the data type of [y] is not supported. Constraint:[y dtype should be FLOAT16].\n        In op [grouped_matmul], when non-quant, data type check failed.\n"
+    }
+  },
+  "completed": true
+}
