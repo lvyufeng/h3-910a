@@ -1,6 +1,8 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round74 complete independent original-BF16 HF reference: selected50 quality mismatch retained](<artifacts/diagnostics/round74/README.md>),
+> [Round75 exact output-column/gather probes: narrow FC2 failure and separate padding recovery](<artifacts/diagnostics/round75/README.md>),
 > [Round73 exact strided vision attention cast: complete encode6.464s→5.384s, not yet2s](<artifacts/diagnostics/round73/README.md>),
 > [Round72 exact partial vision RoPE tail: complete encode6.589s→6.463s; unsupported gather retained](<artifacts/diagnostics/round72/README.md>),
 > [Round71 exact vision Linear factors: complete encode6.927s→6.556s and measured attention/RoPE bottlenecks](<artifacts/diagnostics/round71/README.md>),

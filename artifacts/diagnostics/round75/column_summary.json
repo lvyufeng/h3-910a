@@ -1,0 +1,287 @@
+{
+  "scope": "ActualL0singleNPUserialcolumngeometryonly;keepsfullK,fusedbias,originalinput/modelbytes. CurrentBF16outputinterface/privateFP32proofs;notall116Linears/headparallel/TP8/wholeencoder/qualityacceptance.",
+  "tested_successful_native_modules": {
+    "qkv": {
+      "native_width": {
+        "FP32_and_BF16_full_reconstruction_exact": true,
+        "parts": 8,
+        "standalone_part_median_s": [
+          0.0017699203453958035,
+          0.001668510027229786,
+          0.0017028199508786201,
+          0.0016863797791302204,
+          0.0016848999075591564,
+          0.0016678902320563793,
+          0.0016434001736342907,
+          0.0016620401293039322
+        ],
+        "same_pair_full_reference_median_s": [
+          0.008746650069952011,
+          0.008362900000065565,
+          0.008390259929001331,
+          0.008478969801217318,
+          0.00845948001369834,
+          0.008381130173802376,
+          0.008412410039454699,
+          0.008423139806836843
+        ]
+      }
+    },
+    "proj": {
+      "native_width": {
+        "FP32_and_BF16_full_reconstruction_exact": true,
+        "parts": 8,
+        "standalone_part_median_s": [
+          0.0010104398243129253,
+          0.0009670797735452652,
+          0.0009931102395057678,
+          0.0009917998686432838,
+          0.0010009496472775936,
+          0.0009828200563788414,
+          0.0010409802198410034,
+          0.0009790402837097645
+        ],
+        "same_pair_full_reference_median_s": [
+          0.0033799298107624054,
+          0.003342609852552414,
+          0.0032928800210356712,
+          0.0033371299505233765,
+          0.0033291601575911045,
+          0.00333036994561553,
+          0.0033066696487367153,
+          0.0033417101949453354
+        ]
+      }
+    },
+    "fc1": {
+      "native_width": {
+        "FP32_and_BF16_full_reconstruction_exact": true,
+        "parts": 8,
+        "standalone_part_median_s": [
+          0.0019668098539114,
+          0.001997319981455803,
+          0.001940620131790638,
+          0.0019785002805292606,
+          0.0019899201579391956,
+          0.0019890801049768925,
+          0.0019301599822938442,
+          0.0019871597178280354
+        ],
+        "same_pair_full_reference_median_s": [
+          0.010292539838701487,
+          0.0100234798155725,
+          0.010012839920818806,
+          0.01001891028136015,
+          0.010038410313427448,
+          0.0101353800855577,
+          0.010021280031651258,
+          0.010060899890959263
+        ]
+      },
+      "zero_pad_544": {
+        "FP32_and_BF16_full_reconstruction_exact": true,
+        "parts": 8,
+        "standalone_part_median_s": [
+          0.001963050104677677,
+          0.001954559702426195,
+          0.0019455901347100735,
+          0.0019524302333593369,
+          0.001920510083436966,
+          0.0019261203706264496,
+          0.0019336198456585407,
+          0.0019616498611867428
+        ],
+        "same_pair_full_reference_median_s": [
+          0.010110159870237112,
+          0.010040340013802052,
+          0.01015214016661048,
+          0.010049870237708092,
+          0.010118209756910801,
+          0.010081029962748289,
+          0.010062410030514002,
+          0.00995005015283823
+        ]
+      }
+    }
+  },
+  "rejected_fc2_144": {
+    "partition": 0,
+    "BF16_vs_full": {
+      "shape": [
+        8064,
+        144
+      ],
+      "dtype": "torch.bfloat16",
+      "elements": 1161216,
+      "different_words": 354,
+      "raw_bits_equal": false,
+      "finite": true,
+      "max_abs_error": 0.0078125,
+      "relative_rms": 1.781788413732873e-05
+    },
+    "FP32_vs_full": {
+      "shape": [
+        8064,
+        144
+      ],
+      "dtype": "torch.float32",
+      "elements": 1161216,
+      "different_words": 908200,
+      "raw_bits_equal": false,
+      "finite": true,
+      "max_abs_error": 3.814697265625e-06,
+      "relative_rms": 2.2465889492679347e-07
+    },
+    "repeat_proofs": [
+      {
+        "fp32": {
+          "shape": [
+            8064,
+            144
+          ],
+          "dtype": "torch.float32",
+          "elements": 1161216,
+          "different_words": 136737,
+          "raw_bits_equal": false,
+          "finite": true,
+          "max_abs_error": 4.76837158203125e-07,
+          "relative_rms": 3.442604356347458e-08
+        },
+        "bf16": {
+          "shape": [
+            8064,
+            144
+          ],
+          "dtype": "torch.bfloat16",
+          "elements": 1161216,
+          "different_words": 26,
+          "raw_bits_equal": false,
+          "finite": true,
+          "max_abs_error": 0.001953125,
+          "relative_rms": 2.9685221662381067e-06
+        }
+      },
+      {
+        "fp32": {
+          "shape": [
+            8064,
+            144
+          ],
+          "dtype": "torch.float32",
+          "elements": 1161216,
+          "different_words": 130743,
+          "raw_bits_equal": false,
+          "finite": true,
+          "max_abs_error": 4.76837158203125e-07,
+          "relative_rms": 3.307614282122022e-08
+        },
+        "bf16": {
+          "shape": [
+            8064,
+            144
+          ],
+          "dtype": "torch.bfloat16",
+          "elements": 1161216,
+          "different_words": 17,
+          "raw_bits_equal": false,
+          "finite": true,
+          "max_abs_error": 0.0009765625,
+          "relative_rms": 1.3222264050052308e-06
+        }
+      },
+      {
+        "fp32": {
+          "shape": [
+            8064,
+            144
+          ],
+          "dtype": "torch.float32",
+          "elements": 1161216,
+          "different_words": 152676,
+          "raw_bits_equal": false,
+          "finite": true,
+          "max_abs_error": 4.76837158203125e-07,
+          "relative_rms": 3.517476422411897e-08
+        },
+        "bf16": {
+          "shape": [
+            8064,
+            144
+          ],
+          "dtype": "torch.bfloat16",
+          "elements": 1161216,
+          "different_words": 32,
+          "raw_bits_equal": false,
+          "finite": true,
+          "max_abs_error": 0.0009765625,
+          "relative_rms": 1.906683442025786e-06
+        }
+      }
+    ],
+    "acceptance_rejected": true
+  },
+  "separate_fc2_zero_padding": {
+    "160": {
+      "FP32_and_BF16_full_reconstruction_exact": true,
+      "repeat_stable": true,
+      "standalone_part_median_s": [
+        0.0018032398074865341,
+        0.0017527202144265175,
+        0.001727299764752388,
+        0.0016992897726595402,
+        0.001745549961924553,
+        0.0017555500380694866,
+        0.0017212200909852982,
+        0.001701090019196272
+      ]
+    },
+    "192": {
+      "FP32_and_BF16_full_reconstruction_exact": true,
+      "repeat_stable": true,
+      "standalone_part_median_s": [
+        0.0018154596909880638,
+        0.001799160148948431,
+        0.0017961803823709488,
+        0.0018205498345196247,
+        0.0018025902099907398,
+        0.0018345997668802738,
+        0.0018290802836418152,
+        0.001806620042771101
+      ]
+    },
+    "256": {
+      "FP32_and_BF16_full_reconstruction_exact": true,
+      "repeat_stable": true,
+      "standalone_part_median_s": [
+        0.002052290365099907,
+        0.0020704902708530426,
+        0.002028520219027996,
+        0.002063729800283909,
+        0.002046989742666483,
+        0.0020631100051105022,
+        0.0020409603603184223,
+        0.00203484995290637
+      ]
+    },
+    "512": {
+      "FP32_and_BF16_full_reconstruction_exact": true,
+      "repeat_stable": true,
+      "standalone_part_median_s": [
+        0.0029175300151109695,
+        0.0027791298925876617,
+        0.0027677598409354687,
+        0.002766250167042017,
+        0.0027861199341714382,
+        0.00280814990401268,
+        0.002799049951136112,
+        0.0027436302043497562
+      ]
+    }
+  },
+  "unmodified_144_fc2_family_accepted": false,
+  "all_later_layers_and_mergers_covered": false,
+  "whole_encoder_acceleration_proven": false,
+  "official_goal_complete": false,
+  "production_deployed": false,
+  "smallest_tested_strictly_exact_fc2_width": 160
+}

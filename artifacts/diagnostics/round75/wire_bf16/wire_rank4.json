@@ -1,0 +1,946 @@
+{
+  "rank": 4,
+  "mode": "bf16",
+  "world_size": 8,
+  "device_index": 4,
+  "source_sha256": "0878ebbce12bf7fadb3e2011278e84a2c9982fe7f7df250bacdc0bca0e64166a",
+  "scope": "Genuine eight-rank raw BF16/INT32 gather on the CURRENT EXPERIMENTAL encoder group.\n\nThis uses the same vllm_omni GroupCoordinator constructor as the resident\nexperimental encoder,not a claim about vLLM's different device communicator.\nGroupCoordinator.all_gather has NO FP16 cast in this source;its all_reduce does.\nBF16 direct transmission and INT32 pair transport are separate run roots. Each\npayload covers raw signedzero/subnormal/extreme/Inf/NaN words;proofs use integer\nchannels,never float()/BF16 CPU conversion that can normalize NaN payloads.\nOnly fixed equal-size collectives are exercised. No whole-encoder performance.\n",
+  "cases": [
+    {
+      "rows": 128,
+      "bf16_columns": 544,
+      "source_physical_format": 2,
+      "source_stride": [
+        544,
+        1
+      ],
+      "source_storage_offset": 0,
+      "source_ptr_mod32": 0,
+      "raw_device_view_roundtrip": {
+        "shape_int32": [
+          128,
+          272
+        ],
+        "int32_elements": 34816,
+        "bf16_words": 69632,
+        "different_int32_pairs": 0,
+        "different_bf16_words": 0,
+        "raw_pairs_equal": true,
+        "observed_sha256": "c266345b5566a2192750263254df588f066986c00b320b62b418f84c1fbb6b52",
+        "expected_sha256": "c266345b5566a2192750263254df588f066986c00b320b62b418f84c1fbb6b52"
+      },
+      "directions": {
+        "0": {
+          "first_compile_control_s_excluded": 0.6522234296426177,
+          "proof": {
+            "shape_int32": [
+              1024,
+              272
+            ],
+            "int32_elements": 278528,
+            "bf16_words": 557056,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "204d36e29ba90b00acd2d4c53e377343acb32324715ca89f0d9424a925245220",
+            "expected_sha256": "204d36e29ba90b00acd2d4c53e377343acb32324715ca89f0d9424a925245220"
+          },
+          "warm_same_call_s": [
+            0.0019901604391634464,
+            0.0031083100475370884,
+            0.0034666704013943672
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                1024,
+                272
+              ],
+              "int32_elements": 278528,
+              "bf16_words": 557056,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "204d36e29ba90b00acd2d4c53e377343acb32324715ca89f0d9424a925245220",
+              "expected_sha256": "204d36e29ba90b00acd2d4c53e377343acb32324715ca89f0d9424a925245220"
+            },
+            {
+              "shape_int32": [
+                1024,
+                272
+              ],
+              "int32_elements": 278528,
+              "bf16_words": 557056,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "204d36e29ba90b00acd2d4c53e377343acb32324715ca89f0d9424a925245220",
+              "expected_sha256": "204d36e29ba90b00acd2d4c53e377343acb32324715ca89f0d9424a925245220"
+            },
+            {
+              "shape_int32": [
+                1024,
+                272
+              ],
+              "int32_elements": 278528,
+              "bf16_words": 557056,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "204d36e29ba90b00acd2d4c53e377343acb32324715ca89f0d9424a925245220",
+              "expected_sha256": "204d36e29ba90b00acd2d4c53e377343acb32324715ca89f0d9424a925245220"
+            }
+          ]
+        },
+        "-1": {
+          "first_compile_control_s_excluded": 4.692415540106595,
+          "proof": {
+            "shape_int32": [
+              128,
+              2176
+            ],
+            "int32_elements": 278528,
+            "bf16_words": 557056,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "45be099158f9dc4ce8fc572b085be06246efbef376b16ea08847c45747e3b125",
+            "expected_sha256": "45be099158f9dc4ce8fc572b085be06246efbef376b16ea08847c45747e3b125"
+          },
+          "warm_same_call_s": [
+            0.0030142799951136112,
+            0.0026387497782707214,
+            0.0027366899885237217
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                128,
+                2176
+              ],
+              "int32_elements": 278528,
+              "bf16_words": 557056,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "45be099158f9dc4ce8fc572b085be06246efbef376b16ea08847c45747e3b125",
+              "expected_sha256": "45be099158f9dc4ce8fc572b085be06246efbef376b16ea08847c45747e3b125"
+            },
+            {
+              "shape_int32": [
+                128,
+                2176
+              ],
+              "int32_elements": 278528,
+              "bf16_words": 557056,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "45be099158f9dc4ce8fc572b085be06246efbef376b16ea08847c45747e3b125",
+              "expected_sha256": "45be099158f9dc4ce8fc572b085be06246efbef376b16ea08847c45747e3b125"
+            },
+            {
+              "shape_int32": [
+                128,
+                2176
+              ],
+              "int32_elements": 278528,
+              "bf16_words": 557056,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "45be099158f9dc4ce8fc572b085be06246efbef376b16ea08847c45747e3b125",
+              "expected_sha256": "45be099158f9dc4ce8fc572b085be06246efbef376b16ea08847c45747e3b125"
+            }
+          ]
+        }
+      },
+      "distinct_bf16_words_in_first65568_source_words": 65536,
+      "source_readonly": true,
+      "guard_rejections": {
+        "odd_columns": {
+          "rejected": true,
+          "reason": "RequireevenBF16columns"
+        },
+        "odd_offset": {
+          "rejected": true,
+          "reason": "RequireevenBF16storageoffset"
+        },
+        "noncontiguous": {
+          "rejected": true,
+          "reason": "RequirecontiguousBF16"
+        }
+      }
+    },
+    {
+      "rows": 2016,
+      "bf16_columns": 432,
+      "source_physical_format": 2,
+      "source_stride": [
+        432,
+        1
+      ],
+      "source_storage_offset": 0,
+      "source_ptr_mod32": 0,
+      "raw_device_view_roundtrip": {
+        "shape_int32": [
+          2016,
+          216
+        ],
+        "int32_elements": 435456,
+        "bf16_words": 870912,
+        "different_int32_pairs": 0,
+        "different_bf16_words": 0,
+        "raw_pairs_equal": true,
+        "observed_sha256": "54e97a64aa62a6f4e80d2c887294fd8945069e30eec641a3e932c0299b3ac2f7",
+        "expected_sha256": "54e97a64aa62a6f4e80d2c887294fd8945069e30eec641a3e932c0299b3ac2f7"
+      },
+      "directions": {
+        "0": {
+          "first_compile_control_s_excluded": 0.003204190172255039,
+          "proof": {
+            "shape_int32": [
+              16128,
+              216
+            ],
+            "int32_elements": 3483648,
+            "bf16_words": 6967296,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "eaf57ba19238e556701d48dac9cf0930f444a3a153e082773a1684fb18af1f54",
+            "expected_sha256": "eaf57ba19238e556701d48dac9cf0930f444a3a153e082773a1684fb18af1f54"
+          },
+          "warm_same_call_s": [
+            0.005601250100880861,
+            0.002786689903587103,
+            0.002583289984613657
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                16128,
+                216
+              ],
+              "int32_elements": 3483648,
+              "bf16_words": 6967296,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "eaf57ba19238e556701d48dac9cf0930f444a3a153e082773a1684fb18af1f54",
+              "expected_sha256": "eaf57ba19238e556701d48dac9cf0930f444a3a153e082773a1684fb18af1f54"
+            },
+            {
+              "shape_int32": [
+                16128,
+                216
+              ],
+              "int32_elements": 3483648,
+              "bf16_words": 6967296,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "eaf57ba19238e556701d48dac9cf0930f444a3a153e082773a1684fb18af1f54",
+              "expected_sha256": "eaf57ba19238e556701d48dac9cf0930f444a3a153e082773a1684fb18af1f54"
+            },
+            {
+              "shape_int32": [
+                16128,
+                216
+              ],
+              "int32_elements": 3483648,
+              "bf16_words": 6967296,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "eaf57ba19238e556701d48dac9cf0930f444a3a153e082773a1684fb18af1f54",
+              "expected_sha256": "eaf57ba19238e556701d48dac9cf0930f444a3a153e082773a1684fb18af1f54"
+            }
+          ]
+        },
+        "-1": {
+          "first_compile_control_s_excluded": 4.730383099988103,
+          "proof": {
+            "shape_int32": [
+              2016,
+              1728
+            ],
+            "int32_elements": 3483648,
+            "bf16_words": 6967296,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "535f1ee836fce388d13ca4df1f0f0599c20eec821ebf8d1c60433d44900fdaab",
+            "expected_sha256": "535f1ee836fce388d13ca4df1f0f0599c20eec821ebf8d1c60433d44900fdaab"
+          },
+          "warm_same_call_s": [
+            0.002617710269987583,
+            0.002389349974691868,
+            0.002429360058158636
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                2016,
+                1728
+              ],
+              "int32_elements": 3483648,
+              "bf16_words": 6967296,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "535f1ee836fce388d13ca4df1f0f0599c20eec821ebf8d1c60433d44900fdaab",
+              "expected_sha256": "535f1ee836fce388d13ca4df1f0f0599c20eec821ebf8d1c60433d44900fdaab"
+            },
+            {
+              "shape_int32": [
+                2016,
+                1728
+              ],
+              "int32_elements": 3483648,
+              "bf16_words": 6967296,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "535f1ee836fce388d13ca4df1f0f0599c20eec821ebf8d1c60433d44900fdaab",
+              "expected_sha256": "535f1ee836fce388d13ca4df1f0f0599c20eec821ebf8d1c60433d44900fdaab"
+            },
+            {
+              "shape_int32": [
+                2016,
+                1728
+              ],
+              "int32_elements": 3483648,
+              "bf16_words": 6967296,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "535f1ee836fce388d13ca4df1f0f0599c20eec821ebf8d1c60433d44900fdaab",
+              "expected_sha256": "535f1ee836fce388d13ca4df1f0f0599c20eec821ebf8d1c60433d44900fdaab"
+            }
+          ]
+        }
+      },
+      "distinct_bf16_words_in_first65568_source_words": 65536,
+      "source_readonly": true
+    },
+    {
+      "rows": 8064,
+      "bf16_columns": 432,
+      "source_physical_format": 2,
+      "source_stride": [
+        432,
+        1
+      ],
+      "source_storage_offset": 0,
+      "source_ptr_mod32": 0,
+      "raw_device_view_roundtrip": {
+        "shape_int32": [
+          8064,
+          216
+        ],
+        "int32_elements": 1741824,
+        "bf16_words": 3483648,
+        "different_int32_pairs": 0,
+        "different_bf16_words": 0,
+        "raw_pairs_equal": true,
+        "observed_sha256": "83256c80d492beac78faf42f4c98852b44459f88f31717975aa97264c3b1374e",
+        "expected_sha256": "83256c80d492beac78faf42f4c98852b44459f88f31717975aa97264c3b1374e"
+      },
+      "directions": {
+        "0": {
+          "first_compile_control_s_excluded": 0.0030735498294234276,
+          "proof": {
+            "shape_int32": [
+              64512,
+              216
+            ],
+            "int32_elements": 13934592,
+            "bf16_words": 27869184,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "1d8e474dcc98a35408409edbf8fdb50f4879acfc17fcc934f68d3cc0d6e6e943",
+            "expected_sha256": "1d8e474dcc98a35408409edbf8fdb50f4879acfc17fcc934f68d3cc0d6e6e943"
+          },
+          "warm_same_call_s": [
+            0.0029560597613453865,
+            0.003210709895938635,
+            0.0023648100905120373
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                64512,
+                216
+              ],
+              "int32_elements": 13934592,
+              "bf16_words": 27869184,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "1d8e474dcc98a35408409edbf8fdb50f4879acfc17fcc934f68d3cc0d6e6e943",
+              "expected_sha256": "1d8e474dcc98a35408409edbf8fdb50f4879acfc17fcc934f68d3cc0d6e6e943"
+            },
+            {
+              "shape_int32": [
+                64512,
+                216
+              ],
+              "int32_elements": 13934592,
+              "bf16_words": 27869184,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "1d8e474dcc98a35408409edbf8fdb50f4879acfc17fcc934f68d3cc0d6e6e943",
+              "expected_sha256": "1d8e474dcc98a35408409edbf8fdb50f4879acfc17fcc934f68d3cc0d6e6e943"
+            },
+            {
+              "shape_int32": [
+                64512,
+                216
+              ],
+              "int32_elements": 13934592,
+              "bf16_words": 27869184,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "1d8e474dcc98a35408409edbf8fdb50f4879acfc17fcc934f68d3cc0d6e6e943",
+              "expected_sha256": "1d8e474dcc98a35408409edbf8fdb50f4879acfc17fcc934f68d3cc0d6e6e943"
+            }
+          ]
+        },
+        "-1": {
+          "first_compile_control_s_excluded": 3.7257995400577784,
+          "proof": {
+            "shape_int32": [
+              8064,
+              1728
+            ],
+            "int32_elements": 13934592,
+            "bf16_words": 27869184,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "2025c3fea06d5143b474ed09a3fadd0b617dd7110e51590f60a988b0ceeffa30",
+            "expected_sha256": "2025c3fea06d5143b474ed09a3fadd0b617dd7110e51590f60a988b0ceeffa30"
+          },
+          "warm_same_call_s": [
+            0.0032272101379930973,
+            0.0028082397766411304,
+            0.00305222999304533
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                8064,
+                1728
+              ],
+              "int32_elements": 13934592,
+              "bf16_words": 27869184,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "2025c3fea06d5143b474ed09a3fadd0b617dd7110e51590f60a988b0ceeffa30",
+              "expected_sha256": "2025c3fea06d5143b474ed09a3fadd0b617dd7110e51590f60a988b0ceeffa30"
+            },
+            {
+              "shape_int32": [
+                8064,
+                1728
+              ],
+              "int32_elements": 13934592,
+              "bf16_words": 27869184,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "2025c3fea06d5143b474ed09a3fadd0b617dd7110e51590f60a988b0ceeffa30",
+              "expected_sha256": "2025c3fea06d5143b474ed09a3fadd0b617dd7110e51590f60a988b0ceeffa30"
+            },
+            {
+              "shape_int32": [
+                8064,
+                1728
+              ],
+              "int32_elements": 13934592,
+              "bf16_words": 27869184,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "2025c3fea06d5143b474ed09a3fadd0b617dd7110e51590f60a988b0ceeffa30",
+              "expected_sha256": "2025c3fea06d5143b474ed09a3fadd0b617dd7110e51590f60a988b0ceeffa30"
+            }
+          ]
+        }
+      },
+      "distinct_bf16_words_in_first65568_source_words": 65536,
+      "source_readonly": true
+    },
+    {
+      "rows": 8064,
+      "bf16_columns": 144,
+      "source_physical_format": 2,
+      "source_stride": [
+        144,
+        1
+      ],
+      "source_storage_offset": 0,
+      "source_ptr_mod32": 0,
+      "raw_device_view_roundtrip": {
+        "shape_int32": [
+          8064,
+          72
+        ],
+        "int32_elements": 580608,
+        "bf16_words": 1161216,
+        "different_int32_pairs": 0,
+        "different_bf16_words": 0,
+        "raw_pairs_equal": true,
+        "observed_sha256": "e877672701fb1c6c95dc7e33dc96a4f244b7caaff031c707f332dde280011260",
+        "expected_sha256": "e877672701fb1c6c95dc7e33dc96a4f244b7caaff031c707f332dde280011260"
+      },
+      "directions": {
+        "0": {
+          "first_compile_control_s_excluded": 0.002154309768229723,
+          "proof": {
+            "shape_int32": [
+              64512,
+              72
+            ],
+            "int32_elements": 4644864,
+            "bf16_words": 9289728,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "5f24cf861fc3c5d9626a2c9915bc1231753227a69f6e641472983b245a8b1997",
+            "expected_sha256": "5f24cf861fc3c5d9626a2c9915bc1231753227a69f6e641472983b245a8b1997"
+          },
+          "warm_same_call_s": [
+            0.0022430303506553173,
+            0.002012929879128933,
+            0.002076379954814911
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                64512,
+                72
+              ],
+              "int32_elements": 4644864,
+              "bf16_words": 9289728,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "5f24cf861fc3c5d9626a2c9915bc1231753227a69f6e641472983b245a8b1997",
+              "expected_sha256": "5f24cf861fc3c5d9626a2c9915bc1231753227a69f6e641472983b245a8b1997"
+            },
+            {
+              "shape_int32": [
+                64512,
+                72
+              ],
+              "int32_elements": 4644864,
+              "bf16_words": 9289728,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "5f24cf861fc3c5d9626a2c9915bc1231753227a69f6e641472983b245a8b1997",
+              "expected_sha256": "5f24cf861fc3c5d9626a2c9915bc1231753227a69f6e641472983b245a8b1997"
+            },
+            {
+              "shape_int32": [
+                64512,
+                72
+              ],
+              "int32_elements": 4644864,
+              "bf16_words": 9289728,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "5f24cf861fc3c5d9626a2c9915bc1231753227a69f6e641472983b245a8b1997",
+              "expected_sha256": "5f24cf861fc3c5d9626a2c9915bc1231753227a69f6e641472983b245a8b1997"
+            }
+          ]
+        },
+        "-1": {
+          "first_compile_control_s_excluded": 6.3296407903544605,
+          "proof": {
+            "shape_int32": [
+              8064,
+              576
+            ],
+            "int32_elements": 4644864,
+            "bf16_words": 9289728,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "dc7a17f925d3a0ad8a39da1ad74ff48097fb44567006e120d5156062dfeab539",
+            "expected_sha256": "dc7a17f925d3a0ad8a39da1ad74ff48097fb44567006e120d5156062dfeab539"
+          },
+          "warm_same_call_s": [
+            0.00245674978941679,
+            0.002123109996318817,
+            0.002062269952148199
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                8064,
+                576
+              ],
+              "int32_elements": 4644864,
+              "bf16_words": 9289728,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "dc7a17f925d3a0ad8a39da1ad74ff48097fb44567006e120d5156062dfeab539",
+              "expected_sha256": "dc7a17f925d3a0ad8a39da1ad74ff48097fb44567006e120d5156062dfeab539"
+            },
+            {
+              "shape_int32": [
+                8064,
+                576
+              ],
+              "int32_elements": 4644864,
+              "bf16_words": 9289728,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "dc7a17f925d3a0ad8a39da1ad74ff48097fb44567006e120d5156062dfeab539",
+              "expected_sha256": "dc7a17f925d3a0ad8a39da1ad74ff48097fb44567006e120d5156062dfeab539"
+            },
+            {
+              "shape_int32": [
+                8064,
+                576
+              ],
+              "int32_elements": 4644864,
+              "bf16_words": 9289728,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "dc7a17f925d3a0ad8a39da1ad74ff48097fb44567006e120d5156062dfeab539",
+              "expected_sha256": "dc7a17f925d3a0ad8a39da1ad74ff48097fb44567006e120d5156062dfeab539"
+            }
+          ]
+        }
+      },
+      "distinct_bf16_words_in_first65568_source_words": 65536,
+      "source_readonly": true
+    },
+    {
+      "rows": 8064,
+      "bf16_columns": 538,
+      "source_physical_format": 2,
+      "source_stride": [
+        538,
+        1
+      ],
+      "source_storage_offset": 0,
+      "source_ptr_mod32": 0,
+      "raw_device_view_roundtrip": {
+        "shape_int32": [
+          8064,
+          269
+        ],
+        "int32_elements": 2169216,
+        "bf16_words": 4338432,
+        "different_int32_pairs": 0,
+        "different_bf16_words": 0,
+        "raw_pairs_equal": true,
+        "observed_sha256": "bc620b26d738fbc681cf4f7bc8be901c97d3747dda250702dd2eef6fccf903c1",
+        "expected_sha256": "bc620b26d738fbc681cf4f7bc8be901c97d3747dda250702dd2eef6fccf903c1"
+      },
+      "directions": {
+        "0": {
+          "first_compile_control_s_excluded": 0.003177490085363388,
+          "proof": {
+            "shape_int32": [
+              64512,
+              269
+            ],
+            "int32_elements": 17353728,
+            "bf16_words": 34707456,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "aa0f72b2f95b8bbecfcf6e339e02e918fd73fa1625f959219fe26058ced48884",
+            "expected_sha256": "aa0f72b2f95b8bbecfcf6e339e02e918fd73fa1625f959219fe26058ced48884"
+          },
+          "warm_same_call_s": [
+            0.0028618699871003628,
+            0.00312279025092721,
+            0.002414260059595108
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                64512,
+                269
+              ],
+              "int32_elements": 17353728,
+              "bf16_words": 34707456,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "aa0f72b2f95b8bbecfcf6e339e02e918fd73fa1625f959219fe26058ced48884",
+              "expected_sha256": "aa0f72b2f95b8bbecfcf6e339e02e918fd73fa1625f959219fe26058ced48884"
+            },
+            {
+              "shape_int32": [
+                64512,
+                269
+              ],
+              "int32_elements": 17353728,
+              "bf16_words": 34707456,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "aa0f72b2f95b8bbecfcf6e339e02e918fd73fa1625f959219fe26058ced48884",
+              "expected_sha256": "aa0f72b2f95b8bbecfcf6e339e02e918fd73fa1625f959219fe26058ced48884"
+            },
+            {
+              "shape_int32": [
+                64512,
+                269
+              ],
+              "int32_elements": 17353728,
+              "bf16_words": 34707456,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "aa0f72b2f95b8bbecfcf6e339e02e918fd73fa1625f959219fe26058ced48884",
+              "expected_sha256": "aa0f72b2f95b8bbecfcf6e339e02e918fd73fa1625f959219fe26058ced48884"
+            }
+          ]
+        },
+        "-1": {
+          "first_compile_control_s_excluded": 3.7196277701295912,
+          "proof": {
+            "shape_int32": [
+              8064,
+              2152
+            ],
+            "int32_elements": 17353728,
+            "bf16_words": 34707456,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "3f20c8a551e92088801c696b62d31bd0e90f6151e74975ea0f9f381e708589f5",
+            "expected_sha256": "3f20c8a551e92088801c696b62d31bd0e90f6151e74975ea0f9f381e708589f5"
+          },
+          "warm_same_call_s": [
+            0.0027160700410604477,
+            0.0023900899104774,
+            0.002281980123370886
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                8064,
+                2152
+              ],
+              "int32_elements": 17353728,
+              "bf16_words": 34707456,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "3f20c8a551e92088801c696b62d31bd0e90f6151e74975ea0f9f381e708589f5",
+              "expected_sha256": "3f20c8a551e92088801c696b62d31bd0e90f6151e74975ea0f9f381e708589f5"
+            },
+            {
+              "shape_int32": [
+                8064,
+                2152
+              ],
+              "int32_elements": 17353728,
+              "bf16_words": 34707456,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "3f20c8a551e92088801c696b62d31bd0e90f6151e74975ea0f9f381e708589f5",
+              "expected_sha256": "3f20c8a551e92088801c696b62d31bd0e90f6151e74975ea0f9f381e708589f5"
+            },
+            {
+              "shape_int32": [
+                8064,
+                2152
+              ],
+              "int32_elements": 17353728,
+              "bf16_words": 34707456,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "3f20c8a551e92088801c696b62d31bd0e90f6151e74975ea0f9f381e708589f5",
+              "expected_sha256": "3f20c8a551e92088801c696b62d31bd0e90f6151e74975ea0f9f381e708589f5"
+            }
+          ]
+        }
+      },
+      "distinct_bf16_words_in_first65568_source_words": 65536,
+      "source_readonly": true
+    },
+    {
+      "rows": 8064,
+      "bf16_columns": 544,
+      "source_physical_format": 2,
+      "source_stride": [
+        544,
+        1
+      ],
+      "source_storage_offset": 0,
+      "source_ptr_mod32": 0,
+      "raw_device_view_roundtrip": {
+        "shape_int32": [
+          8064,
+          272
+        ],
+        "int32_elements": 2193408,
+        "bf16_words": 4386816,
+        "different_int32_pairs": 0,
+        "different_bf16_words": 0,
+        "raw_pairs_equal": true,
+        "observed_sha256": "53ea9a21c7952fdca2ee404730c84039404a841246337ee3d2fc965a413270a4",
+        "expected_sha256": "53ea9a21c7952fdca2ee404730c84039404a841246337ee3d2fc965a413270a4"
+      },
+      "directions": {
+        "0": {
+          "first_compile_control_s_excluded": 0.0028088302351534367,
+          "proof": {
+            "shape_int32": [
+              64512,
+              272
+            ],
+            "int32_elements": 17547264,
+            "bf16_words": 35094528,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "b4c8e457c9ab09e728f05ea95b83723c5fe8dcf54e421c5d60f4c29251a8acec",
+            "expected_sha256": "b4c8e457c9ab09e728f05ea95b83723c5fe8dcf54e421c5d60f4c29251a8acec"
+          },
+          "warm_same_call_s": [
+            0.0022704200819134712,
+            0.0021913601085543633,
+            0.0026885601691901684
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                64512,
+                272
+              ],
+              "int32_elements": 17547264,
+              "bf16_words": 35094528,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "b4c8e457c9ab09e728f05ea95b83723c5fe8dcf54e421c5d60f4c29251a8acec",
+              "expected_sha256": "b4c8e457c9ab09e728f05ea95b83723c5fe8dcf54e421c5d60f4c29251a8acec"
+            },
+            {
+              "shape_int32": [
+                64512,
+                272
+              ],
+              "int32_elements": 17547264,
+              "bf16_words": 35094528,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "b4c8e457c9ab09e728f05ea95b83723c5fe8dcf54e421c5d60f4c29251a8acec",
+              "expected_sha256": "b4c8e457c9ab09e728f05ea95b83723c5fe8dcf54e421c5d60f4c29251a8acec"
+            },
+            {
+              "shape_int32": [
+                64512,
+                272
+              ],
+              "int32_elements": 17547264,
+              "bf16_words": 35094528,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "b4c8e457c9ab09e728f05ea95b83723c5fe8dcf54e421c5d60f4c29251a8acec",
+              "expected_sha256": "b4c8e457c9ab09e728f05ea95b83723c5fe8dcf54e421c5d60f4c29251a8acec"
+            }
+          ]
+        },
+        "-1": {
+          "first_compile_control_s_excluded": 3.7698970399796963,
+          "proof": {
+            "shape_int32": [
+              8064,
+              2176
+            ],
+            "int32_elements": 17547264,
+            "bf16_words": 35094528,
+            "different_int32_pairs": 0,
+            "different_bf16_words": 0,
+            "raw_pairs_equal": true,
+            "observed_sha256": "b1de5b0f6c86a393aae2ff4765ec9a8b4df38dc8d467abe301c0a434ed653abb",
+            "expected_sha256": "b1de5b0f6c86a393aae2ff4765ec9a8b4df38dc8d467abe301c0a434ed653abb"
+          },
+          "warm_same_call_s": [
+            0.003579729702323675,
+            0.0031082299537956715,
+            0.0031571201980113983
+          ],
+          "repeat_proofs": [
+            {
+              "shape_int32": [
+                8064,
+                2176
+              ],
+              "int32_elements": 17547264,
+              "bf16_words": 35094528,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "b1de5b0f6c86a393aae2ff4765ec9a8b4df38dc8d467abe301c0a434ed653abb",
+              "expected_sha256": "b1de5b0f6c86a393aae2ff4765ec9a8b4df38dc8d467abe301c0a434ed653abb"
+            },
+            {
+              "shape_int32": [
+                8064,
+                2176
+              ],
+              "int32_elements": 17547264,
+              "bf16_words": 35094528,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "b1de5b0f6c86a393aae2ff4765ec9a8b4df38dc8d467abe301c0a434ed653abb",
+              "expected_sha256": "b1de5b0f6c86a393aae2ff4765ec9a8b4df38dc8d467abe301c0a434ed653abb"
+            },
+            {
+              "shape_int32": [
+                8064,
+                2176
+              ],
+              "int32_elements": 17547264,
+              "bf16_words": 35094528,
+              "different_int32_pairs": 0,
+              "different_bf16_words": 0,
+              "raw_pairs_equal": true,
+              "observed_sha256": "b1de5b0f6c86a393aae2ff4765ec9a8b4df38dc8d467abe301c0a434ed653abb",
+              "expected_sha256": "b1de5b0f6c86a393aae2ff4765ec9a8b4df38dc8d467abe301c0a434ed653abb"
+            }
+          ]
+        }
+      },
+      "distinct_bf16_words_in_first65568_source_words": 65536,
+      "source_readonly": true
+    }
+  ],
+  "production_communicator_proven": false,
+  "whole_encoder_acceleration_proven": false,
+  "official_goal_complete": false,
+  "actual_group_class": "vllm_omni.diffusion.distributed.group_coordinator.GroupCoordinator",
+  "actual_group_source_path": "/home/mseco/vllm-omni/vllm_omni/diffusion/distributed/group_coordinator.py",
+  "actual_group_source_sha256": "b674e815a482985f31a0fe8bccf8cb397c8e9575ad7e2d4ec2ac3c97dfc09cb2",
+  "device_group_backend": "hccl",
+  "integer_transport_only": false,
+  "completed": true,
+  "all_tested_raw_word_transfers_equal": true
+}

@@ -1,0 +1,39 @@
+{
+  "round": 74,
+  "status": "complete_independent_original_bf16_HF_reference_measured_quality_gate_rejected",
+  "goal_complete": false,
+  "latest_committed_base": "2bdcfb7",
+  "running_jobs": [],
+  "completed_jobs": [
+    {"job_id":"bash-18d818ade729472a","exit_code":0,"receipt":"hf_reference01.json"},
+    {"job_id":"bash-54dd30a861e14f6a","exit_code":0,"receipt":"language_repeat01.json"},
+    {"job_id":"bash-82f211dc51c04ef9","exit_code":0,"receipt":"modal_comparison01.json"},
+    {"job_id":"bash-c0f1fb84e51c489f","exit_code":0,"receipt":"reference_stability01.json"},
+    {"job_id":"bash-e346740c0b254e11","exit_code":0,"receipt":"final_verification.json"}
+  ],
+  "host_lease": {"host":"ts-217","pool":"owned","held":false,"released":true,"unused_ts133_was_released":true},
+  "verified_results": {
+    "original_HF_bf16_parameters":903,
+    "original_HF_bf16_parameter_bytes":51506202080,
+    "independent_fullmultimodal_reference_completed":true,
+    "same_HF_context_all50_block_identities_and_pre_post_finalnorm_bits_stable":true,
+    "fresh_vision_vs_retained_independent_HF_fulloutputs_bits_stable":true,
+    "current_experimental_complete_output_sha256":"67ef196e33bcaa495420da1ebc07d1ff6dcaf89ddbaf75a350940ed8ae210eee",
+    "HF_selected50_pre_finalnorm_sha256":"89544d0791d0d74a9a693de82bcf605e798b6c08e261f67a9a48b01415f078a2",
+    "experimental_vs_independent_HF_full_relative_rms":0.4095109240532696,
+    "experimental_vs_independent_HF_text27_relative_rms":0.001680392965248786,
+    "experimental_vs_independent_HF_visual2016_relative_rms":0.4386801550918832,
+    "selected50_max_abs_error":15140.0,
+    "full_hidden_identity_accepted":false,
+    "official_quality_accepted":false,
+    "production_modified":false
+  },
+  "next_quality_step": "Localize the experiment-versus-HF divergence between selected layers24 and49 using same-input25..49 replay or finer actual layer captures;the present six selected comparisons include upstream visual input differences. Do not infer a benign pathology or official quality from outlier concentration.",
+  "critical_boundaries": [
+    "Original checkpoint64 layers,H3 selects50 unnormalized states;original HF finalnorm executes but comparison captures its PRE-input.",
+    "Experimental selected blocks0/1/2 and HF block hooks are PRE-model-loop DeepStack injection.",
+    "Actual input2043 IDs/two48x84 images with already-FP16transport pixels,not video tokens or upstreamprocessorFP32quality.",
+    "CPU reference costs5000.89s/repeat4461.69s are not NPU service performance or official benchmark.",
+    "All new delegations must be fresh subagent_fork;do not resume old inactive agents."
+  ]
+}
