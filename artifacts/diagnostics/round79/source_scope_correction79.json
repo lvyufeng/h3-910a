@@ -1,0 +1,18 @@
+{
+  "scope":"R79clarifiesactualproductionencoder vs the separateR65/R73experimentaldiagnostic implementation;no historicalnumericreceipts rewritten.",
+  "actual_production_source":"artifacts/diagnostics/round76/source/encoder.py",
+  "actual_production_source_sha256":"7c22d98c28f4e93550fd3848bfc174121250259fdf50bcd2f7920f826acf311d",
+  "separate_experimental_source":"artifacts/diagnostics/round65/source/candidate_padded_text_encoder.py",
+  "corrections":[
+    "TEXT_FP32_LINEAR/TEXT_PAD_KV/shadow-cache helpers occur in the R65 experimental encoder used by the externalR76conditioningrun;they are not symbols in the originalproductionR76encoder source7c22.",
+    "R79candidate is basedon7c22productionarchitecture,notR65shadowcached experimentalgraph;itslegacyflagchecksaredriverhygiene,notclaimsthose helperswereeditedoutofproduction.",
+    "Productionhalfparamflagstilldoesnotsufficebecause_actual7c22hardcodesBF16 pixels/output and BF16-onlyHF-rounding gates.",
+    "Afloat32all-reduce of roundedFP16partialrowGEMMscannotundoearlierpartialrounding;futureFP16TPprecisionworkmustseparatepartialGEMMaccumulationfromcollectivereduction.",
+    "CurrentR79vision-onlyprobehasnoshardedrowGEMM:visionweightsfullreplicatedsingledevice;TP8textrowprecisionisdeferred,notclaimedfixed.",
+    "R79 candidategenerator boundedsearch wording correctedbyroot beforeanyNPUexecution;externalFP16portsDOexist;nogoldfoundisnotplatformnonexistence."
+  ],
+  "production_mutated":false,
+  "CPU_ref_original_job_replayed":false,
+  "full_encoder_precision_accepted":false,
+  "whole_goal_complete":false
+}

@@ -1,0 +1,27 @@
+{
+  "round":79,
+  "status":"FP16_vision_stage_executed_and_verified_full_encoder_precision_pending",
+  "goal_revision":15,
+  "whole_goal_complete":false,
+  "user_precision_criterion":"CPUFP16agreement,noforcedBF16crossprecisionagreement",
+  "candidate":{"source":"candidate/candidate_encoder79.py","sha256":"2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78","origin_production_sha256":"7c22d98c28f4e93550fd3848bfc174121250259fdf50bcd2f7920f826acf311d","generated_declared_edits":12,"production_installed":false,"whole_encoder_executed":false,"vision_subset_executed":true},
+  "actual_NPU_vision_probe":{"root":"/tmp/h3_round79_fp16_vision01","background_job":"bash-f28ea127aaaf453b","exit_code":0,"job_collected":true,"parameter_tensors":351,"parameter_bytes":1190533600,"parameter_dtype":"FP16","vision_blocks":27,"all_finite":true,"three_repeat_bit_equal":true,"resident_vision_median_s":1.4367322297766805,"CPU_FP16_merged_relative_RMS":0.01456805331761072,"CPU_FP16_DeepStack_relative_RMS":[0.0028199652530662587,0.005658125875455447,0.009088246005155962],"full_encoder_precision_accepted":false,"complete_encoder_2s_claimed":false},
+  "scope_qualifications":["singleNPUreplicatedvisiononly—notTP8completeencoder","CPUreferencewasconcurrent—notcrossroundcontrolledspeedAB","CPUvsNPUmergederror1.4568percentisnotwaived;noafterthefactthreshold","OriginalBF16teacher40.95percentnotnewacceptancegate","NolowstepLoRAorquantization","fulltextTPpartialGEMMroundingstillpending"],
+  "summary":"summary79.json",
+  "production_verification":{"file":"post_probe_verification79.json","production_sources_unchanged":23,"installed_api_metadata_sources_unchanged":13,"NPU_probe_processes_remaining":0},
+  "original_CPU_reference":{"job":"bash-91556f3a44cd4289","root":"/tmp/h3_round78_hf_fp1601","python_pid":4077809,"source_sha256":"50165e77adb393b4573fbe0fdb29c62a6ddb14b8f39082d0ea67e904848010ea","latest_snapshot":"CPU_progress03.json","first_full_pass_completed":true,"first_full_pass_vision_layers":27,"first_full_pass_text_layers":50,"first_full_compute_wall_s_excluded_NPU_performance":1811.7736349599436,"full_repeat_pending":true,"reference_fully_verified_yet":false,"replay_forbidden":true},
+  "official_source_proof":{"file":"CPU_source_verification79.json","revision":"0919fb684102ef115126612f3fbb84d1027e7317","used_shards_matched_official_LFS_SHA256":12,"full_weights_downloaded_this_round":false},
+  "owned_ts217_lease":{"held_for_original_CPU_reference":true,"expires_at":"2026-11-17T11:01:58+00:00","release_after_CPU_job_complete_and_collected_or_explicit_transition_to_next_NPU_job":true},
+  "tests":{"candidate_static_passed":25,"actual_stage_and_root_contracts_passed":9,"partial_local_archive_test_skipped":1,"R78_reference_contracts_passed":7},
+  "artifact_transfer":{"job":"bash-6ffd5b60a1084532","cancelled_deliberately":true,"reason":"Optional83MBarchivepostponedwhileSSHconnectivitydegraded;NPUalreadyhascompleteCPUvisiontensoronremotehost","partial_file":"reference/FP16_vision.pt","partial_file_is_UNVERIFIED":true,"excluded_from_git_and_not_presented":true},
+  "network_failure_not_a_goal_blocker":"12sprobeOFFLINEtimeoutrecoveredat30sliveprobeFREE/noCI;originalCPUanduploadsnotreplayed",
+  "all_required_fresh_fork_results_collected":true,
+  "next_steps":[
+    "Collect originalCPU job91556and remote reference/run_finished/logonlywhencomplete;no duplicateor source mutation.Check full27+50 repeatidentity plus parameters/inputbefore/after viaR78verify_reference78.py.Pinnedofficialused12shardSHAproofalreadygood.",
+    "Release ownedts217afterCPUjobfinishunlessstartingnextauthorizedNPUvalidation;leaseuntil19:01AsiaShanghai,CPU9500stimeoutdeadline18:19.",
+    "Run same-input FP16 vision Linear/LayerNorm/Conv/GELU(tanh)/attention controls to localize accumulated1.46percentmergeddelta. In particular compare nativeNPU GELU approximate=tanh against CPUFP16 sameinputs;do not assume it sharesCPUimplementation,and do not blanketBF16fallback or justroundinglabel.",
+    "Run completeTP8FP16encoder onlyaftercarefuldtypepolicyandCPUsourceboundary checks;row GEMMpartialF16round beforeF32 allreduce isnotfixedbycollectivepromotion.",
+    "OptimizeFP16rowFP32-outputGEMM/fusedHFroundingnorm/visionattentionasneeded;treat fullencoder<=2s andFAefficiency/full49stepvalidationsseparate.",
+    "Everynewsubagentmustbefreshfork;oldinactiveagentsmustnotberesumed."
+  ]
+}

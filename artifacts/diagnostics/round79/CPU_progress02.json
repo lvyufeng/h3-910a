@@ -1,0 +1,65 @@
+{
+  "root": "/tmp/h3_round78_hf_fp1601",
+  "files": {
+    "run_started.json": {
+      "bytes": 111,
+      "sha256": "2757f8a4ca2df874914adeca0b35823a87d2fdb5847d6a593c7b58b5611664b2"
+    },
+    "reference.json": {
+      "bytes": 381926,
+      "sha256": "402c69d7755d4d315bfef9d0c0483c1c1aacc4f9665c37660132de71c4a04e5b"
+    }
+  },
+  "model_cpu_processes": [
+    {
+      "pid": 4077772,
+      "cmdline": "bash -c set -e; source /home/mseco/Ascend/cann-9.2.0/set_env.sh; export TORCH_DEVICE_BACKEND_AUTOLOAD=0; export OMP_NUM_THREADS=16; export MKL_NUM_THREADS=16; umask 077; test ! -e /tmp/h3_round78_hf_fp1601/run_started.json; printf \"{\\\"supervisor_pid\\\":%s,\\\"utc_start\\\":\\\"%s\\\",\\\"timeout_seconds\\\":9500,\\\"cpu_reference_only\\\":true}\\n\" \"$$\" \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\" > /tmp/h3_round78_hf_fp1601/run_started.json; set +e; timeout --signal=TERM --kill-after=30 9500 /home/mseco/vllm910a/bin/python -u /tmp/h3_round78_hf_fp1601/hf_cpu_fp16_reference78.py > /tmp/h3_round78_hf_fp1601/run.log 2>&1; status=$?; printf \"{\\\"exit_code\\\":%s,\\\"utc_finish\\\":\\\"%s\\\"}\\n\" \"$status\" \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\" > /tmp/h3_round78_hf_fp1601/run_finished.json; exit \"$status\" "
+    },
+    {
+      "pid": 4077808,
+      "cmdline": "timeout --signal=TERM --kill-after=30 9500 /home/mseco/vllm910a/bin/python -u /tmp/h3_round78_hf_fp1601/hf_cpu_fp16_reference78.py "
+    },
+    {
+      "pid": 4077809,
+      "cmdline": "/home/mseco/vllm910a/bin/python -u /tmp/h3_round78_hf_fp1601/hf_cpu_fp16_reference78.py "
+    },
+    {
+      "pid": 4087938,
+      "cmdline": "/home/mseco/vllm910a/bin/python /tmp/h3_round78_hf_fp1601/reference_status78.py "
+    }
+  ],
+  "run_started.json": {
+    "supervisor_pid": 4077772,
+    "utc_start": "2026-11-17T07:41:30Z",
+    "timeout_seconds": 9500,
+    "cpu_reference_only": true
+  },
+  "reference": {
+    "source_sha256": "50165e77adb393b4573fbe0fdb29c62a6ddb14b8f39082d0ea67e904848010ea",
+    "versions": {
+      "torch": "2.10.0+cpu",
+      "transformers": "5.14.1"
+    },
+    "loaded_parameter_tensors": 903,
+    "complete_parameter_bytes": 51506202080,
+    "original_selected_parameter_sha256": "a69676bac5e6f3a513ce44080d29c73974553b6e0a327ea272e47b600d84e46e",
+    "parameter_dtypes": {
+      "torch.float16": 903
+    },
+    "buffer_dtypes": {
+      "torch.float32": 3
+    },
+    "full_multimodal_reference_completed": false,
+    "completed_vision_layers": 27,
+    "completed_language_layers": 48,
+    "stages": {
+      "FP16_vision": "c01bbe180f454fe44b182bd9307491ef0f4c342b6c2ff6be08d1e3453d8c312a",
+      "FP16_multimodal_inputs": "6ab37f7202731843aebce9f3f8453232c72d45b2239caba679bcb2611e626e70",
+      "FP16_layer00": "6bbe6e4a02d196a40dc3aa975d0cc359d6238899122816f0079ef6c740d03d9b",
+      "FP16_layer01": "619d40ec8d3bc7b2dc093b57c49169bbd977d72b802a6dc4c4559a56d9c18047",
+      "FP16_layer02": "4b4e1d7378145789b54aadd63fc3131fd513d88868aba489253b0fd8a438fe9e",
+      "FP16_layer09": "3b999e53ed28d1735762a09d460f2485c3ebb7b98642d3699e913fffc285b217",
+      "FP16_layer24": "6d081a27aa99eeaf0bd73084a72d09c969f180788041d246cf0b1983e182b0e9"
+    }
+  }
+}

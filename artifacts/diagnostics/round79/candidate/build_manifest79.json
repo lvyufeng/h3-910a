@@ -1,0 +1,134 @@
+{
+  "scope": "Generated Round79 diagnostic FP16 encoder candidate; never imported by production.",
+  "generator": "build_candidate79.py",
+  "generator_sha256": "67921cac87a5d99ae7e4830a1cfd453a9d33cdb513a0744bca123137733f6ae4",
+  "source_path": "artifacts/diagnostics/round76/source/encoder.py",
+  "source_sha256": "7c22d98c28f4e93550fd3848bfc174121250259fdf50bcd2f7920f826acf311d",
+  "source_line_count": 1605,
+  "candidate_path": "artifacts/diagnostics/round79/candidate/candidate_encoder79.py",
+  "candidate_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+  "candidate_line_count": 1716,
+  "candidate_bytes": 77920,
+  "edit_count": 12,
+  "edits": [
+    {
+      "id": "E0-docstring-dtype",
+      "purpose": "The module docstring must not claim plain BF16 weights once the candidate also supports FP16.",
+      "original_lines": [
+        14,
+        16
+      ],
+      "replacement_line_count": 4
+    },
+    {
+      "id": "E11-candidate-constants",
+      "purpose": "Mark the module as the generated diagnostic candidate and pin the origin it was built from.",
+      "original_lines": [
+        52,
+        52
+      ],
+      "replacement_line_count": 8
+    },
+    {
+      "id": "E1-embedding-reduce-fp16",
+      "purpose": "Add the dtype resolver and promote the vocabulary-embedding all-reduce to FP32 for FP16, matching the single-device reference sum; the BF16 branch keeps its existing gate.",
+      "original_lines": [
+        381,
+        388
+      ],
+      "replacement_line_count": 29
+    },
+    {
+      "id": "E2-rmsnorm-fp16-gamma",
+      "purpose": "Add the FP16 RMSNorm branch with the reference's two rounding points (FP32 reduction, cast to FP16, FP16 gamma multiply). The BF16 block is preserved verbatim.",
+      "original_lines": [
+        408,
+        428
+      ],
+      "replacement_line_count": 42
+    },
+    {
+      "id": "E3-text-rope-fp16",
+      "purpose": "Route FP16 text M-RoPE through the FP32-frequency branch so cos/sin are cast to FP16 exactly as the reference returns them; the BF16 gate is unchanged.",
+      "original_lines": [
+        495,
+        496
+      ],
+      "replacement_line_count": 9
+    },
+    {
+      "id": "E4-pos-interpolate-fp32",
+      "purpose": "Use the reference's FP32 bilinear weights and FP32 four-term sum for both diagnostic dtypes instead of gating it behind VLLM_OMNI_910A_VISION_FP32.",
+      "original_lines": [
+        834,
+        836
+      ],
+      "replacement_line_count": 10
+    },
+    {
+      "id": "E6-encoder-dtype-defaults",
+      "purpose": "Define compute_dtype before the early return so unloaded instances still expose it.",
+      "original_lines": [
+        1254,
+        1254
+      ],
+      "replacement_line_count": 3
+    },
+    {
+      "id": "E5-encoder-dtype-resolution",
+      "purpose": "Replace the inline env parse with the single dtype resolver and record the resolved compute dtype plus the FP16-mode flag on the encoder.",
+      "original_lines": [
+        1264,
+        1272
+      ],
+      "replacement_line_count": 8
+    },
+    {
+      "id": "E10-io-dtype-and-self-check",
+      "purpose": "Add the I/O dtype accessor and a fail-closed self-check so a mixed parameter dtype can never be silently benchmarked as one FP16 graph.",
+      "original_lines": [
+        1428,
+        1428
+      ],
+      "replacement_line_count": 42
+    },
+    {
+      "id": "E7-pixel-values-dtype",
+      "purpose": "Take the image input dtype from the stored vision parameters instead of a hardcoded BF16 cast.",
+      "original_lines": [
+        1453,
+        1453
+      ],
+      "replacement_line_count": 1
+    },
+    {
+      "id": "E8-pixel-videos-dtype",
+      "purpose": "Same boundary fix for the video pixels.",
+      "original_lines": [
+        1461,
+        1461
+      ],
+      "replacement_line_count": 1
+    },
+    {
+      "id": "E9-hidden-return-dtype",
+      "purpose": "Return the graph's own dtype. The reference has no final BF16 hop, so the hardcoded cast was an encoder-specific extra rounding. Hidden is already the compute dtype, so the BF16 result is unchanged.",
+      "original_lines": [
+        1492,
+        1492
+      ],
+      "replacement_line_count": 6
+    }
+  ],
+  "executed": false,
+  "NPU_precision_established": false,
+  "CPU_FP16_gold_consumed": false,
+  "tolerance_set": false,
+  "production_files_modified": [],
+  "notes": [
+    "Regenerating from the pinned source reproduces the candidate byte for byte.",
+    "Every difference from the source lies inside a declared original_lines span.",
+    "TEXT_PAD_KV / TEXT_FP32_LINEAR / _text_fp32_local_linear do not exist in this R76 source; they belong to the separate round65 candidate and needed no disabling here.",
+    "BF16 branches are preserved verbatim; the interpolation edit intentionally moves BF16 to the reference-faithful FP32 form, so BF16-vs-production is not bit-identical."
+  ]
+}
