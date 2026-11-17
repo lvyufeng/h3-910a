@@ -1,6 +1,7 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round77 user-selected CPU FP16 acceptance: public FP16 ports found, independent gold to be built](<artifacts/diagnostics/round77/README.md>),
 > [Round76 actual49-step videos: warm DiT14.66s/step, persistent logo artifacts, FP16 runtime](<artifacts/diagnostics/round76/README.md>),
 > [Round74 complete independent original-BF16 HF reference: selected50 quality mismatch retained](<artifacts/diagnostics/round74/README.md>),
 > [Round75 exact output-column/gather probes: narrow FC2 failure and separate padding recovery](<artifacts/diagnostics/round75/README.md>),

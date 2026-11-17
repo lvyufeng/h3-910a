@@ -1,0 +1,180 @@
+# ComfyUI-MiniMaxH3-FP16Safe
+
+**MiniMax H3 音视频 / 图像 DiT 的 fp16 稳定性 + 速度优化插件（ComfyUI 自定义节点）· v6.9.0**
+
+> English version: [README_EN.md](README_EN.md) · 开发/设计文档: [DEVELOPMENT.md](DEVELOPMENT.md) / [DEVELOPMENT_EN.md](DEVELOPMENT_EN.md)
+
+在 **V100（sm_70，无 bf16/fp8 硬件）** 或任何强制 fp16 计算的机器上，让 MiniMax H3（`comfy/ldm/minimax`，PR #15224）的**视频模型**（fl2va / ref2va）与**图片模型**（MiniMax-H3-Image）以**接近纯 fp16 的速度**获得**接近 fp32 的数值稳定性**——在硬件上"手动模拟 bf16 的宽指数范围"。
+
+---
+
+## 解决的问题
+
+MiniMax H3 官方 `supported_inference_dtypes = [bf16, fp32]`，**明确不支持 fp16**。原因：模型的激活值（残差流、MLP 的 gated-silu 产物、fc2 输出）真实值可达 **50 万**，远超 fp16 上限 ±65504。V100 没有 bf16 硬件，官方路径只能回落到 fp32（慢约 4×）。
+
+强行用"模型计算Dtype"节点设 fp16 计算 → 采样 NaN → 黑图。本插件在 fp16 计算下，把**会溢出的算子自动升 fp32 或用 2 的幂缩放补偿**，其余大矩阵乘保持 fp16（Tensor Core）。
+
+---
+
+## 安装
+
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/aaalll12322/ComfyUI-MiniMaxH3-FP16Safe.git
+# 或手动复制整个文件夹到 ComfyUI/custom_nodes/
+```
+
+重启 ComfyUI。工作流中在 `MiniMaxH3` 分类下找到 **"MiniMax H3 FP16 Safe"** 节点。
+
+---
+
+## 使用
+
+```
+UNET加载器 ──> MiniMax H3 FP16 Safe ──> model ──> 采样器（KSampler 等）
+```
+
+- **`model`（必接）**：UNET 加载器的输出，可接在"模型计算Dtype"节点之后（插件也会强制 fp16）。
+- **`debug_nan`**（默认关）：打印第一个出现非有限值的 DiTBlock 索引，用于故障定位。
+- **`profile`**（默认关）：打印 block 2/5/10/25/50 的 attention/MLP/其他 累计耗时与当前显存，用于速度瓶颈定位。
+
+> 音频 VAE、视频 VAE 与文本编码器均不受本插件影响，按原工作流接线即可（v6.4.0 起视频 VAE 已实测原生 fp16 安全，无需补丁）。
+
+---
+
+## 示例工作流
+
+仓库 [`examples/minimax_h3_r2v_fp16safe.json`](examples/minimax_h3_r2v_fp16safe.json) 提供完整的 **ref2va（参考图生视频）** 示例：基于 ComfyUI 官方 ref2va 模板，插入本插件节点。
+
+```
+UNET加载器 ──▶ LoraLoader（可选）──▶ MiniMax H3 FP16 Safe ──▶ model ──▶ 采样器
+```
+
+**接线要点（重要）**：
+
+- **LoRA 必须接在插件节点之前**：插件 `patch()` 时会克隆模型并重写 forward（v6.6.0/v6.7.0 隔离机制），LoRA 需先合并进模型再交给插件安全化。若接在插件之后，LoRA 会绕过 fp16 安全化范围，并有污染缓存模型的风险。
+- 示例中 LoRA 为 `minimax-h3\minimax_h3_fl2v_turbo_4step_v1.0_768p_comfyui_bf16.safetensors`（FL2V turbo 4 步，示例路径），可按需替换或直接删除 `LoraLoader` 节点。
+- 示例参考图 `red_superboy_on_city_roof.png` / `mecha_dragon_lightning.png` 需自行准备（放入 `ComfyUI/input/`）。
+
+**所需模型**：
+
+| 用途 | 文件 |
+|---|---|
+| UNET | `minimax_h3_ref2va_pruned_fp8_scaled.safetensors`（V100 推荐 fp8 版） |
+| 文本编码 | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` |
+| 视频 VAE | `minimax_h3_video_vae_fp16.safetensors` |
+| 音频 VAE | `minimax_h3_audio_vae_fp32.safetensors` |
+
+---
+
+## 工作原理
+
+思路：**残差流全程 fp32（稳定累加），大矩阵乘保持 fp16（Tensor Core 速度）**。
+
+| 组件 | 处理 |
+|---|---|
+| 残差流（50 层 DiTBlock） | fp32（`_dit_block_forward`），不再有 fp16 累积溢出 |
+| RMSNorm（210 个） | fp32 计算，I/O dtype 不变 |
+| attention | **全程 fp16 SDPA（v6.3 固定缩放零扫描）**：输入一律 ÷16（2 的幂精确，v6.6.0 起由 /256 改 /16，精度 +240×）再进 qkv_proj → qkv 有硬上界；q/k 由 RMSNorm 齐次性精确还原（logits 用原始量级），v 带缩放穿过线性链 SDPA→out_proj 后 fp32 乘回；**数学上不可能溢出，全程零 `.item()` 扫描** |
+| MLP | **全 fp16 + 固定缩放零扫描**：fc1 输出（实测 max≈585）保持 fp16；gated-silu 固定 ÷16（act ≤ 21.4k，3.4× 裕量）、fc2 固定 ÷8（输出 ≤ 22.7k），全部 2 的幂精确；末尾 fp32 还原。**零 fp32 中间张量、零逐块扫描** |
+| 长序列 | **分块 MLP**：按 16384 行切块单遍处理，激活峰值与 seq 无关（~9GB），避免 16GB 卡上 lowvram 换出雪崩 |
+| Qwen 文本路径（condition_proj） | fp32（防真实 context max≈21k 溢出） |
+| 视频 VAE | 不处理（原生 fp16 路径，v6.4.0 实测有限：含 outlier ±38 解码 finite，与 fp32 差异仅 0.5%） |
+
+**保险丝机制**：fp16 快速路径后检查 `torch.isfinite()`，罕见溢出时自动用 fp32 重算该段——**保证永不 NaN**（固定缩放的数学上界使保险丝几乎不触发，仅作安全网）。
+
+**为什么 v6 能全链路 fp16（V100 无 fp32 Tensor Core）**：
+- 实测极端时间步下：P@V 输出 ~706、fc1 ~585（远小于 65504，可安全 fp16）；唯一超限的是 fc2 输出（~50 万）与 gated-silu 产物（~59k）——两者都用 **2 的幂固定缩放**（除法/乘法在 fp16 中无损）解决。
+- 早期实现 fc1 输出要升 fp32 算 silu，长序列每层多 ~850GB 搬运（约 +30s/步）；当前的 gate 缩放让 silu 也在 fp16 完成，act 有上界 → **数学上不可能溢出**。
+- 残差流超阈值时（罕见）MLP 自动切到 fp32 分块路径保证正确。
+- 当前版本把 attention 与 MLP 的所有逐层 `.item()` 扫描替换为固定 2 幂缩放（每层同步 11→2 次），在低显存 offload 环境下同步被放大的问题得以消除。
+
+---
+
+## 性能
+
+### 视频模型
+
+实测（352×608、124 帧、5 秒视频，V100）：
+
+| 配置 | 每步耗时 |
+|---|---|
+| 纯 fp16（无插件） | 8s（但 NaN → 黑图） |
+| 纯 fp32 | 35s |
+| 插件（fp16 计算） | ~10s |
+
+大 seq（480p/10s，seq≈9.85 万，V100，DiT offload 环境，真实采样 4 步实测）：
+
+| 配置 | 每步耗时 | 说明 |
+|---|---|---|
+| 纯 fp16（无插件） | 63s | NaN → 不可用 |
+| **插件 v6.8.0（零每 block 同步 + 固定缩放）** | **71-74s（ref2va fp8）** | fp32 残差流 + fp16 Tensor Core，逼近无插件基线 |
+
+已验证模型：`minimax_h3_fl2va_pruned_fp8_scaled`、`minimax_h3_ref2va_pruned_fp8_scaled`、`minimax_h3_ref2va_pruned_int8_convrot`（均正常出片；fp8 版比 int8 版快约 9s/步，V100 推荐 fp8）。
+
+### 图片模型
+
+`minimax_h3_image_pruned_int8_convrot`，文生图，1:1 画布，1×V100-16GB，开启本插件，6 步：
+
+| 分辨率 | 每步耗时 |
+|---|---|
+| 1MP | 3.4 s |
+| 2MP | 3.7 s |
+| 4MP | 5.3 s |
+| 8MP | 10.3 s |
+| 16MP | 25 s |
+
+不开本插件时：fp16 计算为 NaN（黑图）；fp32 约慢 2 倍。
+
+---
+
+## 想进一步提速？可以试试 Sol-Attn 稀疏加速插件（尝鲜）
+
+如果你在 V100 上已用本插件跑通 MiniMax H3，还想进一步提速，可以试试配套插件 **[ComfyUI-MiniMaxH3-SolAttn-V100](https://github.com/aaalll12322/ComfyUI-MiniMaxH3-SolAttn-V100)**（Sol-Attn 稀疏，arXiv 2607.24027）：
+
+- **单节点 = 内嵌 FP16Safe（v6.8.0 逻辑）+ Sol-Attn 稀疏**（keep-or-drop kernel），自包含，无需再串联本插件
+- **实测（V100 真机，小规模场景）**：480p/10s 71-74s/步 → **43s/步（约 1.7×）**；960×544/5s 33s → **24s/步（+27%）**，画质肉眼 ≈ dense
+- **稳定性提醒**：稀疏路由对工作流/序列形态敏感，不同分辨率、帧数下效果与画质可能不同，目前仅在小规模真机场景验证过；建议先小分辨率试跑对比画质，确认无损再用于正式出图
+- 推荐配置（开箱即用）：`tau=0.75, end_percent=0.9, dense_blocks="0-1,-1", topk_blocks=32, h3_prefix_tokens=1024`
+
+> 本插件负责"数值正确 + 稳定"，SolAttn 插件在此基础上进一步"跳过无用计算"提速——定位互补，可独立使用。**SolAttn 处于尝鲜阶段，正式出图求稳请继续用本插件（dense 全量计算）。**
+
+---
+
+## 故障排查
+
+| 现象 | 处理 |
+|---|---|
+| 节点找不到 / `IMPORT FAILED` | 确认 ComfyUI 含 PR #15224（`comfy/ldm/minimax` 存在）；升级 ComfyUI 后重试 |
+| 采样仍有 NaN | 打开 `debug_nan`，把 `[MiniMaxH3-FP16Safe][DEBUG]` 输出发来（带 block 索引与输入/输出区分） |
+| 删除节点后同进程重跑黑帧/行为未还原 | v6.6.0 修复 dtype 残留（patch 在 clone 上执行）+ v6.7.0 修复 forward 残留（patch 时结构克隆模块树，缓存对象保持原生 forward，无需重新加载模型）；如仍异常请重启 ComfyUI 服务清缓存 |
+| 采样正常但解码黑 | 属 v6.4.0 之前的旧版行为；当前版本节点无 VAE 端口、VAE 走原生路径，若仍黑请升级 ComfyUI 并确认视频 VAE 加载正常 |
+| 速度慢于预期 | 打开 `profile`，把 `[MiniMaxH3-FP16Safe][PROF]` 输出发来（每阶段耗时定位瓶颈） |
+
+---
+
+## 兼容性
+
+- **ComfyUI**：需包含 PR #15224（`comfy/ldm/minimax/` 模块）。
+- **显卡**：任意（fp16 溢出是数值问题，与硬件无关）；V100（sm_70）效果最明显。
+- **模型**：MiniMax H3 系列检查点（fp8_scaled / int8_convrot / bf16 均可）；MiniMax-H3-Image 需 ComfyUI `ede4e5fe8` 或更新。
+- **不修改任何 ComfyUI 核心文件**，升级不覆盖；卸载即删除文件夹。
+
+---
+
+## 版本历史
+
+| 版本 | 要点 |
+|---|---|
+| v6.0.0 | 全 fp16 MLP（gate 缩放），消除 fp32 cast 带宽；数学上不可能溢出 |
+| **v6.3.0** | **attention 固定 /256 缩放零扫描（q/k RMSNorm 还原、v 线性链缩放）；每层同步 11→2 次；ref2va fp8 480p/10s 实测 75-78s/步** |
+| v6.4.0 | Video VAE 恢复原生 fp16 路径（去掉 fp32 升精度）：实测 fp16 解码 finite（含 ±38 outlier），与 fp32 路径差异仅 0.5%，解码提速 ~30%（14.5s→10.1s） |
+| **v6.5.0** | **节点精简 + 实例级 patch**：移除 vae 输入/输出端口与 fix_vae（VAE 由 ComfyUI 原生处理）；patch 改为只作用于当前模型实例（类方法不再被改），工作流中删除节点后不再"幽灵生效" |
+| **v6.6.0** | **attention 固定缩放 256→16（PR #1，精度 +240×，溢出余量仍 ≥7×）+ Issue #2 修复（patch 在 clone 上执行，删除节点后缓存对象不再残留 fp16 compute）** |
+| **v6.7.0** | **结构克隆隔离（Issue #2 forward 侧）**：patch 时递归重建模块树（权重参数共享、模块实例隔离），删除节点后缓存对象保持原生 forward，无需重新加载模型 |
+| **v6.8.0** | **零每 block GPU 同步（deferred fuse）**：移除 2 个 magnitude probe（真机实测 attn/MLP 输入峰值 78.5，fp16 上限 65504 余量 830×，无条件降与条件降逐位等价）+ isfinite 保险丝改为 GPU 累积、每 forward 只查一次（触发则整 forward fp32 重跑兜底）；ref2va fp8 480p/10s 实测 75-78 → 71-74s/步 |
+| **v6.9.0** | **支持 MiniMax-H3-Image**（ComfyUI `ede4e5fe8` / CORE-708）：模型识别改为沿 MRO 判定，`MiniMaxH3ImageModel` 不再依赖结构兜底；MLP 快路径在 `seq ≤ 16384` 时跳过分块。1MP/2MP/4MP 实测 −13.0% / −17.4% / −21.2% |
+
+## License
+
+MIT

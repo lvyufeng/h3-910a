@@ -1,0 +1,21 @@
+{
+  "authority":"Direct user requests: CPU FP16 reference alignment is the precision success criterion;search GitHub and HF for existing references first,otherwise use our reproducible conversion of official weights.",
+  "acceptance_reference_dtype":"CPU FP16 model execution under explicitly documented original/reference FP32 operator islands",
+  "BF16_cross_precision_agreement_required":false,
+  "old_R74_BF16_discrepancy_is_not_a_blocking_acceptance_gate":true,
+  "old_BF16_outputs_cast_to_FP16_are_not_an_FP16_reference":true,
+  "reference_must_be_recomputed":true,
+  "public_FP16_compute_prior_art_found":true,
+  "public_full_stack_CPU_FP16_gold_with_numerical_receipts_found_in_checked_scope":false,
+  "selected_base_source":{"repository":"MiniMaxAI/MiniMax-H3","revision":"0919fb684102ef115126612f3fbb84d1027e7317","url":"https://huggingface.co/MiniMaxAI/MiniMax-H3/tree/0919fb684102ef115126612f3fbb84d1027e7317/FL2VA","additional_few_step_Turbo_or_FlashGen_LoRA":false,"official_CFG_distilled_base_is_allowed":true},
+  "storage_conversion_contract":["Official BF16 dense parameters cast deterministically to FP16 once;keep original tensor names/shapes/shard index","Original F32 small parameter/buffer islands stay F32 unless official loading contract says otherwise","No quantization,LoRA,rank8 AdaLN reparameterization,weight pruning that changes active arithmetic or nonlinear clamps","Keep tokenization/processor/input IDs/images/grid/MRoPE and H3selected50 pre-finalnorm boundary fixed"],
+  "compute_reference_contract":["First verify CPU torch version supports native FP16 tensor inputs for Linear/SDPA/LayerNorm/Conv used by target module","Run independent official HF/reference operators,not our optimized AscendC/TBE wrappers","Allow only declared reference F32 accumulation/norm/rotary/time/residual protection;record per-op input/output dtypes","If CPU has unsupported FP16 op,report failure and decide a documented F32 island explicitly;do not silently use BF16 or call fullF32 simulation nativeFP16","Check finite outputs and repeat stability;compare full tensors and per-layer diagnostics,not just final video appearance"],
+  "performance_reference_scope":"CPU reference timing is not910Aperformance;warmedsame-taskNPUA/Btimingsseparate;officialA2/A3T2VAcomparisonremainqualified",
+  "CPU_FP16_reference_generated":false,
+  "NPU_FP16_precision_accepted":false,
+  "whole_performance_goal_complete":false,
+  "abandoned_before_execution":"isolate_vision_text77.py is historical BF16 upstream isolation preparation only,NOTexecutedandNOTselectedasnewgold",
+  "no_NPU_or_CPU_inference_launched_this_search_stage":true,
+  "ts217_lease_released_after_user_requested_search_first":true,
+  "candidate_ports_are_references_not_installed_plugins":true
+}
