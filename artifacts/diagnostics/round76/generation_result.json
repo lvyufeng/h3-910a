@@ -1,0 +1,226 @@
+{
+  "scope": "Actual 49-step FL2VA videos using freshly optimized and independent-HF conditioning.\n\nThe optimized complete encoder is freshly recomputed in a separate owned8NPU\nprocess before this run. Both video requests then use the supported EXTERNAL\nTEXT CONDITIONING path,text_encoder=False and local VAE media encode. DiT and\nVAE execute live. Request wall does NOT include live encoder/residency cost and\nis not the full resident5.384s benchmark or official lossless comparison.\n",
+  "source_sha256": "056196648826c1cbb9383c8a7d54fec6ce3201d5fd64620c719810be5bfae404",
+  "cases": [
+    {
+      "case": "optimized",
+      "request_wall_s_excluding_live_encoder": 958.5264320098795,
+      "request_id": "0_b5469e8d-5e62-48be-a933-d9255298e554",
+      "metrics": {
+        "stage_metrics": {
+          "0": {
+            "stage_id": 0,
+            "final_output_type": "video",
+            "finish_reason": null,
+            "num_tokens_in": 0,
+            "num_tokens_out": 0,
+            "stage_gen_time_ms": 958522.3617553711,
+            "postprocess_time_ms": 0.0,
+            "audio_frames": 165600,
+            "audio_sample_rate": 32000,
+            "audio_duration_s": 5.175,
+            "image_pixels": 0,
+            "denoise_step_latency_ms": 0.0,
+            "output_unit_type": "video",
+            "output_unit_count": 1,
+            "serving_time_to_first_output_ms": 958522.9349136353,
+            "image_time_to_first_output_ms": 0.0,
+            "time_per_output_unit_ms": 0.0,
+            "inter_output_latency_ms": 0.0,
+            "inter_output_latencies_ms": {
+              "type": "<class 'list'>",
+              "length": 0,
+              "first": []
+            },
+            "vllm_ttft_ms": 0.0,
+            "vllm_tpot_ms": 0.0,
+            "vllm_itl_ms": 0.0,
+            "vllm_itls_ms": {
+              "type": "<class 'list'>",
+              "length": 0,
+              "first": []
+            },
+            "stage_name": "diffusion"
+          }
+        },
+        "stage_id": 0,
+        "final_output_type": "video",
+        "num_tokens_in": 0,
+        "num_tokens_out": 0
+      },
+      "stage_durations": {
+        "queue_wait_ms": 0.9570796974003315,
+        "stage_0_gen_ms": 958522.3617553711
+      },
+      "multimodal_output_schema": {
+        "metadata": {
+          "audio": {
+            "sample_rate": 32000
+          },
+          "video": {
+            "fps": 24
+          }
+        },
+        "audio": {
+          "type": "ndarray",
+          "shape": [
+            1,
+            2,
+            165600
+          ],
+          "dtype": "float32"
+        },
+        "audio_sample_rate": 32000,
+        "fps": 24
+      },
+      "custom_output_schema": {},
+      "raw_RGB_frame_sha256": "b76c7780e4b5946fcf64b1cb25eb7f7e2af525ccf91443e144444aa8f04f0576",
+      "video": {
+        "path": "/tmp/h3_round76_generation02/optimized.mp4",
+        "bytes": 1146635,
+        "sha256": "c0baff8a4128e6cd05cf71cb1c2b043ec2cbabe619111894c3dcbacc376bbe1d",
+        "decoded_frame_count_expected": 124,
+        "encoding": "libx264/yuv420p/crf18/24fps;video-onlyexport,audio separately retained in output schema"
+      }
+    },
+    {
+      "case": "HF_reference_conditioning",
+      "request_wall_s_excluding_live_encoder": 735.6894669998437,
+      "request_id": "0_76fb56be-f936-43e6-9bc6-05f32c88b23f",
+      "metrics": {
+        "stage_metrics": {
+          "0": {
+            "stage_id": 0,
+            "final_output_type": "video",
+            "finish_reason": null,
+            "num_tokens_in": 0,
+            "num_tokens_out": 0,
+            "stage_gen_time_ms": 735672.6634502411,
+            "postprocess_time_ms": 0.0,
+            "audio_frames": 165600,
+            "audio_sample_rate": 32000,
+            "audio_duration_s": 5.175,
+            "image_pixels": 0,
+            "denoise_step_latency_ms": 0.0,
+            "output_unit_type": "video",
+            "output_unit_count": 1,
+            "serving_time_to_first_output_ms": 735673.0396747589,
+            "image_time_to_first_output_ms": 0.0,
+            "time_per_output_unit_ms": 0.0,
+            "inter_output_latency_ms": 0.0,
+            "inter_output_latencies_ms": {
+              "type": "<class 'list'>",
+              "length": 0,
+              "first": []
+            },
+            "vllm_ttft_ms": 0.0,
+            "vllm_tpot_ms": 0.0,
+            "vllm_itl_ms": 0.0,
+            "vllm_itls_ms": {
+              "type": "<class 'list'>",
+              "length": 0,
+              "first": []
+            },
+            "stage_name": "diffusion"
+          }
+        },
+        "stage_id": 0,
+        "final_output_type": "video",
+        "num_tokens_in": 0,
+        "num_tokens_out": 0
+      },
+      "stage_durations": {
+        "queue_wait_ms": 0.4373597912490368,
+        "stage_0_gen_ms": 735672.6634502411
+      },
+      "multimodal_output_schema": {
+        "metadata": {
+          "audio": {
+            "sample_rate": 32000
+          },
+          "video": {
+            "fps": 24
+          }
+        },
+        "audio": {
+          "type": "ndarray",
+          "shape": [
+            1,
+            2,
+            165600
+          ],
+          "dtype": "float32"
+        },
+        "audio_sample_rate": 32000,
+        "fps": 24
+      },
+      "custom_output_schema": {},
+      "raw_RGB_frame_sha256": "28dc666f354f6d677b545faeb527f69dbe130f0c08eea9caea2919044bd71bdd",
+      "video": {
+        "path": "/tmp/h3_round76_generation02/HF_reference_conditioning.mp4",
+        "bytes": 1150096,
+        "sha256": "62d210c52a379a650bd05da0680a6719d28f7e9eaad6f21a2bf5d6e064ae774d",
+        "decoded_frame_count_expected": 124,
+        "encoding": "libx264/yuv420p/crf18/24fps;video-onlyexport,audio separately retained in output schema"
+      }
+    }
+  ],
+  "native_bf16_compute_used": false,
+  "DiT_runtime_dtype": "float16",
+  "encoder_in_generation_engine": false,
+  "conditioning_is_precomputed_for_this_request": true,
+  "live_full_encoder_end_to_end_performance_proven": false,
+  "official_goal_complete": false,
+  "actual_inputs_match_current_encoder_fixture": true,
+  "request": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "seconds": 5,
+    "width": 1344,
+    "height": 768,
+    "fps": 24,
+    "aligned_frames": 124,
+    "seed": 1234,
+    "num_inference_steps": 49,
+    "task": "fl2va"
+  },
+  "actual_input_ids_sha256": "cb8b7bf9386dfe5a3eb3d6fb6dac360dfd948aa69e31947e915a90c58c8d6846",
+  "actual_tags_sha256": "8eb85d7987c6496a9ad1724cb875c493511134532f639bfa77cbd7cc00f30dcc",
+  "actual_FP16_transport_pixels_sha256": "f6be7c840caf4eb52e164befc021b1e1a796703dff1289a934ede5cb757cc2aa",
+  "fresh_optimized_encoder_receipt": {
+    "encode_for_generation76.py": "6db9e84b1324b9d3320cea85f49227b82db5af10ce3d55e744db17b1a2eb2869",
+    "candidate_padded_text_encoder.py": "848419afaf49235a9a3288e991fd9c78c7f2b76933da015dc05c944f64763550",
+    "evidence_io76.py": "56ae294f3be10b7e07103e5bde0e056c25c1172828cc683882ad40570578b97d"
+  },
+  "FP16_consumed_hidden_comparison": {
+    "experimental_sha256": "a4642a059cfe244ba322a3d08f2e8fc5d414a1fd378517fc9981cb52bbd908ec",
+    "HF_reference_sha256": "52e8a9e4d4d676b749290ed7f417e0c6e4a3743d3f0f022730002651b3770492",
+    "finite": true,
+    "relative_rms": 0.4095109240532696
+  },
+  "conditioning_payloads_validated_before_engine_start": true,
+  "engine_kwargs": {
+    "trust_remote_code": true,
+    "task_type": "fl2va",
+    "num_gpus": 8,
+    "ulysses_degree": 8,
+    "ring_degree": 1,
+    "text_encoder_tp_size": 8,
+    "vae_parallel_mode": "tile",
+    "vae_use_tiling": true,
+    "vae_patch_parallel_size": 8,
+    "diffusion_attention_backend": "TORCH_SDPA",
+    "stage_init_timeout": 2400,
+    "init_timeout": 2400,
+    "dtype": "half",
+    "enable_distributed_layerwise_offload": true,
+    "model_loaded": {
+      "transformer": true,
+      "vae": true,
+      "text_encoder": false,
+      "vae_encoder": true
+    }
+  },
+  "engine_startup_seconds_excluded": 173.54619349027053,
+  "completed": true,
+  "engine_close_called": true
+}

@@ -1,0 +1,59 @@
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:13: FutureWarning: triton.language.extra.cann.extension.atan2 is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.atan2 instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.atan2")
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:35: FutureWarning: triton.language.extra.cann.extension.isfinited is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.isfinited instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.isfinited")
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:49: FutureWarning: triton.language.extra.cann.extension.finitef is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.finitef instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.finitef")
+/home/mseco/vllm-omni/vllm_omni/__init__.py:19: RuntimeWarning: Failed to import version from _version.py: No module named 'vllm_omni._version'
+This typically happens in development mode before building.
+Using fallback version 'dev'.
+  from .version import __version__, __version_tuple__  # isort:skip # noqa: F401
+INFO 11-17 03:44:26 [__init__.py:52] Available plugins for group vllm.platform_plugins:
+INFO 11-17 03:44:26 [__init__.py:54] - ascend -> vllm_ascend:register
+INFO 11-17 03:44:26 [__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+INFO 11-17 03:44:26 [__init__.py:272] Platform plugin ascend is activated
+INFO 11-17 03:44:27 [platform.py:74] Breakable CUDAGraph on Ascend is opt-in; using VLLM_USE_BREAKABLE_CUDAGRAPH=0.
+INFO 11-17 03:44:33 [patch_indexer_kv_dtype.py:102] Patched AttentionConfig.indexer_kv_dtype to accept 'int8' (DeepSeek V4 Ascend indexer K cache dtype).
+INFO 11-17 03:44:33 [patch_kv_cache_dtype.py:117] Patched CacheConfig.cache_dtype to accept 'int8' and 'mxfp8' (Ascend KV cache dtypes).
+INFO 11-17 03:44:33 [patch.py:253] NVFP4 W4A4 weight_scale NaN-clamp: skipped — upstream serves ModelOpt linears through the generic ModelOptLinearMethod and rejects any NaN weight_scale (unloaded-scale sentinel), so a load-time error replaces the `!!!!` decode-time collapse.
+INFO 11-17 03:44:34 [patch.py:551] inductor factorable-divisibility patch: skipped (upstream already proves it).
+INFO 11-17 03:44:34 [patch.py:630] [cumem-cuda] CuMemAllocator._python_free_callback patched: asleep guard extended to all platforms.
+WARNING 11-17 03:44:39 [ring_globals.py:97] FlashInfer ring kernels are unavailable. Reason: No module named 'flashinfer'
+INFO 11-17 03:44:45 [omni_base.py:208] [Omni] Initializing with model /tmp/h3_round53_native49_fp16_model
+INFO 11-17 03:44:45 [omni_engine_base.py:163] [OmniEngine] Initializing with model /tmp/h3_round53_native49_fp16_model
+/home/mseco/vllm-omni/vllm_omni/config/omni_config.py:1389: FutureWarning: Diffusion config field 'diffusion_attention_backend' is deprecated; use 'diffusion_attention_config'.
+  normalized = normalize_omni_diffusion_kwargs(mixed_kwargs, apply_defaults=False)
+Traceback (most recent call last):
+  File "/tmp/h3_round76_generation01/generate_optimized76.py", line 217, in <module>
+    main()
+  File "/tmp/h3_round76_generation01/generate_optimized76.py", line 176, in main
+    omni = Omni(model=MODEL, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/vllm-omni/vllm_omni/entrypoints/omni_base.py", line 215, in __init__
+    self.engine = self._create_engine(
+                  ^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/vllm-omni/vllm_omni/entrypoints/omni.py", line 33, in _create_engine
+    return AsyncOmniEngine(**engine_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/vllm-omni/vllm_omni/engine/omni_engine_base.py", line 264, in __init__
+    self.config_path, self.stage_configs = self._resolve_stage_configs(
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/vllm-omni/vllm_omni/engine/omni_engine_base.py", line 921, in _resolve_stage_configs
+    load_and_resolve_stage_configs(
+  File "/home/mseco/vllm-omni/vllm_omni/engine/omni_engine_base.py", line 90, in load_and_resolve_stage_configs
+    return resolve_omni_config(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/vllm-omni/vllm_omni/config/resolver.py", line 237, in resolve_omni_config
+    default_config = StageConfigFactory.create_typed_default_diffusion(model, normalized_overrides)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/vllm-omni/vllm_omni/config/config_factory.py", line 741, in create_typed_default_diffusion
+    cls._normalize_default_diffusion(kwargs)
+  File "/home/mseco/vllm-omni/vllm_omni/config/config_factory.py", line 658, in _normalize_default_diffusion
+    kwargs = normalize_and_validate_diffusion_engine_ingress_kwargs(kwargs, stage_id=0)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/vllm-omni/vllm_omni/config/omni_config.py", line 1413, in normalize_and_validate_diffusion_engine_ingress_kwargs
+    validate_omni_diffusion_kwargs(normalized, allowed_fields, stage_id=stage_id)
+  File "/home/mseco/vllm-omni/vllm_omni/diffusion/data.py", line 199, in validate_omni_diffusion_kwargs
+    raise ValueError(f"Unknown diffusion config field(s){suffix}: {names}")
+ValueError: Unknown diffusion config field(s) for stage 0: 'ring', 'usp'
+[ERROR] 2026-11-17-03:44:46 (PID:3446026, Device:-1, RankID:-1) ERR99999 UNKNOWN applicaiton exception

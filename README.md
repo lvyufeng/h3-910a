@@ -1,6 +1,7 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round76 actual49-step videos: warm DiT14.66s/step, persistent logo artifacts, FP16 runtime](<artifacts/diagnostics/round76/README.md>),
 > [Round74 complete independent original-BF16 HF reference: selected50 quality mismatch retained](<artifacts/diagnostics/round74/README.md>),
 > [Round75 exact output-column/gather probes: narrow FC2 failure and separate padding recovery](<artifacts/diagnostics/round75/README.md>),
 > [Round73 exact strided vision attention cast: complete encode6.464s→5.384s, not yet2s](<artifacts/diagnostics/round73/README.md>),
@@ -49,11 +50,15 @@ Always warm up before measuring.
 The 910A generation is missing, or pathologically slow at, several things H3
 assumes. Three findings drove the whole design:
 
-**1. bf16 matmul is crippled — 168× slower than fp16.** The same GEMM
-([11250,5376] × [5376,28672]) measures **1.01 TFLOPS in bf16** and
-**170.57 TFLOPS in fp16**. H3 ships in bf16, so the naive port spends ~99% of its
-time waiting. Switching to fp16 took a single DiT layer from 14.7 s to 0.077 s.
-`DTYPE=half` is mandatory, not an optimization.
+**1. 910A has no native BF16 matmul.** A historical BF16-labelled software/
+compatibility-path benchmark for GEMM
+([11250,5376] × [5376,28672]) measured **1.01 TFLOPS**, versus
+**170.57 TFLOPS in native FP16**—the former is not BF16 hardware throughput.
+H3 ships BF16 weights; practical 910A generation uses FP16, while the recent
+encoder experiment stores BF16 and computes through FP32/integer codecs.
+Switching the old DiT path to FP16 took a layer from 14.7 s to 0.077 s, but
+`DTYPE=half` changes the numerical graph and is **not proof of original-BF16
+losslessness**.
 
 **2. Fused attention does not exist.** SDPA, `npu_fusion_attention`,
 `npu_prompt_flash_attention` all fail with `EZ1009 SoC version ascend910
