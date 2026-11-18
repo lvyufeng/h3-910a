@@ -1,0 +1,103 @@
+{
+  "round": 86,
+  "kind": "late-layer FP16 norm/MLP leaf controls (source only)",
+  "file": "late_leaf86.py",
+  "bytes": 31364,
+  "sha256": "4a147c8a53d63a0d4745962cceb6c36f4db6ca492c2f2c22c17020f1b5b86322",
+  "executes_npu": false,
+  "author_ran_model": false,
+  "imports_torch_at_module_scope": false,
+  "proves_full_precision": false,
+  "geometry": {
+    "sequence_length": 2043,
+    "hidden_size": 5120,
+    "intermediate_size_actual_checkpoint": 25600,
+    "world_size": 8,
+    "intermediate_per_partition": 3200,
+    "gate_up_weight_shape": [
+      6400,
+      5120
+    ],
+    "down_weight_shape": [
+      5120,
+      3200
+    ],
+    "gate_weight_slice": [
+      0,
+      3200
+    ],
+    "up_weight_slice": [
+      3200,
+      6400
+    ],
+    "rejected_stale_intermediate_size": 27648,
+    "gate_up_rows_local_validation": 6400
+  },
+  "pins": {
+    "round79_candidate_file_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "round79_norm_fp16_two_round_branch_sha256": "da686cd5815ff31e13371f18ee2320232acc2be6d5da2bf2f7dccc4c2f1e8f14"
+  },
+  "entry_points": [
+    "validate_activation",
+    "validate_linear_weight",
+    "validate_layer_geometry",
+    "verify_pinned_norm_order",
+    "cpu_half_rmsnorm_reference",
+    "cpu_half_linear_reference",
+    "run_controls",
+    "manifest"
+  ],
+  "task": "task-28",
+  "owner": "leaf86-fresh (fresh fork; source only)",
+  "source_only": true,
+  "nothing_executed_on_npu": true,
+  "author_performed_no_ssh_or_model_run": true,
+  "no_git_commit": true,
+  "not_a_numeric_result": true,
+  "no_full_precision_claim": true,
+  "numerical_tolerance_declared": null,
+  "scope": "Isolate one real late decoder block's FP16 input_layernorm and MLP leaf operators against CPU FP16 oracles built from the actual captured native Half values. Local down_proj shard linear only: the row-parallel HCCL all-reduce is never executed here.",
+  "required_runtime_inputs": {
+    "layer": "real R79 MiniMaxH3Qwen3VLTextDecoderLayer on NPU, original Half params",
+    "block_input": "actual Half (1,2043,5120); for block25 it is the unchanged CPU FP16 raw layer24 state",
+    "mlp_input": "actual Half (1,2043,5120) captured by a pre-hook on the first native mlp.forward",
+    "compare": "root helper compare(value, reference) -> dict with relative_rms/max_abs_error/raw_bits_equal",
+    "tensor_info": "root helper tensor_info(value) -> dict with sha256"
+  },
+  "returns": [
+    "layer_geometry",
+    "activation_specs",
+    "controls",
+    "frozen_before",
+    "frozen_after",
+    "frozen_unchanged",
+    "numerical_tolerance (None)",
+    "full_encoder_precision_accepted (False)",
+    "whole_goal_complete (False)"
+  ],
+  "leaf_controls": {
+    "input_layernorm": "native FP16 two-round vs CPU two-round HF order, same original Half gamma/eps",
+    "mlp_gate_up_local_linear": "Half F.linear on the actual captured mlp input, gate rows[0:3200] and up rows[3200:6400]",
+    "silu_on_actual_native_gate": "F.silu on the actual native Half gate vs CPU Half SiLU on the same values; Float-SiLU is a labelled diagnostic only",
+    "silu_times_up": "Half elementwise product of the actual native activations",
+    "down_proj_local_linear": "local K3200->5120 shard linear on the same product; collective NOT executed"
+  },
+  "fail_closed_on": [
+    "non-Half activation or weight",
+    "non-NPU device",
+    "stale intermediate width 27648 / per-rank 3456",
+    "missing or quantised linear method",
+    "added bias",
+    "wrong layer/module class",
+    "non-positive or non-finite eps",
+    "non-repeat-stable native op",
+    "mutated captured input or parameter"
+  ],
+  "tests": {
+    "file": "test_late_leaf86.py",
+    "count": 23,
+    "stdlib_only": true,
+    "requires_torch": false,
+    "result": "OK"
+  }
+}
