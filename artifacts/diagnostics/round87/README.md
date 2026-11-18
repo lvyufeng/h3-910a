@@ -53,7 +53,8 @@ Resident视觉warm中位数：原生 **1.473723s**，候选 **1.488395s**，没�
 [最终R87核验](<final_verification87.json>)确认23生产+13安装API、CPU参考回执和视觉/选中50层
 原始payload、运行库SHA均未变，相关R87worker为零。
 [执行来源](<executed_sources87.json>)保存实际源码SHA。47项源码与实测证据测试通过。
-Owned ts217租约暂保留用于下一条已授权的视觉attention对照，未重复启动R87任务。
+Owned ts217租约保留至R88视觉attention对照结束，现已在R88 worker与来源核验后释放；
+未重复启动R87任务。
 
 下一步见[协议](<NEXT.md>)：真实vision head_dim72、每图4032token的QK/PV CPU Half MATH
 对照以及零填充候选，分别开关bias/attention，避免将更精确的叶算子盲目叠加为全图通过。

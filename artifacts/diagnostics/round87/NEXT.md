@@ -17,9 +17,8 @@ Do not deploy these by themselves as completeprecision/speed fixes. Use
 
 Task32freshfork owns an accuratevisionattentionengine in Round88; do not resume
 inactive vision87-fresh. Root keeps newRound88sources separate; allR87executed
-sources remain immutable. TheR87owned217lease is stillheld,expires2026-11-18
-07:34:13Z,with noR87workersafterfinalverification. ReleaseonlyafterR88compute and
-workerchecks,orifnotcontinuing;donotreclaimanotheragent'sCUDA/CIleases.
+sources remain immutable. TheR87owned217lease washelduntilR88followup,nowreleasedafterR88source/worker
+verification. NewNPUworkneedsanewownedclaim;donotreclaimanotheragent'sCUDA/CIleases.
 
 Originalvisionhelperperimage receivesHalfQ/K/V [1,16,4032,72] after original
 Floatrotary+Halfcast. UnmaskedvisionSDPA,NOTcausaltextSDPA. Twoimages invokeit
