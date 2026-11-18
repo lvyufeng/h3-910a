@@ -1,0 +1,21 @@
+[W1118 07:58:05.980227500 NPUCachingAllocator.cpp:204] Warning: The current CANN and HDK(driver) versions require processing for 32 padding size, with memory allocation. (function operator())
+Error: current chip: Ascend910 AiCore doesn't support float32 for Instruction vec_relu
+File path: /tmp/h3_round90_vision01/erf_gelu90.py, line 605
+The context code cause the exception is:
+602                        elif op == "h_cast":
+603                            t.h_cast(ub[entry["dst"]], ub[entry["src"]], entry["round_mode"])
+604                        elif op in ("vec_abs", "vec_rec", "vec_exp", "vec_relu"):
+605 ->                         getattr(t, op)(entry["mask"], ub[entry["dst"]], ub[entry["src"]],
+606                                           entry["repeat_times"], entry["dst_rep_stride"],
+607                                           entry["src_rep_stride"])
+608                        elif op in ("vec_muls", "vec_adds"):
+
+Traceback:
+  File /tmp/h3_round90_vision01/kernel_probe90.py, line 55, in <module>
+ if __name__=='__main__':main()
+  File /tmp/h3_round90_vision01/kernel_probe90.py, line 34, in main
+                 meta=kernel.build_kernel(numel=cpu_input.numel(),out_dir=ROOT/'erf_kernels')
+  File /tmp/h3_round90_vision01/erf_gelu90.py, line 665, in build_kernel
+         gm = _emit_kernel(t, plan, tik)
+  File /tmp/h3_round90_vision01/erf_gelu90.py, line 605, in _emit_kernel
+                         getattr(t, op)(entry["mask"], ub[entry["dst"]], ub[entry["src"]],

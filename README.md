@@ -1,6 +1,7 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round90 real GELU None/tanh bug fixed with Float-vector erf; leaf error1000–4000× lower, joint vision1.367s/0.724% still not full precision pass](<artifacts/diagnostics/round90/README.md>),
 > [Round89 actual patch+linear bias: vision error0.725%, resident1.381s; erf GELU gap still open, no full precision pass](<artifacts/diagnostics/round89/README.md>),
 > [Round88 real vision attention error reduced6× at leaves; joint vision gap1.19% but3.047s, not default](<artifacts/diagnostics/round88/README.md>),
 > [Round87 real vision bias error reduced31–51× at leaves; full vision gap1.29%, best native-row encode2.899s still not accepted](<artifacts/diagnostics/round87/README.md>),

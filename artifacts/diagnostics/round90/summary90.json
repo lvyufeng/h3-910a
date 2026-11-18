@@ -1,0 +1,280 @@
+{
+  "scope": "Verify real erfGELU controls and fullvisioncandidate; no fullprecision waiver.",
+  "native_and_patchbias_reproduce_R89_output_SHA": true,
+  "same_actual_Half_erf_leafs": [
+    {
+      "name": "deepstack_merger_list.0.act_fn",
+      "native_None_CPU_Half_erf_relative_RMS": 0.000433182267827292,
+      "explicit_Torch_erf_CPU_Half_relative_RMS": 7.107339344936363e-05,
+      "TIK_erf_CPU_Half_relative_RMS": 3.759005928821453e-07,
+      "TIK_max_abs_error": 7.62939453125e-06,
+      "repeat_bits": true,
+      "inputs_SHA_unchanged": true
+    },
+    {
+      "name": "merger.act_fn",
+      "native_None_CPU_Half_erf_relative_RMS": 0.0003097707122795202,
+      "explicit_Torch_erf_CPU_Half_relative_RMS": 7.711851652270543e-05,
+      "TIK_erf_CPU_Half_relative_RMS": 7.876686963971599e-08,
+      "TIK_max_abs_error": 7.62939453125e-06,
+      "repeat_bits": true,
+      "inputs_SHA_unchanged": true
+    }
+  ],
+  "full_vision_cases": {
+    "native": {
+      "merged_relative_RMS": 0.01456805331761072,
+      "max_abs_error": 0.7109375,
+      "DeepStack_relative_RMS": [
+        0.0028199652530662587,
+        0.005658125875455447,
+        0.009088246005155962
+      ],
+      "resident_vision_median_s": 1.4708829801529646,
+      "repeat_bit_equal": true
+    },
+    "patch_and_linear_bias": {
+      "merged_relative_RMS": 0.0072464766718495196,
+      "max_abs_error": 0.484375,
+      "DeepStack_relative_RMS": [
+        0.001536080515411984,
+        0.0027890138825403597,
+        0.004770685379550933
+      ],
+      "resident_vision_median_s": 1.364952019881457,
+      "repeat_bit_equal": true
+    },
+    "Torch_explicit_erf_only": {
+      "merged_relative_RMS": 0.014566640842458995,
+      "max_abs_error": 0.71875,
+      "DeepStack_relative_RMS": [
+        0.002792104902713648,
+        0.0056492118157678165,
+        0.009066833062024842
+      ],
+      "resident_vision_median_s": 1.4708557203412056,
+      "repeat_bit_equal": true
+    },
+    "Torch_explicit_erf_patch_and_bias": {
+      "merged_relative_RMS": 0.007243616081215978,
+      "max_abs_error": 0.484375,
+      "DeepStack_relative_RMS": [
+        0.0014811213537210854,
+        0.0027709221313166094,
+        0.004730480827212155
+      ],
+      "resident_vision_median_s": 1.3407767498865724,
+      "repeat_bit_equal": true
+    },
+    "TIK_erf_only": {
+      "merged_relative_RMS": 0.014566671704392149,
+      "max_abs_error": 0.71875,
+      "DeepStack_relative_RMS": [
+        0.0027919420082243114,
+        0.005649248085046891,
+        0.009066857955341283
+      ],
+      "resident_vision_median_s": 1.4816753398627043,
+      "repeat_bit_equal": true
+    },
+    "TIK_erf_patch_and_bias": {
+      "merged_relative_RMS": 0.007243818866055623,
+      "max_abs_error": 0.484375,
+      "DeepStack_relative_RMS": [
+        0.0014806522694060624,
+        0.0027706141021683153,
+        0.004730181839098264
+      ],
+      "resident_vision_median_s": 1.366966350004077,
+      "repeat_bit_equal": true
+    }
+  },
+  "special_signed_extremes": [
+    {
+      "x": 0.0,
+      "CPU_Half": 0.0,
+      "kernel": 0.0,
+      "CPU_bits": 0,
+      "kernel_bits": 0
+    },
+    {
+      "x": -0.0,
+      "CPU_Half": -0.0,
+      "kernel": 0.0,
+      "CPU_bits": -32768,
+      "kernel_bits": 0
+    },
+    {
+      "x": 5.960464477539063e-08,
+      "CPU_Half": 0.0,
+      "kernel": 0.0,
+      "CPU_bits": 0,
+      "kernel_bits": 0
+    },
+    {
+      "x": -5.960464477539063e-08,
+      "CPU_Half": -0.0,
+      "kernel": -0.0,
+      "CPU_bits": -32768,
+      "kernel_bits": -32768
+    },
+    {
+      "x": 0.00010001659393310547,
+      "CPU_Half": 5.0008296966552734e-05,
+      "kernel": 5.0008296966552734e-05,
+      "CPU_bits": 839,
+      "kernel_bits": 839
+    },
+    {
+      "x": -0.00010001659393310547,
+      "CPU_Half": -5.0008296966552734e-05,
+      "kernel": -5.0008296966552734e-05,
+      "CPU_bits": -31929,
+      "kernel_bits": -31929
+    },
+    {
+      "x": 0.0999755859375,
+      "CPU_Half": 0.053955078125,
+      "kernel": 0.053955078125,
+      "CPU_bits": 10984,
+      "kernel_bits": 10984
+    },
+    {
+      "x": -0.0999755859375,
+      "CPU_Half": -0.0460205078125,
+      "kernel": -0.0460205078125,
+      "CPU_bits": -22044,
+      "kernel_bits": -22044
+    },
+    {
+      "x": 1.0,
+      "CPU_Half": 0.84130859375,
+      "kernel": 0.84130859375,
+      "CPU_bits": 15035,
+      "kernel_bits": 15035
+    },
+    {
+      "x": -1.0,
+      "CPU_Half": -0.15869140625,
+      "kernel": -0.15869140625,
+      "CPU_bits": -20204,
+      "kernel_bits": -20204
+    },
+    {
+      "x": 3.0,
+      "CPU_Half": 2.99609375,
+      "kernel": 2.99609375,
+      "CPU_bits": 16894,
+      "kernel_bits": 16894
+    },
+    {
+      "x": -3.0,
+      "CPU_Half": -0.00405120849609375,
+      "kernel": -0.00405120849609375,
+      "CPU_bits": -25562,
+      "kernel_bits": -25562
+    },
+    {
+      "x": 5.0,
+      "CPU_Half": 5.0,
+      "kernel": 5.0,
+      "CPU_bits": 17664,
+      "kernel_bits": 17664
+    },
+    {
+      "x": -5.0,
+      "CPU_Half": -1.4901161193847656e-06,
+      "kernel": -1.430511474609375e-06,
+      "CPU_bits": -32743,
+      "kernel_bits": -32744
+    },
+    {
+      "x": 8.0,
+      "CPU_Half": 8.0,
+      "kernel": 8.0,
+      "CPU_bits": 18432,
+      "kernel_bits": 18432
+    },
+    {
+      "x": -8.0,
+      "CPU_Half": -0.0,
+      "kernel": 0.0,
+      "CPU_bits": -32768,
+      "kernel_bits": 0
+    },
+    {
+      "x": 65504.0,
+      "CPU_Half": 65504.0,
+      "kernel": 65504.0,
+      "CPU_bits": 31743,
+      "kernel_bits": 31743
+    },
+    {
+      "x": -65504.0,
+      "CPU_Half": -0.0,
+      "kernel": 0.0,
+      "CPU_bits": -32768,
+      "kernel_bits": 0
+    }
+  ],
+  "TIK_adapter": {
+    "round": 90,
+    "installed": true,
+    "enabled": false,
+    "patched_module_names": [
+      "deepstack_merger_list.0.act_fn",
+      "deepstack_merger_list.1.act_fn",
+      "deepstack_merger_list.2.act_fn",
+      "merger.act_fn"
+    ],
+    "patched_module_count": 4,
+    "expected_erf_gelu_modules": 4,
+    "tanh_gelu_modules_left_untouched": 27,
+    "calls": 32,
+    "kernel_launches": 32,
+    "tile_tasks_processed": 72576,
+    "kernel_prepared": true,
+    "kernel_name": "erf_gelu_fixed90_n9289728_t4096_c30",
+    "kernel_object_SHA256": "c0406299563c59e56a5a79d0c1a93c5be58cffce3e87ba7fe254c06a9b925e15",
+    "numel": 9289728,
+    "ub_bytes": 147456,
+    "per_instance_forward_only": true,
+    "patches_torch_global": false,
+    "patches_torch_functional": false,
+    "patches_other_activations": false,
+    "patches_biased_linears": false,
+    "disabled_is_exact_native": true,
+    "cached_float_weights": false,
+    "no_model_parameters": true,
+    "source_sha256": "5a5e85aaad5697a7a890ecb0b5b724bc3acd93d819978ab55d5eb68038cd0552",
+    "numerical_tolerance": null,
+    "full_encoder_precision_accepted": false,
+    "whole_goal_complete": false
+  },
+  "explicit_Torch_adapter": {
+    "enabled": true,
+    "installed": true,
+    "calls": 32,
+    "patched_modules": [
+      "merger.act_fn",
+      "deepstack_merger_list.0.act_fn",
+      "deepstack_merger_list.1.act_fn",
+      "deepstack_merger_list.2.act_fn"
+    ],
+    "original_erf_modes_preserved": true,
+    "no_MLP_tanh_or_other_functional_patch": true,
+    "no_Float_weight_teacher": true,
+    "source_SHA256": "3bebbff749d0468eeecd1e502454ebd1dd0b146b9105daa83a2dc42368710fc7"
+  },
+  "original_Half_params_inputs_CPUgold_unchanged": true,
+  "all_raw27_cases_finite_and_repeat_bit_equal": true,
+  "native_recovery_verified": true,
+  "only4merger_erf_modified_27MLPtanh_untouched": true,
+  "no_Float_weight_teacher": true,
+  "numerical_tolerance": null,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "not_full_encoder_timing": true,
+  "kernel_receipt_SHA256": "1d4f8af16da99c333855561a78a75ba1aae57e05aead30463938e40d783ef04b",
+  "vision_receipt_SHA256": "8e0726529af2218ea7a8e5362394dc75351c0f1fc3ce269436232acf852aa38b"
+}

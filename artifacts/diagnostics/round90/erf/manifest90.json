@@ -1,0 +1,181 @@
+{
+  "round": 90,
+  "task": "task-36",
+  "owner": "erf90-fresh",
+  "kind": "Float32-vector erf-GELU TIK kernel + gated per-instance adapter (SOURCE ONLY)",
+  "scope": "artifacts/diagnostics/round90/erf",
+  "files": {
+    "erf_gelu90.py": {
+      "bytes": 44591,
+      "lines": 996,
+      "sha256": "2671a21308474e0b97cbb3390a472e0721258ec92ff84af35200d104f72dff56",
+      "role": "kernel builder + plan + emulation + adapter"
+    },
+    "test_erf_gelu90.py": {
+      "bytes": 25017,
+      "lines": 507,
+      "sha256": "512026c08731236913a934796ee2db7f951fc6299e0aedaffe1328b9891ac205",
+      "role": "41 stdlib-only contract/stability tests"
+    }
+  },
+  "compiled": false,
+  "executed_on_npu": false,
+  "no_ssh_or_remote_command": true,
+  "no_model_run": true,
+  "no_cann_build": true,
+  "no_installation": true,
+  "no_production_files_modified": true,
+  "no_git_commit": true,
+  "proves_precision": false,
+  "proves_speed": false,
+  "claims_h3_improvement": false,
+  "api": {
+    "kernel": "build_kernel(numel, out_dir=None) -> metadata dict",
+    "adapter": "ErfGeluAdapter90(vision, runtime, kernel_dir) with prepare/set_enabled/snapshot/uninstall",
+    "factory": "install(vision, runtime, kernel_dir)",
+    "control": "cpu_half_reference(value) (CPU Half F.gelu(approximate='none'))",
+    "emulation": "scalar_emulation/scalar_reference/scalar_half_reference/scalar_erf_abs (stdlib)"
+  },
+  "launcher_contract": {
+    "runtime_module": "runtime5gm83",
+    "runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+    "runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+    "candidate_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "gm_argument_count": 5,
+    "gm_order": [
+      "Half input",
+      "Half aux1",
+      "Half aux2",
+      "Half aux3",
+      "Half output"
+    ],
+    "aux_roles": "unused;exist only to keep the proven five-GM-pointer ABI and are passed explicitly to BuildCCE"
+  },
+  "hardware_contract": {
+    "compile_soc": "Ascend910B",
+    "runtime_short_soc": "Ascend910",
+    "physical_cores": 30,
+    "ub_safe_bytes": 196608,
+    "ub_plan_bytes": 147456,
+    "no_a2_only_feature": true,
+    "no_bf16": true,
+    "no_core_dim_32": true
+  },
+  "geometry": {
+    "real_rows": 2016,
+    "real_hidden": 4608,
+    "real_numel": 9289728,
+    "smoke_numel": 8192,
+    "tile_elems": 4096,
+    "dma_burst_blocks": 128,
+    "dma_nburst": 2,
+    "fp32_mask": 64,
+    "fp32_repeat_times": 64,
+    "fp32_rep_stride": 8,
+    "k_tiles": "n/a (pure vector, no cube)"
+  },
+  "planned_kernels": [
+    {
+      "numel": 9289728,
+      "tasks": 2268,
+      "cores": 30,
+      "steps": 76
+    },
+    {
+      "numel": 8192,
+      "tasks": 2,
+      "cores": 2,
+      "steps": 1
+    }
+  ],
+  "emission": {
+    "instructions": 37,
+    "h_cast": 2,
+    "data_move": 2,
+    "order_head": [
+      "data_move gm->ub",
+      "h_cast Half->Float32"
+    ],
+    "order_tail": [
+      "h_cast Float32->Half",
+      "data_move ub->gm"
+    ],
+    "only_one_final_half_cast": true,
+    "no_half_math_between_casts": true
+  },
+  "math": {
+    "formula": "gelu(x)=0.5*x+0.5*|x|*erf_abs(|x|/sqrt2)",
+    "erf_approximation": "Abramowitz-Stegun 7.1.26 rational",
+    "coefficients": {
+      "a1": 0.254829592,
+      "a2": -0.284496736,
+      "a3": 1.421413741,
+      "a4": -1.453152027,
+      "a5": 1.061405429,
+      "p": 0.3275911
+    },
+    "newton_steps": 2,
+    "polynomial_max_abs_error_exact_math": 1.5e-07,
+    "measured_emulation_vs_double_reference_max_abs": 1.9e-06,
+    "why_no_sign_select": "no elementwise compare op is exposed; vec_sel needs a compare mask, so the odd-erf identity x*sign(x)=|x| removes the need entirely",
+    "negative_tail": "exp(-z*z) underflows to 0 so erf_abs==1 and 0.5*(x+|x|)==0 exactly",
+    "signed_zero": "x==-0.0 yields +0.0 where CPU yields -0.0; numerically equal, bits differ, recorded"
+  },
+  "adapter": {
+    "patched_modules": [
+      "merger.act_fn",
+      "deepstack_merger_list.0.act_fn",
+      "deepstack_merger_list.1.act_fn",
+      "deepstack_merger_list.2.act_fn"
+    ],
+    "patched_count": 4,
+    "only_approximate_none": "27 block tanh GELUs are refused and left untouched",
+    "per_instance_methodtype": true,
+    "default_disabled_is_exact_native": true,
+    "patches_torch_global": false,
+    "patches_torch_functional": false,
+    "patches_other_activations": false,
+    "patches_biased_linears": false,
+    "cached_float_weights": false,
+    "no_model_parameters": true,
+    "restore": "__self__/__func__ identity guard, delattr when no instance forward, idempotent",
+    "operand_guard": "Half only, NPU only, shape (rows,4608), fixed 9289728-element fixture"
+  },
+  "tests": {
+    "count": 41,
+    "all_pass": true,
+    "stdlib_only": true,
+    "no_torch_at_import": true,
+    "no_tik": true,
+    "classes": [
+      "GeometryTests",
+      "EmissionTests",
+      "EmissionDryRunTests",
+      "MathStabilityTests",
+      "SourceContractTests",
+      "AdapterContractTests"
+    ],
+    "dry_run": "_emit_kernel walked against a recording TIK stub: 37 instructions, 2 casts, 2 moves, complete operands"
+  },
+  "reference_pins": {
+    "base_blocked_fp32_gemm83": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee"
+  },
+  "root_owned_next_steps": [
+    "review this source and run the 41 tests",
+    "stage erf_gelu90.py with runtime5gm83.py and candidate_encoder79.py on owned ts-217",
+    "compile the 8192-element smoke kernel, then the 9289728 actual kernel",
+    "compare actual output against CPU Half F.gelu(approximate='none') on the SAME frozen R89 merger inputs (expect relRMS ~6.6e-6 from emulation, versus native 3.1e-4/4.3e-4)",
+    "then full 27-block vision A/B with the useful R89 patch+linear-bias path",
+    "keep the 27 tanh block GELUs and the R88 slow attention path disabled"
+  ],
+  "non_claims": [
+    "no compilation attempted by the author",
+    "no numerical result established by the author",
+    "the 6.6e-6 Half-level figure is an offline Float32 emulation prediction, not a hardware measurement",
+    "hardware vec_exp ULP behaviour is not modelled",
+    "a passing leaf does not accept whole-encoder precision",
+    "no speed claim"
+  ],
+  "root_review_original_source_SHA256": "2343e2a54fb17eb77377577941efec42f8a9f0be7100f8f1fa7a4225673e4888",
+  "root_review_correction": "Count one rtKernelLaunch as one kernel_launch; track2268logicaltiletasks separately. Kernelmathandemissionunchanged."
+}
