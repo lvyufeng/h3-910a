@@ -1,0 +1,299 @@
+{
+  "api": {
+    "builder": "flash_vision99.build_kernel(batch, m, n, d, out_dir=None)",
+    "capability": "flash_vision99.capability_report(plan=None)",
+    "constants": [
+      "HEADS",
+      "SEQ",
+      "HEAD_DIM",
+      "PAD_DIM",
+      "MB",
+      "BC",
+      "SHIFT_BOUND",
+      "SMOKE_GEOMETRY",
+      "KERNEL_ARG_ORDER"
+    ],
+    "plan": "flash_vision99.plan_kernel(batch, m, n, d, mb=64, bc=64, cores_max=30)",
+    "protocol": "flash_vision99.check_host_protocol(max_abs_scaled_qk=None, q_absmax=None, k_absmax=None, d=72)"
+  },
+  "assumptions": [
+    "h_reduce_max/h_reduce_sum(axis=1) on a (MB,16) tile yields a (MB,) row tensor",
+    "Tensor.reshape((n1,MB,16)) is a metadata view of the same flat UB buffer",
+    "masked vector_dup(repeat_times=n1, blk_stride=1, rep_stride=2*MB) writes one 16-value NZ row slot per group",
+    "Scalar.set_as(<UB element>) is a legal UB-to-scalar load",
+    "h_reduce_sum on Float compiles to Float vcadd; h_max to Float vmax",
+    "the Half shift estimate uses Half vcmax (Float vcmax is unsupported here)",
+    "vector_dup(mask,dst,scalar,1,1,1) with an explicit repeat slice fills exactly one repeat",
+    "in-place same-shape h_sub/h_mul/h_add/h_exp with dst==src0 is supported",
+    "a Float UB buffer can be reused sequentially (score->exp, Half score->P_hi, row expansion->widened P_hi) without an explicit alias API"
+  ],
+  "buffers": {
+    "l0c_pv_bytes": 20480,
+    "l0c_score_bytes": 16384,
+    "l0c_total_bytes": 57344,
+    "l1_k_bytes": 10240,
+    "l1_p_hi_bytes": 8192,
+    "l1_p_lo_bytes": 8192,
+    "l1_q_bytes": 10240,
+    "l1_total_bytes": 47104,
+    "l1_v_bytes": 10240,
+    "ub_exp_bytes": 16384,
+    "ub_half_score_bytes": 8192,
+    "ub_out_bytes": 10240,
+    "ub_prob_float_bytes": 16384,
+    "ub_prob_half_bytes": 8192,
+    "ub_pv_bytes": 20480,
+    "ub_score_bytes": 16384,
+    "ub_total_bytes": 151424
+  },
+  "compiled_now": false,
+  "default_enabled": false,
+  "dma": {
+    "k_load": {
+      "burst": 64,
+      "dst_stride": 0,
+      "nburst": 5,
+      "src_stride": 3968
+    },
+    "out_store": {
+      "burst": 64,
+      "dst_stride": 3968,
+      "nburst": 5,
+      "src_stride": 0
+    },
+    "p_to_l1": {
+      "burst": 64,
+      "nburst": 4
+    },
+    "pv_l0c_to_ub": {
+      "block_mode": "m",
+      "burst_len_kb": 20,
+      "nburst": 1
+    },
+    "q_load": {
+      "burst": 64,
+      "dst_stride": 0,
+      "nburst": 5,
+      "src_stride": 3968
+    },
+    "score_l0c_to_ub": {
+      "block_mode": "m",
+      "burst_len_kb": 16,
+      "nburst": 1
+    },
+    "v_load": {
+      "burst": 80,
+      "dst_stride": 0,
+      "nburst": 4,
+      "src_stride": 0
+    }
+  },
+  "evidence_read_only": {
+    "float_vcadd_vmax_vexp_vdiv_supported": true,
+    "float_vcmax_unsupported": true,
+    "h_broadcast_absent": true,
+    "half_vcmax_supported": true,
+    "sdk_sheet": "../actual_sdk_highlevel99.json"
+  },
+  "executed": false,
+  "files": {
+    "README.md": {
+      "bytes": 7810,
+      "sha256": "780f34490971ebd6e071e1c7fd0a08936b279b99564bfc8013e41012723a26f1"
+    },
+    "flash_vision99.py": {
+      "bytes": 46523,
+      "sha256": "8344b64a5e3c1f5c3558223eb504eddce5f083f9c88c5db46661c439037a4e92"
+    },
+    "test_flash_vision99.py": {
+      "bytes": 35254,
+      "sha256": "a88a73f1ec54eb48a7269a4c6bc5f963d7ca668e4bdd0d6e14ec3d33c7ec8bf6"
+    }
+  },
+  "full_encoder_precision_accepted": false,
+  "geometry": {
+    "causal": false,
+    "padded_width_is_not_the_scale": true,
+    "real": {
+      "bc": 64,
+      "cores": 30,
+      "d": 72,
+      "heads": 16,
+      "kv_tiles": 63,
+      "m": 4032,
+      "mb": 64,
+      "n": 4032,
+      "padded_head_dim": 80,
+      "steps": 34,
+      "tasks": 1008
+    },
+    "scale": 0.11785113019775792,
+    "scale_is_original_head_dim": true,
+    "smoke": {
+      "cores": 4,
+      "geometry": [
+        2,
+        128,
+        128,
+        72
+      ],
+      "kv_tiles": 2,
+      "tasks": 4
+    },
+    "unmasked": true
+  },
+  "gm_abi": {
+    "argument_order": [
+      "q_gm_float16",
+      "k_gm_float16",
+      "v_gm_float16",
+      "aux_gm_float32",
+      "out_gm_float16"
+    ],
+    "aux_is_unused_float_placeholder": true,
+    "bytes": {
+      "k": 10321920,
+      "out": 10321920,
+      "q": 10321920,
+      "v": 10321920
+    },
+    "count": 5,
+    "head_stride_elems": {
+      "k": 322560,
+      "out": 322560,
+      "q": 322560,
+      "v": 322560
+    },
+    "inputs": [
+      "q_gm",
+      "k_gm",
+      "v_gm",
+      "aux_gm"
+    ],
+    "outputs": [
+      "out_gm"
+    ],
+    "shapes": {
+      "aux": [
+        16
+      ],
+      "aux_dtype": "float32",
+      "k": [
+        16,
+        5,
+        4032,
+        16
+      ],
+      "out": [
+        16,
+        5,
+        4032,
+        16
+      ],
+      "q": [
+        16,
+        5,
+        4032,
+        16
+      ],
+      "v": [
+        16,
+        252,
+        80,
+        16
+      ]
+    }
+  },
+  "host_protocol": {
+    "bound": 16384.0,
+    "clamped": false,
+    "enforced_by": "check_host_protocol",
+    "formula": "max|scaled QK| <= 16384, measured finitely by the caller or bounded by sqrt(d) * max|q| * max|k|",
+    "half_shift_ulp_at_bound": 8.0,
+    "max_exp_at_bound": 2980.9579870417283
+  },
+  "math": {
+    "accumulator_dtype": "float32",
+    "buffer_reuse": [
+      "score FP32 tile -> exp tile (in-place h_exp)",
+      "Half score tile -> P_hi",
+      "row-expansion FP32 tile -> widened P_hi",
+      "PV low product -> rescale row expansion",
+      "PV high product -> final quotient tile"
+    ],
+    "denominator_dtype": "float32",
+    "final_output_dtype": "float16",
+    "init": {
+      "denominator": 0.0,
+      "output": 0.0,
+      "row_max": -3.4028234663852886e+38
+    },
+    "low_downscale": 0.0009765625,
+    "main_scores_dtype": "float32",
+    "main_softmax_dtype": "float32",
+    "no_clamp": true,
+    "no_half_cumulative_output": true,
+    "no_half_denominator": true,
+    "no_hidden_or_conditioning_cache": true,
+    "no_implicit_broadcast": true,
+    "no_mid_product_fp32_gm": true,
+    "order": [
+      "qk_matmul_full_padded_dim",
+      "score_fp32_to_ub",
+      "scale_by_head_dim_inv_sqrt",
+      "half_row_shift_estimate",
+      "online_max_and_rescale",
+      "broadcast_shift_explicitly",
+      "exp_fp32",
+      "fold_true_float_denominator",
+      "half_hi_half_lo_split",
+      "two_fp32_pv_l0c",
+      "fp32_combine_hi_plus_lo_over_1024",
+      "rescale_and_accumulate_output",
+      "final_float_div_then_one_half_cast"
+    ],
+    "probability_split": [
+      "hi = Half(exp)",
+      "lo = Half((exp - Float(hi)) * 1024)"
+    ],
+    "residual_scale": 1024.0,
+    "row_broadcast": "explicit per-row vector_dup expansion; no implicit h_* broadcasting is relied on",
+    "shift_estimate_dtype": "float16",
+    "shift_is_exact": false
+  },
+  "non_claims": [
+    "no FP32 linear weight, teacher tensor or BF16 gold cast",
+    "no cached pixel/patch/hidden/DeepStack/conditioning value",
+    "no Half cumulative output or Half denominator",
+    "no clamp and no post-hoc numerical tolerance",
+    "no measured speedup or accuracy result from the author"
+  ],
+  "not_a_speed_claim": true,
+  "not_h3_end_to_end_result": true,
+  "numerical_tolerance": null,
+  "root_smoke_must_check": [
+    "the two real geometries (H16 M=N4032 D72) and the H2/M=N128 smoke both compile",
+    "h_reduce_max/h_reduce_sum with axis=1 return (MB,) rows on a (MB,16) tile",
+    "reshape((n1,MB,16)) is a metadata view and the buffer reuse order is respected",
+    "masked vector_dup (repeat_times=n1, blk_stride=1, rep_stride=2*MB) writes the 16-value row slot of every NZ group and the last row ends exactly at the tile end",
+    "in-place h_exp/h_sub/h_mul/h_add with dst==src0 behave as the FA source's rows do",
+    "the fused output matches the frozen real QKV CPU Half MATH reference and is compared against the executed Round97 leaf before any whole-vision claim"
+  ],
+  "round": 99,
+  "scope": "single-launch streaming vision flash attention: one QK FP32 matmul, Half-only row shift estimate, FP32 online shift/denominator/output, two-Half probability P@V in two FP32 L0C, one final Half cast",
+  "source_only": true,
+  "vector": {
+    "broadcast_blk_stride": 1,
+    "broadcast_mask": 16,
+    "broadcast_rep_stride": 128,
+    "f32_mask": 64,
+    "f32_rep_stride": 8,
+    "group_repeats": 16,
+    "pv_elems": 5120,
+    "pv_groups": 5,
+    "row_elems": 64,
+    "score_elems": 4096,
+    "score_groups": 4
+  },
+  "whole_goal_complete": false
+}

@@ -1,0 +1,612 @@
+{
+  "scope": "Actual frozen originalvision QKV A/B R97 NZ vs single-launch streaming Float flash,independent scoped helpers.",
+  "completed": false,
+  "source_SHA256": "6dec3feeb7c5a6a5b620b03847de15428df2ccf68af10ee26969e98d4b09673c",
+  "not_full_encoder_timing": true,
+  "no_model_weight_or_FloatLinear_teacher": true,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "numerical_tolerance": null,
+  "images": [],
+  "candidate": {
+    "path": "/tmp/h3_round99_leaf03/candidate_encoder79.py",
+    "sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "module_name": "candidate_encoder79",
+    "origin_production_sha256": null
+  },
+  "old_prepare": {
+    "sources": {
+      "kernel_module": {
+        "path": "/tmp/h3_round99_leaf03/batch_gemm85.py",
+        "sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a"
+      },
+      "runtime_module": {
+        "path": "/tmp/h3_round99_leaf03/runtime5gm83.py",
+        "sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+        "library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+        "ABI": "fiveGMpointers"
+      },
+      "candidate": {
+        "path": "/tmp/h3_round99_leaf03/candidate_encoder79.py",
+        "sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+        "helper_source_sha256": "6393bee7067d4854a7f4d47f192d0b3b6673acfc7cf951e6c86eb52b5a39d2e5",
+        "matches_pin": true
+      }
+    },
+    "pv_module": {
+      "module": "pv_high_low96",
+      "path": "/tmp/h3_round99_leaf03/pv_high_low96.py",
+      "sha256": "99b7dadd1d279de5316c20faa4c36744fbc5f475c492f225e41c86dab02a2e32",
+      "fused_single_launch": true,
+      "kernel_arg_order": [
+        "hi_gm_float16",
+        "lo_gm_float16",
+        "v_gm_float16",
+        "aux_gm_float32",
+        "out_gm_float16"
+      ],
+      "GM_argument_count": 5
+    },
+    "shapes_qk": [
+      [
+        16,
+        512,
+        128,
+        4096
+      ],
+      [
+        16,
+        448,
+        128,
+        4096
+      ]
+    ],
+    "shapes_pv": [
+      [
+        16,
+        512,
+        4096,
+        128
+      ],
+      [
+        16,
+        448,
+        4096,
+        128
+      ]
+    ],
+    "built": {
+      "qk": [
+        {
+          "kernel_name": "batch_gemm85_h16_m512_k128_n4096_mb128_nb128_kb128_c30",
+          "kernel_symbol": "batch_gemm85_h16_m512_k128_n4096_mb128_nb128_kb128_c30__kernel0",
+          "block_dim": 30,
+          "obj_sha256": "3f5efeefd00a859ac658408e3bd119c3e22b869da4786a050449dab3a7ff0cb4",
+          "logical_shape": {
+            "batch": 16,
+            "m": 512,
+            "k": 128,
+            "n": 4096
+          },
+          "dst_dtype": "float32"
+        },
+        {
+          "kernel_name": "batch_gemm85_h16_m448_k128_n4096_mb128_nb128_kb128_c30",
+          "kernel_symbol": "batch_gemm85_h16_m448_k128_n4096_mb128_nb128_kb128_c30__kernel0",
+          "block_dim": 30,
+          "obj_sha256": "b8f645411feb45602ed7efdacdfc611d92cd4705670493855624857ea1959127",
+          "logical_shape": {
+            "batch": 16,
+            "m": 448,
+            "k": 128,
+            "n": 4096
+          },
+          "dst_dtype": "float32"
+        }
+      ],
+      "pv": [
+        {
+          "kernel_name": "pv_hi_lo96_h16_m512_k4096_n128_mb128_nb128_kb128_c30",
+          "kernel_symbol": "pv_hi_lo96_h16_m512_k4096_n128_mb128_nb128_kb128_c30__kernel0",
+          "block_dim": 30,
+          "obj_sha256": "8d424a9ddce5c00493f96e1cddec2df760603b7c0029a6b54dff30ba97b0710a",
+          "logical_shape": {
+            "batch": 16,
+            "m": 512,
+            "k": 4096,
+            "n": 128
+          },
+          "dst_dtype": "float16",
+          "single_final_half_cast": true,
+          "no_mid_product_fp32_gm": true,
+          "no_host_combine": true,
+          "kernel_arg_order": [
+            "hi_gm_float16",
+            "lo_gm_float16",
+            "v_gm_float16",
+            "aux_gm_float32",
+            "out_gm_float16"
+          ]
+        },
+        {
+          "kernel_name": "pv_hi_lo96_h16_m448_k4096_n128_mb128_nb128_kb128_c30",
+          "kernel_symbol": "pv_hi_lo96_h16_m448_k4096_n128_mb128_nb128_kb128_c30__kernel0",
+          "block_dim": 30,
+          "obj_sha256": "280c9e46b0143484d423de151fa0d5ac8a2037bcef50eddc61d0dbea9460eeaa",
+          "logical_shape": {
+            "batch": 16,
+            "m": 448,
+            "k": 4096,
+            "n": 128
+          },
+          "dst_dtype": "float16",
+          "single_final_half_cast": true,
+          "no_mid_product_fp32_gm": true,
+          "no_host_combine": true,
+          "kernel_arg_order": [
+            "hi_gm_float16",
+            "lo_gm_float16",
+            "v_gm_float16",
+            "aux_gm_float32",
+            "out_gm_float16"
+          ]
+        }
+      ]
+    },
+    "launch_plan": {
+      "query_chunks": 8,
+      "qk_launches": 8,
+      "softmax_pack_launches": 8,
+      "fused_pv_launches": 8,
+      "kernel_launches": 24,
+      "Torch_probability_pack_calls": 0
+    },
+    "bytes": {
+      "padded_q_half": 16515072,
+      "padded_k_half": 16777216,
+      "padded_v_half": 16777216,
+      "transposed_v_half": 16777216,
+      "packed_k_half": 16777216,
+      "packed_v_half": 16777216,
+      "score_fp32_gm": 134217728,
+      "fused_pv_half_gm": 2097152,
+      "pack_a_score_half": 2097152,
+      "pack_a_pv_half": 67108864,
+      "p_hi_or_lo_padded_half": 67108864,
+      "call_persistent_total": 100401152,
+      "per_chunk_transient_total": 339738624,
+      "round88_per_chunk_transient_total": 341835776,
+      "note": "the fused PV product returns one Half buffer instead of two FP32 buffers; this is byte accounting, not a measured speedup"
+    },
+    "default_disabled": true,
+    "not_a_speed_claim": true,
+    "not_a_precision_result": true,
+    "softmax_pack_metas": {
+      "512": {
+        "round": 97,
+        "scope": "Float32 NZ score row -> true-4032 unmasked Float softmax -> Half hi + Half lo NZ probability packing, one launch",
+        "executed": false,
+        "compiled_now": false,
+        "not_a_speed_claim": true,
+        "not_h3_end_to_end_result": true,
+        "full_encoder_precision_accepted": false,
+        "whole_goal_complete": false,
+        "numerical_tolerance": null,
+        "kernel_name": "softmax_pack97_h16_m512_n4096_vk4032_c30",
+        "kernel_symbol": "softmax_pack97_h16_m512_n4096_vk4032_c30__kernel0",
+        "obj_block": 30,
+        "block_dim": 30,
+        "core_type": "AiCore",
+        "obj_path": "/tmp/h3_round99_leaf03/old_NZ_attention_kernels/softmax/softmax_pack97_h16_m512_n4096_vk4032_c30/softmax_pack97_h16_m512_n4096_vk4032_c30.o",
+        "obj_sha256": "9a0359444ff9884d4e798bbe97ad5c8f76533b09012b04dbda090fc868339ebe",
+        "json_path": "/tmp/h3_round99_leaf03/old_NZ_attention_kernels/softmax/softmax_pack97_h16_m512_n4096_vk4032_c30/softmax_pack97_h16_m512_n4096_vk4032_c30.json",
+        "source_sha256": "5d6e0a1f7bc05245e6e264314957dbdcee65ca871c61b964abbec8eaa6ad4ab3",
+        "GM_argument_count": 5,
+        "kernel_arg_order": [
+          "scores_gm_float32",
+          "aux0_gm_float32",
+          "aux1_gm_float32",
+          "hi_gm_float16",
+          "lo_gm_float16"
+        ],
+        "ABI": "five GM pointers, args retained by the caller",
+        "input_dtype": "float32",
+        "output_dtype": "float16",
+        "output_hi_lo": true,
+        "lo_rescale_inverse": 1024.0,
+        "score_scale": 0.11785113019775792,
+        "score_scale_basis": "head_dim 72 ** -0.5 (original; not padded 128)",
+        "reduction": {
+          "order": "hardware vcmax + vcadd; not a Torch replay",
+          "float_reduce_gated_by_intrinsic_check": true,
+          "newton_steps_for_reciprocal": 2,
+          "bit_identity_with_torch_softmax_claimed": false,
+          "vreduce_signature_assumption": "vec_reduce_max/vec_reduce_add(mask, dst, src, work, repeat_times, src_rep_stride) with one call over all 64 repeats leaving the row result in dst[0]; confirmed for vec_reduce_add by the executed Round61/62 AdaLN norm, assumed identical for vec_reduce_max (same vreduce family, vcmax registered). Root build/probe is the authority; the author never compiled this kernel.",
+          "partial_ub_slice_operands": "s_f[valid_keys] is used as a vector_dup destination so only the 64-slot key tail is written; the project FA patch already passes offset tensor slices to vector_dup (scores[block, 0, 0])."
+        },
+        "masking": {
+          "motto": "true 4032 keys only, unmasked (no causal)",
+          "tail_keys_zeroed": 64,
+          "tail_masked_before_max_and_exp": true,
+          "tail_explicitly_zeroed_before_denominator": true,
+          "negative_max_finite": true,
+          "padded_query_rows_forced_zero": true,
+          "padded_rows_uniform_softmax_forbidden": true
+        },
+        "logical": {
+          "batch": 16,
+          "m": 512,
+          "n": 4096,
+          "valid_keys": 4032,
+          "head_dim": 72,
+          "score_scale": 0.11785113019775792,
+          "lo_scale": 1024.0
+        },
+        "padded": {
+          "m_pad": 512,
+          "zero_rows": 0,
+          "n1": 256,
+          "block": 16,
+          "tail_keys": 64,
+          "n1_blocks_in_row": 256
+        },
+        "grid": {
+          "tasks": 8192,
+          "cores": 30,
+          "steps": 274,
+          "last_step_live": 2,
+          "per_head_rows": 512
+        },
+        "head_stride_elems": {
+          "score_f32": 2097152,
+          "hi_half": 2097152,
+          "lo_half": 2097152
+        },
+        "gm_shapes": {
+          "score_f32": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "aux0_f32": [
+            16
+          ],
+          "aux1_f32": [
+            16
+          ],
+          "hi_half": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "lo_half": [
+            16,
+            256,
+            512,
+            16
+          ]
+        },
+        "gm_bytes": {
+          "score_f32": 134217728,
+          "aux0_f32": 64,
+          "aux1_f32": 64,
+          "hi_half": 67108864,
+          "lo_half": 67108864
+        },
+        "dma": {
+          "score_load": {
+            "nburst": 256,
+            "burst": 2,
+            "src_stride": 1022,
+            "dst_stride": 0
+          },
+          "prob_store": {
+            "nburst": 256,
+            "burst": 1,
+            "src_stride": 0,
+            "dst_stride": 511
+          }
+        },
+        "dma_row_coverage": {
+          "load_units_per_n1_step": 1024,
+          "expected_row_units_f32": 1024,
+          "store_units_per_n1_step": 512,
+          "expected_row_units_half": 512,
+          "load_covers_row": true,
+          "store_covers_row": true,
+          "load_elements": 4096,
+          "store_elements": 4096
+        },
+        "vector": {
+          "mask": 64,
+          "repeats": 64,
+          "rep_stride": 8,
+          "reduce_work": 64,
+          "newton_steps": 2,
+          "masked_tail_keys": 64,
+          "negative_max": -3.4028234663852886e+38
+        },
+        "buffers": {
+          "s_f": 16384,
+          "aux_f": 16384,
+          "zero_f": 16384,
+          "hi_h": 8192,
+          "lo_h": 8192,
+          "max_t": 32,
+          "sum_t": 32,
+          "max_work": 256,
+          "sum_work": 256,
+          "den_f": 32,
+          "inv_f": 32,
+          "newton_f": 32,
+          "neg_f": 32,
+          "ub_total_bytes": 66240,
+          "ub_safe_bytes": 196608
+        },
+        "math_steps": [
+          "load_score_row",
+          "scale_head_dim",
+          "mask_key_tail",
+          "reduce_row_max",
+          "subtract_max",
+          "exp_row",
+          "zero_key_tail",
+          "reduce_row_sum",
+          "reciprocal_newton",
+          "normalise",
+          "half_hi",
+          "widen_hi",
+          "residual_scaled",
+          "half_lo",
+          "store_hi",
+          "store_lo",
+          "zero_pad_rows"
+        ],
+        "capability": {
+          "compile_soc": "Ascend910",
+          "core_num": 32,
+          "ub_size": 262144,
+          "intrinsic_checks": {
+            "Intrinsic_vmax:float32": true,
+            "Intrinsic_vmax:f32": false,
+            "Intrinsic_vcadd:float32": true,
+            "Intrinsic_vcadd:f32": false
+          },
+          "float_vreduce_supported": true,
+          "float_vreduce_query_answered": true,
+          "launched_usable_cores": 30,
+          "physical_core_spec_may_be_32": true
+        },
+        "limits": {
+          "cores": 30,
+          "compile_soc": "Ascend910",
+          "mask_repeat_max": 255,
+          "vreduce_repeat_max": 4095
+        },
+        "no_float_linear_weight": true,
+        "no_teacher_or_bf16_gold_cast": true,
+        "caches_no_pixel_patch_hidden_deepstack_or_conditioning": true,
+        "aux_gm_operands_are_unused_placeholders": true,
+        "layout_equals_pv_a_nz": true,
+        "a2_only_features_used": false
+      },
+      "448": {
+        "round": 97,
+        "scope": "Float32 NZ score row -> true-4032 unmasked Float softmax -> Half hi + Half lo NZ probability packing, one launch",
+        "executed": false,
+        "compiled_now": false,
+        "not_a_speed_claim": true,
+        "not_h3_end_to_end_result": true,
+        "full_encoder_precision_accepted": false,
+        "whole_goal_complete": false,
+        "numerical_tolerance": null,
+        "kernel_name": "softmax_pack97_h16_m448_n4096_vk4032_c30",
+        "kernel_symbol": "softmax_pack97_h16_m448_n4096_vk4032_c30__kernel0",
+        "obj_block": 30,
+        "block_dim": 30,
+        "core_type": "AiCore",
+        "obj_path": "/tmp/h3_round99_leaf03/old_NZ_attention_kernels/softmax/softmax_pack97_h16_m448_n4096_vk4032_c30/softmax_pack97_h16_m448_n4096_vk4032_c30.o",
+        "obj_sha256": "2797931df81049d1b7c26108990f58d049590b0ec3ea1c43524f997b15465c34",
+        "json_path": "/tmp/h3_round99_leaf03/old_NZ_attention_kernels/softmax/softmax_pack97_h16_m448_n4096_vk4032_c30/softmax_pack97_h16_m448_n4096_vk4032_c30.json",
+        "source_sha256": "5d6e0a1f7bc05245e6e264314957dbdcee65ca871c61b964abbec8eaa6ad4ab3",
+        "GM_argument_count": 5,
+        "kernel_arg_order": [
+          "scores_gm_float32",
+          "aux0_gm_float32",
+          "aux1_gm_float32",
+          "hi_gm_float16",
+          "lo_gm_float16"
+        ],
+        "ABI": "five GM pointers, args retained by the caller",
+        "input_dtype": "float32",
+        "output_dtype": "float16",
+        "output_hi_lo": true,
+        "lo_rescale_inverse": 1024.0,
+        "score_scale": 0.11785113019775792,
+        "score_scale_basis": "head_dim 72 ** -0.5 (original; not padded 128)",
+        "reduction": {
+          "order": "hardware vcmax + vcadd; not a Torch replay",
+          "float_reduce_gated_by_intrinsic_check": true,
+          "newton_steps_for_reciprocal": 2,
+          "bit_identity_with_torch_softmax_claimed": false,
+          "vreduce_signature_assumption": "vec_reduce_max/vec_reduce_add(mask, dst, src, work, repeat_times, src_rep_stride) with one call over all 64 repeats leaving the row result in dst[0]; confirmed for vec_reduce_add by the executed Round61/62 AdaLN norm, assumed identical for vec_reduce_max (same vreduce family, vcmax registered). Root build/probe is the authority; the author never compiled this kernel.",
+          "partial_ub_slice_operands": "s_f[valid_keys] is used as a vector_dup destination so only the 64-slot key tail is written; the project FA patch already passes offset tensor slices to vector_dup (scores[block, 0, 0])."
+        },
+        "masking": {
+          "motto": "true 4032 keys only, unmasked (no causal)",
+          "tail_keys_zeroed": 64,
+          "tail_masked_before_max_and_exp": true,
+          "tail_explicitly_zeroed_before_denominator": true,
+          "negative_max_finite": true,
+          "padded_query_rows_forced_zero": true,
+          "padded_rows_uniform_softmax_forbidden": true
+        },
+        "logical": {
+          "batch": 16,
+          "m": 448,
+          "n": 4096,
+          "valid_keys": 4032,
+          "head_dim": 72,
+          "score_scale": 0.11785113019775792,
+          "lo_scale": 1024.0
+        },
+        "padded": {
+          "m_pad": 512,
+          "zero_rows": 64,
+          "n1": 256,
+          "block": 16,
+          "tail_keys": 64,
+          "n1_blocks_in_row": 256
+        },
+        "grid": {
+          "tasks": 8192,
+          "cores": 30,
+          "steps": 274,
+          "last_step_live": 2,
+          "per_head_rows": 512
+        },
+        "head_stride_elems": {
+          "score_f32": 2097152,
+          "hi_half": 2097152,
+          "lo_half": 2097152
+        },
+        "gm_shapes": {
+          "score_f32": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "aux0_f32": [
+            16
+          ],
+          "aux1_f32": [
+            16
+          ],
+          "hi_half": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "lo_half": [
+            16,
+            256,
+            512,
+            16
+          ]
+        },
+        "gm_bytes": {
+          "score_f32": 134217728,
+          "aux0_f32": 64,
+          "aux1_f32": 64,
+          "hi_half": 67108864,
+          "lo_half": 67108864
+        },
+        "dma": {
+          "score_load": {
+            "nburst": 256,
+            "burst": 2,
+            "src_stride": 1022,
+            "dst_stride": 0
+          },
+          "prob_store": {
+            "nburst": 256,
+            "burst": 1,
+            "src_stride": 0,
+            "dst_stride": 511
+          }
+        },
+        "dma_row_coverage": {
+          "load_units_per_n1_step": 1024,
+          "expected_row_units_f32": 1024,
+          "store_units_per_n1_step": 512,
+          "expected_row_units_half": 512,
+          "load_covers_row": true,
+          "store_covers_row": true,
+          "load_elements": 4096,
+          "store_elements": 4096
+        },
+        "vector": {
+          "mask": 64,
+          "repeats": 64,
+          "rep_stride": 8,
+          "reduce_work": 64,
+          "newton_steps": 2,
+          "masked_tail_keys": 64,
+          "negative_max": -3.4028234663852886e+38
+        },
+        "buffers": {
+          "s_f": 16384,
+          "aux_f": 16384,
+          "zero_f": 16384,
+          "hi_h": 8192,
+          "lo_h": 8192,
+          "max_t": 32,
+          "sum_t": 32,
+          "max_work": 256,
+          "sum_work": 256,
+          "den_f": 32,
+          "inv_f": 32,
+          "newton_f": 32,
+          "neg_f": 32,
+          "ub_total_bytes": 66240,
+          "ub_safe_bytes": 196608
+        },
+        "math_steps": [
+          "load_score_row",
+          "scale_head_dim",
+          "mask_key_tail",
+          "reduce_row_max",
+          "subtract_max",
+          "exp_row",
+          "zero_key_tail",
+          "reduce_row_sum",
+          "reciprocal_newton",
+          "normalise",
+          "half_hi",
+          "widen_hi",
+          "residual_scaled",
+          "half_lo",
+          "store_hi",
+          "store_lo",
+          "zero_pad_rows"
+        ],
+        "capability": {
+          "compile_soc": "Ascend910",
+          "core_num": 32,
+          "ub_size": 262144,
+          "intrinsic_checks": {
+            "Intrinsic_vmax:float32": true,
+            "Intrinsic_vmax:f32": false,
+            "Intrinsic_vcadd:float32": true,
+            "Intrinsic_vcadd:f32": false
+          },
+          "float_vreduce_supported": true,
+          "float_vreduce_query_answered": true,
+          "launched_usable_cores": 30,
+          "physical_core_spec_may_be_32": true
+        },
+        "limits": {
+          "cores": 30,
+          "compile_soc": "Ascend910",
+          "mask_repeat_max": 255,
+          "vreduce_repeat_max": 4095
+        },
+        "no_float_linear_weight": true,
+        "no_teacher_or_bf16_gold_cast": true,
+        "caches_no_pixel_patch_hidden_deepstack_or_conditioning": true,
+        "aux_gm_operands_are_unused_placeholders": true,
+        "layout_equals_pv_a_nz": true,
+        "a2_only_features_used": false
+      }
+    },
+    "no_Torch_score_unpack_or_softmax_or_probability_pack": true
+  },
+  "failure": {
+    "type": "SystemExit",
+    "message": "Traceback:\n  File /tmp/h3_round99_leaf03/leaf_compare_shift_broadcast99.py, line 65, in <module>\n if __name__=='__main__':main()\n  File /tmp/h3_round99_leaf03/leaf_compare_shift_broadcast99.py, line 34, in main\n         r['old_prepare']=copy.deepcopy(old.prepare());r['flash_prepare']=new.prepare();old.set_enabled(True);new.set_enabled(True)\n  File /tmp/h3_round99_leaf03/flash_engine99.py, line 32, in prepare\n         self._meta=flash_vision99.build_kernel(batch=16,m=4032,n=4032,d=72,out_dir=self._dir)\n  File /tmp/h3_round99_leaf03/flash_vision99.py, line 806, in build_kernel\n         gm = _emit_kernel(t, plan, tik)\n  File /tmp/h3_round99_leaf03/flash_vision99.py, line 709, in _emit_kernel\n                     _broadcast_half_shift(t, p_hi_f_flat, m_half, shift_copy, shift_broad, score_groups, mb)\n  File /tmp/h3_round99_leaf03/flash_vision99.py, line 539, in _broadcast_half_shift\n     t.h_cast(dst_float_flat, broad_half, 'none')"
+  }
+}

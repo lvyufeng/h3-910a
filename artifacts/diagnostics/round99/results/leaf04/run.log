@@ -1,0 +1,53 @@
+INFO 11-18 23:00:54 [__init__.py:52] Available plugins for group vllm.platform_plugins:
+INFO 11-18 23:00:54 [__init__.py:54] - ascend -> vllm_ascend:register
+INFO 11-18 23:00:54 [__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:13: FutureWarning: triton.language.extra.cann.extension.atan2 is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.atan2 instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.atan2")
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:35: FutureWarning: triton.language.extra.cann.extension.isfinited is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.isfinited instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.isfinited")
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:49: FutureWarning: triton.language.extra.cann.extension.finitef is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.finitef instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.finitef")
+INFO 11-18 23:00:54 [__init__.py:272] Platform plugin ascend is activated
+INFO 11-18 23:00:55 [platform.py:74] Breakable CUDAGraph on Ascend is opt-in; using VLLM_USE_BREAKABLE_CUDAGRAPH=0.
+/home/mseco/vllm-omni/vllm_omni/__init__.py:19: RuntimeWarning: Failed to import version from _version.py: No module named 'vllm_omni._version'
+This typically happens in development mode before building.
+Using fallback version 'dev'.
+  from .version import __version__, __version_tuple__  # isort:skip # noqa: F401
+INFO 11-18 23:01:07 [patch_indexer_kv_dtype.py:102] Patched AttentionConfig.indexer_kv_dtype to accept 'int8' (DeepSeek V4 Ascend indexer K cache dtype).
+INFO 11-18 23:01:07 [patch_kv_cache_dtype.py:117] Patched CacheConfig.cache_dtype to accept 'int8' and 'mxfp8' (Ascend KV cache dtypes).
+INFO 11-18 23:01:07 [patch.py:253] NVFP4 W4A4 weight_scale NaN-clamp: skipped — upstream serves ModelOpt linears through the generic ModelOptLinearMethod and rejects any NaN weight_scale (unloaded-scale sentinel), so a load-time error replaces the `!!!!` decode-time collapse.
+INFO 11-18 23:01:07 [patch.py:551] inductor factorable-divisibility patch: skipped (upstream already proves it).
+INFO 11-18 23:01:07 [patch.py:630] [cumem-cuda] CuMemAllocator._python_free_callback patched: asleep guard extended to all platforms.
+[W1118 23:01:11.416716270 NPUCachingAllocator.cpp:204] Warning: The current CANN and HDK(driver) versions require processing for 32 padding size, with memory allocation. (function operator())
+Error: src and dst tensor should be the same step
+File path: /tmp/h3_round99_leaf04/flash_vision99.py, line 539
+The context code cause the exception is:
+536        for block in range(4):
+537            t.vec_or(16, matrix, words[block*16], words[block*16], 16, 1, 0, 0)
+538            t.vec_trans(broad_half[block*256], scratch_half, 1, 0, 0)
+539 ->     t.h_cast(dst_float_flat.reshape((n1,mb*16))[0, :], broad_half, 'none')
+540        for group in range(1,n1):
+541            t.data_move(dst_float_flat[group*mb*16], dst_float_flat[0], 0, 1, mb*16*4//32, 0, 0)
+542
+
+{
+  "completed": false,
+  "images": [],
+  "failure": {
+    "type": "SystemExit",
+    "message": "Traceback:\n  File /tmp/h3_round99_leaf04/leaf_compare_shift_cast_fixed99.py, line 65, in <module>\n if __name__=='__main__':main()\n  File /tmp/h3_round99_leaf04/leaf_compare_shift_cast_fixed99.py, line 34, in main\n         r['old_prepare']=copy.deepcopy(old.prepare());r['flash_prepare']=new.prepare();old.set_enabled(True);new.set_enabled(True)\n  File /tmp/h3_round99_leaf04/flash_engine99.py, line 32, in prepare\n         self._meta=flash_vision99.build_kernel(batch=16,m=4032,n=4032,d=72,out_dir=self._dir)\n  File /tmp/h3_round99_leaf04/flash_vision99.py, line 806, in build_kernel\n         gm = _emit_kernel(t, plan, tik)\n  File /tmp/h3_round99_leaf04/flash_vision99.py, line 709, in _emit_kernel\n                     _broadcast_half_shift(t, p_hi_f_flat, m_half, shift_copy, shift_broad, score_groups, mb)\n  File /tmp/h3_round99_leaf04/flash_vision99.py, line 539, in _broadcast_half_shift\n     t.h_cast(dst_float_flat.reshape((n1,mb*16))[0, :], broad_half, 'none')"
+  }
+}
+Traceback:
+  File /tmp/h3_round99_leaf04/leaf_compare_shift_cast_fixed99.py, line 65, in <module>
+ if __name__=='__main__':main()
+  File /tmp/h3_round99_leaf04/leaf_compare_shift_cast_fixed99.py, line 34, in main
+         r['old_prepare']=copy.deepcopy(old.prepare());r['flash_prepare']=new.prepare();old.set_enabled(True);new.set_enabled(True)
+  File /tmp/h3_round99_leaf04/flash_engine99.py, line 32, in prepare
+         self._meta=flash_vision99.build_kernel(batch=16,m=4032,n=4032,d=72,out_dir=self._dir)
+  File /tmp/h3_round99_leaf04/flash_vision99.py, line 806, in build_kernel
+         gm = _emit_kernel(t, plan, tik)
+  File /tmp/h3_round99_leaf04/flash_vision99.py, line 709, in _emit_kernel
+                     _broadcast_half_shift(t, p_hi_f_flat, m_half, shift_copy, shift_broad, score_groups, mb)
+  File /tmp/h3_round99_leaf04/flash_vision99.py, line 539, in _broadcast_half_shift
+     t.h_cast(dst_float_flat.reshape((n1,mb*16))[0, :], broad_half, 'none')

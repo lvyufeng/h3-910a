@@ -1,6 +1,8 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round100 complete TP8 streaming path: corrected17.04%→8.17% CPU FP16 gap, full2.406s still not accepted; all workers audited and lease released](<artifacts/diagnostics/round100/README.md>),
+> [Round99 one-launch Float streaming attention: exact native shift broadcast, full vision1.583s/all27 bits preserved; not full precision pass](<artifacts/diagnostics/round99/README.md>),
 > [Round98 actual full TP8: NZ attention reduces corrected17.04%→9.92%/8.04%, fastest2.034s still not accepted](<artifacts/diagnostics/round98/README.md>),
 > [Round97 direct-NZ softmax/packing: real leaves47ms→26.5ms, accurate vision1.825s; not native-bit lossless or full precision pass](<artifacts/diagnostics/round97/README.md>),
 > [Round96 fused PV: exact all27/DeepStack/merger bits, real leaves~10% faster; batch-shape failure fixed and preserved](<artifacts/diagnostics/round96/README.md>),

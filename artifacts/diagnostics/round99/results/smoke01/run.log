@@ -1,0 +1,29 @@
+[W1118 22:11:02.608337670 NPUCachingAllocator.cpp:204] Warning: The current CANN and HDK(driver) versions require processing for 32 padding size, with memory allocation. (function operator())
+Error: src0 and dst tensor should be the same step
+File path: /tmp/h3_round99_smoke01/flash_vision99.py, line 666
+The context code cause the exception is:
+663                        #    Half P_hi buffer is reused as the Half score tile here and is
+664                        #    rewritten with Half(exp) in step 11.
+665                        t.h_cast(p_hi_h_flat, s_f_flat, "none")
+666 ->                     t.h_max(fold_h_a, p_hi_h[0, :, :], p_hi_h[1, :, :])
+667                        t.h_max(fold_h_b, p_hi_h[2, :, :], p_hi_h[3, :, :])
+668                        t.h_max(fold_h_a, fold_h_a, fold_h_b)
+669                        t.h_reduce_max(m_half, fold_h_a, 1)
+
+{
+  "completed": false,
+  "vs_CPU": null,
+  "failure": {
+    "type": "SystemExit",
+    "message": "Traceback:\n  File /tmp/h3_round99_smoke01/flash_smoke99.py, line 60, in <module>\n if __name__=='__main__':main()\n  File /tmp/h3_round99_smoke01/flash_smoke99.py, line 38, in main\n         meta=kernel.build_kernel(batch=2,m=128,n=128,d=72,out_dir=ROOT/'kernels')\n  File /tmp/h3_round99_smoke01/flash_vision99.py, line 777, in build_kernel\n         gm = _emit_kernel(t, plan, tik)\n  File /tmp/h3_round99_smoke01/flash_vision99.py, line 666, in _emit_kernel\n                     t.h_max(fold_h_a, p_hi_h[0, :, :], p_hi_h[1, :, :])"
+  }
+}
+Traceback:
+  File /tmp/h3_round99_smoke01/flash_smoke99.py, line 60, in <module>
+ if __name__=='__main__':main()
+  File /tmp/h3_round99_smoke01/flash_smoke99.py, line 38, in main
+         meta=kernel.build_kernel(batch=2,m=128,n=128,d=72,out_dir=ROOT/'kernels')
+  File /tmp/h3_round99_smoke01/flash_vision99.py, line 777, in build_kernel
+         gm = _emit_kernel(t, plan, tik)
+  File /tmp/h3_round99_smoke01/flash_vision99.py, line 666, in _emit_kernel
+                     t.h_max(fold_h_a, p_hi_h[0, :, :], p_hi_h[1, :, :])

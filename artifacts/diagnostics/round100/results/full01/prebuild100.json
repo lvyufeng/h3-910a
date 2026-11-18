@@ -1,0 +1,2914 @@
+{
+  "scope": "Serial 13 existing kernel identity verification before original Half TP8 priming.",
+  "all13objects_SHA_verified_before_8rank_model_priming": true,
+  "text_kernels": [
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": false,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/attention_kernels/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "91a076d232ac90427430826ac0c4c3bad709f6accb1a6806a1e5e2be49aaf74f",
+      "json_path": "/tmp/h3_round100_full01/attention_kernels/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 512,
+        "k": 128,
+        "n": 2048
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 8,
+        "n1": 128
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 16,
+        "per_head_tasks": 64,
+        "tasks": 512,
+        "cores": 30,
+        "steps": 18
+      },
+      "head_stride_elems": {
+        "a": 65536,
+        "b": 262144,
+        "c": 1048576
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          8,
+          2048,
+          16
+        ],
+        "c": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 524288,
+        "b": 2097152,
+        "c": 8388608
+      },
+      "gm_bytes": {
+        "a": 1048576,
+        "b": 4194304,
+        "c": 33554432
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 1,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 0,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    },
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": false,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/attention_kernels/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "3f8fbd082e9d72540c6aa88b07f6f2a283f451e97190fcadef143fb218204f68",
+      "json_path": "/tmp/h3_round100_full01/attention_kernels/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 512,
+        "k": 2048,
+        "n": 128
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 128,
+        "n1": 8
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 1,
+        "per_head_tasks": 4,
+        "tasks": 32,
+        "cores": 30,
+        "steps": 2
+      },
+      "head_stride_elems": {
+        "a": 1048576,
+        "b": 262144,
+        "c": 65536
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          128,
+          128,
+          16
+        ],
+        "c": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 8388608,
+        "b": 2097152,
+        "c": 524288
+      },
+      "gm_bytes": {
+        "a": 16777216,
+        "b": 4194304,
+        "c": 2097152
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 16,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 0,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    },
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": false,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/attention_kernels/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "1bb606d8a6d0704f15e650f12f6d358bc841b9afadacbe2a72d939f3b6d6970e",
+      "json_path": "/tmp/h3_round100_full01/attention_kernels/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 507,
+        "k": 128,
+        "n": 2048
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 8,
+        "n1": 128
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 16,
+        "per_head_tasks": 64,
+        "tasks": 512,
+        "cores": 30,
+        "steps": 18
+      },
+      "head_stride_elems": {
+        "a": 65536,
+        "b": 262144,
+        "c": 1048576
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          8,
+          2048,
+          16
+        ],
+        "c": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 524288,
+        "b": 2097152,
+        "c": 8388608
+      },
+      "gm_bytes": {
+        "a": 1048576,
+        "b": 4194304,
+        "c": 33554432
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 1,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 5,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    },
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": false,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/attention_kernels/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "c957a08b8bbc778b2d05857b32d8a86dc42e113e3bd21712b92fb289ccd4d33e",
+      "json_path": "/tmp/h3_round100_full01/attention_kernels/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 507,
+        "k": 2048,
+        "n": 128
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 128,
+        "n1": 8
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 1,
+        "per_head_tasks": 4,
+        "tasks": 32,
+        "cores": 30,
+        "steps": 2
+      },
+      "head_stride_elems": {
+        "a": 1048576,
+        "b": 262144,
+        "c": 65536
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          128,
+          128,
+          16
+        ],
+        "c": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 8388608,
+        "b": 2097152,
+        "c": 524288
+      },
+      "gm_bytes": {
+        "a": 16777216,
+        "b": 4194304,
+        "c": 2097152
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 16,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 5,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    }
+  ],
+  "vision_kernels": [
+    {
+      "round": 87,
+      "scope": "vision blocked FP16xFP16 -> FP32 L0C -> FP32 UB bias -> ONE Half GM; no hardware bias operand; no Half partial; no FP32 weight shadow",
+      "executed": false,
+      "compiled_now": false,
+      "built": true,
+      "built_unix_epoch": 1795043461,
+      "cache_source_epoch": {
+        "kernel_source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+        "reference_base_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee"
+      },
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "whole_goal_complete": false,
+      "kernel_name": "vision_bias87_m8064_k1152_n3456_mb128_nb128_kb128_c30",
+      "kernel_dir": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1152_n3456_mb128_nb128_kb128_c30",
+      "kernel_symbol": "vision_bias87_m8064_k1152_n3456_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1152_n3456_mb128_nb128_kb128_c30/vision_bias87_m8064_k1152_n3456_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "c98468bb92d94363bba58cf2785b98e5c7f2292c984d2a625f6589d7685a3241",
+      "json_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1152_n3456_mb128_nb128_kb128_c30/vision_bias87_m8064_k1152_n3456_mb128_nb128_kb128_c30.json",
+      "source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+      "reference_base_source_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+      "reference_bias_epilogue_source_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+      "reference_executed_bias_micro_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+      "reference_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+      "reference_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "reference_sources": {
+        "sources": {
+          "blocked_fp32_gemm83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_fp32_gemm83.py",
+            "sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "expected_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "matches_pin": true
+          },
+          "blocked_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_bias_epilogue83.py",
+            "sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "expected_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "matches_pin": true
+          },
+          "tik_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/tik_bias_epilogue83.py",
+            "sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "expected_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "matches_pin": true
+          },
+          "runtime5gm83.py": {
+            "path": "/tmp/h3_round100_full01/runtime5gm83.py",
+            "sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "expected_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "matches_pin": true
+          }
+        },
+        "verified": [
+          "blocked_bias_epilogue83.py",
+          "blocked_fp32_gemm83.py",
+          "runtime5gm83.py",
+          "tik_bias_epilogue83.py"
+        ],
+        "missing": [],
+        "all_pinned_sources_present_and_matching": true,
+        "no_reference_source_edited_by_this_round": true
+      },
+      "dtype": "float16_in_float16_out_with_fp32_bias",
+      "dst_dtype": "float16",
+      "input_dtype": "float16",
+      "weight_dtype": "float16",
+      "bias_dtype": "float32",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float16",
+      "uses_fp32_bias": true,
+      "single_final_half_cast": true,
+      "matmul_bias_operand_used": false,
+      "hardware_bias_operand_used": false,
+      "no_fp32_weight_shadow": true,
+      "no_bfloat16_teacher": true,
+      "bias_values_must_be_exact_original_half": true,
+      "padded_output_rows_are_bias_not_zero": true,
+      "GM_argument_count": 5,
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "bias_gm_float32",
+        "aux_gm_float16",
+        "c_gm_float16"
+      ],
+      "logical_shape": {
+        "m": 8064,
+        "k": 1152,
+        "n": 3456
+      },
+      "padded_shape": {
+        "m_pad": 8064,
+        "m_pad_rows": 0,
+        "k1": 72,
+        "n1": 216
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 63,
+        "n_tiles": 27,
+        "tasks": 1701,
+        "cores": 30,
+        "steps": 57,
+        "all_physical_cores_used": true,
+        "tasks_per_core_upper_bound": 57
+      },
+      "gm_shapes": {
+        "a": [
+          72,
+          8064,
+          16
+        ],
+        "b": [
+          72,
+          3456,
+          16
+        ],
+        "bias": [
+          3456
+        ],
+        "aux": [
+          16
+        ],
+        "c": [
+          216,
+          8064,
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 9289728,
+        "b": 3981312,
+        "bias": 3456,
+        "c": 27869184
+      },
+      "gm_bytes": {
+        "a": 18579456,
+        "b": 7962624,
+        "bias": 13824,
+        "c": 55738368
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 7936,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 3328,
+          "dst_stride": 0
+        },
+        "bias_load": {
+          "nburst": 1,
+          "burst": 16,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 7936,
+          "units_bytes": 32,
+          "half_row_units": 1,
+          "fp32_output_stride_would_be": 15872
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_c32_bytes": 65536,
+        "ub_c16_bytes": 32768,
+        "ub_bias_bytes": 512,
+        "ub_bytes": 98816
+      },
+      "accumulation": {
+        "k_tiles": 9,
+        "k_blocks_per_tile": 128,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float16",
+        "single_final_half_cast": true,
+        "bias_added_in_fp32": true
+      },
+      "epilogue": {
+        "order": [
+          "tensor_mov_L0C_to_UB_fp32",
+          "vec_add_fp32_bias",
+          "h_cast_once",
+          "data_move_half"
+        ],
+        "bias_ub_dtype": "float32",
+        "tile_bias_groups": 8,
+        "vec_add_mask_fp32_elements": 16,
+        "vec_add_rep_rows": 128,
+        "vec_add_rep_strides": [
+          2,
+          2
+        ],
+        "h_cast_count_per_tile": 1,
+        "h_cast_api": "h_cast(dst, src, 'none')",
+        "hardware_bias_operand_used": false,
+        "padded_output_rows_are_bias_not_zero": true
+      },
+      "host_padding_contract": {
+        "m": "zero A rows up to m_pad; padded output rows equal the bias and must be cropped before model use",
+        "k": "zero A columns and zero W K-rows up to a multiple of 128 (vision MLP 4304 -> 4352)",
+        "n": "zero W trailing rows and zero bias entries up to a multiple of 128 (vision MLP 4304 -> 4352); crop output columns",
+        "mlp_logical_intermediate": 4304,
+        "mlp_padded_intermediate": 4352,
+        "bias_values": "exact original Half bias promoted to Float32; zero for added N entries"
+      },
+      "host_packing_required": [
+        "pack_a",
+        "pack_w",
+        "pack_bias"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "runtime_soc_label_note": "the runtime reports the short SoC name Ascend910 for this original 910A-generation part; 30 usable cube cores",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        128,
+        256,
+        128
+      ]
+    },
+    {
+      "round": 87,
+      "scope": "vision blocked FP16xFP16 -> FP32 L0C -> FP32 UB bias -> ONE Half GM; no hardware bias operand; no Half partial; no FP32 weight shadow",
+      "executed": false,
+      "compiled_now": false,
+      "built": true,
+      "built_unix_epoch": 1795043461,
+      "cache_source_epoch": {
+        "kernel_source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+        "reference_base_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee"
+      },
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "whole_goal_complete": false,
+      "kernel_name": "vision_bias87_m8064_k1152_n1152_mb128_nb128_kb128_c30",
+      "kernel_dir": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1152_n1152_mb128_nb128_kb128_c30",
+      "kernel_symbol": "vision_bias87_m8064_k1152_n1152_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1152_n1152_mb128_nb128_kb128_c30/vision_bias87_m8064_k1152_n1152_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "61d3e324bc1a3157d83c4a93b160f7679fe64ef3dd6f8c7ff28c9430905ba9ca",
+      "json_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1152_n1152_mb128_nb128_kb128_c30/vision_bias87_m8064_k1152_n1152_mb128_nb128_kb128_c30.json",
+      "source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+      "reference_base_source_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+      "reference_bias_epilogue_source_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+      "reference_executed_bias_micro_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+      "reference_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+      "reference_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "reference_sources": {
+        "sources": {
+          "blocked_fp32_gemm83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_fp32_gemm83.py",
+            "sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "expected_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "matches_pin": true
+          },
+          "blocked_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_bias_epilogue83.py",
+            "sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "expected_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "matches_pin": true
+          },
+          "tik_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/tik_bias_epilogue83.py",
+            "sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "expected_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "matches_pin": true
+          },
+          "runtime5gm83.py": {
+            "path": "/tmp/h3_round100_full01/runtime5gm83.py",
+            "sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "expected_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "matches_pin": true
+          }
+        },
+        "verified": [
+          "blocked_bias_epilogue83.py",
+          "blocked_fp32_gemm83.py",
+          "runtime5gm83.py",
+          "tik_bias_epilogue83.py"
+        ],
+        "missing": [],
+        "all_pinned_sources_present_and_matching": true,
+        "no_reference_source_edited_by_this_round": true
+      },
+      "dtype": "float16_in_float16_out_with_fp32_bias",
+      "dst_dtype": "float16",
+      "input_dtype": "float16",
+      "weight_dtype": "float16",
+      "bias_dtype": "float32",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float16",
+      "uses_fp32_bias": true,
+      "single_final_half_cast": true,
+      "matmul_bias_operand_used": false,
+      "hardware_bias_operand_used": false,
+      "no_fp32_weight_shadow": true,
+      "no_bfloat16_teacher": true,
+      "bias_values_must_be_exact_original_half": true,
+      "padded_output_rows_are_bias_not_zero": true,
+      "GM_argument_count": 5,
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "bias_gm_float32",
+        "aux_gm_float16",
+        "c_gm_float16"
+      ],
+      "logical_shape": {
+        "m": 8064,
+        "k": 1152,
+        "n": 1152
+      },
+      "padded_shape": {
+        "m_pad": 8064,
+        "m_pad_rows": 0,
+        "k1": 72,
+        "n1": 72
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 63,
+        "n_tiles": 9,
+        "tasks": 567,
+        "cores": 30,
+        "steps": 19,
+        "all_physical_cores_used": true,
+        "tasks_per_core_upper_bound": 19
+      },
+      "gm_shapes": {
+        "a": [
+          72,
+          8064,
+          16
+        ],
+        "b": [
+          72,
+          1152,
+          16
+        ],
+        "bias": [
+          1152
+        ],
+        "aux": [
+          16
+        ],
+        "c": [
+          72,
+          8064,
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 9289728,
+        "b": 1327104,
+        "bias": 1152,
+        "c": 9289728
+      },
+      "gm_bytes": {
+        "a": 18579456,
+        "b": 2654208,
+        "bias": 4608,
+        "c": 18579456
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 7936,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1024,
+          "dst_stride": 0
+        },
+        "bias_load": {
+          "nburst": 1,
+          "burst": 16,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 7936,
+          "units_bytes": 32,
+          "half_row_units": 1,
+          "fp32_output_stride_would_be": 15872
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_c32_bytes": 65536,
+        "ub_c16_bytes": 32768,
+        "ub_bias_bytes": 512,
+        "ub_bytes": 98816
+      },
+      "accumulation": {
+        "k_tiles": 9,
+        "k_blocks_per_tile": 128,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float16",
+        "single_final_half_cast": true,
+        "bias_added_in_fp32": true
+      },
+      "epilogue": {
+        "order": [
+          "tensor_mov_L0C_to_UB_fp32",
+          "vec_add_fp32_bias",
+          "h_cast_once",
+          "data_move_half"
+        ],
+        "bias_ub_dtype": "float32",
+        "tile_bias_groups": 8,
+        "vec_add_mask_fp32_elements": 16,
+        "vec_add_rep_rows": 128,
+        "vec_add_rep_strides": [
+          2,
+          2
+        ],
+        "h_cast_count_per_tile": 1,
+        "h_cast_api": "h_cast(dst, src, 'none')",
+        "hardware_bias_operand_used": false,
+        "padded_output_rows_are_bias_not_zero": true
+      },
+      "host_padding_contract": {
+        "m": "zero A rows up to m_pad; padded output rows equal the bias and must be cropped before model use",
+        "k": "zero A columns and zero W K-rows up to a multiple of 128 (vision MLP 4304 -> 4352)",
+        "n": "zero W trailing rows and zero bias entries up to a multiple of 128 (vision MLP 4304 -> 4352); crop output columns",
+        "mlp_logical_intermediate": 4304,
+        "mlp_padded_intermediate": 4352,
+        "bias_values": "exact original Half bias promoted to Float32; zero for added N entries"
+      },
+      "host_packing_required": [
+        "pack_a",
+        "pack_w",
+        "pack_bias"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "runtime_soc_label_note": "the runtime reports the short SoC name Ascend910 for this original 910A-generation part; 30 usable cube cores",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        128,
+        256,
+        128
+      ]
+    },
+    {
+      "round": 87,
+      "scope": "vision blocked FP16xFP16 -> FP32 L0C -> FP32 UB bias -> ONE Half GM; no hardware bias operand; no Half partial; no FP32 weight shadow",
+      "executed": false,
+      "compiled_now": false,
+      "built": true,
+      "built_unix_epoch": 1795043461,
+      "cache_source_epoch": {
+        "kernel_source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+        "reference_base_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee"
+      },
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "whole_goal_complete": false,
+      "kernel_name": "vision_bias87_m8064_k1152_n4352_mb128_nb128_kb128_c30",
+      "kernel_dir": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1152_n4352_mb128_nb128_kb128_c30",
+      "kernel_symbol": "vision_bias87_m8064_k1152_n4352_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1152_n4352_mb128_nb128_kb128_c30/vision_bias87_m8064_k1152_n4352_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "79eed4c6b984d6faa5767f3a1ea17d5d233db37c87b1d232941bb0a20319af3d",
+      "json_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1152_n4352_mb128_nb128_kb128_c30/vision_bias87_m8064_k1152_n4352_mb128_nb128_kb128_c30.json",
+      "source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+      "reference_base_source_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+      "reference_bias_epilogue_source_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+      "reference_executed_bias_micro_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+      "reference_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+      "reference_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "reference_sources": {
+        "sources": {
+          "blocked_fp32_gemm83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_fp32_gemm83.py",
+            "sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "expected_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "matches_pin": true
+          },
+          "blocked_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_bias_epilogue83.py",
+            "sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "expected_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "matches_pin": true
+          },
+          "tik_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/tik_bias_epilogue83.py",
+            "sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "expected_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "matches_pin": true
+          },
+          "runtime5gm83.py": {
+            "path": "/tmp/h3_round100_full01/runtime5gm83.py",
+            "sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "expected_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "matches_pin": true
+          }
+        },
+        "verified": [
+          "blocked_bias_epilogue83.py",
+          "blocked_fp32_gemm83.py",
+          "runtime5gm83.py",
+          "tik_bias_epilogue83.py"
+        ],
+        "missing": [],
+        "all_pinned_sources_present_and_matching": true,
+        "no_reference_source_edited_by_this_round": true
+      },
+      "dtype": "float16_in_float16_out_with_fp32_bias",
+      "dst_dtype": "float16",
+      "input_dtype": "float16",
+      "weight_dtype": "float16",
+      "bias_dtype": "float32",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float16",
+      "uses_fp32_bias": true,
+      "single_final_half_cast": true,
+      "matmul_bias_operand_used": false,
+      "hardware_bias_operand_used": false,
+      "no_fp32_weight_shadow": true,
+      "no_bfloat16_teacher": true,
+      "bias_values_must_be_exact_original_half": true,
+      "padded_output_rows_are_bias_not_zero": true,
+      "GM_argument_count": 5,
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "bias_gm_float32",
+        "aux_gm_float16",
+        "c_gm_float16"
+      ],
+      "logical_shape": {
+        "m": 8064,
+        "k": 1152,
+        "n": 4352
+      },
+      "padded_shape": {
+        "m_pad": 8064,
+        "m_pad_rows": 0,
+        "k1": 72,
+        "n1": 272
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 63,
+        "n_tiles": 34,
+        "tasks": 2142,
+        "cores": 30,
+        "steps": 72,
+        "all_physical_cores_used": true,
+        "tasks_per_core_upper_bound": 72
+      },
+      "gm_shapes": {
+        "a": [
+          72,
+          8064,
+          16
+        ],
+        "b": [
+          72,
+          4352,
+          16
+        ],
+        "bias": [
+          4352
+        ],
+        "aux": [
+          16
+        ],
+        "c": [
+          272,
+          8064,
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 9289728,
+        "b": 5013504,
+        "bias": 4352,
+        "c": 35094528
+      },
+      "gm_bytes": {
+        "a": 18579456,
+        "b": 10027008,
+        "bias": 17408,
+        "c": 70189056
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 7936,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 4224,
+          "dst_stride": 0
+        },
+        "bias_load": {
+          "nburst": 1,
+          "burst": 16,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 7936,
+          "units_bytes": 32,
+          "half_row_units": 1,
+          "fp32_output_stride_would_be": 15872
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_c32_bytes": 65536,
+        "ub_c16_bytes": 32768,
+        "ub_bias_bytes": 512,
+        "ub_bytes": 98816
+      },
+      "accumulation": {
+        "k_tiles": 9,
+        "k_blocks_per_tile": 128,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float16",
+        "single_final_half_cast": true,
+        "bias_added_in_fp32": true
+      },
+      "epilogue": {
+        "order": [
+          "tensor_mov_L0C_to_UB_fp32",
+          "vec_add_fp32_bias",
+          "h_cast_once",
+          "data_move_half"
+        ],
+        "bias_ub_dtype": "float32",
+        "tile_bias_groups": 8,
+        "vec_add_mask_fp32_elements": 16,
+        "vec_add_rep_rows": 128,
+        "vec_add_rep_strides": [
+          2,
+          2
+        ],
+        "h_cast_count_per_tile": 1,
+        "h_cast_api": "h_cast(dst, src, 'none')",
+        "hardware_bias_operand_used": false,
+        "padded_output_rows_are_bias_not_zero": true
+      },
+      "host_padding_contract": {
+        "m": "zero A rows up to m_pad; padded output rows equal the bias and must be cropped before model use",
+        "k": "zero A columns and zero W K-rows up to a multiple of 128 (vision MLP 4304 -> 4352)",
+        "n": "zero W trailing rows and zero bias entries up to a multiple of 128 (vision MLP 4304 -> 4352); crop output columns",
+        "mlp_logical_intermediate": 4304,
+        "mlp_padded_intermediate": 4352,
+        "bias_values": "exact original Half bias promoted to Float32; zero for added N entries"
+      },
+      "host_packing_required": [
+        "pack_a",
+        "pack_w",
+        "pack_bias"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "runtime_soc_label_note": "the runtime reports the short SoC name Ascend910 for this original 910A-generation part; 30 usable cube cores",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        128,
+        256,
+        128
+      ]
+    },
+    {
+      "round": 87,
+      "scope": "vision blocked FP16xFP16 -> FP32 L0C -> FP32 UB bias -> ONE Half GM; no hardware bias operand; no Half partial; no FP32 weight shadow",
+      "executed": false,
+      "compiled_now": false,
+      "built": true,
+      "built_unix_epoch": 1795043461,
+      "cache_source_epoch": {
+        "kernel_source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+        "reference_base_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee"
+      },
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "whole_goal_complete": false,
+      "kernel_name": "vision_bias87_m8064_k4352_n1152_mb128_nb128_kb128_c30",
+      "kernel_dir": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k4352_n1152_mb128_nb128_kb128_c30",
+      "kernel_symbol": "vision_bias87_m8064_k4352_n1152_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k4352_n1152_mb128_nb128_kb128_c30/vision_bias87_m8064_k4352_n1152_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "8564c4f2a0e3b1aa6a7bcc554636f3797e3aa1419534bf3334db6fee01ee6cde",
+      "json_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k4352_n1152_mb128_nb128_kb128_c30/vision_bias87_m8064_k4352_n1152_mb128_nb128_kb128_c30.json",
+      "source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+      "reference_base_source_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+      "reference_bias_epilogue_source_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+      "reference_executed_bias_micro_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+      "reference_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+      "reference_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "reference_sources": {
+        "sources": {
+          "blocked_fp32_gemm83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_fp32_gemm83.py",
+            "sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "expected_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "matches_pin": true
+          },
+          "blocked_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_bias_epilogue83.py",
+            "sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "expected_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "matches_pin": true
+          },
+          "tik_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/tik_bias_epilogue83.py",
+            "sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "expected_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "matches_pin": true
+          },
+          "runtime5gm83.py": {
+            "path": "/tmp/h3_round100_full01/runtime5gm83.py",
+            "sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "expected_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "matches_pin": true
+          }
+        },
+        "verified": [
+          "blocked_bias_epilogue83.py",
+          "blocked_fp32_gemm83.py",
+          "runtime5gm83.py",
+          "tik_bias_epilogue83.py"
+        ],
+        "missing": [],
+        "all_pinned_sources_present_and_matching": true,
+        "no_reference_source_edited_by_this_round": true
+      },
+      "dtype": "float16_in_float16_out_with_fp32_bias",
+      "dst_dtype": "float16",
+      "input_dtype": "float16",
+      "weight_dtype": "float16",
+      "bias_dtype": "float32",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float16",
+      "uses_fp32_bias": true,
+      "single_final_half_cast": true,
+      "matmul_bias_operand_used": false,
+      "hardware_bias_operand_used": false,
+      "no_fp32_weight_shadow": true,
+      "no_bfloat16_teacher": true,
+      "bias_values_must_be_exact_original_half": true,
+      "padded_output_rows_are_bias_not_zero": true,
+      "GM_argument_count": 5,
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "bias_gm_float32",
+        "aux_gm_float16",
+        "c_gm_float16"
+      ],
+      "logical_shape": {
+        "m": 8064,
+        "k": 4352,
+        "n": 1152
+      },
+      "padded_shape": {
+        "m_pad": 8064,
+        "m_pad_rows": 0,
+        "k1": 272,
+        "n1": 72
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 63,
+        "n_tiles": 9,
+        "tasks": 567,
+        "cores": 30,
+        "steps": 19,
+        "all_physical_cores_used": true,
+        "tasks_per_core_upper_bound": 19
+      },
+      "gm_shapes": {
+        "a": [
+          272,
+          8064,
+          16
+        ],
+        "b": [
+          272,
+          1152,
+          16
+        ],
+        "bias": [
+          1152
+        ],
+        "aux": [
+          16
+        ],
+        "c": [
+          72,
+          8064,
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 35094528,
+        "b": 5013504,
+        "bias": 1152,
+        "c": 9289728
+      },
+      "gm_bytes": {
+        "a": 70189056,
+        "b": 10027008,
+        "bias": 4608,
+        "c": 18579456
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 7936,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1024,
+          "dst_stride": 0
+        },
+        "bias_load": {
+          "nburst": 1,
+          "burst": 16,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 7936,
+          "units_bytes": 32,
+          "half_row_units": 1,
+          "fp32_output_stride_would_be": 15872
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_c32_bytes": 65536,
+        "ub_c16_bytes": 32768,
+        "ub_bias_bytes": 512,
+        "ub_bytes": 98816
+      },
+      "accumulation": {
+        "k_tiles": 34,
+        "k_blocks_per_tile": 128,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float16",
+        "single_final_half_cast": true,
+        "bias_added_in_fp32": true
+      },
+      "epilogue": {
+        "order": [
+          "tensor_mov_L0C_to_UB_fp32",
+          "vec_add_fp32_bias",
+          "h_cast_once",
+          "data_move_half"
+        ],
+        "bias_ub_dtype": "float32",
+        "tile_bias_groups": 8,
+        "vec_add_mask_fp32_elements": 16,
+        "vec_add_rep_rows": 128,
+        "vec_add_rep_strides": [
+          2,
+          2
+        ],
+        "h_cast_count_per_tile": 1,
+        "h_cast_api": "h_cast(dst, src, 'none')",
+        "hardware_bias_operand_used": false,
+        "padded_output_rows_are_bias_not_zero": true
+      },
+      "host_padding_contract": {
+        "m": "zero A rows up to m_pad; padded output rows equal the bias and must be cropped before model use",
+        "k": "zero A columns and zero W K-rows up to a multiple of 128 (vision MLP 4304 -> 4352)",
+        "n": "zero W trailing rows and zero bias entries up to a multiple of 128 (vision MLP 4304 -> 4352); crop output columns",
+        "mlp_logical_intermediate": 4304,
+        "mlp_padded_intermediate": 4352,
+        "bias_values": "exact original Half bias promoted to Float32; zero for added N entries"
+      },
+      "host_packing_required": [
+        "pack_a",
+        "pack_w",
+        "pack_bias"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "runtime_soc_label_note": "the runtime reports the short SoC name Ascend910 for this original 910A-generation part; 30 usable cube cores",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        128,
+        256,
+        128
+      ]
+    },
+    {
+      "round": 87,
+      "scope": "vision blocked FP16xFP16 -> FP32 L0C -> FP32 UB bias -> ONE Half GM; no hardware bias operand; no Half partial; no FP32 weight shadow",
+      "executed": false,
+      "compiled_now": false,
+      "built": true,
+      "built_unix_epoch": 1795043461,
+      "cache_source_epoch": {
+        "kernel_source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+        "reference_base_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee"
+      },
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "whole_goal_complete": false,
+      "kernel_name": "vision_bias87_m2016_k4608_n4608_mb128_nb128_kb128_c30",
+      "kernel_dir": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m2016_k4608_n4608_mb128_nb128_kb128_c30",
+      "kernel_symbol": "vision_bias87_m2016_k4608_n4608_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m2016_k4608_n4608_mb128_nb128_kb128_c30/vision_bias87_m2016_k4608_n4608_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "a8f12ac397f0d522a8d21e2dfa40903f71cf72e8b379bc8d7ef69d9adf514c26",
+      "json_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m2016_k4608_n4608_mb128_nb128_kb128_c30/vision_bias87_m2016_k4608_n4608_mb128_nb128_kb128_c30.json",
+      "source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+      "reference_base_source_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+      "reference_bias_epilogue_source_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+      "reference_executed_bias_micro_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+      "reference_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+      "reference_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "reference_sources": {
+        "sources": {
+          "blocked_fp32_gemm83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_fp32_gemm83.py",
+            "sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "expected_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "matches_pin": true
+          },
+          "blocked_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_bias_epilogue83.py",
+            "sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "expected_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "matches_pin": true
+          },
+          "tik_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/tik_bias_epilogue83.py",
+            "sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "expected_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "matches_pin": true
+          },
+          "runtime5gm83.py": {
+            "path": "/tmp/h3_round100_full01/runtime5gm83.py",
+            "sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "expected_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "matches_pin": true
+          }
+        },
+        "verified": [
+          "blocked_bias_epilogue83.py",
+          "blocked_fp32_gemm83.py",
+          "runtime5gm83.py",
+          "tik_bias_epilogue83.py"
+        ],
+        "missing": [],
+        "all_pinned_sources_present_and_matching": true,
+        "no_reference_source_edited_by_this_round": true
+      },
+      "dtype": "float16_in_float16_out_with_fp32_bias",
+      "dst_dtype": "float16",
+      "input_dtype": "float16",
+      "weight_dtype": "float16",
+      "bias_dtype": "float32",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float16",
+      "uses_fp32_bias": true,
+      "single_final_half_cast": true,
+      "matmul_bias_operand_used": false,
+      "hardware_bias_operand_used": false,
+      "no_fp32_weight_shadow": true,
+      "no_bfloat16_teacher": true,
+      "bias_values_must_be_exact_original_half": true,
+      "padded_output_rows_are_bias_not_zero": true,
+      "GM_argument_count": 5,
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "bias_gm_float32",
+        "aux_gm_float16",
+        "c_gm_float16"
+      ],
+      "logical_shape": {
+        "m": 2016,
+        "k": 4608,
+        "n": 4608
+      },
+      "padded_shape": {
+        "m_pad": 2048,
+        "m_pad_rows": 32,
+        "k1": 288,
+        "n1": 288
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 16,
+        "n_tiles": 36,
+        "tasks": 576,
+        "cores": 30,
+        "steps": 20,
+        "all_physical_cores_used": true,
+        "tasks_per_core_upper_bound": 20
+      },
+      "gm_shapes": {
+        "a": [
+          288,
+          2048,
+          16
+        ],
+        "b": [
+          288,
+          4608,
+          16
+        ],
+        "bias": [
+          4608
+        ],
+        "aux": [
+          16
+        ],
+        "c": [
+          288,
+          2048,
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 9437184,
+        "b": 21233664,
+        "bias": 4608,
+        "c": 9437184
+      },
+      "gm_bytes": {
+        "a": 18874368,
+        "b": 42467328,
+        "bias": 18432,
+        "c": 18874368
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 4480,
+          "dst_stride": 0
+        },
+        "bias_load": {
+          "nburst": 1,
+          "burst": 16,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 1920,
+          "units_bytes": 32,
+          "half_row_units": 1,
+          "fp32_output_stride_would_be": 3840
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_c32_bytes": 65536,
+        "ub_c16_bytes": 32768,
+        "ub_bias_bytes": 512,
+        "ub_bytes": 98816
+      },
+      "accumulation": {
+        "k_tiles": 36,
+        "k_blocks_per_tile": 128,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float16",
+        "single_final_half_cast": true,
+        "bias_added_in_fp32": true
+      },
+      "epilogue": {
+        "order": [
+          "tensor_mov_L0C_to_UB_fp32",
+          "vec_add_fp32_bias",
+          "h_cast_once",
+          "data_move_half"
+        ],
+        "bias_ub_dtype": "float32",
+        "tile_bias_groups": 8,
+        "vec_add_mask_fp32_elements": 16,
+        "vec_add_rep_rows": 128,
+        "vec_add_rep_strides": [
+          2,
+          2
+        ],
+        "h_cast_count_per_tile": 1,
+        "h_cast_api": "h_cast(dst, src, 'none')",
+        "hardware_bias_operand_used": false,
+        "padded_output_rows_are_bias_not_zero": true
+      },
+      "host_padding_contract": {
+        "m": "zero A rows up to m_pad; padded output rows equal the bias and must be cropped before model use",
+        "k": "zero A columns and zero W K-rows up to a multiple of 128 (vision MLP 4304 -> 4352)",
+        "n": "zero W trailing rows and zero bias entries up to a multiple of 128 (vision MLP 4304 -> 4352); crop output columns",
+        "mlp_logical_intermediate": 4304,
+        "mlp_padded_intermediate": 4352,
+        "bias_values": "exact original Half bias promoted to Float32; zero for added N entries"
+      },
+      "host_packing_required": [
+        "pack_a",
+        "pack_w",
+        "pack_bias"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "runtime_soc_label_note": "the runtime reports the short SoC name Ascend910 for this original 910A-generation part; 30 usable cube cores",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        128,
+        256,
+        128
+      ]
+    },
+    {
+      "round": 87,
+      "scope": "vision blocked FP16xFP16 -> FP32 L0C -> FP32 UB bias -> ONE Half GM; no hardware bias operand; no Half partial; no FP32 weight shadow",
+      "executed": false,
+      "compiled_now": false,
+      "built": true,
+      "built_unix_epoch": 1795043461,
+      "cache_source_epoch": {
+        "kernel_source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+        "reference_base_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee"
+      },
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "whole_goal_complete": false,
+      "kernel_name": "vision_bias87_m2016_k4608_n5120_mb128_nb128_kb128_c30",
+      "kernel_dir": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m2016_k4608_n5120_mb128_nb128_kb128_c30",
+      "kernel_symbol": "vision_bias87_m2016_k4608_n5120_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m2016_k4608_n5120_mb128_nb128_kb128_c30/vision_bias87_m2016_k4608_n5120_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "3b61343382bb70b20b02fcdcc01f5f9fd10a7c9c94598ada298818103eedb381",
+      "json_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m2016_k4608_n5120_mb128_nb128_kb128_c30/vision_bias87_m2016_k4608_n5120_mb128_nb128_kb128_c30.json",
+      "source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+      "reference_base_source_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+      "reference_bias_epilogue_source_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+      "reference_executed_bias_micro_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+      "reference_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+      "reference_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "reference_sources": {
+        "sources": {
+          "blocked_fp32_gemm83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_fp32_gemm83.py",
+            "sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "expected_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "matches_pin": true
+          },
+          "blocked_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_bias_epilogue83.py",
+            "sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "expected_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "matches_pin": true
+          },
+          "tik_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/tik_bias_epilogue83.py",
+            "sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "expected_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "matches_pin": true
+          },
+          "runtime5gm83.py": {
+            "path": "/tmp/h3_round100_full01/runtime5gm83.py",
+            "sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "expected_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "matches_pin": true
+          }
+        },
+        "verified": [
+          "blocked_bias_epilogue83.py",
+          "blocked_fp32_gemm83.py",
+          "runtime5gm83.py",
+          "tik_bias_epilogue83.py"
+        ],
+        "missing": [],
+        "all_pinned_sources_present_and_matching": true,
+        "no_reference_source_edited_by_this_round": true
+      },
+      "dtype": "float16_in_float16_out_with_fp32_bias",
+      "dst_dtype": "float16",
+      "input_dtype": "float16",
+      "weight_dtype": "float16",
+      "bias_dtype": "float32",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float16",
+      "uses_fp32_bias": true,
+      "single_final_half_cast": true,
+      "matmul_bias_operand_used": false,
+      "hardware_bias_operand_used": false,
+      "no_fp32_weight_shadow": true,
+      "no_bfloat16_teacher": true,
+      "bias_values_must_be_exact_original_half": true,
+      "padded_output_rows_are_bias_not_zero": true,
+      "GM_argument_count": 5,
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "bias_gm_float32",
+        "aux_gm_float16",
+        "c_gm_float16"
+      ],
+      "logical_shape": {
+        "m": 2016,
+        "k": 4608,
+        "n": 5120
+      },
+      "padded_shape": {
+        "m_pad": 2048,
+        "m_pad_rows": 32,
+        "k1": 288,
+        "n1": 320
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 16,
+        "n_tiles": 40,
+        "tasks": 640,
+        "cores": 30,
+        "steps": 22,
+        "all_physical_cores_used": true,
+        "tasks_per_core_upper_bound": 22
+      },
+      "gm_shapes": {
+        "a": [
+          288,
+          2048,
+          16
+        ],
+        "b": [
+          288,
+          5120,
+          16
+        ],
+        "bias": [
+          5120
+        ],
+        "aux": [
+          16
+        ],
+        "c": [
+          320,
+          2048,
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 9437184,
+        "b": 23592960,
+        "bias": 5120,
+        "c": 10485760
+      },
+      "gm_bytes": {
+        "a": 18874368,
+        "b": 47185920,
+        "bias": 20480,
+        "c": 20971520
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 4992,
+          "dst_stride": 0
+        },
+        "bias_load": {
+          "nburst": 1,
+          "burst": 16,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 1920,
+          "units_bytes": 32,
+          "half_row_units": 1,
+          "fp32_output_stride_would_be": 3840
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_c32_bytes": 65536,
+        "ub_c16_bytes": 32768,
+        "ub_bias_bytes": 512,
+        "ub_bytes": 98816
+      },
+      "accumulation": {
+        "k_tiles": 36,
+        "k_blocks_per_tile": 128,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float16",
+        "single_final_half_cast": true,
+        "bias_added_in_fp32": true
+      },
+      "epilogue": {
+        "order": [
+          "tensor_mov_L0C_to_UB_fp32",
+          "vec_add_fp32_bias",
+          "h_cast_once",
+          "data_move_half"
+        ],
+        "bias_ub_dtype": "float32",
+        "tile_bias_groups": 8,
+        "vec_add_mask_fp32_elements": 16,
+        "vec_add_rep_rows": 128,
+        "vec_add_rep_strides": [
+          2,
+          2
+        ],
+        "h_cast_count_per_tile": 1,
+        "h_cast_api": "h_cast(dst, src, 'none')",
+        "hardware_bias_operand_used": false,
+        "padded_output_rows_are_bias_not_zero": true
+      },
+      "host_padding_contract": {
+        "m": "zero A rows up to m_pad; padded output rows equal the bias and must be cropped before model use",
+        "k": "zero A columns and zero W K-rows up to a multiple of 128 (vision MLP 4304 -> 4352)",
+        "n": "zero W trailing rows and zero bias entries up to a multiple of 128 (vision MLP 4304 -> 4352); crop output columns",
+        "mlp_logical_intermediate": 4304,
+        "mlp_padded_intermediate": 4352,
+        "bias_values": "exact original Half bias promoted to Float32; zero for added N entries"
+      },
+      "host_packing_required": [
+        "pack_a",
+        "pack_w",
+        "pack_bias"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "runtime_soc_label_note": "the runtime reports the short SoC name Ascend910 for this original 910A-generation part; 30 usable cube cores",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        128,
+        256,
+        128
+      ]
+    },
+    {
+      "round": 87,
+      "scope": "vision blocked FP16xFP16 -> FP32 L0C -> FP32 UB bias -> ONE Half GM; no hardware bias operand; no Half partial; no FP32 weight shadow",
+      "executed": false,
+      "compiled_now": false,
+      "built": true,
+      "built_unix_epoch": 1795043461,
+      "cache_source_epoch": {
+        "kernel_source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+        "reference_base_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee"
+      },
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "whole_goal_complete": false,
+      "kernel_name": "vision_bias87_m8064_k1536_n1152_mb128_nb128_kb128_c30",
+      "kernel_dir": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1536_n1152_mb128_nb128_kb128_c30",
+      "kernel_symbol": "vision_bias87_m8064_k1536_n1152_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1536_n1152_mb128_nb128_kb128_c30/vision_bias87_m8064_k1536_n1152_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "5d31cb2ca0b78c86745356146b200d66b637e7e36f8b13cc1fe1e674f3cf017d",
+      "json_path": "/tmp/h3_round100_full01/bias_kernels/vision_bias87_m8064_k1536_n1152_mb128_nb128_kb128_c30/vision_bias87_m8064_k1536_n1152_mb128_nb128_kb128_c30.json",
+      "source_sha256": "f8655b5fa35aecec0753d3e657f16fd2e235f402a57e441eb8959f4c057f0379",
+      "reference_base_source_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+      "reference_bias_epilogue_source_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+      "reference_executed_bias_micro_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+      "reference_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+      "reference_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "reference_sources": {
+        "sources": {
+          "blocked_fp32_gemm83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_fp32_gemm83.py",
+            "sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "expected_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+            "matches_pin": true
+          },
+          "blocked_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/blocked_bias_epilogue83.py",
+            "sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "expected_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+            "matches_pin": true
+          },
+          "tik_bias_epilogue83.py": {
+            "path": "/tmp/h3_round100_full01/tik_bias_epilogue83.py",
+            "sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "expected_sha256": "124ba029a518e26b9b79051275a83144e702ebf016defe64085d8b3fa05ee03a",
+            "matches_pin": true
+          },
+          "runtime5gm83.py": {
+            "path": "/tmp/h3_round100_full01/runtime5gm83.py",
+            "sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "expected_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+            "matches_pin": true
+          }
+        },
+        "verified": [
+          "blocked_bias_epilogue83.py",
+          "blocked_fp32_gemm83.py",
+          "runtime5gm83.py",
+          "tik_bias_epilogue83.py"
+        ],
+        "missing": [],
+        "all_pinned_sources_present_and_matching": true,
+        "no_reference_source_edited_by_this_round": true
+      },
+      "dtype": "float16_in_float16_out_with_fp32_bias",
+      "dst_dtype": "float16",
+      "input_dtype": "float16",
+      "weight_dtype": "float16",
+      "bias_dtype": "float32",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float16",
+      "uses_fp32_bias": true,
+      "single_final_half_cast": true,
+      "matmul_bias_operand_used": false,
+      "hardware_bias_operand_used": false,
+      "no_fp32_weight_shadow": true,
+      "no_bfloat16_teacher": true,
+      "bias_values_must_be_exact_original_half": true,
+      "padded_output_rows_are_bias_not_zero": true,
+      "GM_argument_count": 5,
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "bias_gm_float32",
+        "aux_gm_float16",
+        "c_gm_float16"
+      ],
+      "logical_shape": {
+        "m": 8064,
+        "k": 1536,
+        "n": 1152
+      },
+      "padded_shape": {
+        "m_pad": 8064,
+        "m_pad_rows": 0,
+        "k1": 96,
+        "n1": 72
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 63,
+        "n_tiles": 9,
+        "tasks": 567,
+        "cores": 30,
+        "steps": 19,
+        "all_physical_cores_used": true,
+        "tasks_per_core_upper_bound": 19
+      },
+      "gm_shapes": {
+        "a": [
+          96,
+          8064,
+          16
+        ],
+        "b": [
+          96,
+          1152,
+          16
+        ],
+        "bias": [
+          1152
+        ],
+        "aux": [
+          16
+        ],
+        "c": [
+          72,
+          8064,
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 12386304,
+        "b": 1769472,
+        "bias": 1152,
+        "c": 9289728
+      },
+      "gm_bytes": {
+        "a": 24772608,
+        "b": 3538944,
+        "bias": 4608,
+        "c": 18579456
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 7936,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1024,
+          "dst_stride": 0
+        },
+        "bias_load": {
+          "nburst": 1,
+          "burst": 16,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 7936,
+          "units_bytes": 32,
+          "half_row_units": 1,
+          "fp32_output_stride_would_be": 15872
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_c32_bytes": 65536,
+        "ub_c16_bytes": 32768,
+        "ub_bias_bytes": 512,
+        "ub_bytes": 98816
+      },
+      "accumulation": {
+        "k_tiles": 12,
+        "k_blocks_per_tile": 128,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float16",
+        "single_final_half_cast": true,
+        "bias_added_in_fp32": true
+      },
+      "epilogue": {
+        "order": [
+          "tensor_mov_L0C_to_UB_fp32",
+          "vec_add_fp32_bias",
+          "h_cast_once",
+          "data_move_half"
+        ],
+        "bias_ub_dtype": "float32",
+        "tile_bias_groups": 8,
+        "vec_add_mask_fp32_elements": 16,
+        "vec_add_rep_rows": 128,
+        "vec_add_rep_strides": [
+          2,
+          2
+        ],
+        "h_cast_count_per_tile": 1,
+        "h_cast_api": "h_cast(dst, src, 'none')",
+        "hardware_bias_operand_used": false,
+        "padded_output_rows_are_bias_not_zero": true
+      },
+      "host_padding_contract": {
+        "m": "zero A rows up to m_pad; padded output rows equal the bias and must be cropped before model use",
+        "k": "zero A columns and zero W K-rows up to a multiple of 128 (vision MLP 4304 -> 4352)",
+        "n": "zero W trailing rows and zero bias entries up to a multiple of 128 (vision MLP 4304 -> 4352); crop output columns",
+        "mlp_logical_intermediate": 4304,
+        "mlp_padded_intermediate": 4352,
+        "bias_values": "exact original Half bias promoted to Float32; zero for added N entries"
+      },
+      "host_packing_required": [
+        "pack_a",
+        "pack_w",
+        "pack_bias"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "runtime_soc_label_note": "the runtime reports the short SoC name Ascend910 for this original 910A-generation part; 30 usable cube cores",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        128,
+        256,
+        128
+      ]
+    }
+  ],
+  "erf_kernel": {
+    "kernel_name": "erf_gelu_fixed90_n9289728_t4096_c30",
+    "kernel_symbol": "erf_gelu_fixed90_n9289728_t4096_c30__kernel0",
+    "block_dim": 30,
+    "obj_path": "/tmp/h3_round100_full01/erf_kernels/erf_gelu_fixed90_n9289728_t4096_c30/erf_gelu_fixed90_n9289728_t4096_c30.o",
+    "obj_sha256": "c0406299563c59e56a5a79d0c1a93c5be58cffce3e87ba7fe254c06a9b925e15",
+    "meta_path": "/tmp/h3_round100_full01/erf_kernels/erf_gelu_fixed90_n9289728_t4096_c30/erf_gelu_fixed90_n9289728_t4096_c30.json",
+    "dst_dtype": "float16",
+    "input_dtype": "float16",
+    "GM_argument_count": 5,
+    "gm_shapes": {
+      "x": [
+        9289728
+      ],
+      "aux1": [
+        16
+      ],
+      "aux2": [
+        16
+      ],
+      "aux3": [
+        16
+      ],
+      "c": [
+        9289728
+      ]
+    },
+    "numel": 9289728,
+    "accumulator_or_math_dtype": "float32",
+    "single_final_half_cast": true,
+    "float_math_on_widened_operand": true,
+    "erf_approximation": "Abramowitz-Stegun 7.1.26 rational, 2 Newton steps",
+    "erf_polynomial_max_abs_error_exact_math": 1.5e-07,
+    "newton_steps": 2,
+    "no_model_weights": true,
+    "no_float_model_weights": true,
+    "original_erf_semantics_kept": true,
+    "tanh_approximation_not_used": true,
+    "bf16_used": false,
+    "a2_only_features_used": false,
+    "gm_aux_roles": "three unused Half aux pointers keep the proven 5-GM launcher ABI",
+    "plan": {
+      "numel": 9289728,
+      "tile_elems": 4096,
+      "tasks": 2268,
+      "cores": 30,
+      "steps": 76,
+      "physical_cores": 30,
+      "live_tiles_in_last_step": 18,
+      "tiles": {
+        "count": 2268,
+        "elements": 4096
+      },
+      "grid": {
+        "cores": 30,
+        "steps": 76,
+        "tasks": 2268,
+        "dynamic_task_index": "core + step*cores"
+      },
+      "dma": {
+        "nburst": 2,
+        "burst": 128,
+        "src_stride": 0,
+        "dst_stride": 0,
+        "gm_bytes_per_tile": 8192,
+        "burst_bytes": 4096
+      },
+      "vector": {
+        "mask": 64,
+        "repeat_times": 64,
+        "rep_stride": 8,
+        "elements_per_repeat": 64,
+        "bytes_per_repeat": 256
+      },
+      "buffers": {
+        "half": [
+          "x_h",
+          "c_h"
+        ],
+        "float": [
+          "x_f",
+          "a_f",
+          "z_f",
+          "d_f",
+          "t_f",
+          "p_f",
+          "e_f",
+          "k_f"
+        ],
+        "half_tile_bytes": 8192,
+        "float_tile_bytes": 16384,
+        "ub_bytes": 147456,
+        "ub_safe_bytes": 196608
+      },
+      "newton_steps": 2,
+      "mixed_precision": "HalfGM->FloatUBmath->oneHalfGM",
+      "no_early_half_math": true,
+      "bf16_used": false,
+      "a2_only_features_used": false,
+      "core_dim_32_assumed": false
+    },
+    "capability": {
+      "compile_soc": "Ascend910B",
+      "runtime_expected_soc": "Ascend910B",
+      "runtime_soc_label_note": "this original 910A-generation part reports the short SoC name Ascend910 at runtime and has 30 usable cores",
+      "core_num": 30,
+      "l1_size": 1048576,
+      "l0c_size": 262144,
+      "ub_size": 262144,
+      "Intrinsic_vconv_float16_to_float32": true,
+      "Intrinsic_vconv_float32_to_float16": true
+    },
+    "reference_sources": {
+      "runtime_module": "runtime5gm83",
+      "runtime_module_expected_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "runtime_library_expected_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+      "candidate_expected_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+      "no_reference_source_edited_by_this_round": true,
+      "runtime_module_path": "/tmp/h3_round100_full01/runtime5gm83.py",
+      "runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6"
+    },
+    "cache_source_epoch": {
+      "erf_gelu_fixed90_py_sha256": "5a5e85aaad5697a7a890ecb0b5b724bc3acd93d819978ab55d5eb68038cd0552",
+      "runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6"
+    },
+    "compiled_now": false,
+    "built": true,
+    "executed": false,
+    "built_unix_epoch": null,
+    "numerical_accuracy_claim": null,
+    "full_encoder_precision_accepted": false,
+    "whole_goal_complete": false
+  },
+  "flash_kernel": {
+    "round": 99,
+    "scope": "one-launch streaming vision flash attention: FP32 online softmax, Half shift estimate, two-Half probability P@V, one final Half cast",
+    "executed": false,
+    "compiled_now": false,
+    "not_a_speed_claim": true,
+    "not_h3_end_to_end_result": true,
+    "full_encoder_precision_accepted": false,
+    "whole_goal_complete": false,
+    "numerical_tolerance": null,
+    "kernel_name": "flash_vision99_h16_m4032_n4032_d72_mb64_c30_kv63",
+    "kernel_symbol": "flash_vision99_h16_m4032_n4032_d72_mb64_c30_kv63__kernel0",
+    "block_dim": 30,
+    "core_type": "AiCore",
+    "obj_path": "/tmp/h3_round100_full01/vision_attention_kernels/flash_vision99_h16_m4032_n4032_d72_mb64_c30_kv63/flash_vision99_h16_m4032_n4032_d72_mb64_c30_kv63.o",
+    "obj_sha256": "f99762a54800ad7825cda9d0738aba7c2e50d2fd7c30f61d6f735d87015219e8",
+    "json_path": "/tmp/h3_round100_full01/vision_attention_kernels/flash_vision99_h16_m4032_n4032_d72_mb64_c30_kv63/flash_vision99_h16_m4032_n4032_d72_mb64_c30_kv63.json",
+    "source_sha256": "d45cac797d25c8f5b0534e6cf12fb6fcad6f531ee33557debb35bc59cdcf6013",
+    "dtype": "float16_in_float16_out",
+    "input_dtype": "float16",
+    "accumulator_dtype": "float32",
+    "output_dtype": "float16",
+    "kernel_arg_order": [
+      "q_gm_float16",
+      "k_gm_float16",
+      "v_gm_float16",
+      "aux_gm_float32",
+      "out_gm_float16"
+    ],
+    "GM_argument_count": 5,
+    "logical": {
+      "heads": 16,
+      "m": 4032,
+      "n": 4032,
+      "d": 72,
+      "padded_head_dim": 80,
+      "d1": 5,
+      "kb1": 4,
+      "mb": 64,
+      "bc": 64,
+      "scale": 0.11785113019775792,
+      "unmasked": true,
+      "causal": false
+    },
+    "grid": {
+      "tasks": 1008,
+      "cores": 30,
+      "steps": 34,
+      "m_tiles": 63,
+      "n_tiles": 63,
+      "kv_tiles": 63,
+      "dynamic_kv_loop": true
+    },
+    "head_stride_elems": {
+      "q": 322560,
+      "k": 322560,
+      "v": 322560,
+      "out": 322560
+    },
+    "gm_shapes": {
+      "q": [
+        16,
+        5,
+        4032,
+        16
+      ],
+      "k": [
+        16,
+        5,
+        4032,
+        16
+      ],
+      "v": [
+        16,
+        252,
+        80,
+        16
+      ],
+      "aux": [
+        16
+      ],
+      "aux_dtype": "float32",
+      "out": [
+        16,
+        5,
+        4032,
+        16
+      ]
+    },
+    "gm_bytes": {
+      "q": 10321920,
+      "k": 10321920,
+      "v": 10321920,
+      "out": 10321920
+    },
+    "dma": {
+      "q_load": {
+        "nburst": 5,
+        "burst": 64,
+        "src_stride": 3968,
+        "dst_stride": 0
+      },
+      "k_load": {
+        "nburst": 5,
+        "burst": 64,
+        "src_stride": 3968,
+        "dst_stride": 0
+      },
+      "v_load": {
+        "nburst": 4,
+        "burst": 80,
+        "src_stride": 0,
+        "dst_stride": 0
+      },
+      "p_to_l1": {
+        "nburst": 4,
+        "burst": 64
+      },
+      "score_l0c_to_ub": {
+        "block_mode": "m",
+        "nburst": 1,
+        "burst_len_kb": 16
+      },
+      "pv_l0c_to_ub": {
+        "block_mode": "m",
+        "nburst": 1,
+        "burst_len_kb": 20
+      },
+      "out_store": {
+        "nburst": 5,
+        "burst": 64,
+        "src_stride": 0,
+        "dst_stride": 3968
+      }
+    },
+    "buffers": {
+      "l1_q_bytes": 10240,
+      "l1_k_bytes": 10240,
+      "l1_v_bytes": 10240,
+      "l1_p_hi_bytes": 8192,
+      "l1_p_lo_bytes": 8192,
+      "l0c_score_bytes": 16384,
+      "l0c_pv_bytes": 20480,
+      "ub_score_bytes": 16384,
+      "ub_half_score_bytes": 8192,
+      "ub_exp_bytes": 16384,
+      "ub_prob_half_bytes": 8192,
+      "ub_prob_float_bytes": 16384,
+      "ub_pv_bytes": 20480,
+      "ub_out_bytes": 10240,
+      "l1_total_bytes": 47104,
+      "l0c_total_bytes": 57344,
+      "ub_named": {
+        "score_float_also_exp": 16384,
+        "fold_half_a": 2048,
+        "fold_half_b": 2048,
+        "shift_half_row": 128,
+        "fold_float_a": 4096,
+        "fold_float_b": 4096,
+        "prob_hi_half_also_half_score": 8192,
+        "prob_hi_float_also_row_broadcast": 16384,
+        "prob_lo_float": 16384,
+        "prob_lo_half": 8192,
+        "pv_hi_float": 20480,
+        "pv_lo_float": 20480,
+        "out_acc_float": 20480,
+        "out_half": 10240,
+        "row_prev": 256,
+        "row_new": 256,
+        "row_diff": 256,
+        "row_rescale": 256,
+        "row_zero": 256,
+        "row_sum": 256,
+        "row_denominator": 256
+      },
+      "ub_total_bytes": 158080
+    },
+    "vector": {
+      "f32_mask": 64,
+      "f32_rep_stride": 8,
+      "group_repeats": 16,
+      "broadcast_mask": 16,
+      "broadcast_blk_stride": 1,
+      "broadcast_rep_stride": 128,
+      "score_elems": 4096,
+      "pv_elems": 5120,
+      "score_groups": 4,
+      "pv_groups": 5,
+      "row_elems": 64
+    },
+    "math": {
+      "main_scores_dtype": "float32",
+      "main_softmax_dtype": "float32",
+      "shift_estimate_dtype": "float16",
+      "shift_is_exact": false,
+      "accumulator_dtype": "float32",
+      "denominator_dtype": "float32",
+      "final_output_dtype": "float16",
+      "probability_split": [
+        "hi = Half(exp)",
+        "lo = Half((exp - Float(hi)) * 1024)"
+      ],
+      "residual_scale": 1024.0,
+      "low_downscale": 0.0009765625,
+      "init": {
+        "row_max": -3.4028234663852886e+38,
+        "denominator": 0.0,
+        "output": 0.0
+      },
+      "row_broadcast": "explicit per-row vector_dup expansion; no implicit h_* broadcasting is relied on",
+      "buffer_reuse": [
+        "score FP32 tile -> exp tile (in-place h_exp)",
+        "Half score tile -> P_hi",
+        "row-expansion FP32 tile -> widened P_hi",
+        "PV low product -> rescale row expansion",
+        "PV high product -> final quotient tile"
+      ],
+      "order": [
+        "qk_matmul_full_padded_dim",
+        "score_fp32_to_ub",
+        "scale_by_head_dim_inv_sqrt",
+        "half_row_shift_estimate",
+        "online_max_and_rescale",
+        "broadcast_shift_explicitly",
+        "exp_fp32",
+        "fold_true_float_denominator",
+        "half_hi_half_lo_split",
+        "two_fp32_pv_l0c",
+        "fp32_combine_hi_plus_lo_over_1024",
+        "rescale_and_accumulate_output",
+        "final_float_div_then_one_half_cast"
+      ],
+      "no_half_cumulative_output": true,
+      "no_half_denominator": true,
+      "no_clamp": true,
+      "no_mid_product_fp32_gm": true,
+      "no_hidden_or_conditioning_cache": true,
+      "no_implicit_broadcast": true
+    },
+    "host_protocol": {
+      "bound": 16384.0,
+      "formula": "max|scaled QK| <= 16384, measured finitely by the caller or bounded by sqrt(d) * max|q| * max|k|",
+      "half_shift_ulp_at_bound": 8.0,
+      "max_exp_at_bound": 2980.9579870417283,
+      "clamped": false,
+      "enforced_by": "check_host_protocol"
+    },
+    "assumptions": [
+      "h_reduce_max/h_reduce_sum(axis=1) on a (MB,16) tile yields a (MB,) row tensor",
+      "Tensor.reshape((n1,MB,16)) is a metadata view of the same flat UB buffer",
+      "masked vector_dup(repeat_times=n1, blk_stride=1, rep_stride=2*MB) writes one 16-value NZ row slot per group",
+      "Scalar.set_as(<UB element>) is a legal UB-to-scalar load",
+      "h_reduce_sum on Float compiles to Float vcadd; h_max to Float vmax",
+      "the Half shift estimate uses Half vcmax (Float vcmax is unsupported here)",
+      "vector_dup(mask,dst,scalar,1,1,1) with an explicit repeat slice fills exactly one repeat",
+      "in-place same-shape h_sub/h_mul/h_add/h_exp with dst==src0 is supported",
+      "a Float UB buffer can be reused sequentially (score->exp, Half score->P_hi, row expansion->widened P_hi) without an explicit alias API"
+    ],
+    "single_launch_streaming": true,
+    "no_mid_product_fp32_gm": true,
+    "no_half_cumulative_state": true,
+    "no_implicit_broadcast": true,
+    "unmasked_attention": true,
+    "scale_check": {
+      "scale": 0.11785113019775792,
+      "original_head_dim": 72,
+      "padded_head_dim": 80,
+      "matches_original": true,
+      "padded_width_scale_used": false
+    },
+    "capability": {
+      "compile_soc": "Ascend910",
+      "core_num": 32,
+      "ub_size": 262144,
+      "l1_size": 1048576,
+      "l0c_size": 262144,
+      "intrinsic_checks": {
+        "Intrinsic_vcmax:float16": true,
+        "Intrinsic_vor:uint16": true,
+        "Intrinsic_vtranspose:float16": true,
+        "Intrinsic_vmax:float16": true,
+        "Intrinsic_vcadd:float32": true,
+        "Intrinsic_vmax:float32": true,
+        "Intrinsic_vadd:float32": true,
+        "Intrinsic_vmul:float32": true,
+        "Intrinsic_vexp:float32": true,
+        "Intrinsic_vdiv:float32": true,
+        "Intrinsic_vcmax:float32": false,
+        "Intrinsic_vexp:float16": true
+      },
+      "required_missing": [],
+      "query_answered": true,
+      "launched_usable_cores": 30,
+      "assumptions": [
+        "h_reduce_max/h_reduce_sum(axis=1) on a (MB,16) tile yields a (MB,) row tensor",
+        "Tensor.reshape((n1,MB,16)) is a metadata view of the same flat UB buffer",
+        "masked vector_dup(repeat_times=n1, blk_stride=1, rep_stride=2*MB) writes one 16-value NZ row slot per group",
+        "Scalar.set_as(<UB element>) is a legal UB-to-scalar load",
+        "h_reduce_sum on Float compiles to Float vcadd; h_max to Float vmax",
+        "the Half shift estimate uses Half vcmax (Float vcmax is unsupported here)",
+        "vector_dup(mask,dst,scalar,1,1,1) with an explicit repeat slice fills exactly one repeat",
+        "in-place same-shape h_sub/h_mul/h_add/h_exp with dst==src0 is supported",
+        "a Float UB buffer can be reused sequentially (score->exp, Half score->P_hi, row expansion->widened P_hi) without an explicit alias API"
+      ],
+      "all_required_supported": true
+    }
+  },
+  "no_FP16_model_inputs_executed": true
+}

@@ -1,0 +1,26 @@
+{
+  "scope": "read-only vector-copy/transpose capabilities original910, no kernel build",
+  "signatures": {
+    "vec_trans": "(self, dst, src, repeat_times, dst_rep_stride, src_rep_stride)",
+    "vec_trans_scatter": "(self, dst_high_half, src_high_half, dst_list, src_list, repeat_times, dst_rep_stride, src_rep_stride)",
+    "v4dtrans": "(self, chw2hwc, dst, src, m_len, channels)",
+    "vec_or": "(self, mask, dst, src0, src1, repeat_times, dst_rep_stride, src0_rep_stride, src1_rep_stride)",
+    "vreduce": "(self, mask, dst, src0, src1_pattern, repeat_times, src0_blk_stride, src0_rep_stride, src1_rep_stride, stride_unit=0, rsvd_scalar=None, mask_mode='normal')",
+    "vec_sel": "(self, mask, mode, dst, sel, src0, src1, repeat_times, dst_rep_stride=0, src0_rep_stride=0, src1_rep_stride=0)",
+    "h_transpose": null
+  },
+  "checks": {
+    "Intrinsic_v4dtrans:float32": false,
+    "Intrinsic_v4dtrans:float16": false,
+    "Intrinsic_v4dtrans:uint16": false,
+    "Intrinsic_vtranspose:float32": false,
+    "Intrinsic_vtranspose:float16": true,
+    "Intrinsic_vtranspose:uint16": true,
+    "Intrinsic_vnchwconv:float32": false,
+    "Intrinsic_vnchwconv:float16": true,
+    "Intrinsic_vnchwconv:uint16": true,
+    "Intrinsic_vor:float32": false,
+    "Intrinsic_vor:float16": false,
+    "Intrinsic_vor:uint16": true
+  }
+}
