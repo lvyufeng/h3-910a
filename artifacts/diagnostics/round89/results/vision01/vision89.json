@@ -1,0 +1,283 @@
+{
+  "scope": "Actual Half vision Conv3d/nonlinear leaves and CPU-entry reset,not full text timing.",
+  "completed": false,
+  "source_sha256": "13eaf186c7a66fbc934745668d33bb9ecdb00d69efc54ecbd58e18fc1c89a2a4",
+  "cases": {},
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "numerical_tolerance": null,
+  "R88_slow_attention_not_installed": true,
+  "CPU_rebase_not_full_encoder_timing": true,
+  "cpu_reference_gate": {
+    "completed": true,
+    "full_multimodal_reference_completed": true,
+    "repeat_pre_final_norm_bits_equal": true,
+    "repeat_post_final_norm_bits_equal": true,
+    "pre_final_norm_matches_layer49_identity": true
+  },
+  "cpu_reference": {
+    "root": "/tmp/h3_round78_hf_fp1601",
+    "source_sha256": "50165e77adb393b4573fbe0fdb29c62a6ddb14b8f39082d0ea67e904848010ea",
+    "original_selected_parameter_sha256": "a69676bac5e6f3a513ce44080d29c73974553b6e0a327ea272e47b600d84e46e",
+    "boundary": "original HF selected-50 decoder layers, PRE final norm",
+    "vision_layers": 27,
+    "language_layers": 50,
+    "isolation": "recomputed original HF FP16 graph; old BF16 outputs were never cast to FP16"
+  },
+  "candidate": {
+    "path": "/tmp/h3_round89_vision01/candidate_encoder79.py",
+    "sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "module_name": "candidate_encoder79",
+    "origin_production_sha256": null
+  },
+  "original_HF_CPU_entry_reference": {
+    "scope": "Recompute original HF CPU Half vision entry; verify original raw block0 SHA.",
+    "HF_source_SHA256": "fcb5571ef95e4a6679af866ef9ef4dfa5cee017f9f91453daf28c7804c7a50fe",
+    "CPU_threads": 16,
+    "all_original_CPU_parameters_Half": true,
+    "parameter_tensors": 351,
+    "CPU_entry_repeat_bits": true,
+    "CPU_patch_repeat_bits": true,
+    "CPU_position_repeat_bits": true,
+    "CPU_block0_matches_original_R78_output_SHA": true,
+    "CPU_block0": {
+      "shape": [
+        8064,
+        1152
+      ],
+      "dtype": "torch.float16",
+      "bytes": 18579456,
+      "sha256": "1b41bf75401dfbcef77dff545c690857ee4ff7b58a8d49c6eadf13c6fbfdd5ef",
+      "finite": true,
+      "max_abs": 7.203125
+    },
+    "initial": {
+      "shape": [
+        8064,
+        1152
+      ],
+      "dtype": "torch.float16",
+      "bytes": 18579456,
+      "sha256": "e6d601406e9ee2d22ed16f46b0d0194df3a676a70326167154dca947ea331689",
+      "finite": true,
+      "max_abs": 22.46875
+    },
+    "patch": {
+      "shape": [
+        8064,
+        1152
+      ],
+      "dtype": "torch.float16",
+      "bytes": 18579456,
+      "sha256": "b56b7308a7642af20542b43ed928dc8a80dde7818e4c3a04636fac5d7aa4bb23",
+      "finite": true,
+      "max_abs": 6.43359375
+    },
+    "positions": {
+      "shape": [
+        8064,
+        1152
+      ],
+      "dtype": "torch.float16",
+      "bytes": 18579456,
+      "sha256": "44bcd156a8de27344f3d298f2929de8efdeabac685b5438f45742ab3e66d7b45",
+      "finite": true,
+      "max_abs": 20.25
+    },
+    "CPU_recompute_wall_s_excluded_from_NPU_warm": 9.537959950044751,
+    "no_FP32_linear_weight_teacher": true,
+    "no_BF16_gold_cast": true,
+    "numerical_tolerance": null
+  },
+  "actual_entry": {
+    "patch_vs_original_CPU_Half_Conv3d": {
+      "npu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "1b1334929ba1171269b7d46b508c711493085f5e2ac9cacedaca191de33b456a",
+        "finite": true,
+        "max_abs": 6.4375
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "b56b7308a7642af20542b43ed928dc8a80dde7818e4c3a04636fac5d7aa4bb23",
+        "finite": true,
+        "max_abs": 6.43359375
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 9289728,
+      "max_abs_error": 0.00390625,
+      "RMSE": 6.09363245495052e-05,
+      "relative_rms": 0.00016313583554552322
+    },
+    "initial_vs_original_CPU_Half": {
+      "npu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "7d6fcc740efd7f1eaea03fdd7c02671bf7702714a7aed9385d0c463d513330cf",
+        "finite": true,
+        "max_abs": 22.46875
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "e6d601406e9ee2d22ed16f46b0d0194df3a676a70326167154dca947ea331689",
+        "finite": true,
+        "max_abs": 22.46875
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 9289728,
+      "max_abs_error": 0.00390625,
+      "RMSE": 7.276568022726693e-05,
+      "relative_rms": 0.0001768430598907812
+    },
+    "block0_vs_original_CPU_Half": {
+      "npu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "5f211c474bd67c6778bdfe9cd4a7928bdd735f8ed4eee92879b21d5b1fe098d7",
+        "finite": true,
+        "max_abs": 7.203125
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "1b41bf75401dfbcef77dff545c690857ee4ff7b58a8d49c6eadf13c6fbfdd5ef",
+        "finite": true,
+        "max_abs": 7.203125
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 9289728,
+      "max_abs_error": 0.01171875,
+      "RMSE": 0.0002796153045027272,
+      "relative_rms": 0.0005349451921625942
+    },
+    "positions_vs_original_CPU_Half": {
+      "npu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "44bcd156a8de27344f3d298f2929de8efdeabac685b5438f45742ab3e66d7b45",
+        "finite": true,
+        "max_abs": 20.25
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "44bcd156a8de27344f3d298f2929de8efdeabac685b5438f45742ab3e66d7b45",
+        "finite": true,
+        "max_abs": 20.25
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": true,
+      "elements": 9289728,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_rms": 0.0
+    },
+    "CPU_Half_Linear_vs_original_CPU_Half_Conv3d": {
+      "npu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "56d6541ca18cbea26ce0df3970a8ab056fd2d8d7b4cc02a447117dea0465a170",
+        "finite": true,
+        "max_abs": 6.43359375
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "b56b7308a7642af20542b43ed928dc8a80dde7818e4c3a04636fac5d7aa4bb23",
+        "finite": true,
+        "max_abs": 6.43359375
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 9289728,
+      "max_abs_error": 0.000244140625,
+      "RMSE": 8.961352436262899e-07,
+      "relative_rms": 2.399090736297992e-06
+    }
+  },
+  "failure": {
+    "type": "RuntimeError",
+    "message": "Inference tensors cannot be saved for backward. Please do not use Tensors created in inference mode in computation tracked by autograd. To work around this, you can make a clone to get a normal tensor and use it in autograd, or use `torch.no_grad()` instead of `torch.inference_mode()`."
+  },
+  "bias_final": {
+    "enabled": false,
+    "cached_weights": 116,
+    "kernel_shapes": [
+      "(8064, 1152, 3456)",
+      "(8064, 1152, 1152)",
+      "(8064, 1152, 4352)",
+      "(8064, 4352, 1152)",
+      "(2016, 4608, 4608)",
+      "(2016, 4608, 5120)"
+    ],
+    "calls": 0,
+    "kernel_launches": 0,
+    "padding_controls": 0,
+    "packed_Half_weight_bytes": 1186725888,
+    "FP32_bias_cache_bytes": 1247744,
+    "FP32_weight_shadows": 0,
+    "one_Half_cast_inside_kernel_after_FP32_bias": true,
+    "source_sha256": "8393f6b9c379e0df8cc3c1393ff2b839dab4c535fddd4be14782cec615c8db19"
+  }
+}

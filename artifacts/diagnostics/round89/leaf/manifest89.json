@@ -1,0 +1,76 @@
+{
+  "round": 89,
+  "task": "task-34",
+  "owner": "vision-leaf89-fresh",
+  "kind": "real-operand vision LayerNorm/GELU CPU-Half controls + scoped optional Float adapter (source only)",
+  "scope": "artifacts/diagnostics/round89/leaf",
+  "files": {
+    "vision_leaf89.py": {
+      "bytes": 32831,
+      "sha256": "38d309a78b1346b1dc32c0dc457f96f7cf566c4be81f41a72ff22d318a1bc737",
+      "role": "the leaf controls and optional scoped Float adapter under test"
+    },
+    "test_vision_leaf89.py": {
+      "bytes": 11035,
+      "sha256": "f0d29f2304bb527b66dc0ea2d1cb4dd4f105d49773eadd183dfb2cfa7f6ad830",
+      "role": "stdlib-only structural contract tests"
+    },
+    "README.md": {
+      "bytes": 4990,
+      "sha256": "f4943a7ca5420609867f3140d34b929f5d64b688a5deba7f16117c3e24154c1f",
+      "role": "scope, inventory, API and non-claim documentation"
+    }
+  },
+  "compiled": false,
+  "executed_on_npu": false,
+  "no_ssh_or_remote_command": true,
+  "no_model_run": true,
+  "no_installation": true,
+  "no_production_files_modified": true,
+  "no_git_commit": true,
+  "proves_precision": false,
+  "proves_speed": false,
+  "claims_h3_improvement": false,
+  "leaves_no_numerical_result": true,
+  "pin": {
+    "candidate_filename": "candidate_encoder79.py",
+    "candidate_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "norm_class_name": "_NpuBF16CompatibleLayerNorm",
+    "norm_eps": 1e-06,
+    "half_dtype": "torch.float16",
+    "cpu_reference_receipt_sha256": "44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9"
+  },
+  "counts": {
+    "blocks": 27,
+    "merger_modules": 4,
+    "norm_modules": 58,
+    "gelu_modules": 31,
+    "gelu_tanh": 27,
+    "gelu_erf": 4
+  },
+  "leaf_module_names": [
+    "blocks.0.norm1",
+    "blocks.0.norm2",
+    "blocks.0.mlp.act_fn",
+    "deepstack_merger_list.0.norm",
+    "deepstack_merger_list.0.act_fn",
+    "merger.norm",
+    "merger.act_fn"
+  ],
+  "api": {
+    "controls": "run_controls(vision, inputs, compare, tensor_info)",
+    "adapter_class": "VisionNonlinearAdapter89(vision)",
+    "adapter_methods": [
+      "set_modes(norm=False, gelu=False)",
+      "snapshot()",
+      "uninstall()"
+    ],
+    "adapter_default": "disabled; disabled path is the captured native operator"
+  },
+  "non_claims": [
+    "no numerical result, threshold or speed measurement is produced here",
+    "a smaller leaf error does not accept whole-vision, encoder or goal completion",
+    "the adapter is a diagnostic switch, not an accepted optimization",
+    "no Float weight shadow, no Float linear/Conv, no BF16 teacher, no tolerance"
+  ]
+}

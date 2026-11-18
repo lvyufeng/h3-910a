@@ -1,0 +1,580 @@
+{
+  "scope": "Verify original CPU-entry reset and real seven-operator Half controls.",
+  "CPU_entry_reference": {
+    "scope": "Recompute original HF CPU Half vision entry; verify original raw block0 SHA.",
+    "HF_source_SHA256": "fcb5571ef95e4a6679af866ef9ef4dfa5cee017f9f91453daf28c7804c7a50fe",
+    "CPU_threads": 16,
+    "all_original_CPU_parameters_Half": true,
+    "parameter_tensors": 351,
+    "CPU_entry_repeat_bits": true,
+    "CPU_patch_repeat_bits": true,
+    "CPU_position_repeat_bits": true,
+    "CPU_block0_matches_original_R78_output_SHA": true,
+    "CPU_block0": {
+      "shape": [
+        8064,
+        1152
+      ],
+      "dtype": "torch.float16",
+      "bytes": 18579456,
+      "sha256": "1b41bf75401dfbcef77dff545c690857ee4ff7b58a8d49c6eadf13c6fbfdd5ef",
+      "finite": true,
+      "max_abs": 7.203125
+    },
+    "initial": {
+      "shape": [
+        8064,
+        1152
+      ],
+      "dtype": "torch.float16",
+      "bytes": 18579456,
+      "sha256": "e6d601406e9ee2d22ed16f46b0d0194df3a676a70326167154dca947ea331689",
+      "finite": true,
+      "max_abs": 22.46875
+    },
+    "patch": {
+      "shape": [
+        8064,
+        1152
+      ],
+      "dtype": "torch.float16",
+      "bytes": 18579456,
+      "sha256": "b56b7308a7642af20542b43ed928dc8a80dde7818e4c3a04636fac5d7aa4bb23",
+      "finite": true,
+      "max_abs": 6.43359375
+    },
+    "positions": {
+      "shape": [
+        8064,
+        1152
+      ],
+      "dtype": "torch.float16",
+      "bytes": 18579456,
+      "sha256": "44bcd156a8de27344f3d298f2929de8efdeabac685b5438f45742ab3e66d7b45",
+      "finite": true,
+      "max_abs": 20.25
+    },
+    "CPU_recompute_wall_s_excluded_from_NPU_warm": 10.383353270124644,
+    "no_FP32_linear_weight_teacher": true,
+    "no_BF16_gold_cast": true,
+    "numerical_tolerance": null
+  },
+  "actual_entry": {
+    "patch_vs_original_CPU_Half_Conv3d": {
+      "relative_rms": 0.00016313583554552322,
+      "max_abs_error": 0.00390625,
+      "raw_bits_equal": false
+    },
+    "initial_vs_original_CPU_Half": {
+      "relative_rms": 0.0001768430598907812,
+      "max_abs_error": 0.00390625,
+      "raw_bits_equal": false
+    },
+    "block0_vs_original_CPU_Half": {
+      "relative_rms": 0.0005349451921625942,
+      "max_abs_error": 0.01171875,
+      "raw_bits_equal": false
+    },
+    "positions_vs_original_CPU_Half": {
+      "relative_rms": 0.0,
+      "max_abs_error": 0.0,
+      "raw_bits_equal": true
+    },
+    "CPU_Half_Linear_vs_original_CPU_Half_Conv3d": {
+      "relative_rms": 2.399090736297992e-06,
+      "max_abs_error": 0.000244140625,
+      "raw_bits_equal": false
+    }
+  },
+  "actual_nonlinear_leafs": {
+    "blocks.0.norm1": {
+      "kind": "layer_norm",
+      "approximate": null,
+      "native_CPU_Half_relative_RMS": 5.5281609424071576e-06,
+      "NPU_Float_then_Half_CPU_Half_relative_RMS": 5.5281609424071576e-06,
+      "CPU_Float_then_Half_CPU_Half_relative_RMS": 5.513506700422688e-06,
+      "CPU_Float_then_Half_bits_equal_CPU_Half": false,
+      "native_max_abs_error": 0.001953125,
+      "Float_variant_max_abs_error": 0.001953125,
+      "same_actual_Half_inputs_and_params_unchanged": true
+    },
+    "blocks.0.norm2": {
+      "kind": "layer_norm",
+      "approximate": null,
+      "native_CPU_Half_relative_RMS": 6.274421675463399e-06,
+      "NPU_Float_then_Half_CPU_Half_relative_RMS": 6.274421675463399e-06,
+      "CPU_Float_then_Half_CPU_Half_relative_RMS": 5.5740334460196265e-06,
+      "CPU_Float_then_Half_bits_equal_CPU_Half": false,
+      "native_max_abs_error": 0.001953125,
+      "Float_variant_max_abs_error": 0.001953125,
+      "same_actual_Half_inputs_and_params_unchanged": true
+    },
+    "blocks.0.mlp.act_fn": {
+      "kind": "gelu",
+      "approximate": "tanh",
+      "native_CPU_Half_relative_RMS": 5.093626416938087e-06,
+      "NPU_Float_then_Half_CPU_Half_relative_RMS": 5.093626416938087e-06,
+      "CPU_Float_then_Half_CPU_Half_relative_RMS": 8.73826348534098e-06,
+      "CPU_Float_then_Half_bits_equal_CPU_Half": false,
+      "native_max_abs_error": 3.0517578125e-05,
+      "Float_variant_max_abs_error": 3.0517578125e-05,
+      "same_actual_Half_inputs_and_params_unchanged": true
+    },
+    "deepstack_merger_list.0.norm": {
+      "kind": "layer_norm",
+      "approximate": null,
+      "native_CPU_Half_relative_RMS": 6.952311295461498e-06,
+      "NPU_Float_then_Half_CPU_Half_relative_RMS": 6.952311295461498e-06,
+      "CPU_Float_then_Half_CPU_Half_relative_RMS": 4.415985500307758e-06,
+      "CPU_Float_then_Half_bits_equal_CPU_Half": false,
+      "native_max_abs_error": 0.0078125,
+      "Float_variant_max_abs_error": 0.0078125,
+      "same_actual_Half_inputs_and_params_unchanged": true
+    },
+    "deepstack_merger_list.0.act_fn": {
+      "kind": "gelu",
+      "approximate": "none",
+      "native_CPU_Half_relative_RMS": 0.000433182267827292,
+      "NPU_Float_then_Half_CPU_Half_relative_RMS": 0.000433182267827292,
+      "CPU_Float_then_Half_CPU_Half_relative_RMS": 1.1342262833457119e-06,
+      "CPU_Float_then_Half_bits_equal_CPU_Half": false,
+      "native_max_abs_error": 0.001953125,
+      "Float_variant_max_abs_error": 0.001953125,
+      "same_actual_Half_inputs_and_params_unchanged": true
+    },
+    "merger.norm": {
+      "kind": "layer_norm",
+      "approximate": null,
+      "native_CPU_Half_relative_RMS": 7.402893176776468e-06,
+      "NPU_Float_then_Half_CPU_Half_relative_RMS": 7.402893176776468e-06,
+      "CPU_Float_then_Half_CPU_Half_relative_RMS": 5.6636582375925534e-06,
+      "CPU_Float_then_Half_bits_equal_CPU_Half": false,
+      "native_max_abs_error": 0.001953125,
+      "Float_variant_max_abs_error": 0.001953125,
+      "same_actual_Half_inputs_and_params_unchanged": true
+    },
+    "merger.act_fn": {
+      "kind": "gelu",
+      "approximate": "none",
+      "native_CPU_Half_relative_RMS": 0.0003097707122795202,
+      "NPU_Float_then_Half_CPU_Half_relative_RMS": 0.0003097707122795202,
+      "CPU_Float_then_Half_CPU_Half_relative_RMS": 2.8893489291493057e-07,
+      "CPU_Float_then_Half_bits_equal_CPU_Half": false,
+      "native_max_abs_error": 0.001953125,
+      "Float_variant_max_abs_error": 0.001953125,
+      "same_actual_Half_inputs_and_params_unchanged": true
+    }
+  },
+  "full_vision_cases": {
+    "native": {
+      "CPU_entry_reset": false,
+      "merged_relative_RMS": 0.01456805331761072,
+      "merged_max_abs_error": 0.7109375,
+      "DeepStack_relative_RMS": [
+        0.0028199652530662587,
+        0.005658125875455447,
+        0.009088246005155962
+      ],
+      "resident_vision_median_s": 1.4764212099835277,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": false,
+      "repeat_bits": true
+    },
+    "CPU_entry_only": {
+      "CPU_entry_reset": true,
+      "merged_relative_RMS": 0.014165306794176342,
+      "merged_max_abs_error": 0.9140625,
+      "DeepStack_relative_RMS": [
+        0.002660528810497403,
+        0.005258751919912835,
+        0.008455898661628682
+      ],
+      "resident_vision_median_s": 1.7975984499789774,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": true,
+      "repeat_bits": true
+    },
+    "CPU_entry_bias": {
+      "CPU_entry_reset": true,
+      "merged_relative_RMS": 0.007067146866218414,
+      "merged_max_abs_error": 0.40625,
+      "DeepStack_relative_RMS": [
+        0.0015331271731186776,
+        0.002712613299716576,
+        0.004765616561254975
+      ],
+      "resident_vision_median_s": 1.8265247899107635,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": true,
+      "repeat_bits": true
+    },
+    "Float_norm_only": {
+      "CPU_entry_reset": false,
+      "merged_relative_RMS": 0.01456805331761072,
+      "merged_max_abs_error": 0.7109375,
+      "DeepStack_relative_RMS": [
+        0.0028199652530662587,
+        0.005658125875455447,
+        0.009088246005155962
+      ],
+      "resident_vision_median_s": 1.4899904201738536,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": false,
+      "repeat_bits": true
+    },
+    "Float_GELU_only": {
+      "CPU_entry_reset": false,
+      "merged_relative_RMS": 0.01456805331761072,
+      "merged_max_abs_error": 0.7109375,
+      "DeepStack_relative_RMS": [
+        0.0028199652530662587,
+        0.005658125875455447,
+        0.009088246005155962
+      ],
+      "resident_vision_median_s": 1.4944017501547933,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": false,
+      "repeat_bits": true
+    },
+    "Float_norm_and_GELU": {
+      "CPU_entry_reset": false,
+      "merged_relative_RMS": 0.01456805331761072,
+      "merged_max_abs_error": 0.7109375,
+      "DeepStack_relative_RMS": [
+        0.0028199652530662587,
+        0.005658125875455447,
+        0.009088246005155962
+      ],
+      "resident_vision_median_s": 1.5081764901988208,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": false,
+      "repeat_bits": true
+    },
+    "Float_norm_GELU_bias": {
+      "CPU_entry_reset": false,
+      "merged_relative_RMS": 0.012887294160849183,
+      "merged_max_abs_error": 1.0625,
+      "DeepStack_relative_RMS": [
+        0.002198462223910018,
+        0.004358795317185865,
+        0.007332098152707717
+      ],
+      "resident_vision_median_s": 1.5341415801085532,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": false,
+      "repeat_bits": true
+    },
+    "CPU_entry_norm_GELU_bias": {
+      "CPU_entry_reset": true,
+      "merged_relative_RMS": 0.007067146866218414,
+      "merged_max_abs_error": 0.40625,
+      "DeepStack_relative_RMS": [
+        0.0015331271731186776,
+        0.002712613299716576,
+        0.004765616561254975
+      ],
+      "resident_vision_median_s": 1.8380329902283847,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": true,
+      "repeat_bits": true
+    },
+    "patch_bias_only": {
+      "CPU_entry_reset": false,
+      "merged_relative_RMS": 0.014218038856558165,
+      "merged_max_abs_error": 0.890625,
+      "DeepStack_relative_RMS": [
+        0.002636318980508556,
+        0.005212295303725653,
+        0.008446683553433086
+      ],
+      "resident_vision_median_s": 1.3716646200045943,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": false,
+      "repeat_bits": true
+    },
+    "patch_and_linear_bias": {
+      "CPU_entry_reset": false,
+      "merged_relative_RMS": 0.0072464766718495196,
+      "merged_max_abs_error": 0.484375,
+      "DeepStack_relative_RMS": [
+        0.001536080515411984,
+        0.0027890138825403597,
+        0.004770685379550933
+      ],
+      "resident_vision_median_s": 1.3814769200980663,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": false,
+      "repeat_bits": true
+    },
+    "patch_norm_GELU_linearbias": {
+      "CPU_entry_reset": false,
+      "merged_relative_RMS": 0.0072464766718495196,
+      "merged_max_abs_error": 0.484375,
+      "DeepStack_relative_RMS": [
+        0.001536080515411984,
+        0.0027890138825403597,
+        0.004770685379550933
+      ],
+      "resident_vision_median_s": 1.397526829969138,
+      "not_full_encoder_or_speed_candidate_when_CPU_entry_reset": false,
+      "repeat_bits": true
+    }
+  },
+  "all_raw27_cases_finite_and_repeated": true,
+  "native_and_original_parameter_input_CPUgold_recovery_verified": true,
+  "CPU_entry_NPU_transfer_bit_exact_and_SHA_unchanged": true,
+  "rebase_calls": 12,
+  "R88_slow_attention_disabled": true,
+  "nonlinear_final": {
+    "round": 89,
+    "installed": true,
+    "modes": {
+      "norm": false,
+      "gelu": false
+    },
+    "norm_modules_patched": 58,
+    "gelu_modules_patched": 31,
+    "original_bound_methods_captured": 89,
+    "patched_module_names": [
+      "blocks.0.mlp.act_fn",
+      "blocks.0.norm1",
+      "blocks.0.norm2",
+      "blocks.1.mlp.act_fn",
+      "blocks.1.norm1",
+      "blocks.1.norm2",
+      "blocks.10.mlp.act_fn",
+      "blocks.10.norm1",
+      "blocks.10.norm2",
+      "blocks.11.mlp.act_fn",
+      "blocks.11.norm1",
+      "blocks.11.norm2",
+      "blocks.12.mlp.act_fn",
+      "blocks.12.norm1",
+      "blocks.12.norm2",
+      "blocks.13.mlp.act_fn",
+      "blocks.13.norm1",
+      "blocks.13.norm2",
+      "blocks.14.mlp.act_fn",
+      "blocks.14.norm1",
+      "blocks.14.norm2",
+      "blocks.15.mlp.act_fn",
+      "blocks.15.norm1",
+      "blocks.15.norm2",
+      "blocks.16.mlp.act_fn",
+      "blocks.16.norm1",
+      "blocks.16.norm2",
+      "blocks.17.mlp.act_fn",
+      "blocks.17.norm1",
+      "blocks.17.norm2",
+      "blocks.18.mlp.act_fn",
+      "blocks.18.norm1",
+      "blocks.18.norm2",
+      "blocks.19.mlp.act_fn",
+      "blocks.19.norm1",
+      "blocks.19.norm2",
+      "blocks.2.mlp.act_fn",
+      "blocks.2.norm1",
+      "blocks.2.norm2",
+      "blocks.20.mlp.act_fn",
+      "blocks.20.norm1",
+      "blocks.20.norm2",
+      "blocks.21.mlp.act_fn",
+      "blocks.21.norm1",
+      "blocks.21.norm2",
+      "blocks.22.mlp.act_fn",
+      "blocks.22.norm1",
+      "blocks.22.norm2",
+      "blocks.23.mlp.act_fn",
+      "blocks.23.norm1",
+      "blocks.23.norm2",
+      "blocks.24.mlp.act_fn",
+      "blocks.24.norm1",
+      "blocks.24.norm2",
+      "blocks.25.mlp.act_fn",
+      "blocks.25.norm1",
+      "blocks.25.norm2",
+      "blocks.26.mlp.act_fn",
+      "blocks.26.norm1",
+      "blocks.26.norm2",
+      "blocks.3.mlp.act_fn",
+      "blocks.3.norm1",
+      "blocks.3.norm2",
+      "blocks.4.mlp.act_fn",
+      "blocks.4.norm1",
+      "blocks.4.norm2",
+      "blocks.5.mlp.act_fn",
+      "blocks.5.norm1",
+      "blocks.5.norm2",
+      "blocks.6.mlp.act_fn",
+      "blocks.6.norm1",
+      "blocks.6.norm2",
+      "blocks.7.mlp.act_fn",
+      "blocks.7.norm1",
+      "blocks.7.norm2",
+      "blocks.8.mlp.act_fn",
+      "blocks.8.norm1",
+      "blocks.8.norm2",
+      "blocks.9.mlp.act_fn",
+      "blocks.9.norm1",
+      "blocks.9.norm2",
+      "deepstack_merger_list.0.act_fn",
+      "deepstack_merger_list.0.norm",
+      "deepstack_merger_list.1.act_fn",
+      "deepstack_merger_list.1.norm",
+      "deepstack_merger_list.2.act_fn",
+      "deepstack_merger_list.2.norm",
+      "merger.act_fn",
+      "merger.norm"
+    ],
+    "structure": {
+      "blocks": 27,
+      "merger_modules": 4,
+      "norm_modules": 58,
+      "gelu_modules": 31,
+      "norm_class": "_NpuBF16CompatibleLayerNorm",
+      "norm_eps": 1e-06,
+      "norm_normalized_shape_counts": {
+        "1152": 55,
+        "4608": 3
+      },
+      "gelu_approximate_counts": {
+        "none": 4,
+        "tanh": 27
+      },
+      "other_layernorm_modules": []
+    },
+    "per_instance_forward_only": true,
+    "patches_torch_global": false,
+    "patches_torch_functional": false,
+    "patches_biased_linears_or_conv": false,
+    "cached_float_weights": false,
+    "float_gamma_bias_derived_per_call": true,
+    "norm_eps_untouched": true,
+    "norm_normalized_shape_untouched": true,
+    "gelu_approximate_preserved_per_module": true,
+    "strict_half_and_device_guard": true,
+    "guard_checks": 1780,
+    "forward_calls": {
+      "norm": 1160,
+      "gelu": 620
+    },
+    "disabled_is_exact_native": true,
+    "single_cast_to_operand_dtype_after_float_op": true,
+    "numerical_tolerance": null,
+    "full_encoder_precision_accepted": false,
+    "whole_goal_complete": false
+  },
+  "bias_final": {
+    "enabled": false,
+    "cached_weights": 116,
+    "kernel_shapes": [
+      "(8064, 1152, 3456)",
+      "(8064, 1152, 1152)",
+      "(8064, 1152, 4352)",
+      "(8064, 4352, 1152)",
+      "(2016, 4608, 4608)",
+      "(2016, 4608, 5120)"
+    ],
+    "calls": 2320,
+    "kernel_launches": 2320,
+    "padding_controls": 0,
+    "packed_Half_weight_bytes": 1186725888,
+    "FP32_bias_cache_bytes": 1247744,
+    "FP32_weight_shadows": 0,
+    "one_Half_cast_inside_kernel_after_FP32_bias": true,
+    "source_sha256": "8393f6b9c379e0df8cc3c1393ff2b839dab4c535fddd4be14782cec615c8db19"
+  },
+  "actual_patch_onecast_GEMM": {
+    "same_original_Half_weight_bias": true,
+    "controls": {
+      "original_Half_flatten_prefix_bit_exact": true,
+      "no_M_K_N_padding_needed": true,
+      "native_Conv_kernel_equals_stride_and_one_output_voxel": true,
+      "geometry": {
+        "M": 8064,
+        "K": 1536,
+        "N": 1152
+      }
+    },
+    "custom_vs_original_CPU_Half_Conv3d": {
+      "npu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "a619121303668c1f7156df1b6840f8751f1c637d916acc3b1077154a0daf1df0",
+        "finite": true,
+        "max_abs": 6.43359375
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "b56b7308a7642af20542b43ed928dc8a80dde7818e4c3a04636fac5d7aa4bb23",
+        "finite": true,
+        "max_abs": 6.43359375
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 9289728,
+      "max_abs_error": 0.00048828125,
+      "RMSE": 9.181253165229675e-07,
+      "relative_rms": 2.457961515627521e-06
+    },
+    "custom_vs_CPU_Half_flattenLinear": {
+      "npu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "a619121303668c1f7156df1b6840f8751f1c637d916acc3b1077154a0daf1df0",
+        "finite": true,
+        "max_abs": 6.43359375
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          1152
+        ],
+        "dtype": "torch.float16",
+        "bytes": 18579456,
+        "sha256": "56d6541ca18cbea26ce0df3970a8ab056fd2d8d7b4cc02a447117dea0465a170",
+        "finite": true,
+        "max_abs": 6.43359375
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 9289728,
+      "max_abs_error": 0.00048828125,
+      "RMSE": 2.6547285907495125e-07,
+      "relative_rms": 7.107113429542127e-07
+    }
+  },
+  "patch_final": {
+    "enabled": false,
+    "kernel_launches": 14,
+    "geometry": {
+      "M": 8064,
+      "K": 1536,
+      "N": 1152
+    },
+    "packed_Half_weight_bytes": 3538944,
+    "Float_bias_bytes": 4608,
+    "Float_weight_shadow": false,
+    "one_Half_cast_after_Float_bias": true,
+    "no_convolution_parameter_change": true,
+    "source_sha256": "2eb5ff1b6ac741d3bb27e523524a917aeebda791525ac23dffb20b906d45e7f2",
+    "kernel_name": "vision_bias87_m8064_k1536_n1152_mb128_nb128_kb128_c30",
+    "kernel_object_SHA256": "5d31cb2ca0b78c86745356146b200d66b637e7e36f8b13cc1fe1e674f3cf017d"
+  },
+  "initial_failed_inference_context_call_preserved_and_CPU_block0_identical_to_fixed_run": true,
+  "numerical_tolerance": null,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "frozen_payload_remote": "/tmp/h3_round89_vision02/CPUEntryAndActualLeaves89.pt",
+  "frozen_inputs_SHA256": "97f80014b35abdae2af45fc0fcabc3577d5260b025e299192439012c81a697ef",
+  "actual_receipt_SHA256": "c7303492898890b778f7d787ffc1dba5babd58f8eee7f266aa7f5d701616689f"
+}
