@@ -1,5 +1,12 @@
 # Round83 — resumed FP16 kernel implementation
 
+> **Later shape correction:** [Round84 official checkpoint verification](<../round84/actual_shape_receipt_fixed84.json>)
+> confirms MLP intermediate size25600 and TP8 K3200,not the K3456 assumed in
+> this round's planning. The preserved K3456 measurements remain valid generic
+> GEMM experiments,but are not this model's actual MLP shape. The corrected
+> [real TP8 A/B experiment](<../round84/README.md>) ran all50 layers and reports
+> its remaining precision and latency gaps without accepting the whole graph.
+
 The direct human “继续吧” request rearmedthepersisted goal atrevision16.
 The [preflight](<preflight83.json>) verified the unchangedCPUFP16reference,
 immutable proven runtime library and absenceof prior model/NPUworkers.

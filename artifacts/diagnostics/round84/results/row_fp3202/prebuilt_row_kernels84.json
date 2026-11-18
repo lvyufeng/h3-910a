@@ -1,0 +1,297 @@
+{
+  "scope": "Prebuild two verified row-GEMM binaries once before eight-rank model loading.\n\nSource-only setup. This script compiles but launches no kernel and changes no\nmodel weights or production code. Each model rank still verifies the objects.\n",
+  "kernel_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+  "objects": [
+    {
+      "round": 83,
+      "scope": "blocked FP16xFP16 -> FP32 L0C -> FP32 GM;no bias;no Half partial",
+      "executed": false,
+      "compiled_now": true,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30",
+      "kernel_symbol": "blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round84_row_fp3202/kernels/blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30/blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "d95c18ca6bee4475a42d60927320372272b96d80c97a9de38251f01eb687e98a",
+      "json_path": "/tmp/h3_round84_row_fp3202/kernels/blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30/blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30.json",
+      "source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "m": 2043,
+        "k": 1024,
+        "n": 5120
+      },
+      "padded_shape": {
+        "m_pad": 2048,
+        "k1": 64,
+        "n1": 320
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 16,
+        "n_tiles": 40,
+        "tasks": 640,
+        "cores": 30,
+        "steps": 22
+      },
+      "gm_shapes": {
+        "a": [
+          64,
+          2048,
+          16
+        ],
+        "b": [
+          64,
+          5120,
+          16
+        ],
+        "c": [
+          320,
+          2048,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 2097152,
+        "b": 5242880,
+        "c": 10485760
+      },
+      "gm_bytes": {
+        "a": 4194304,
+        "b": 10485760,
+        "c": 41943040
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 4992,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 3840
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 8,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ]
+    },
+    {
+      "round": 83,
+      "scope": "blocked FP16xFP16 -> FP32 L0C -> FP32 GM;no bias;no Half partial",
+      "executed": false,
+      "compiled_now": true,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "blocked_dynamic83_m2043_k3200_n5120_mb128_nb128_kb128_c30",
+      "kernel_symbol": "blocked_dynamic83_m2043_k3200_n5120_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round84_row_fp3202/kernels/blocked_dynamic83_m2043_k3200_n5120_mb128_nb128_kb128_c30/blocked_dynamic83_m2043_k3200_n5120_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "1f6a79943c3c249ccc6f6c46f9227c60941c26ccc44c0bcbfa46c59f0b43e9a4",
+      "json_path": "/tmp/h3_round84_row_fp3202/kernels/blocked_dynamic83_m2043_k3200_n5120_mb128_nb128_kb128_c30/blocked_dynamic83_m2043_k3200_n5120_mb128_nb128_kb128_c30.json",
+      "source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "m": 2043,
+        "k": 3200,
+        "n": 5120
+      },
+      "padded_shape": {
+        "m_pad": 2048,
+        "k1": 200,
+        "n1": 320
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 16,
+        "n_tiles": 40,
+        "tasks": 640,
+        "cores": 30,
+        "steps": 22
+      },
+      "gm_shapes": {
+        "a": [
+          200,
+          2048,
+          16
+        ],
+        "b": [
+          200,
+          5120,
+          16
+        ],
+        "c": [
+          320,
+          2048,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 6553600,
+        "b": 16384000,
+        "c": 10485760
+      },
+      "gm_bytes": {
+        "a": 13107200,
+        "b": 32768000,
+        "c": 41943040
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 4992,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 3840
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 25,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ]
+    }
+  ],
+  "kernel_launch_executed": false
+}

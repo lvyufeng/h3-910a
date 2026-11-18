@@ -1,0 +1,271 @@
+{
+  "scope": "Verify the actual attention row-projection shape before R84 TP8 graph integration.\n\nActual CPU Half Linear remains the numerical reference;FP32 Linear is only an\naccumulator diagnostic. Cached weight packing is reported separately. Resident\nGPU end-to-end timings include A packing and FP32-output unpacking,not model\nstartup and not the whole encoder. No Half narrowing occurs inside the kernel.\n",
+  "case": "o_row",
+  "logical_geometry": {
+    "M": 2043,
+    "K": 1024,
+    "N": 5120
+  },
+  "padded_M": 2048,
+  "source_sha256": "9770962f3dcb1ce04be7a9618afd8549121e38ed03a377b494033d3f5fa24205",
+  "kernel_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+  "kernel_launch_executed": true,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "not_whole_encoder_timing": true,
+  "precision_acceptance_threshold_chosen": null,
+  "predeclared_wrong_layout_guard_RMS": 0.01,
+  "excluded_CPU_reference_s": 1.3563260198570788,
+  "CPU_reference_operator": "torch.nn.functional.linear(Half input,Half weight),no bias",
+  "FP32_CPU_is_accumulator_diagnostic_not_teacher": true,
+  "build": {
+    "round": 83,
+    "scope": "blocked FP16xFP16 -> FP32 L0C -> FP32 GM;no bias;no Half partial",
+    "executed": false,
+    "compiled_now": true,
+    "not_a_speed_claim": true,
+    "not_h3_end_to_end_result": true,
+    "full_encoder_precision_accepted": false,
+    "kernel_name": "blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30",
+    "kernel_symbol": "blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30__kernel0",
+    "block_dim": 30,
+    "core_type": "AiCore",
+    "obj_path": "/tmp/h3_round84_o_row01/kernels/blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30/blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30.o",
+    "obj_sha256": "d95c18ca6bee4475a42d60927320372272b96d80c97a9de38251f01eb687e98a",
+    "json_path": "/tmp/h3_round84_o_row01/kernels/blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30/blocked_dynamic83_m2043_k1024_n5120_mb128_nb128_kb128_c30.json",
+    "source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+    "dtype": "float16_in_float32_out",
+    "dst_dtype": "float32",
+    "uses_fp32_bias": false,
+    "input_dtype": "float16",
+    "accumulator_dtype": "float32",
+    "output_dtype": "float32",
+    "kernel_arg_order": [
+      "a_gm_float16",
+      "b_gm_float16",
+      "aux0_gm_float16",
+      "aux1_gm_float16",
+      "c_gm_float32"
+    ],
+    "GM_argument_count": 5,
+    "logical_shape": {
+      "m": 2043,
+      "k": 1024,
+      "n": 5120
+    },
+    "padded_shape": {
+      "m_pad": 2048,
+      "k1": 64,
+      "n1": 320
+    },
+    "tiles": {
+      "mb": 128,
+      "nb": 128,
+      "kb": 128
+    },
+    "grid": {
+      "m_tiles": 16,
+      "n_tiles": 40,
+      "tasks": 640,
+      "cores": 30,
+      "steps": 22
+    },
+    "gm_shapes": {
+      "a": [
+        64,
+        2048,
+        16
+      ],
+      "b": [
+        64,
+        5120,
+        16
+      ],
+      "c": [
+        320,
+        2048,
+        16
+      ],
+      "aux": [
+        16
+      ]
+    },
+    "gm_elems": {
+      "a": 2097152,
+      "b": 5242880,
+      "c": 10485760
+    },
+    "gm_bytes": {
+      "a": 4194304,
+      "b": 10485760,
+      "c": 41943040
+    },
+    "dma": {
+      "a_load": {
+        "nburst": 8,
+        "burst": 128,
+        "src_stride": 1920,
+        "dst_stride": 0
+      },
+      "b_load": {
+        "nburst": 8,
+        "burst": 128,
+        "src_stride": 4992,
+        "dst_stride": 0
+      },
+      "c_store": {
+        "nburst": 8,
+        "burst": 256,
+        "src_stride": 0,
+        "dst_stride": 3840
+      },
+      "l0c_to_ub": {
+        "block_mode": "m",
+        "nburst": 1,
+        "burst_len_kb": 64
+      }
+    },
+    "buffers": {
+      "l1_a_bytes": 32768,
+      "l1_b_bytes": 32768,
+      "l0c_bytes": 65536,
+      "ub_bytes": 65536
+    },
+    "accumulation": {
+      "k_tiles": 8,
+      "single_l0c_across_all_k_blocks": true,
+      "init_first_k_block_only": true,
+      "half_partial": false,
+      "fp32_ub_partial_sum": false,
+      "final_output_dtype": "float32"
+    },
+    "capability": {
+      "compile_soc": "Ascend910B",
+      "runtime_expected_soc": "Ascend910B",
+      "Intrinsic_mmad_f162f32": true,
+      "core_num": 30,
+      "l1_size": 1048576,
+      "l0c_size": 262144,
+      "ub_size": 262144
+    },
+    "suggested_smoke_geometry": [
+      128,
+      256,
+      128
+    ],
+    "no_bias_operand": true,
+    "no_fp32_weight_shadow": true,
+    "host_packing_required": [
+      "pack_a",
+      "pack_w"
+    ],
+    "host_unpacking_required": [
+      "unpack_c"
+    ]
+  },
+  "excluded_build_s": 3.4916531797498465,
+  "excluded_weight_pack_s": 9.323024479672313,
+  "cached_Half_weight_bytes": 10485760,
+  "padded_output_rows_max_abs": 0.0,
+  "kernel_FP32_vs_accumulator_diagnostic": {
+    "dtype": "torch.float32",
+    "shape": [
+      2043,
+      5120
+    ],
+    "finite": true,
+    "raw_bits_equal": false,
+    "max_abs_error": 6.67572021484375e-06,
+    "RMSE": 4.6489056840023326e-07,
+    "relative_RMS": 5.814966852495928e-07,
+    "sha256": "6449b8159a54fc64b1945bbe86608bd21df0112a17b378cf0744e92168bcdd46",
+    "reference_sha256": "0709180caf45635ee95faf26c0cdb34aebd84f30cd6c2ad9e5ac2b8fe4c69c1b"
+  },
+  "kernel_final_Half_vs_CPU_Half": {
+    "dtype": "torch.float16",
+    "shape": [
+      2043,
+      5120
+    ],
+    "finite": true,
+    "raw_bits_equal": false,
+    "max_abs_error": 0.001953125,
+    "RMSE": 7.284912193991004e-06,
+    "relative_RMS": 9.11214915014706e-06,
+    "sha256": "9a51f5ec5afcca5c6b5d25697b041a0cd1ccb0e0692c9232394796bdf2621812",
+    "reference_sha256": "e8fac1d5f2c6ac97251dd3e7bb7c57deda2c2cacfff27ffb555943bb33335caa"
+  },
+  "native_Half_vs_CPU_Half": {
+    "dtype": "torch.float16",
+    "shape": [
+      2043,
+      5120
+    ],
+    "finite": true,
+    "raw_bits_equal": false,
+    "max_abs_error": 0.001953125,
+    "RMSE": 7.284912193991004e-06,
+    "relative_RMS": 9.11214915014706e-06,
+    "sha256": "9a51f5ec5afcca5c6b5d25697b041a0cd1ccb0e0692c9232394796bdf2621812",
+    "reference_sha256": "e8fac1d5f2c6ac97251dd3e7bb7c57deda2c2cacfff27ffb555943bb33335caa"
+  },
+  "kernel_repeat_vs_first": {
+    "dtype": "torch.float32",
+    "shape": [
+      2043,
+      5120
+    ],
+    "finite": true,
+    "raw_bits_equal": true,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_RMS": 0.0,
+    "sha256": "6449b8159a54fc64b1945bbe86608bd21df0112a17b378cf0744e92168bcdd46",
+    "reference_sha256": "6449b8159a54fc64b1945bbe86608bd21df0112a17b378cf0744e92168bcdd46"
+  },
+  "native_repeat_vs_first": {
+    "dtype": "torch.float16",
+    "shape": [
+      2043,
+      5120
+    ],
+    "finite": true,
+    "raw_bits_equal": true,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_RMS": 0.0,
+    "sha256": "9a51f5ec5afcca5c6b5d25697b041a0cd1ccb0e0692c9232394796bdf2621812",
+    "reference_sha256": "9a51f5ec5afcca5c6b5d25697b041a0cd1ccb0e0692c9232394796bdf2621812"
+  },
+  "original_inputs_and_weights_unchanged": true,
+  "packed_kernel_only_s": [
+    0.0006113797426223755,
+    0.0004654400981962681,
+    0.0004539596848189831
+  ],
+  "resident_end_to_end_with_A_pack_and_output_unpack_s": [
+    0.0008971500210464001,
+    0.0007271701470017433,
+    0.000730419997125864
+  ],
+  "resident_native_Half_Linear_s": [
+    0.0006317798979580402,
+    0.0003368002362549305,
+    0.0003410899080336094
+  ],
+  "medians_s": {
+    "packed_kernel": 0.0004654400981962681,
+    "resident_with_layouts": 0.000730419997125864,
+    "native_Half": 0.0003410899080336094
+  },
+  "native_returns_Half_while_custom_retains_FP32": true,
+  "runtime": {
+    "library": "/tmp/libfa910a.so",
+    "library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+    "registered_kernels": 1,
+    "ABI": "fiveGMpointers",
+    "current_stream": "torch.npu.current_stream().npu_stream",
+    "no_production_launcher_modified": true
+  },
+  "completed": true
+}

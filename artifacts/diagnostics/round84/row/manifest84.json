@@ -1,0 +1,142 @@
+{
+  "round": 84,
+  "task": "task-24",
+  "owner": "row84-fresh",
+  "kind": "private FP32 row-parallel partial adapter (source only)",
+  "scope": "artifacts/diagnostics/round84/row",
+  "files": {
+    "row_fp32_adapter84.py": {
+      "bytes": 53377,
+      "sha256": "b93de2a2275ec2af39207fb57d8ce714f9a1d6adf695029ac6b77c89e979ec99",
+      "role": "the adapter under test"
+    },
+    "test_row_adapter84.py": {
+      "bytes": 19074,
+      "sha256": "a93aef944cf67bd1e07d55fccfea50ccc0043da8c7ef8adb7cd1696d783ef81f",
+      "role": "stdlib-only source-pin, shape, signature and gating tests"
+    }
+  },
+  "compiled": false,
+  "executed_on_npu": false,
+  "no_ssh_or_remote_command": true,
+  "no_model_run": true,
+  "no_installation": true,
+  "no_production_files_modified": true,
+  "no_git_commit": true,
+  "proves_precision": false,
+  "proves_speed": false,
+  "claims_h3_improvement": false,
+  "pinned": {
+    "round79_candidate_file_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "round79_row_forward_source_sha256": "9a10f625bef735cc937d3f02835838550ed4568e5bfd3e54d41354d4d1f1f4e3",
+    "round79_row_class_source_sha256": "3d4a55c57df3118a4e741502062d1c8fc0301b9adafca8e9d8594ca93b76c2b3",
+    "round83_kernel_module": "blocked_dynamic_steps83",
+    "round83_kernel_module_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+    "round83_runtime_module": "runtime5gm83",
+    "round83_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+    "round83_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043"
+  },
+  "geometry": {
+    "sequence_length": 2043,
+    "padded_M": 2048,
+    "padded_M_rows": 5,
+    "world_size": 8,
+    "expected_row_weight_count": 100,
+    "layers_per_shape": 50,
+    "supported_shapes": [
+      [
+        1024,
+        5120
+      ],
+      [
+        3456,
+        5120
+      ]
+    ],
+    "supported_shape_source": "attention o_proj (8192/8) and MLP down_proj (27648/8), both to hidden 5120"
+  },
+  "memory_contract": {
+    "cached_packed_weight_formula": "50 * (5120*1024 + 5120*3456) * 2",
+    "cached_packed_weight_bytes_per_rank": 2293760000,
+    "cached_dtype": "float16",
+    "fp32_weight_shadows": 0,
+    "scratch_bytes_total": 102236192,
+    "scratch_breakdown": "A(1024)=4194304 + A(3456)=14155776 + C(N5120) x2 = 83886080 + 4 aux x32"
+  },
+  "api": {
+    "install": "install(candidate, runtime, kernel_dir, *, sequence_length=2043, expected_world_size=8, expected_layer_count=100, verify_sources=True, allow_stream_switch=False) -> RowFp32Adapter (enabled False)",
+    "alias": "install_row == install (the root driver imports install_row)",
+    "prime": "adapter.prime(encoder.text_model) -> metadata dict (after parameters are loaded and moved)",
+    "controls": "adapter.controls(sample_input=None, k_local=None) -> dict (optional pre-warm packing proof)",
+    "set_enabled": "adapter.set_enabled(bool)",
+    "snapshot": "adapter.snapshot() -> plain data (counters, dtypes, bytes, memory)",
+    "release_scratch": "adapter.release_scratch() -> frees activations, keeps weight caches",
+    "uninstall": "adapter.uninstall() -> restores the captured original forward, drops everything"
+  },
+  "enabled_path_order": [
+    "original Half activation, sharded exactly like the native forward when input_is_parallel is False",
+    "Half packed to (K1, Mp, 16) with the 5 padded M rows kept exactly zero",
+    "verified R83 kernel: Half x Half -> FP32 accumulator -> FP32 GM (no Half partial)",
+    "FP32 output unpacked to (tokens, N) then reshaped to the native (M,N) or (1,M,N)",
+    "the layer's own group.all_reduce on the FP32 partial (dtype asserted and counted both sides)",
+    "optional FP32 bias (inactive: H3 row layers are bias-free)",
+    "exactly one .to(layer.output_dtype) narrowing"
+  ],
+  "invariants_checked_by_tests": [
+    "candidate file, forward source and class source digests equal the pins",
+    "editing the candidate forward makes verification fail closed",
+    "Round83 kernel and runtime module files equal their pins",
+    "the pinned launcher library digest appears in the runtime module",
+    "the original forward really rounds before the collective (the defect being removed)",
+    "only (1024,5120) and (3456,5120) row geometries are accepted",
+    "only (M,K) and (1,M,K) activations with M == 2043 are accepted",
+    "output shape is (M,N) / (1,M,N), never a bare (N,)",
+    "padded M is ceil(2043/128)*128 = 2048 with 5 padding rows",
+    "logical data_ptr and storage_offset both participate in the weight signature",
+    "a _version bump changes the signature (mutated parameter fails closed)",
+    "install patches only the row class forward and starts disabled",
+    "disabled calls delegate to the captured original forward",
+    "enabled use before prime raises",
+    "uninstall restores the original forward and tolerates a third-party replacement",
+    "no module-scope torch/vllm import; importing the adapter loads no torch",
+    "no bfloat16, quantization API, subprocess/socket or clamping in the adapter",
+    "FP32 is asserted before and after the collective, before the single cast",
+    "the verified Round83 pack_a/pack_w/unpack_c helpers are reused, not reimplemented",
+    "the shared kernel dir is guarded by an flock and a torn spec file is repaired atomically",
+    "a cross-stream buffer reuse fails closed unless explicitly allowed"
+  ],
+  "tests": {
+    "runner": "python3 artifacts/diagnostics/round84/row/test_row_adapter84.py",
+    "count": 38,
+    "result": "OK",
+    "requires_torch": false,
+    "requires_vllm": false,
+    "requires_network": false
+  },
+  "not_established": [
+    "the adapter has never been imported on an NPU host in this task",
+    "the two kernels are not built here; the root prebuilds them",
+    "no numerics: the FP32-partial gain over the native rounded partial is unmeasured here",
+    "no timing: packing/unpacking/collective cost is unmeasured here",
+    "no full-encoder precision or speed claim",
+    "the FP32 bias branch is implemented but never exercised (H3 row layers have bias=False)"
+  ],
+  "root_verification_plan": [
+    "prebuild both kernels (K=1024/3456, N=5120, M=2043) into the shared kernel dir before the 8 ranks",
+    "install_row(...); set_enabled(False); prime(after load/move); assert prime metadata (100 layers, 2293760000 B, 2 kernels)",
+    "controls(sample_input=<real Half activation>, k_local=...) and require a_pack_matches_verified_helper and tail zeros",
+    "A/B: one layer disabled vs enabled vs repeat; then 50 layers with CPU inputs and a native reference",
+    "recall: after disabling, the full native path must recover its previous output hash",
+    "warm encode_ids with the adapter enabled and compare against the enabled run's own native reference",
+    "record snapshot() counters, cached weight bytes, device memory high-water and elapsed time",
+    "release the owned lease after all workers exit"
+  ],
+  "host_notes": {
+    "target": "owned ts-217, original 910B part, short TIK SoC Ascend910, 30 physical AI cores",
+    "cann": "9.2.0",
+    "python": "/home/mseco/vllm910a/bin/python",
+    "kernel_dir": "root-owned write-once /tmp/h3_round84_row_fp3201/kernels shared by all ranks"
+  },
+  "before_root_review_adapter_sha256": "eb75f43cdc52377d410fb0ceb1c644518db224257d8471038632982a8d98f839",
+  "root_review_correction": "Validate exact resolvedabsolute spec repair source/destination underkernelrootbeforeatomicmove;modelmath/packing/collectiveunchanged."
+}

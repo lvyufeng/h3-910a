@@ -1,0 +1,375 @@
+{
+  "scope": "Round84 real FP32 row-partial TP8 A/B driver for the Qwen3-VL layer-50 encoder.\n\nSTATUS: PREPARED SOURCE ONLY.  This file has never been executed on the NPU by\nits author.  Nothing here is a precision result, a speed result, or an\nofficial-lossless claim.  The root agent deploys it and runs it later under its\nown supervisor.\n\nWhat this driver does\n---------------------\n* Imports the Round79 generated candidate ``candidate_encoder79.py``\n  (SHA256 2141b29a...), which removes the three hardcoded BF16 I/O conversions\n  and restores the original-HF FP16 rounding order for RMSNorm / text M-RoPE /\n  vision position interpolation.  The candidate is byte-verified by path and\n  registered in ``sys.modules``; production code is never modified.\n* Runs the genuine 8-rank tensor-parallel graph: real BF16 checkpoint\n  parameters are loaded through the candidate's own TP-aware ``load_weights``\n  into uniform FP16 parameters, then the submodules move to ``npu:<rank>``.\n* Replaces exactly one module-level symbol,\n  ``candidate._scaled_dot_product_attention``, with an explicit causal\n  FP32-math helper (FP16 Q/K/V in -> FP32 scores, FP32 softmax, FP32 P@V ->\n  one FP16 out).  That mirrors the declared CPU reference baseline (PyTorch\n  ``SDPBackend.MATH``) and deliberately carries no ``+/-50000`` clamp, which is\n  a 910A-only construct with no CPU analogue.  It is a scoped assignment on an\n  isolated diagnostic module, NOT a global ``torch.nn.functional`` monkeypatch,\n  and nothing is installed into production.\n* Compares every measurable boundary against the independently recomputed CPU\n  FP16 reference (Round78): fresh vision + 3 DeepStack, vocabulary embedding,\n  text-model inputs (inputs_embeds / positions / visual_pos_masks /\n  deepstack_visual_embeds), all 50 raw pre-DeepStack decoder-layer boundary\n  hashes, and the selected-50 pre-final-norm hidden state.\n* Records 3 warmed full-forward timings per rank, each including the final\n  device->host copy of the hidden state.  The root takes the rank maximum\n  later; this driver never collapses ranks into a single number.\n* Repeats one more full forward and requires bit-level equality with the first\n  output, and requires parameters/inputs to hash unchanged.\n\nHonesty constraints baked into the receipt\n------------------------------------------\n* ``full_encoder_precision_accepted`` is always False.  No tolerance is chosen\n  here, before or after seeing the numbers; the numeric call belongs to the\n  root with the CPU gold in hand.\n* There is no ``numerical_pass`` field.  Only ``finite`` and\n  ``repeat_verified`` are asserted, because those are structural rather than\n  tolerance-based.\n* The known tensor-parallel deviation is recorded as a warning, never hidden:\n  a row-parallel projection rounds its FP16 partial GEMM output *before* the\n  FP32 all-reduce, and that collective cannot restore precision already\n  rounded away.  This driver measures the consequence; it does not fix it and\n  must not be described as fixed.\n* Timings are wall clock for this diagnostic graph.  They are NOT the\n  production ``encode_ids`` path and NOT an official benchmark.\n\nEntry-point shape contract\n--------------------------\nThe vocabulary embedding preserves the leading batch dimension: IDs shaped\n(1,seq) produce (1,seq,hidden). Text attention,MLP and residuals preserve that\nshape,so the bare tensor returned by text_model is still batched. The [0] in\n_encode removes the singleton batch correctly;it is NOT evidence of a defect.\nThe explicit diagnostic path retains the batch for boundary hooks. The actual\nstock encode_ids is probed and used for warm timing if its runtime checks pass;\nan observed exception is recorded without attributing it to an assumed shape bug.\n",
+  "source_sha256": "80e0c20952b2940d0c0394da4ac6abf5fa843bacdf52a8d0c23ccecb3b1aa0f5",
+  "rank": 3,
+  "world_size": 8,
+  "text_encoder_tp_size": 8,
+  "plan_only_no_model_run": false,
+  "prepared_source_never_executed_by_author": true,
+  "executed_by_root": true,
+  "numerical_threshold_chosen": null,
+  "numerical_pass_field_absent": true,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "timing_scope": "explicit _encode-equivalent full forward including final device->host copy",
+  "stock_encode_ids_timed": false,
+  "warnings": [],
+  "cases": {},
+  "language_layers": [],
+  "device": "npu:3",
+  "environment": {
+    "VLLM_OMNI_910A_TE_DTYPE": "half",
+    "VLLM_OMNI_910A_TEXT_FP32_LINEAR": "0",
+    "VLLM_OMNI_910A_TEXT_PAD_KV": "0",
+    "VLLM_OMNI_910A_VISION_FP32": "0"
+  },
+  "candidate": {
+    "path": "/tmp/h3_round84_row_fp3201/candidate_encoder79.py",
+    "sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "module_name": "candidate_encoder79",
+    "origin_production_sha256": null
+  },
+  "text_attention": {
+    "scope": "module-level candidate._scaled_dot_product_attention replacement",
+    "global_functional_monkeypatch": false,
+    "torch_nn_functional_replaced": false,
+    "operands": "FP16 Q/K/V in, FP32 scores, FP32 softmax, FP32 P@V, single FP16 out",
+    "causal": true,
+    "clamp_applied": false,
+    "clamp_note": "the 910A-only +/-50000 clamp of the production shim is deliberately absent; the CPU reference baseline has no such clamp",
+    "query_chunk": 512,
+    "query_chunk_note": "row-wise softmax is exactly decomposable; GEMM tiling differs from a single-shot FP32 matmul, so bit-equality with CPU is not asserted",
+    "original_reference": {
+      "module": "candidate_encoder79",
+      "qualname": "_scaled_dot_product_attention"
+    }
+  },
+  "kv_padding_before": {
+    "installed": true,
+    "primed": false,
+    "original_kv_rows": 128,
+    "padded_output_rows": 256,
+    "only_zero_output_rows_added": true,
+    "trailing_output_discarded": true,
+    "cache_entries": 0,
+    "expected_cache_entries": 100,
+    "cache_bytes": 0,
+    "padding_bytes": 0,
+    "pad_ratio": 2.0,
+    "max_abs_prefix_mismatch": 0.0,
+    "all_prefix_exact": true,
+    "tail_nonzero_count": 0,
+    "all_cached_padded_are_zero_offset": true,
+    "no_cached_padded_requires_grad": true,
+    "no_cached_padded_holds_autograd_graph": true,
+    "cached_prefix_sha256": null,
+    "param_signature_contract": "storage_data_ptr+storage_offset+shape+stride+dtype+device+_version",
+    "transform": {
+      "candidate_module": "candidate_encoder79",
+      "class_name": "MiniMaxH3Qwen3VLTextAttention",
+      "original_forward_source_sha256": "668456bf92d7ea2e8c3e0e1c0d623251d71ba3bb30dd9732385fd1b04256e397",
+      "transformed_source_sha256": "604442a074c5073836512615f6045041faa277c34d64ae43c26098931460bd5b",
+      "matched_calls": [
+        "k_weight",
+        "v_weight"
+      ],
+      "rewritten_call_count": 2,
+      "helper_name": "_r81_kv_linear",
+      "exec_namespace": "live_candidate_module_dict",
+      "module_namespace_left_behind": [
+        "_r81_kv_linear"
+      ],
+      "global_functional_patched": false,
+      "quantized_qkv_path_untouched": true,
+      "q_projection_untouched": true,
+      "mlp_untouched": true
+    },
+    "stats": {
+      "helper_calls": 0,
+      "padded_calls": 0,
+      "passthrough_calls": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "cache_evictions": 0
+    },
+    "not_executed_here": true,
+    "proves_full_encoder_precision": false
+  },
+  "cpu_reference_gate": {
+    "completed": true,
+    "full_multimodal_reference_completed": true,
+    "repeat_pre_final_norm_bits_equal": true,
+    "repeat_post_final_norm_bits_equal": true,
+    "pre_final_norm_matches_layer49_identity": true
+  },
+  "cpu_reference": {
+    "root": "/tmp/h3_round78_hf_fp1601",
+    "source_sha256": "50165e77adb393b4573fbe0fdb29c62a6ddb14b8f39082d0ea67e904848010ea",
+    "original_selected_parameter_sha256": "a69676bac5e6f3a513ce44080d29c73974553b6e0a327ea272e47b600d84e46e",
+    "boundary": "original HF selected-50 decoder layers, PRE final norm",
+    "vision_layers": 27,
+    "language_layers": 50,
+    "isolation": "recomputed original HF FP16 graph; old BF16 outputs were never cast to FP16"
+  },
+  "fixture": {
+    "path": "/tmp/h3_round54_capture01/encoder_input.pt",
+    "sha256": "ed099e792982f9cd37b67f2cff24443008683d0cc819d1decacabf55de1f4ebc",
+    "input_ids": {
+      "shape": [
+        2043
+      ],
+      "dtype": "torch.int64",
+      "bytes": 16344,
+      "sha256": "cb8b7bf9386dfe5a3eb3d6fb6dac360dfd948aa69e31947e915a90c58c8d6846",
+      "finite": true
+    },
+    "pixel_values": {
+      "shape": [
+        8064,
+        1536
+      ],
+      "dtype": "torch.float16",
+      "bytes": 24772608,
+      "sha256": "f6be7c840caf4eb52e164befc021b1e1a796703dff1289a934ede5cb757cc2aa",
+      "finite": true,
+      "max_abs": 0.7646484375
+    },
+    "image_grid_thw": [
+      [
+        1,
+        48,
+        84
+      ],
+      [
+        1,
+        48,
+        84
+      ]
+    ]
+  },
+  "group": {
+    "world_size": 8,
+    "backend": "hccl"
+  },
+  "row_adapter_initial": {
+    "round": 84,
+    "installed": true,
+    "enabled": false,
+    "primed": false,
+    "sequence_length": 2043,
+    "expected_world_size": 8,
+    "expected_layer_count": 100,
+    "kernel_dir": "/tmp/h3_round84_row_fp3201/kernels",
+    "stream_bound": false,
+    "stats": {
+      "calls_disabled": 0,
+      "calls_enabled": 0,
+      "calls_rejected": 0,
+      "kernel_launches": 0,
+      "fp32_collective_count": 0,
+      "fp32_dtype_before_collective": {},
+      "fp32_dtype_after_collective": {},
+      "half_cast_count": 0,
+      "bias_added_fp32_count": 0,
+      "single_rank_no_collective_calls": 0,
+      "kernel_shapes": {},
+      "stream_binds": 0,
+      "stream_conflicts": 0,
+      "pack_controls": 0,
+      "input_is_parallel_split": 0,
+      "enable_transitions": []
+    },
+    "weight_cache": {
+      "entries": 0,
+      "bytes": 0,
+      "hits": 0,
+      "misses": 0,
+      "mutations_detected": 0,
+      "roundtrip_verifications": 0
+    },
+    "scratch_bytes": 0,
+    "kernel_shapes_prepared": [],
+    "pinned": {
+      "round79_candidate_file_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+      "round79_row_forward_source_sha256": "9a10f625bef735cc937d3f02835838550ed4568e5bfd3e54d41354d4d1f1f4e3",
+      "round79_row_class_source_sha256": "3d4a55c57df3118a4e741502062d1c8fc0301b9adafca8e9d8594ca93b76c2b3",
+      "round83_kernel_module": "blocked_dynamic_steps83",
+      "round83_kernel_module_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "round83_runtime_module": "runtime5gm83",
+      "round83_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "round83_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043"
+    },
+    "one_cast_per_call": true,
+    "fp32_partial_through_collective": true,
+    "no_fp32_weight_shadow": true,
+    "no_bf16_compute": true,
+    "device_memory": {
+      "allocated_bytes": 0,
+      "reserved_bytes": 2097152,
+      "max_allocated_bytes": 512
+    }
+  },
+  "weight_load": {
+    "loaded_parameter_tensors": 752,
+    "cpu_load_s": 8.657586640212685,
+    "source_checkpoint_dtype": "torch.bfloat16",
+    "conversion": "deterministic BF16 storage -> FP16 parameter via copy_ in load_weights"
+  },
+  "boundary": {
+    "selected_lm_layer_constant": 50,
+    "retained_decoder_layers": 50,
+    "text_model_has_final_norm": false,
+    "cpu_reference_boundary": "original HF decoder layers 0..49, PRE final norm",
+    "matches_cpu_reference_boundary": true
+  },
+  "self_check": {
+    "compute_dtype": "torch.float16",
+    "io_dtype": "torch.float16",
+    "vision_patch_embed_dtype": "torch.float16",
+    "text_embedding_dtype": "torch.float16",
+    "parameter_dtype_counts": {
+      "torch.float16": 752
+    },
+    "fp16_mode": true
+  },
+  "vision_parameter_provenance": {
+    "checked": 351,
+    "matched": 351,
+    "mismatched": [],
+    "missing_cpu_reference": [],
+    "fully_verified": true
+  },
+  "self_check_after_move": {
+    "compute_dtype": "torch.float16",
+    "io_dtype": "torch.float16",
+    "vision_patch_embed_dtype": "torch.float16",
+    "text_embedding_dtype": "torch.float16",
+    "parameter_dtype_counts": {
+      "torch.float16": 752
+    },
+    "fp16_mode": true
+  },
+  "memory_before_row_cache_bytes": {
+    "allocated": 7758738944,
+    "reserved": 7784628224
+  },
+  "failure": {
+    "type": "RowAdapterError",
+    "message": "row-parallel geometry (K=3200, N=5120) is not one of the verified shapes [(1024, 5120), (3456, 5120)]"
+  },
+  "kv_padding_final": {
+    "installed": true,
+    "primed": true,
+    "original_kv_rows": 128,
+    "padded_output_rows": 256,
+    "only_zero_output_rows_added": true,
+    "trailing_output_discarded": true,
+    "cache_entries": 100,
+    "expected_cache_entries": 100,
+    "cache_bytes": 262144000,
+    "padding_bytes": 131072000,
+    "pad_ratio": 2.0,
+    "max_abs_prefix_mismatch": 0.0,
+    "all_prefix_exact": true,
+    "tail_nonzero_count": 0,
+    "all_cached_padded_are_zero_offset": true,
+    "no_cached_padded_requires_grad": true,
+    "no_cached_padded_holds_autograd_graph": true,
+    "cached_prefix_sha256": null,
+    "param_signature_contract": "storage_data_ptr+storage_offset+shape+stride+dtype+device+_version",
+    "transform": {
+      "candidate_module": "candidate_encoder79",
+      "class_name": "MiniMaxH3Qwen3VLTextAttention",
+      "original_forward_source_sha256": "668456bf92d7ea2e8c3e0e1c0d623251d71ba3bb30dd9732385fd1b04256e397",
+      "transformed_source_sha256": "604442a074c5073836512615f6045041faa277c34d64ae43c26098931460bd5b",
+      "matched_calls": [
+        "k_weight",
+        "v_weight"
+      ],
+      "rewritten_call_count": 2,
+      "helper_name": "_r81_kv_linear",
+      "exec_namespace": "live_candidate_module_dict",
+      "module_namespace_left_behind": [
+        "_r81_kv_linear"
+      ],
+      "global_functional_patched": false,
+      "quantized_qkv_path_untouched": true,
+      "q_projection_untouched": true,
+      "mlp_untouched": true
+    },
+    "stats": {
+      "helper_calls": 0,
+      "padded_calls": 0,
+      "passthrough_calls": 0,
+      "cache_hits": 0,
+      "cache_misses": 100,
+      "cache_evictions": 0
+    },
+    "not_executed_here": true,
+    "proves_full_encoder_precision": false
+  },
+  "row_adapter_final": {
+    "round": 84,
+    "installed": true,
+    "enabled": false,
+    "primed": false,
+    "sequence_length": 2043,
+    "expected_world_size": 8,
+    "expected_layer_count": 100,
+    "kernel_dir": "/tmp/h3_round84_row_fp3201/kernels",
+    "stream_bound": false,
+    "stats": {
+      "calls_disabled": 0,
+      "calls_enabled": 0,
+      "calls_rejected": 0,
+      "kernel_launches": 0,
+      "fp32_collective_count": 0,
+      "fp32_dtype_before_collective": {},
+      "fp32_dtype_after_collective": {},
+      "half_cast_count": 0,
+      "bias_added_fp32_count": 0,
+      "single_rank_no_collective_calls": 0,
+      "kernel_shapes": {},
+      "stream_binds": 0,
+      "stream_conflicts": 0,
+      "pack_controls": 0,
+      "input_is_parallel_split": 0,
+      "enable_transitions": []
+    },
+    "weight_cache": {
+      "entries": 1,
+      "bytes": 10485760,
+      "hits": 0,
+      "misses": 1,
+      "mutations_detected": 0,
+      "roundtrip_verifications": 1
+    },
+    "scratch_bytes": 0,
+    "kernel_shapes_prepared": [],
+    "pinned": {
+      "round79_candidate_file_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+      "round79_row_forward_source_sha256": "9a10f625bef735cc937d3f02835838550ed4568e5bfd3e54d41354d4d1f1f4e3",
+      "round79_row_class_source_sha256": "3d4a55c57df3118a4e741502062d1c8fc0301b9adafca8e9d8594ca93b76c2b3",
+      "round83_kernel_module": "blocked_dynamic_steps83",
+      "round83_kernel_module_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "round83_runtime_module": "runtime5gm83",
+      "round83_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+      "round83_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043"
+    },
+    "one_cast_per_call": true,
+    "fp32_partial_through_collective": true,
+    "no_fp32_weight_shadow": true,
+    "no_bf16_compute": true,
+    "device_memory": {
+      "allocated_bytes": 7507030016,
+      "reserved_bytes": 7805599744,
+      "max_allocated_bytes": 7779712000
+    }
+  },
+  "cleanup": {
+    "destroy_model_parallel": "ok",
+    "destroy_process_group": "ok",
+    "kv_adapter_uninstalled": true,
+    "row_adapter_uninstalled": true
+  }
+}
