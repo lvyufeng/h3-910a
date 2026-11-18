@@ -1,6 +1,7 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round83 portable FP32 bias error reduced26× at H3 size; all4 FP32 GEMM projections executed](<artifacts/diagnostics/round83/README.md>),
 > [Round82 CPU conditioning isolation: residual2.48%; actual FP16→FP32 TIK GEMM micro executed](<artifacts/diagnostics/round82/README.md>),
 > [Round81 complete TP8 KV padding: repeat fixed, full encode2.214s, CPU FP16 precision gap7.42% remains](<artifacts/diagnostics/round81/README.md>),
 > [Round80 CPU FP16 oracle verified; full TP8 repeat failed; small-N zero-padding stability candidate](<artifacts/diagnostics/round80/README.md>),

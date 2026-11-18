@@ -1,0 +1,151 @@
+{
+  "scope": "Probe blocked FP32-UB bias at actual H3 projection geometry against CPU Half Linear.\n\nNo model teacher is changed. Timings here are packed-kernel timings only (A/W/output layout conversion excluded),\nnot full H3 encoder performance. The root stages and runs this source later.\n",
+  "source_sha256": "1e3add07e5cdadf8b709f12f4227e1c03396419fe0bec9b318e361a95fa9f1f7",
+  "kernel_source_sha256": "2f6a4470f9abc5f43028f69ddd6e012c29c2a7907bb0f6527667063bf81c8306",
+  "case": "smoke",
+  "geometry": {
+    "M": 128,
+    "K": 256,
+    "N": 128
+  },
+  "kernel_launch_executed": true,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "not_H3_performance": true,
+  "CPU_reference_operator": "original torch.nn.functional.linear(Half input,Half weight,Half bias)",
+  "FP32_diagnostic_not_a_new_teacher": true,
+  "build": {
+    "kernel_name": "blocked_bias83_m128_k256_n128_c1",
+    "kernel_symbol": "blocked_bias83_m128_k256_n128_c1__kernel0",
+    "block_dim": 1,
+    "obj_path": "/tmp/h3_round83_blocked_bias01/kernels/blocked_bias83_build_vzt39y77/kernel_meta/blocked_bias83_m128_k256_n128_c1.o",
+    "obj_sha256": "4c864fb5491fc816538ed815af5deaa02378411be403fdf086b162c5144635ba",
+    "json_path": "/tmp/h3_round83_blocked_bias01/kernels/blocked_bias83_build_vzt39y77/kernel_meta/blocked_bias83_m128_k256_n128_c1.json",
+    "dst_dtype": "float16",
+    "uses_fp32_bias": true,
+    "single_final_half_cast": true,
+    "input_layout": "K1_Mp_16",
+    "weight_layout": "K1_N_16",
+    "output_layout": "N1_Mp_16",
+    "logical_geometry": {
+      "M": 128,
+      "K": 256,
+      "N": 128
+    },
+    "padded_M": 128,
+    "grid": {
+      "m_tiles": 1,
+      "n_tiles": 1,
+      "tasks": 1,
+      "cores": 1,
+      "steps": 1
+    },
+    "FP32_L0C_preserved_across_K_tiles": true,
+    "matmul_bias_operand_used": false,
+    "padded_output_rows_are_bias_not_zero": true,
+    "GM_argument_count": 5,
+    "base_source_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+    "capability": {
+      "compile_soc": "Ascend910B",
+      "runtime_expected_soc": "Ascend910B",
+      "Intrinsic_mmad_f162f32": true,
+      "core_num": 30,
+      "l1_size": 1048576,
+      "l0c_size": 262144,
+      "ub_size": 262144
+    },
+    "built": true,
+    "executed": false,
+    "full_encoder_precision_accepted": false,
+    "whole_goal_complete": false
+  },
+  "padded_M": 128,
+  "kernel_vs_CPU_FP16": {
+    "dtype": "torch.float16",
+    "shape": [
+      128,
+      128
+    ],
+    "finite": true,
+    "raw_bits_equal": false,
+    "max_abs_error": 0.000244140625,
+    "RMSE": 2.796500588075877e-06,
+    "relative_RMS": 6.712637176020109e-06,
+    "sha256": "96b61906f4d4c0f8492bbb8c9972d0b463f387af9f16ee2a00b58bfee494c3ef",
+    "reference_sha256": "08bf93718c704230200037f6fe61463f5533d0893cb6fdcf70d8f17ca3c52362"
+  },
+  "native_vs_CPU_FP16": {
+    "dtype": "torch.float16",
+    "shape": [
+      128,
+      128
+    ],
+    "finite": true,
+    "raw_bits_equal": false,
+    "max_abs_error": 0.0009765625,
+    "RMSE": 0.00014383263599797072,
+    "relative_RMS": 0.00034525159895970305,
+    "sha256": "4d4a59e3f46d9ffdaabf93bc30573e5cf44d14e0999b9d3a6004b3fee7420e5f",
+    "reference_sha256": "08bf93718c704230200037f6fe61463f5533d0893cb6fdcf70d8f17ca3c52362"
+  },
+  "repeat_vs_first": {
+    "dtype": "torch.float16",
+    "shape": [
+      128,
+      128
+    ],
+    "finite": true,
+    "raw_bits_equal": true,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_RMS": 0.0,
+    "sha256": "96b61906f4d4c0f8492bbb8c9972d0b463f387af9f16ee2a00b58bfee494c3ef",
+    "reference_sha256": "96b61906f4d4c0f8492bbb8c9972d0b463f387af9f16ee2a00b58bfee494c3ef"
+  },
+  "kernel_vs_FP32_epilogue_diagnostic": {
+    "dtype": "torch.float16",
+    "shape": [
+      128,
+      128
+    ],
+    "finite": true,
+    "raw_bits_equal": false,
+    "max_abs_error": 0.00048828125,
+    "RMSE": 5.607158718331884e-06,
+    "relative_RMS": 1.3459259630395319e-05,
+    "sha256": "96b61906f4d4c0f8492bbb8c9972d0b463f387af9f16ee2a00b58bfee494c3ef",
+    "reference_sha256": "b81726c943d881e66d8d805d68efd50c637d924e02aff6b7ace2ff161a0e5751"
+  },
+  "native_vs_Half_GEMM_then_Half_bias": {
+    "dtype": "torch.float16",
+    "shape": [
+      128,
+      128
+    ],
+    "finite": true,
+    "raw_bits_equal": true,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_RMS": 0.0,
+    "sha256": "4d4a59e3f46d9ffdaabf93bc30573e5cf44d14e0999b9d3a6004b3fee7420e5f",
+    "reference_sha256": "4d4a59e3f46d9ffdaabf93bc30573e5cf44d14e0999b9d3a6004b3fee7420e5f"
+  },
+  "original_inputs_and_parameters_unchanged": true,
+  "packed_kernel_only_s_including_sync": [
+    0.005510049872100353,
+    0.0002847602590918541,
+    0.00021403981372714043
+  ],
+  "packed_micro_median_s": 0.0002847602590918541,
+  "GPU_operands_unchanged": true,
+  "runtime": {
+    "library": "/tmp/libfa910a.so",
+    "library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+    "registered_kernels": 1,
+    "ABI": "fiveGMpointers",
+    "current_stream": "torch.npu.current_stream().npu_stream",
+    "no_production_launcher_modified": true
+  },
+  "numerical_acceptance_threshold": null,
+  "completed": true
+}

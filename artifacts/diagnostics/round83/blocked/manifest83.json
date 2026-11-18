@@ -1,0 +1,551 @@
+{
+  "based_on": {
+    "abi": "[A_Half, B_Half, aux0_Half16, aux1_Half16, C_Float32]",
+    "cpu_reference": "Round78 verified independent official-HF CPU FP16 oracle",
+    "launcher": "/tmp/libfa910a.so",
+    "launcher_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+    "r82_executed_builder": "artifacts/diagnostics/round82/gemm/tik_gemm_legacy5_82.py",
+    "r82_executed_builder_sha256": "5e870dfa73b6a78b2cb25921202778d555dae38f3713580c52bea89de72dc059",
+    "r82_receipt": "artifacts/diagnostics/round82/gemm/runtime06/probe_fp32_out.json"
+  },
+  "claims_h3_improvement": false,
+  "compiled": false,
+  "executed_on_npu": false,
+  "files": {
+    "README.md": {
+      "bytes": 7489,
+      "sha256": "d35c30cd3c7e780ac9bc8723e4c9835106c4f7f73d77d3e9871e05ac5eb040e9"
+    },
+    "blocked_fp32_gemm83.py": {
+      "bytes": 26661,
+      "sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee"
+    },
+    "test_blocked_fp32_gemm83.py": {
+      "bytes": 18356,
+      "sha256": "0ec93360558fe08c3b0d9e62c667c08b12bab3180d2373949aa5f34739c0c6fa"
+    }
+  },
+  "h3_shapes": {
+    "kv_proj": [
+      2043,
+      5120,
+      128
+    ],
+    "mlp_up": [
+      2043,
+      5120,
+      3456
+    ],
+    "q_proj": [
+      2043,
+      5120,
+      1024
+    ],
+    "row_parallel": [
+      2043,
+      3456,
+      5120
+    ]
+  },
+  "host_contract": {
+    "GM_argument_count": 5,
+    "api": "build_kernel(m,k,n,out_dir=None,mb=128,nb=128,kb=128)",
+    "dst_dtype": "float32",
+    "gm_arg_order": [
+      "A_Half_packed",
+      "B_Half_packed",
+      "aux0_Half16",
+      "aux1_Half16",
+      "C_Float32_packed"
+    ],
+    "meta_keys_consumed_by_root": [
+      "obj_path",
+      "obj_sha256",
+      "kernel_symbol",
+      "block_dim",
+      "dst_dtype"
+    ],
+    "packer_layout_equivalence": {
+      "A": "(Mp,K)Half padded -> reshape(Mp,K1,16).permute(1,0,2)",
+      "B": "(N,K)Half -> reshape(N,K1,16).permute(1,0,2)",
+      "C": "(N1,Mp,16)Float32 -> permute(1,0,2).reshape(Mp,N) then crop M"
+    }
+  },
+  "kind": "blocked FP16xFP16 -> FP32 L0C -> FP32 GM GEMM, source only",
+  "module_sha256": "78896adadaf47801dd92d69bdfce394d2628f7885be643dd568647c8b4c8c2ee",
+  "no_git_commit": true,
+  "no_production_files_modified": true,
+  "no_remote_compile_or_npu_work_performed": true,
+  "not_established": [
+    "Nothing compiled: TIK BuildCCE call, kernel_meta names and L1/L0C allocation are unobserved",
+    "Nothing executed: no numerics, no repeatability, no timing",
+    "new_stmt_scope(disable_sync=False) sync placement across reused L1 buffers unverified at build time",
+    "Multi-step round-robin task distribution unverified",
+    "No FP32 HCCL reduce, no final Half cast, no encoder integration"
+  ],
+  "owner": "blocked83-fresh",
+  "pinned": {
+    "compile_soc": "Ascend910B",
+    "core_num": 30,
+    "l0c_size": 262144,
+    "l1_size": 1048576,
+    "max_cores": 30,
+    "runtime_soc": "Ascend910B"
+  },
+  "plans": {
+    "kv_proj": {
+      "accumulation": {
+        "final_output_dtype": "float32",
+        "fp32_ub_partial_sum": false,
+        "half_partial": false,
+        "init_first_k_block_only": true,
+        "k_tiles": 40,
+        "single_l0c_across_all_k_blocks": true
+      },
+      "buffers": {
+        "l0c_bytes": 65536,
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "ub_bytes": 65536
+      },
+      "dma": {
+        "a_load": {
+          "burst": 128,
+          "dst_stride": 0,
+          "nburst": 8,
+          "src_stride": 1920
+        },
+        "b_load": {
+          "burst": 128,
+          "dst_stride": 0,
+          "nburst": 8,
+          "src_stride": 0
+        },
+        "c_store": {
+          "burst": 256,
+          "dst_stride": 3840,
+          "nburst": 8,
+          "src_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "burst_len_kb": 64,
+          "nburst": 1
+        }
+      },
+      "gm_bytes": {
+        "a": 20971520,
+        "b": 1310720,
+        "c": 1048576
+      },
+      "gm_elems": {
+        "a": 10485760,
+        "b": 655360,
+        "c": 262144
+      },
+      "gm_shapes": {
+        "a": [
+          320,
+          2048,
+          16
+        ],
+        "aux": [
+          16
+        ],
+        "b": [
+          320,
+          128,
+          16
+        ],
+        "c": [
+          8,
+          2048,
+          16
+        ]
+      },
+      "grid": {
+        "cores": 16,
+        "m_tiles": 16,
+        "n_tiles": 1,
+        "steps": 1,
+        "tasks": 16
+      },
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "limits": {
+        "l0c_size": 262144,
+        "l1_size": 1048576,
+        "max_cores": 30
+      },
+      "logical": {
+        "k": 5120,
+        "m": 2043,
+        "n": 128
+      },
+      "padded": {
+        "k1": 320,
+        "m_pad": 2048,
+        "m_pad_rows": 5,
+        "n1": 8
+      },
+      "tiles": {
+        "kb": 128,
+        "mb": 128,
+        "nb": 128
+      }
+    },
+    "mlp_up": {
+      "accumulation": {
+        "final_output_dtype": "float32",
+        "fp32_ub_partial_sum": false,
+        "half_partial": false,
+        "init_first_k_block_only": true,
+        "k_tiles": 40,
+        "single_l0c_across_all_k_blocks": true
+      },
+      "buffers": {
+        "l0c_bytes": 65536,
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "ub_bytes": 65536
+      },
+      "dma": {
+        "a_load": {
+          "burst": 128,
+          "dst_stride": 0,
+          "nburst": 8,
+          "src_stride": 1920
+        },
+        "b_load": {
+          "burst": 128,
+          "dst_stride": 0,
+          "nburst": 8,
+          "src_stride": 3328
+        },
+        "c_store": {
+          "burst": 256,
+          "dst_stride": 3840,
+          "nburst": 8,
+          "src_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "burst_len_kb": 64,
+          "nburst": 1
+        }
+      },
+      "gm_bytes": {
+        "a": 20971520,
+        "b": 35389440,
+        "c": 28311552
+      },
+      "gm_elems": {
+        "a": 10485760,
+        "b": 17694720,
+        "c": 7077888
+      },
+      "gm_shapes": {
+        "a": [
+          320,
+          2048,
+          16
+        ],
+        "aux": [
+          16
+        ],
+        "b": [
+          320,
+          3456,
+          16
+        ],
+        "c": [
+          216,
+          2048,
+          16
+        ]
+      },
+      "grid": {
+        "cores": 30,
+        "m_tiles": 16,
+        "n_tiles": 27,
+        "steps": 15,
+        "tasks": 432
+      },
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "limits": {
+        "l0c_size": 262144,
+        "l1_size": 1048576,
+        "max_cores": 30
+      },
+      "logical": {
+        "k": 5120,
+        "m": 2043,
+        "n": 3456
+      },
+      "padded": {
+        "k1": 320,
+        "m_pad": 2048,
+        "m_pad_rows": 5,
+        "n1": 216
+      },
+      "tiles": {
+        "kb": 128,
+        "mb": 128,
+        "nb": 128
+      }
+    },
+    "q_proj": {
+      "accumulation": {
+        "final_output_dtype": "float32",
+        "fp32_ub_partial_sum": false,
+        "half_partial": false,
+        "init_first_k_block_only": true,
+        "k_tiles": 40,
+        "single_l0c_across_all_k_blocks": true
+      },
+      "buffers": {
+        "l0c_bytes": 65536,
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "ub_bytes": 65536
+      },
+      "dma": {
+        "a_load": {
+          "burst": 128,
+          "dst_stride": 0,
+          "nburst": 8,
+          "src_stride": 1920
+        },
+        "b_load": {
+          "burst": 128,
+          "dst_stride": 0,
+          "nburst": 8,
+          "src_stride": 896
+        },
+        "c_store": {
+          "burst": 256,
+          "dst_stride": 3840,
+          "nburst": 8,
+          "src_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "burst_len_kb": 64,
+          "nburst": 1
+        }
+      },
+      "gm_bytes": {
+        "a": 20971520,
+        "b": 10485760,
+        "c": 8388608
+      },
+      "gm_elems": {
+        "a": 10485760,
+        "b": 5242880,
+        "c": 2097152
+      },
+      "gm_shapes": {
+        "a": [
+          320,
+          2048,
+          16
+        ],
+        "aux": [
+          16
+        ],
+        "b": [
+          320,
+          1024,
+          16
+        ],
+        "c": [
+          64,
+          2048,
+          16
+        ]
+      },
+      "grid": {
+        "cores": 30,
+        "m_tiles": 16,
+        "n_tiles": 8,
+        "steps": 5,
+        "tasks": 128
+      },
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "limits": {
+        "l0c_size": 262144,
+        "l1_size": 1048576,
+        "max_cores": 30
+      },
+      "logical": {
+        "k": 5120,
+        "m": 2043,
+        "n": 1024
+      },
+      "padded": {
+        "k1": 320,
+        "m_pad": 2048,
+        "m_pad_rows": 5,
+        "n1": 64
+      },
+      "tiles": {
+        "kb": 128,
+        "mb": 128,
+        "nb": 128
+      }
+    },
+    "row_parallel": {
+      "accumulation": {
+        "final_output_dtype": "float32",
+        "fp32_ub_partial_sum": false,
+        "half_partial": false,
+        "init_first_k_block_only": true,
+        "k_tiles": 27,
+        "single_l0c_across_all_k_blocks": true
+      },
+      "buffers": {
+        "l0c_bytes": 65536,
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "ub_bytes": 65536
+      },
+      "dma": {
+        "a_load": {
+          "burst": 128,
+          "dst_stride": 0,
+          "nburst": 8,
+          "src_stride": 1920
+        },
+        "b_load": {
+          "burst": 128,
+          "dst_stride": 0,
+          "nburst": 8,
+          "src_stride": 4992
+        },
+        "c_store": {
+          "burst": 256,
+          "dst_stride": 3840,
+          "nburst": 8,
+          "src_stride": 0
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "burst_len_kb": 64,
+          "nburst": 1
+        }
+      },
+      "gm_bytes": {
+        "a": 14155776,
+        "b": 35389440,
+        "c": 41943040
+      },
+      "gm_elems": {
+        "a": 7077888,
+        "b": 17694720,
+        "c": 10485760
+      },
+      "gm_shapes": {
+        "a": [
+          216,
+          2048,
+          16
+        ],
+        "aux": [
+          16
+        ],
+        "b": [
+          216,
+          5120,
+          16
+        ],
+        "c": [
+          320,
+          2048,
+          16
+        ]
+      },
+      "grid": {
+        "cores": 30,
+        "m_tiles": 16,
+        "n_tiles": 40,
+        "steps": 22,
+        "tasks": 640
+      },
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "limits": {
+        "l0c_size": 262144,
+        "l1_size": 1048576,
+        "max_cores": 30
+      },
+      "logical": {
+        "k": 3456,
+        "m": 2043,
+        "n": 5120
+      },
+      "padded": {
+        "k1": 216,
+        "m_pad": 2048,
+        "m_pad_rows": 5,
+        "n1": 320
+      },
+      "tiles": {
+        "kb": 128,
+        "mb": 128,
+        "nb": 128
+      }
+    }
+  },
+  "proves_precision": false,
+  "proves_speed": false,
+  "review_focus": [
+    "init_l1out is a Python bool, so the K loop is statically unrolled; only kt==0 initialises L0C",
+    "C store needs the doubled Float32 stride 2*(Mp-MB); A/B loads must not",
+    "single L0C across all K blocks; no Half partial, no FP32-UB partial sum",
+    "5 GM ABI with two deliberately unused aux Half16 operands",
+    "30-core guard from the live DCMI audit"
+  ],
+  "round": 83,
+  "scope": "artifacts/diagnostics/round83/blocked only",
+  "staged_verification": {
+    "1": "python3 blocked_fp32_gemm83.py --plan ; --capability (no device work)",
+    "2": "build+run smoke geometry (128,256,128): 1 core, 1 tile, 2 K blocks, vs CPU Half Linear",
+    "3": "kv_proj -> q_proj -> mlp_up -> row_parallel, each vs CPU Half Linear",
+    "4": "only then tiling/performance variants; include packing + final cast in any budget"
+  },
+  "suggested_smoke_geometry": [
+    128,
+    256,
+    128
+  ],
+  "task": "task-22",
+  "tiling_defaults": {
+    "kb": 128,
+    "mb": 128,
+    "nb": 128
+  },
+  "before_root_review_module_sha256": "da2897feb2ef674ab1952af51bd7c16cd9a59b27148e76bc7c77d7c931a86a78",
+  "root_review_correction": "Retainuniquecompileworkspacesandcopyverifiedartefactsinsteadofcomputed-pathdeletes/moves;kernelmath/tilingunchanged."
+}

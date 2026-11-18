@@ -1,0 +1,9 @@
+{
+  "scope": "Reconcile the timed-out static tile-unroll attempt",
+  "workers": [
+    {
+      "pid": 627764,
+      "command": "bash -c /home/mseco/vllm910a/bin/python - <<\"PY\"\nimport json,os\nfrom pathlib import Path\nr={\"scope\":\"Reconcile the timed-out static tile-unroll attempt\",\"workers\":[]}\nfor p in Path(\"/proc\").iterdir():\n if not p.name.isdecimal():continue\n try:\n  if p.stat().st_uid!=os.getuid():continue\n  cmd=(p/\"cmdline\").read_bytes().replace(b\"\\x00\",b\" \").decode(errors=\"replace\")\n  if \"/tmp/h3_round83_blocked02/probe_blocked83.py\" in cmd:r[\"workers\"].append({\"pid\":int(p.name),\"command\":cmd})\n except(FileNotFoundError,PermissionError,ProcessLookupError):continue\nprint(json.dumps(r,indent=2))\nassert not r[\"workers\"]\nPY "
+    }
+  ]
+}
