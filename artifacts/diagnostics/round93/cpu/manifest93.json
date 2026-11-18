@@ -1,0 +1,148 @@
+{
+  "round": 93,
+  "task": "task-42",
+  "owner": "cpu-suffix93-fresh",
+  "kind": "original-HF CPU FP16 raw layers 25..49 suffix propagation control (SOURCE ONLY)",
+  "scope": "artifacts/diagnostics/round93/cpu",
+  "files": {
+    "suffix93.py": {
+      "bytes": 30366,
+      "sha256": "6d062fdb04e484a35a103df51024fb13ba622b6fdb60de148ba0a93205f4fdd6"
+    },
+    "test_suffix93.py": {
+      "bytes": 17869,
+      "sha256": "825d7b076bd39bfe603f5ca79b2acf637f8133000f1eff5ba419aab83fd282fa"
+    },
+    "README.md": {
+      "bytes": 7928,
+      "sha256": "d8da96f480e92ec67e94e7f4075dbc12291d11f51bbc54704f225649d08411fa"
+    }
+  },
+  "line_counts": {
+    "suffix93.py": 558,
+    "test_suffix93.py": 320,
+    "README.md": 145
+  },
+  "compiled": false,
+  "executed_on_cpu": false,
+  "runs_real_model": false,
+  "executes_npu_or_gpu": false,
+  "no_ssh_or_remote_command": true,
+  "no_install_or_build": true,
+  "no_production_files_modified": true,
+  "no_git_commit": true,
+  "proves_precision": false,
+  "proves_speed": false,
+  "claims_h3_improvement": false,
+  "numerical_tolerance": null,
+  "helper": {
+    "name": "original_cpu_block25_92.py",
+    "source": "artifacts/diagnostics/round92/cpu/original_cpu_block25_92.py",
+    "sha256": "838027c883bed6d1e5a0b839e0c2accde2457bef9cc81d58129fdcad38d65f4b",
+    "reused_verbatim_not_edited": true,
+    "imported_by_verified_path": true
+  },
+  "expected_pins": {
+    "R78_receipt_sha256": "44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9",
+    "R78_multimodal_inputs_file_sha256": "6ab37f7202731843aebce9f3f8453232c72d45b2239caba679bcb2611e626e70",
+    "R78_selected50_file_sha256": "0137a434148366c3dcbf825970274ad0faa036666561d7aecc0170cf136b3fe4",
+    "R78_raw24_tensor_sha256": "7a2178195b3ec65e09ba4c7587acb052e04996a4023f6b1a5f1b2088e2eef084",
+    "R78_raw49_tensor_sha256": "82944620090359e7fc7eccb86471117e010b7838da83de5a43ceb46bf3453bd5",
+    "corrected_case": "corrected_vision_native_text",
+    "corrected_raw24_sha256": "e232f61b4260b81b08bb0cf3eb96a7df6d0a56ed3c0c82ab9d0ec0f15004a528"
+  },
+  "geometry": {
+    "layer_indices": [
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49
+    ],
+    "layer_count": 25,
+    "selected_language_layers": 50,
+    "parameters_per_layer": 11,
+    "parameter_tensors_verified": 275,
+    "batch": 1,
+    "seq": 2043,
+    "hidden": 5120,
+    "rotary_heads": 64,
+    "sdpa_backend": "SDPBackend.MATH",
+    "deepstack_after_raw24": false,
+    "final_norm": false,
+    "cpu_threads": 16,
+    "mkldnn": true,
+    "resident_weights_gib_approx": 23.0
+  },
+  "api": {
+    "entry": "run_reference(root, inputs_path, helper_path, baseline_repeats, case)",
+    "functions": [
+      "file_sha",
+      "load_original_helper",
+      "atomic_replace",
+      "write_progress",
+      "layers_parameters_sha",
+      "verify_conversion_inventory",
+      "boundary_truths",
+      "build_suffix_layers",
+      "propagate",
+      "run_reference",
+      "main"
+    ],
+    "cli": "python3 suffix93.py --root R --inputs I [--helper H] [--baseline-repeats 1|2] [--case corrected_vision_native_text]",
+    "default_root": "/tmp/h3_round93_suffix01",
+    "default_inputs": "/tmp/h3_round92_case02/NPU_raw24_inputs92.pt"
+  },
+  "outputs": {
+    "reference": "CPU_suffix_reference93.json",
+    "outputs": "CPU_suffix_outputs93.pt",
+    "progress": "CPU_suffix_progress93.json",
+    "failure": "CPU_suffix_failure93.json",
+    "never_overwrites_existing_root_outputs": true
+  },
+  "gate_order": [
+    "R78 receipt gates",
+    "Round78 conversion inventory for all 275 suffix tensors (fails fast)",
+    "CPU raw24",
+    "original text inputs",
+    "boundary truths",
+    "build layers 25..49 with verified FP16 conversions",
+    "reproduce ALL 25 R78 raw boundaries (before any NPU input is read)",
+    "read actual NPU raw24 bundle and pin the corrected case SHA",
+    "propagate corrected case twice over 25 boundaries",
+    "R78 selected-50 truth comparison",
+    "frozen-operand invariants",
+    "exclusive write"
+  ],
+  "repeat_requirement": {
+    "baseline": "single pass gated by 25 independent R78 boundary SHAs (optional --baseline-repeats 2 for bit-repeat)",
+    "corrected": "two full passes, all 25 boundary SHAs must be identical"
+  },
+  "test_command": "python3 -m unittest discover -s artifacts/diagnostics/round93/cpu -p 'test_*.py'",
+  "functions_added": [
+    "verify_conversion_inventory"
+  ],
+  "line_count_note": "suffix93.py exceeds the ~450-line soft target deliberately: all gates and receipt fields are inline, no helper logic is duplicated, and no gate was dropped to meet a line count.",
+  "root_review_original_source_SHA256": "3632cebd90cc081bdb51b9158052a189e207e9ea21ccf3b4fb980bfbd4688e58",
+  "root_review_correction": "R78raw49TENSORsha82944620...nottorch.saveFILEsha98302d42...;crosscheckactualR78raw49andselected50tensormetadatabeforeCPUexecution;mathunchanged."
+}

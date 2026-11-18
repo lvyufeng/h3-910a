@@ -1,0 +1,83 @@
+{
+  "round": 95,
+  "task": "task-46",
+  "kind": "per-instance original-HF CPU Half text M-RoPE table cache (SOURCE ONLY)",
+  "scope": "artifacts/diagnostics/round95/cache",
+  "files": {
+    "cpu_text_rope_cache95.py": {
+      "bytes": 35472,
+      "sha256": "4e7cabcf5a471849274148e30ca323112c86b30d9740a2ea04ccf269ed204593"
+    },
+    "test_cpu_text_rope_cache95.py": {
+      "bytes": 24370,
+      "sha256": "a22b456e303d2fd709fb7bb557c87af3616afeabc570d799467e101a5a30fa4d"
+    },
+    "README.md": {
+      "bytes": 5473,
+      "sha256": "196c59a16b89a6ca2b79200ce64eb0fc05098c3f5569db15f66d59b020575e3b"
+    }
+  },
+  "source_only": true,
+  "executed_by_author": false,
+  "compiled_by_author": false,
+  "torch_or_transformers_imported_by_author": false,
+  "no_model_or_npu_execution_by_author": true,
+  "no_cannon_or_tik_build": true,
+  "no_ssh_or_remote_command": true,
+  "no_installation": true,
+  "no_production_files_modified": true,
+  "no_git_commit": true,
+  "proves_precision": false,
+  "proves_speed": false,
+  "claims_lossless_native_bits": false,
+  "numerical_tolerance": null,
+  "caches_only_rope_table": true,
+  "extra_bytes_expected": 1046016,
+  "api": {
+    "class": "CPUTextRopeCache95(rotary, candidate_path=None)",
+    "methods": [
+      "prime(x, position_ids, compare=None, tensor_info=None)",
+      "set_enabled(bool)",
+      "snapshot(verify_cache=True)",
+      "uninstall()"
+    ],
+    "factory": "install(rotary, candidate_path=None)",
+    "default_state": "installed, disabled (native original forward)"
+  },
+  "pins": {
+    "candidate_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "hf_modeling_source_sha256": "fcb5571ef95e4a6679af866ef9ef4dfa5cee017f9f91453daf28c7804c7a50fe",
+    "cpu_inv_freq_sha256": "29fc897bbb1fda6b314c1bcffa10e39b067913f538e4f07ed7cbd223b84c4cbf",
+    "r78_position_ids_sha256": "05a92359cd6a171559fadc0185ea2c7619a1969f7d771bb89c6a7d4df31a814c",
+    "r94_cpu_cos_sha256": "f0480c8783ff7ec9663f4f79035019a00c17219152f9bab4210097317ab7f996",
+    "r94_cpu_sin_sha256": "0c147aa3d84e46345c8ead59721a04ccd1fec602c01ec54e570006bd2cda0b08",
+    "normalized_real_fixture_only": true
+  },
+  "prime_contract": {
+    "cpu_rotary": "original HF Qwen3VLTextRotaryEmbedding(config, device=cpu)",
+    "x_used_as": "dtype/device metadata only; empty CPU Half tensor content never read",
+    "table_computed_twice_raw_bit_equal": true,
+    "copied_to_npu_bit_exact_and_version_tracked": true,
+    "native_probe": "one original native forward at prime, recorded, never cached",
+    "outside_warm_clock": true
+  },
+  "per_call_guards": [
+    "config fingerprint",
+    "candidate and HF source SHA",
+    "x shape/dtype/device",
+    "positions metadata and values",
+    "cached tensor signature/version"
+  ],
+  "non_claims": [
+    "native NPU Half cos/sin are NOT bit-equal to the original CPU table (R94: cos 7.1403e-6, sin 2.8e-8)",
+    "this is precision alignment, not a lossless native-bit cache",
+    "no hidden embedding, pixel, patch, DeepStack or image conditioning is cached",
+    "no Linear weight is Float-shadowed and no BF16 gold output is cast",
+    "no tolerance is selected; full-encoder precision acceptance belongs to the root"
+  ],
+  "line_counts": {
+    "cpu_text_rope_cache95.py": 730,
+    "test_cpu_text_rope_cache95.py": 568,
+    "README.md": 92
+  }
+}

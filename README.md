@@ -1,6 +1,9 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round95 actual8rank CPU-exact RoPE A/B is non-monotonic; corrected17%→13.6% only one case, fastest2.038s still not accepted](<artifacts/diagnostics/round95/README.md>),
+> [Round93 CPU Half alone amplifies0.253%→17.16%, first15.8× jump at43; no NPU arithmetic needed to explain scale](<artifacts/diagnostics/round93/README.md>),
+> [Round94 actual RoPE one-ULP differences; same-input rsqrt CPU exact and Newton worse, no redundant norm patch](<artifacts/diagnostics/round94/README.md>),
 > [Round92 original CPU Half block25 SHA exact; same-input NPU error0.005–0.008%, no17% explosion at25; late propagation next](<artifacts/diagnostics/round92/README.md>),
 > [Round91 actual full TP8: geometry cache bit-exact2.207s; vision fixes worsen full precision17%, fastest2.064s still not accepted](<artifacts/diagnostics/round91/README.md>),
 > [Round90 real GELU None/tanh bug fixed with Float-vector erf; leaf error1000–4000× lower, joint vision1.367s/0.724% still not full precision pass](<artifacts/diagnostics/round90/README.md>),

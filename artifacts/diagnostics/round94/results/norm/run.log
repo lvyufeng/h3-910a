@@ -1,0 +1,472 @@
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:13: FutureWarning: triton.language.extra.cann.extension.atan2 is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.atan2 instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.atan2")
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:35: FutureWarning: triton.language.extra.cann.extension.isfinited is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.isfinited instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.isfinited")
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:49: FutureWarning: triton.language.extra.cann.extension.finitef is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.finitef instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.finitef")
+INFO 11-18 11:00:30 [__init__.py:52] Available plugins for group vllm.platform_plugins:
+INFO 11-18 11:00:30 [__init__.py:54] - ascend -> vllm_ascend:register
+INFO 11-18 11:00:30 [__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+INFO 11-18 11:00:30 [__init__.py:272] Platform plugin ascend is activated
+INFO 11-18 11:00:31 [platform.py:74] Breakable CUDAGraph on Ascend is opt-in; using VLLM_USE_BREAKABLE_CUDAGRAPH=0.
+/home/mseco/vllm-omni/vllm_omni/__init__.py:19: RuntimeWarning: Failed to import version from _version.py: No module named 'vllm_omni._version'
+This typically happens in development mode before building.
+Using fallback version 'dev'.
+  from .version import __version__, __version_tuple__  # isort:skip # noqa: F401
+INFO 11-18 11:00:37 [patch_indexer_kv_dtype.py:102] Patched AttentionConfig.indexer_kv_dtype to accept 'int8' (DeepSeek V4 Ascend indexer K cache dtype).
+INFO 11-18 11:00:37 [patch_kv_cache_dtype.py:117] Patched CacheConfig.cache_dtype to accept 'int8' and 'mxfp8' (Ascend KV cache dtypes).
+INFO 11-18 11:00:37 [patch.py:253] NVFP4 W4A4 weight_scale NaN-clamp: skipped — upstream serves ModelOpt linears through the generic ModelOptLinearMethod and rejects any NaN weight_scale (unloaded-scale sentinel), so a load-time error replaces the `!!!!` decode-time collapse.
+INFO 11-18 11:00:37 [patch.py:551] inductor factorable-divisibility patch: skipped (upstream already proves it).
+INFO 11-18 11:00:37 [patch.py:630] [cumem-cuda] CuMemAllocator._python_free_callback patched: asleep guard extended to all platforms.
+[W1118 11:00:41.808864900 NPUCachingAllocator.cpp:204] Warning: The current CANN and HDK(driver) versions require processing for 32 padding size, with memory allocation. (function operator())
+{
+  "completed": true,
+  "cases": {
+    "CPU_raw24": {
+      "variance_vs_CPU": {
+        "npu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "954bb4e56fc97fd46d343eb2f589adf76f10fc344fa9e002f6f04a240b7e9e71",
+          "finite": true,
+          "max_abs": 48001.8984375
+        },
+        "cpu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "a3d195b0bf6b50d05793ab982cb463ddcdb1962ddada6b80fff6d31e7268f57e",
+          "finite": true,
+          "max_abs": 48001.91796875
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 2043,
+        "max_abs_error": 0.01953125,
+        "RMSE": 0.00043211196385672344,
+        "relative_rms": 4.06879539145835e-07
+      },
+      "rsqrt_on_own_variance_vs_CPU": {
+        "npu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "f379f125ff76d45c0c7d47996639d67d39fb38bf22c9301a84ad73d8a81f7b16",
+          "finite": true,
+          "max_abs": 0.7452877163887024
+        },
+        "cpu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "443fe965c2cc8b1b8d7fe5aa3af0457797e516bb770de51bf69547f118bac335",
+          "finite": true,
+          "max_abs": 0.7452877163887024
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 2043,
+        "max_abs_error": 1.1920928955078125e-07,
+        "RMSE": 3.5044932370919564e-08,
+        "relative_rms": 7.221258464916058e-08
+      },
+      "rsqrt_on_exact_CPU_variance": {
+        "npu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "443fe965c2cc8b1b8d7fe5aa3af0457797e516bb770de51bf69547f118bac335",
+          "finite": true,
+          "max_abs": 0.7452877163887024
+        },
+        "cpu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "443fe965c2cc8b1b8d7fe5aa3af0457797e516bb770de51bf69547f118bac335",
+          "finite": true,
+          "max_abs": 0.7452877163887024
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": true,
+        "elements": 2043,
+        "max_abs_error": 0.0,
+        "RMSE": 0.0,
+        "relative_rms": 0.0
+      },
+      "modes": {
+        "native": {
+          "vs_original_CPU_Half_norm": {
+            "npu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "bd8c80c386b8b795150a21a361d625c5b59bd26eddc26dec27c57f221c918869",
+              "finite": true,
+              "max_abs": 9.1875
+            },
+            "cpu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "92b64cd21b0213bb38605f836675bbc5e924220c16fac06d12c60aae294f6510",
+              "finite": true,
+              "max_abs": 9.1875
+            },
+            "shape_mismatch": false,
+            "comparable": true,
+            "finite": true,
+            "dtype_matches": true,
+            "raw_bits_equal": false,
+            "elements": 10460160,
+            "max_abs_error": 0.00390625,
+            "RMSE": 1.4869843083408394e-06,
+            "relative_rms": 6.425060224121006e-06
+          },
+          "repeat_bit_identical": true
+        },
+        "Newton1": {
+          "vs_original_CPU_Half_norm": {
+            "npu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "00e7ba1b5c4b3928f622ecf37b06e35a4bca2d9c87821d91cdfcedc93e8929d3",
+              "finite": true,
+              "max_abs": 9.1875
+            },
+            "cpu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "92b64cd21b0213bb38605f836675bbc5e924220c16fac06d12c60aae294f6510",
+              "finite": true,
+              "max_abs": 9.1875
+            },
+            "shape_mismatch": false,
+            "comparable": true,
+            "finite": true,
+            "dtype_matches": true,
+            "raw_bits_equal": false,
+            "elements": 10460160,
+            "max_abs_error": 0.00390625,
+            "RMSE": 1.5642692928762924e-06,
+            "relative_rms": 6.758998300854716e-06
+          },
+          "repeat_bit_identical": true
+        },
+        "Newton2": {
+          "vs_original_CPU_Half_norm": {
+            "npu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "6e77c86479a3f622e2d67a2626fe708de70b0141351c725ebee453d93238a84f",
+              "finite": true,
+              "max_abs": 9.1875
+            },
+            "cpu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "92b64cd21b0213bb38605f836675bbc5e924220c16fac06d12c60aae294f6510",
+              "finite": true,
+              "max_abs": 9.1875
+            },
+            "shape_mismatch": false,
+            "comparable": true,
+            "finite": true,
+            "dtype_matches": true,
+            "raw_bits_equal": false,
+            "elements": 10460160,
+            "max_abs_error": 0.00390625,
+            "RMSE": 1.5649219360198386e-06,
+            "relative_rms": 6.761818284548305e-06
+          },
+          "repeat_bit_identical": true
+        }
+      }
+    },
+    "corrected_vision_native_text": {
+      "variance_vs_CPU": {
+        "npu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "f09844f84abb68903f83fbb3b6865b70e940671166daab0c52bd9d6290907546",
+          "finite": true,
+          "max_abs": 48001.2734375
+        },
+        "cpu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "b74fe389685faa0a220a702401a7e09334384f1f73aca65ea5cf3fe1b19e5f54",
+          "finite": true,
+          "max_abs": 48001.29296875
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 2043,
+        "max_abs_error": 0.01953125,
+        "RMSE": 0.0004321119692171552,
+        "relative_rms": 4.068848414661026e-07
+      },
+      "rsqrt_on_own_variance_vs_CPU": {
+        "npu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "b48ad39fe73f3aa2341b896c88988f4d845c86a8cf769731e2d8df205900e022",
+          "finite": true,
+          "max_abs": 0.7452183961868286
+        },
+        "cpu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "b798f4c2bed6427f8c41f9bc3b093bfa4f3ed138b330b9a5871a24b98e9a0073",
+          "finite": true,
+          "max_abs": 0.7452183961868286
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 2043,
+        "max_abs_error": 1.7881393432617188e-07,
+        "RMSE": 3.624026443288395e-08,
+        "relative_rms": 7.467399414193144e-08
+      },
+      "rsqrt_on_exact_CPU_variance": {
+        "npu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "b798f4c2bed6427f8c41f9bc3b093bfa4f3ed138b330b9a5871a24b98e9a0073",
+          "finite": true,
+          "max_abs": 0.7452183961868286
+        },
+        "cpu": {
+          "shape": [
+            1,
+            2043,
+            1
+          ],
+          "dtype": "torch.float32",
+          "bytes": 8172,
+          "sha256": "b798f4c2bed6427f8c41f9bc3b093bfa4f3ed138b330b9a5871a24b98e9a0073",
+          "finite": true,
+          "max_abs": 0.7452183961868286
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": true,
+        "elements": 2043,
+        "max_abs_error": 0.0,
+        "RMSE": 0.0,
+        "relative_rms": 0.0
+      },
+      "modes": {
+        "native": {
+          "vs_original_CPU_Half_norm": {
+            "npu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "3e241fb76937e977b736b1807f56539ef2be7fae3efcd2f24cd957916d512f28",
+              "finite": true,
+              "max_abs": 9.1953125
+            },
+            "cpu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "061e4eeb5a9eccc7d2bd5d24bde3391b1fd1cafa640f758147d0e47d314518a6",
+              "finite": true,
+              "max_abs": 9.1953125
+            },
+            "shape_mismatch": false,
+            "comparable": true,
+            "finite": true,
+            "dtype_matches": true,
+            "raw_bits_equal": false,
+            "elements": 10460160,
+            "max_abs_error": 0.00048828125,
+            "RMSE": 1.0313339090781136e-06,
+            "relative_rms": 4.456374096943268e-06
+          },
+          "repeat_bit_identical": true
+        },
+        "Newton1": {
+          "vs_original_CPU_Half_norm": {
+            "npu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "d8e4868d98fe77355ec28a3b091d3c300edfc44ac6309ec49760438ef18e78ab",
+              "finite": true,
+              "max_abs": 9.1953125
+            },
+            "cpu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "061e4eeb5a9eccc7d2bd5d24bde3391b1fd1cafa640f758147d0e47d314518a6",
+              "finite": true,
+              "max_abs": 9.1953125
+            },
+            "shape_mismatch": false,
+            "comparable": true,
+            "finite": true,
+            "dtype_matches": true,
+            "raw_bits_equal": false,
+            "elements": 10460160,
+            "max_abs_error": 0.00048828125,
+            "RMSE": 1.1262768630561542e-06,
+            "relative_rms": 4.866620785305544e-06
+          },
+          "repeat_bit_identical": true
+        },
+        "Newton2": {
+          "vs_original_CPU_Half_norm": {
+            "npu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "0393c25a696aa961f131bcefc84adf3480b554f9bdfb7f6abe7e6c58df453abe",
+              "finite": true,
+              "max_abs": 9.1953125
+            },
+            "cpu": {
+              "shape": [
+                1,
+                2043,
+                5120
+              ],
+              "dtype": "torch.float16",
+              "bytes": 20920320,
+              "sha256": "061e4eeb5a9eccc7d2bd5d24bde3391b1fd1cafa640f758147d0e47d314518a6",
+              "finite": true,
+              "max_abs": 9.1953125
+            },
+            "shape_mismatch": false,
+            "comparable": true,
+            "finite": true,
+            "dtype_matches": true,
+            "raw_bits_equal": false,
+            "elements": 10460160,
+            "max_abs_error": 0.00048828125,
+            "RMSE": 1.1205706142719546e-06,
+            "relative_rms": 4.841964193440595e-06
+          },
+          "repeat_bit_identical": true
+        }
+      }
+    }
+  }
+}

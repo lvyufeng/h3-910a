@@ -1,0 +1,304 @@
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:13: FutureWarning: triton.language.extra.cann.extension.atan2 is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.atan2 instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.atan2")
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:35: FutureWarning: triton.language.extra.cann.extension.isfinited is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.isfinited instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.isfinited")
+/home/mseco/vllm910a/lib/python3.12/site-packages/triton/language/extra/cann/extension/math_ops.py:49: FutureWarning: triton.language.extra.cann.extension.finitef is deprecated and will be removed in the next release; use triton.language.extra.cann.libdevice.finitef instead.
+  @_deprecated(replacement="triton.language.extra.cann.libdevice.finitef")
+INFO 11-18 10:43:42 [__init__.py:52] Available plugins for group vllm.platform_plugins:
+INFO 11-18 10:43:42 [__init__.py:54] - ascend -> vllm_ascend:register
+INFO 11-18 10:43:42 [__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+INFO 11-18 10:43:42 [__init__.py:272] Platform plugin ascend is activated
+INFO 11-18 10:43:43 [platform.py:74] Breakable CUDAGraph on Ascend is opt-in; using VLLM_USE_BREAKABLE_CUDAGRAPH=0.
+/home/mseco/vllm-omni/vllm_omni/__init__.py:19: RuntimeWarning: Failed to import version from _version.py: No module named 'vllm_omni._version'
+This typically happens in development mode before building.
+Using fallback version 'dev'.
+  from .version import __version__, __version_tuple__  # isort:skip # noqa: F401
+INFO 11-18 10:43:50 [patch_indexer_kv_dtype.py:102] Patched AttentionConfig.indexer_kv_dtype to accept 'int8' (DeepSeek V4 Ascend indexer K cache dtype).
+INFO 11-18 10:43:50 [patch_kv_cache_dtype.py:117] Patched CacheConfig.cache_dtype to accept 'int8' and 'mxfp8' (Ascend KV cache dtypes).
+INFO 11-18 10:43:50 [patch.py:253] NVFP4 W4A4 weight_scale NaN-clamp: skipped — upstream serves ModelOpt linears through the generic ModelOptLinearMethod and rejects any NaN weight_scale (unloaded-scale sentinel), so a load-time error replaces the `!!!!` decode-time collapse.
+INFO 11-18 10:43:50 [patch.py:551] inductor factorable-divisibility patch: skipped (upstream already proves it).
+INFO 11-18 10:43:50 [patch.py:630] [cumem-cuda] CuMemAllocator._python_free_callback patched: asleep guard extended to all platforms.
+[W1118 10:43:55.376300530 NPUCachingAllocator.cpp:204] Warning: The current CANN and HDK(driver) versions require processing for 32 padding size, with memory allocation. (function operator())
+/tmp/h3_round94_rope01/rope_probe94.py:49: FutureWarning: `SimpleNamespace.rot_pos_emb` is deprecated and will be removed in v5.11. Use `get_vision_position_ids` from `transformers.vision_utils` and apply the rotary embedding module.
+  CPUfreq=hf.Qwen3VLVisionModel.rot_pos_emb(CPUvision,grid)
+[W1118 10:43:59.546237440 AddKernelNpu.cpp:90] Warning: The oprator of add is executed, Currently High Accuracy but Low Performance OP with 64-bit has been used, Please Do Some Cast at Python Functions with 32-bit for Better Performance! (function operator())
+{
+  "completed": true,
+  "text": {
+    "cos_vs_CPU": {
+      "npu": {
+        "shape": [
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "7044e477f0f49b80ed78428430671e009cd688695582b6796187edd43522ae1c",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "cpu": {
+        "shape": [
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "f0480c8783ff7ec9663f4f79035019a00c17219152f9bab4210097317ab7f996",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 261504,
+      "max_abs_error": 0.00048828125,
+      "RMSE": 6.615329768107969e-06,
+      "relative_rms": 7.140325964958815e-06
+    },
+    "sin_vs_CPU": {
+      "npu": {
+        "shape": [
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "74c703b256c5e3838cbd8a641007e6b8c4d0089cb3f981c73a5a16da8430b64a",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "cpu": {
+        "shape": [
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "0c147aa3d84e46345c8ead59721a04ccd1fec602c01ec54e570006bd2cda0b08",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 261504,
+      "max_abs_error": 3.814697265625e-06,
+      "RMSE": 1.054959792454993e-08,
+      "relative_rms": 2.8026817431520466e-08
+    },
+    "cos_repeat": {
+      "npu": {
+        "shape": [
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "7044e477f0f49b80ed78428430671e009cd688695582b6796187edd43522ae1c",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "cpu": {
+        "shape": [
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "7044e477f0f49b80ed78428430671e009cd688695582b6796187edd43522ae1c",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": true,
+      "elements": 261504,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_rms": 0.0
+    },
+    "sin_repeat": {
+      "npu": {
+        "shape": [
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "74c703b256c5e3838cbd8a641007e6b8c4d0089cb3f981c73a5a16da8430b64a",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "cpu": {
+        "shape": [
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "74c703b256c5e3838cbd8a641007e6b8c4d0089cb3f981c73a5a16da8430b64a",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": true,
+      "elements": 261504,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_rms": 0.0
+    },
+    "existing_R79_Float_direct_frequency_branch_used": true
+  },
+  "vision": {
+    "cos_vs_CPU": {
+      "npu": {
+        "shape": [
+          8064,
+          72
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2322432,
+        "sha256": "4b9a40042adc122dd49eaf693cf55e4d9da4fe7cb830774bd5a599b100adcb64",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          72
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2322432,
+        "sha256": "5fe9e6b9adce243ba015e69179253b3a6915dc1fc649e8dd7400d1a780b80e7d",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 580608,
+      "max_abs_error": 1.7881393432617188e-07,
+      "RMSE": 4.563492243305673e-08,
+      "relative_rms": 5.2657977867530294e-08
+    },
+    "sin_vs_CPU": {
+      "npu": {
+        "shape": [
+          8064,
+          72
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2322432,
+        "sha256": "69adb3944a8e801d85a04c10faee666d7bef18a25f98f174016a741ac1ad5273",
+        "finite": true,
+        "max_abs": 0.9999901652336121
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          72
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2322432,
+        "sha256": "ffcaef17f766562c661a86eacaf5da73188fc520d3f1f992163203b5f2695eb7",
+        "finite": true,
+        "max_abs": 0.9999902248382568
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 580608,
+      "max_abs_error": 1.1920928955078125e-07,
+      "RMSE": 2.211912906639466e-08,
+      "relative_rms": 4.4331055551938735e-08
+    },
+    "cos_repeat": {
+      "npu": {
+        "shape": [
+          8064,
+          72
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2322432,
+        "sha256": "4b9a40042adc122dd49eaf693cf55e4d9da4fe7cb830774bd5a599b100adcb64",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          72
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2322432,
+        "sha256": "4b9a40042adc122dd49eaf693cf55e4d9da4fe7cb830774bd5a599b100adcb64",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": true,
+      "elements": 580608,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_rms": 0.0
+    },
+    "sin_repeat": {
+      "npu": {
+        "shape": [
+          8064,
+          72
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2322432,
+        "sha256": "69adb3944a8e801d85a04c10faee666d7bef18a25f98f174016a741ac1ad5273",
+        "finite": true,
+        "max_abs": 0.9999901652336121
+      },
+      "cpu": {
+        "shape": [
+          8064,
+          72
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2322432,
+        "sha256": "69adb3944a8e801d85a04c10faee666d7bef18a25f98f174016a741ac1ad5273",
+        "finite": true,
+        "max_abs": 0.9999901652336121
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": true,
+      "elements": 580608,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_rms": 0.0
+    }
+  }
+}
