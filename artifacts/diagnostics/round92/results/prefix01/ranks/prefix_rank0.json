@@ -1,0 +1,236 @@
+{
+  "scope": "Actual TP8 prefix0..24 captured bit-identical to R91;not a complete encoder timing.",
+  "rank": 0,
+  "world_size": 8,
+  "completed": true,
+  "source_SHA256": "668ad7bc6c13fe978e0569b3bf0d8e1bc4a4a8cce8cceabedacca7df7ef22fa5",
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "numerical_tolerance": null,
+  "cases": {
+    "native": {
+      "raw24": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 20920320,
+        "sha256": "48a183903d547d3b5440ad8f251451dfa888ba8c1a7f88b6f79e0a666b9027f4",
+        "finite": true,
+        "max_abs": 15528.0
+      },
+      "raw24_matches_R91": true,
+      "repeat_bit_identical": true,
+      "no_raw25to49_executed": true,
+      "original_position_ids_equal_CPU_reference": true
+    },
+    "corrected_vision_native_text": {
+      "raw24": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 20920320,
+        "sha256": "e232f61b4260b81b08bb0cf3eb96a7df6d0a56ed3c0c82ab9d0ec0f15004a528",
+        "finite": true,
+        "max_abs": 15528.0
+      },
+      "raw24_matches_R91": true,
+      "repeat_bit_identical": true,
+      "no_raw25to49_executed": true,
+      "original_position_ids_equal_CPU_reference": true
+    },
+    "corrected_vision_precise_text_geometry_cache": {
+      "raw24": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 20920320,
+        "sha256": "6dd3016db8e7a6abbc425449358a4af5cf5f472d6512f239b0b63bda83a87c4b",
+        "finite": true,
+        "max_abs": 15528.0
+      },
+      "raw24_matches_R91": true,
+      "repeat_bit_identical": true,
+      "no_raw25to49_executed": true,
+      "original_position_ids_equal_CPU_reference": true
+    }
+  },
+  "FP32_row_adapter_not_installed": true,
+  "all_linear_model_weights_Half": true,
+  "not_full_encoder_timing": true,
+  "R88_slow_vision_attention_and_R89_redundant_Float_nonlinears_not_installed": true,
+  "candidate": {
+    "path": "/tmp/h3_round92_case01/candidate_encoder79.py",
+    "sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "module_name": "candidate_encoder79",
+    "origin_production_sha256": null
+  },
+  "text_attention": {
+    "scope": "module-level candidate._scaled_dot_product_attention replacement",
+    "global_functional_monkeypatch": false,
+    "torch_nn_functional_replaced": false,
+    "operands": "FP16 Q/K/V in, FP32 scores, FP32 softmax, FP32 P@V, single FP16 out",
+    "causal": true,
+    "clamp_applied": false,
+    "clamp_note": "the 910A-only +/-50000 clamp of the production shim is deliberately absent; the CPU reference baseline has no such clamp",
+    "query_chunk": 512,
+    "query_chunk_note": "row-wise softmax is exactly decomposable; GEMM tiling differs from a single-shot FP32 matmul, so bit-equality with CPU is not asserted",
+    "original_reference": {
+      "module": "candidate_encoder79",
+      "qualname": "_scaled_dot_product_attention"
+    }
+  },
+  "cpu_reference_gate": {
+    "completed": true,
+    "full_multimodal_reference_completed": true,
+    "repeat_pre_final_norm_bits_equal": true,
+    "repeat_post_final_norm_bits_equal": true,
+    "pre_final_norm_matches_layer49_identity": true
+  },
+  "cpu_reference": {
+    "root": "/tmp/h3_round78_hf_fp1601",
+    "source_sha256": "50165e77adb393b4573fbe0fdb29c62a6ddb14b8f39082d0ea67e904848010ea",
+    "original_selected_parameter_sha256": "a69676bac5e6f3a513ce44080d29c73974553b6e0a327ea272e47b600d84e46e",
+    "boundary": "original HF selected-50 decoder layers, PRE final norm",
+    "vision_layers": 27,
+    "language_layers": 50,
+    "isolation": "recomputed original HF FP16 graph; old BF16 outputs were never cast to FP16"
+  },
+  "setup_excluded_from_warm": {
+    "all_vision_weights_original_Half": true,
+    "kernel_prebuild_and_layout_cache": true,
+    "KV_padding": {
+      "installed": true,
+      "primed": true,
+      "original_kv_rows": 128,
+      "padded_output_rows": 256,
+      "only_zero_output_rows_added": true,
+      "trailing_output_discarded": true,
+      "cache_entries": 100,
+      "expected_cache_entries": 100,
+      "cache_bytes": 262144000,
+      "padding_bytes": 131072000,
+      "pad_ratio": 2.0,
+      "max_abs_prefix_mismatch": 0.0,
+      "all_prefix_exact": true,
+      "tail_nonzero_count": 0,
+      "all_cached_padded_are_zero_offset": true,
+      "no_cached_padded_requires_grad": true,
+      "no_cached_padded_holds_autograd_graph": true,
+      "cached_prefix_sha256": null,
+      "param_signature_contract": "storage_data_ptr+storage_offset+shape+stride+dtype+device+_version",
+      "transform": {
+        "candidate_module": "candidate_encoder79",
+        "class_name": "MiniMaxH3Qwen3VLTextAttention",
+        "original_forward_source_sha256": "668456bf92d7ea2e8c3e0e1c0d623251d71ba3bb30dd9732385fd1b04256e397",
+        "transformed_source_sha256": "604442a074c5073836512615f6045041faa277c34d64ae43c26098931460bd5b",
+        "matched_calls": [
+          "k_weight",
+          "v_weight"
+        ],
+        "rewritten_call_count": 2,
+        "helper_name": "_r81_kv_linear",
+        "exec_namespace": "live_candidate_module_dict",
+        "module_namespace_left_behind": [
+          "_r81_kv_linear"
+        ],
+        "global_functional_patched": false,
+        "quantized_qkv_path_untouched": true,
+        "q_projection_untouched": true,
+        "mlp_untouched": true
+      },
+      "stats": {
+        "helper_calls": 0,
+        "padded_calls": 0,
+        "passthrough_calls": 0,
+        "cache_hits": 0,
+        "cache_misses": 100,
+        "cache_evictions": 0
+      },
+      "not_executed_here": true,
+      "proves_full_encoder_precision": false
+    },
+    "erf": {
+      "round": 90,
+      "installed": true,
+      "enabled": false,
+      "patched_module_names": [
+        "deepstack_merger_list.0.act_fn",
+        "deepstack_merger_list.1.act_fn",
+        "deepstack_merger_list.2.act_fn",
+        "merger.act_fn"
+      ],
+      "patched_module_count": 4,
+      "expected_erf_gelu_modules": 4,
+      "tanh_gelu_modules_left_untouched": 27,
+      "calls": 0,
+      "kernel_launches": 0,
+      "tile_tasks_processed": 0,
+      "kernel_prepared": true,
+      "kernel_name": "erf_gelu_fixed90_n9289728_t4096_c30",
+      "kernel_object_SHA256": "c0406299563c59e56a5a79d0c1a93c5be58cffce3e87ba7fe254c06a9b925e15",
+      "numel": 9289728,
+      "ub_bytes": 147456,
+      "per_instance_forward_only": true,
+      "patches_torch_global": false,
+      "patches_torch_functional": false,
+      "patches_other_activations": false,
+      "patches_biased_linears": false,
+      "disabled_is_exact_native": true,
+      "cached_float_weights": false,
+      "no_model_parameters": true,
+      "source_sha256": "5a5e85aaad5697a7a890ecb0b5b724bc3acd93d819978ab55d5eb68038cd0552",
+      "numerical_tolerance": null,
+      "full_encoder_precision_accepted": false,
+      "whole_goal_complete": false
+    },
+    "vision_bias": {
+      "enabled": false,
+      "cached_weights": 116,
+      "kernel_shapes": [
+        "(8064, 1152, 3456)",
+        "(8064, 1152, 1152)",
+        "(8064, 1152, 4352)",
+        "(8064, 4352, 1152)",
+        "(2016, 4608, 4608)",
+        "(2016, 4608, 5120)"
+      ],
+      "calls": 0,
+      "kernel_launches": 0,
+      "padding_controls": 0,
+      "packed_Half_weight_bytes": 1186725888,
+      "FP32_bias_cache_bytes": 1247744,
+      "FP32_weight_shadows": 0,
+      "one_Half_cast_inside_kernel_after_FP32_bias": true,
+      "source_sha256": "8393f6b9c379e0df8cc3c1393ff2b839dab4c535fddd4be14782cec615c8db19"
+    },
+    "patch": {
+      "enabled": false,
+      "kernel_launches": 0,
+      "geometry": {
+        "M": 8064,
+        "K": 1536,
+        "N": 1152
+      },
+      "packed_Half_weight_bytes": 3538944,
+      "Float_bias_bytes": 4608,
+      "Float_weight_shadow": false,
+      "one_Half_cast_after_Float_bias": true,
+      "no_convolution_parameter_change": true,
+      "source_sha256": "2eb5ff1b6ac741d3bb27e523524a917aeebda791525ac23dffb20b906d45e7f2",
+      "kernel_name": "vision_bias87_m8064_k1536_n1152_mb128_nb128_kb128_c30",
+      "kernel_object_SHA256": "5d31cb2ca0b78c86745356146b200d66b637e7e36f8b13cc1fe1e674f3cf017d"
+    }
+  },
+  "input_bundle_file_SHA256": "2aa1084402721dcf75497dd8f6ef3900fbfcbfa41374343c01d42fcfebd765f4",
+  "parameter_and_fixture_SHA_unchanged": true,
+  "CPU_reference_SHA_unchanged": true
+}

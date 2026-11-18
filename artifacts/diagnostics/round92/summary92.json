@@ -1,0 +1,180 @@
+{
+  "scope": "Separate exact CPU input-only amplification from same-input NPU arithmetic.",
+  "CPU_original_raw25_twice_SHA_exact": true,
+  "CPU_original_Half_weights_no_Float_teacher": true,
+  "no_DeepStack_after24_or_finalnorm": true,
+  "not_full_encoder_timing": true,
+  "all8_same_input4cases4modes_repeat_native_recovery_and_params_inputs_unchanged": true,
+  "cases": {
+    "CPU_raw24": {
+      "input_only_original_CPU_control": null,
+      "input_SHA256": "7a2178195b3ec65e09ba4c7587acb052e04996a4023f6b1a5f1b2088e2eef084",
+      "math_modes": {
+        "native": {
+          "same_input_arithmetic_relative_RMS": 7.744848516190124e-05,
+          "same_input_arithmetic_max_abs_error": 0.0625,
+          "full_output_vs_original_CPU25_relative_RMS": 7.744848516190124e-05,
+          "all8_output_SHA256": "eb7b6ecaa0b34f0a9264f6838385729761b1124c6bad65cfbda1a30b17b1cc62"
+        },
+        "precise_attention_native_rows": {
+          "same_input_arithmetic_relative_RMS": 7.39573115872699e-05,
+          "same_input_arithmetic_max_abs_error": 0.125,
+          "full_output_vs_original_CPU25_relative_RMS": 7.39573115872699e-05,
+          "all8_output_SHA256": "9fe39c38dacf6849717723e080eaa40ee5d5ff4e750ec603e65381e1281f24df"
+        },
+        "native_attention_FP32_rows": {
+          "same_input_arithmetic_relative_RMS": 6.698429835546609e-05,
+          "same_input_arithmetic_max_abs_error": 0.0625,
+          "full_output_vs_original_CPU25_relative_RMS": 6.698429835546609e-05,
+          "all8_output_SHA256": "f6f363a5c4127737932f13af7cb83e749961f96b9818de01f186de7212d55001"
+        },
+        "precise_attention_FP32_rows": {
+          "same_input_arithmetic_relative_RMS": 5.2713065531121485e-05,
+          "same_input_arithmetic_max_abs_error": 0.0625,
+          "full_output_vs_original_CPU25_relative_RMS": 5.2713065531121485e-05,
+          "all8_output_SHA256": "7e8056974399832b953f881ed14c7e1316e99e37dfa81a8747a5c7f0e68bce9a"
+        }
+      }
+    },
+    "native": {
+      "input_only_original_CPU_control": {
+        "input_relative_rms_vs_CPU_raw24": 0.0050961174340992356,
+        "block25_output_relative_rms_vs_CPU_raw24": 0.005452120677028391,
+        "output_over_input_amplification": 1.0698577392559796
+      },
+      "input_SHA256": "48a183903d547d3b5440ad8f251451dfa888ba8c1a7f88b6f79e0a666b9027f4",
+      "math_modes": {
+        "native": {
+          "same_input_arithmetic_relative_RMS": 7.7243100974605e-05,
+          "same_input_arithmetic_max_abs_error": 0.0625,
+          "full_output_vs_original_CPU25_relative_RMS": 0.005452248898631085,
+          "all8_output_SHA256": "9120ef58730cc35874a02113a31b1c9dcdcc2255fd310efe8786f1d2acd0a465"
+        },
+        "precise_attention_native_rows": {
+          "same_input_arithmetic_relative_RMS": 7.347946020008613e-05,
+          "same_input_arithmetic_max_abs_error": 0.0625,
+          "full_output_vs_original_CPU25_relative_RMS": 0.005452124234420901,
+          "all8_output_SHA256": "00f5a46e8ad887eb1b6220c28c9e1f37d2aef856841339f3d0e1ef886f1853e8"
+        },
+        "native_attention_FP32_rows": {
+          "same_input_arithmetic_relative_RMS": 6.732262868440398e-05,
+          "same_input_arithmetic_max_abs_error": 0.125,
+          "full_output_vs_original_CPU25_relative_RMS": 0.005452261386537651,
+          "all8_output_SHA256": "77b60e19b5908771f387e74460503d023798ba12dd1975af04a6f515b0c8494d"
+        },
+        "precise_attention_FP32_rows": {
+          "same_input_arithmetic_relative_RMS": 5.397761066626377e-05,
+          "same_input_arithmetic_max_abs_error": 0.125,
+          "full_output_vs_original_CPU25_relative_RMS": 0.005452146504231005,
+          "all8_output_SHA256": "ec034e4f94039ecb46108e31e0825b15f77648f147d98bed875ef5debda271bf"
+        }
+      }
+    },
+    "corrected_vision_native_text": {
+      "input_only_original_CPU_control": {
+        "input_relative_rms_vs_CPU_raw24": 0.002530746453191458,
+        "block25_output_relative_rms_vs_CPU_raw24": 0.002697414232065605,
+        "output_over_input_amplification": 1.0658571618914912
+      },
+      "input_SHA256": "e232f61b4260b81b08bb0cf3eb96a7df6d0a56ed3c0c82ab9d0ec0f15004a528",
+      "math_modes": {
+        "native": {
+          "same_input_arithmetic_relative_RMS": 7.772462745739728e-05,
+          "same_input_arithmetic_max_abs_error": 0.0625,
+          "full_output_vs_original_CPU25_relative_RMS": 0.0026975182258651763,
+          "all8_output_SHA256": "68c1030626bfeab81577ed4f076ac6312a5dc9297ac2cb3e85b0aebc5273396f"
+        },
+        "precise_attention_native_rows": {
+          "same_input_arithmetic_relative_RMS": 7.319617797477749e-05,
+          "same_input_arithmetic_max_abs_error": 0.0625,
+          "full_output_vs_original_CPU25_relative_RMS": 0.0026975090791092372,
+          "all8_output_SHA256": "895b3f96fc4093d4b42dd228c02eb77fabd9a8c8e8fecac58c4e83add7012962"
+        },
+        "native_attention_FP32_rows": {
+          "same_input_arithmetic_relative_RMS": 6.660167164120695e-05,
+          "same_input_arithmetic_max_abs_error": 0.0625,
+          "full_output_vs_original_CPU25_relative_RMS": 0.002697457264942717,
+          "all8_output_SHA256": "6ffa57998bc55beead60126dd63c4a71313026db4e240e9df1094922512a184e"
+        },
+        "precise_attention_FP32_rows": {
+          "same_input_arithmetic_relative_RMS": 5.242513070913138e-05,
+          "same_input_arithmetic_max_abs_error": 0.0625,
+          "full_output_vs_original_CPU25_relative_RMS": 0.0026974851369155144,
+          "all8_output_SHA256": "48ba6d8314c21f2a8eb42c06f3f72d0a7415569ae2d24b2d3b55ca18d75cd1a0"
+        }
+      }
+    },
+    "corrected_vision_precise_text_geometry_cache": {
+      "input_only_original_CPU_control": {
+        "input_relative_rms_vs_CPU_raw24": 0.002529573323995615,
+        "block25_output_relative_rms_vs_CPU_raw24": 0.002695774878393489,
+        "output_over_input_amplification": 1.0657033946481334
+      },
+      "input_SHA256": "6dd3016db8e7a6abbc425449358a4af5cf5f472d6512f239b0b63bda83a87c4b",
+      "math_modes": {
+        "native": {
+          "same_input_arithmetic_relative_RMS": 7.77070420832335e-05,
+          "same_input_arithmetic_max_abs_error": 0.125,
+          "full_output_vs_original_CPU25_relative_RMS": 0.0026958321811985765,
+          "all8_output_SHA256": "bf40f7260586887bc7984be4b1adca201bd9d276e7451a50dd64376093b816af"
+        },
+        "precise_attention_native_rows": {
+          "same_input_arithmetic_relative_RMS": 7.342621525266553e-05,
+          "same_input_arithmetic_max_abs_error": 0.125,
+          "full_output_vs_original_CPU25_relative_RMS": 0.0026958321764710613,
+          "all8_output_SHA256": "96954f273ab8ef83eb8c4b1720a58f7627490996409cbbadd548c4318db41f74"
+        },
+        "native_attention_FP32_rows": {
+          "same_input_arithmetic_relative_RMS": 6.662862994896501e-05,
+          "same_input_arithmetic_max_abs_error": 0.125,
+          "full_output_vs_original_CPU25_relative_RMS": 0.0026957553682438783,
+          "all8_output_SHA256": "6f75f36f3cc3be6f165beb5107bd7e41c0b5762e4e508e71d746e4dd670d5624"
+        },
+        "precise_attention_FP32_rows": {
+          "same_input_arithmetic_relative_RMS": 5.2994715657980124e-05,
+          "same_input_arithmetic_max_abs_error": 0.125,
+          "full_output_vs_original_CPU25_relative_RMS": 0.002695797100287898,
+          "all8_output_SHA256": "8d0816725ecff53972ac7040a9301a7a8469b298680f8b2f174d037f4352b75c"
+        }
+      }
+    }
+  },
+  "receipts": [
+    {
+      "rank": 0,
+      "receiptSHA256": "476d4f2c340e09f73669b968c23eb29c901d5c873f6f2a44e266c9d7bda1d82f"
+    },
+    {
+      "rank": 1,
+      "receiptSHA256": "1d3ae74851d3121cb7ff68d30ae8fe79ce7d0efa53e47d108f3ecb294c0882ea"
+    },
+    {
+      "rank": 2,
+      "receiptSHA256": "3b7f659106801945ff16238d4458b37e622ba26ab5c6cff53fc6268379d167ac"
+    },
+    {
+      "rank": 3,
+      "receiptSHA256": "de28ee7fabff9758ed43c6ef997c6e3a24fcc7181ce8d98e1ebb9669f396dac3"
+    },
+    {
+      "rank": 4,
+      "receiptSHA256": "ddeb3bdddee2562a36a54f70efe0dccee1e05197680d7754e33c172ec2a42ebb"
+    },
+    {
+      "rank": 5,
+      "receiptSHA256": "98696027d3f1bc7596cb30586899dbe4c8d7fbe58d5718b2d4a513237194fbfc"
+    },
+    {
+      "rank": 6,
+      "receiptSHA256": "b3ea4181ce42144652f0c0c9845628c18cdea7f461b7a4f042fab9aa82942c26"
+    },
+    {
+      "rank": 7,
+      "receiptSHA256": "1200dbbbb2d02ef820ee79500be7dd3d0fbab4e4b8ef1535db5dae2e058b2425"
+    }
+  ],
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "numerical_tolerance": null,
+  "original_R91_fullvision_combination_not_default": true
+}
