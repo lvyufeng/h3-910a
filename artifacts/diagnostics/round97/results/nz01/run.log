@@ -1,0 +1,29 @@
+[W1118 13:45:44.859414700 NPUCachingAllocator.cpp:204] Warning: The current CANN and HDK(driver) versions require processing for 32 padding size, with memory allocation. (function operator())
+Error: dst tensor overflow, expected elements nums: 4488, actual elements nums: 4096
+File path: /tmp/h3_round97_nz01/softmax_pack97.py, line 373
+The context code cause the exception is:
+370    
+371            # Constant zero row for the query-row endpoint pad, filled once outside the
+372            # task loop with the verified FP32 repeat stride convention.
+373 ->         t.vector_dup(mask, zero_f, 0.0, repeats, stride, stride)
+374    
+375            with t.for_range(0, steps) as step:
+376                task = core + step * cores
+
+{
+  "completed": false,
+  "cases": {},
+  "failure": {
+    "type": "SystemExit",
+    "message": "Traceback:\n  File /tmp/h3_round97_nz01/softmax_smoke97.py, line 61, in <module>\n if __name__=='__main__':main()\n  File /tmp/h3_round97_nz01/softmax_smoke97.py, line 23, in main\n             meta=kernel.build_kernel(batch=16,m=m,n=4096,valid_keys=4032,out_dir=ROOT/'softmax')\n  File /tmp/h3_round97_nz01/softmax_pack97.py, line 568, in build_kernel\n         gm = _emit_kernel(t, plan, tik)\n  File /tmp/h3_round97_nz01/softmax_pack97.py, line 373, in _emit_kernel\n         t.vector_dup(mask, zero_f, 0.0, repeats, stride, stride)"
+  }
+}
+Traceback:
+  File /tmp/h3_round97_nz01/softmax_smoke97.py, line 61, in <module>
+ if __name__=='__main__':main()
+  File /tmp/h3_round97_nz01/softmax_smoke97.py, line 23, in main
+             meta=kernel.build_kernel(batch=16,m=m,n=4096,valid_keys=4032,out_dir=ROOT/'softmax')
+  File /tmp/h3_round97_nz01/softmax_pack97.py, line 568, in build_kernel
+         gm = _emit_kernel(t, plan, tik)
+  File /tmp/h3_round97_nz01/softmax_pack97.py, line 373, in _emit_kernel
+         t.vector_dup(mask, zero_f, 0.0, repeats, stride, stride)

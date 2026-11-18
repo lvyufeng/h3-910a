@@ -1,0 +1,494 @@
+{
+  "scope": "Cheap two-L0C fused PV compile/launch smoke against unchanged two-kernel arithmetic.",
+  "completed": true,
+  "source_SHA256": "0c154cd66280c3a24be7fb9a7f4802237de858177819b3c2d6d24477642ab5f6",
+  "synthetic_smoke_only_not_model_timing": true,
+  "no_Float_Linear_teacher_or_BF_goldcasts": true,
+  "whole_goal_complete": false,
+  "full_encoder_precision_accepted": false,
+  "numerical_tolerance": null,
+  "oldmeta": {
+    "round": 85,
+    "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+    "executed": false,
+    "compiled_now": true,
+    "not_a_speed_claim": true,
+    "not_h3_end_to_end_result": true,
+    "full_encoder_precision_accepted": false,
+    "kernel_name": "batch_gemm85_h2_m128_k256_n128_mb128_nb128_kb128_c2",
+    "kernel_symbol": "batch_gemm85_h2_m128_k256_n128_mb128_nb128_kb128_c2__kernel0",
+    "block_dim": 2,
+    "core_type": "AiCore",
+    "obj_path": "/tmp/h3_round96_fused01/smoke_old/batch_gemm85_h2_m128_k256_n128_mb128_nb128_kb128_c2/batch_gemm85_h2_m128_k256_n128_mb128_nb128_kb128_c2.o",
+    "obj_sha256": "64c462cc5bae9cc8e73432f983473389b0e2085a218d9ab606f11446bde18af1",
+    "json_path": "/tmp/h3_round96_fused01/smoke_old/batch_gemm85_h2_m128_k256_n128_mb128_nb128_kb128_c2/batch_gemm85_h2_m128_k256_n128_mb128_nb128_kb128_c2.json",
+    "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+    "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+    "dtype": "float16_in_float32_out",
+    "dst_dtype": "float32",
+    "uses_fp32_bias": false,
+    "input_dtype": "float16",
+    "accumulator_dtype": "float32",
+    "output_dtype": "float32",
+    "kernel_arg_order": [
+      "a_gm_float16",
+      "b_gm_float16",
+      "aux0_gm_float16",
+      "aux1_gm_float16",
+      "c_gm_float32"
+    ],
+    "GM_argument_count": 5,
+    "logical_shape": {
+      "batch": 2,
+      "m": 128,
+      "k": 256,
+      "n": 128
+    },
+    "batch": 2,
+    "padded_shape": {
+      "m_pad": 128,
+      "k1": 16,
+      "n1": 8
+    },
+    "tiles": {
+      "mb": 128,
+      "nb": 128,
+      "kb": 128
+    },
+    "grid": {
+      "m_tiles": 1,
+      "n_tiles": 1,
+      "per_head_tasks": 1,
+      "tasks": 2,
+      "cores": 2,
+      "steps": 1
+    },
+    "head_stride_elems": {
+      "a": 32768,
+      "b": 32768,
+      "c": 16384
+    },
+    "gm_shapes": {
+      "a": [
+        2,
+        16,
+        128,
+        16
+      ],
+      "b": [
+        2,
+        16,
+        128,
+        16
+      ],
+      "c": [
+        2,
+        8,
+        128,
+        16
+      ],
+      "aux": [
+        16
+      ]
+    },
+    "gm_elems": {
+      "a": 65536,
+      "b": 65536,
+      "c": 32768
+    },
+    "gm_bytes": {
+      "a": 131072,
+      "b": 131072,
+      "c": 131072
+    },
+    "dma": {
+      "a_load": {
+        "nburst": 8,
+        "burst": 128,
+        "src_stride": 0,
+        "dst_stride": 0
+      },
+      "b_load": {
+        "nburst": 8,
+        "burst": 128,
+        "src_stride": 0,
+        "dst_stride": 0
+      },
+      "c_store": {
+        "nburst": 8,
+        "burst": 256,
+        "src_stride": 0,
+        "dst_stride": 0
+      },
+      "l0c_to_ub": {
+        "block_mode": "m",
+        "nburst": 1,
+        "burst_len_kb": 64
+      }
+    },
+    "buffers": {
+      "l1_a_bytes": 32768,
+      "l1_b_bytes": 32768,
+      "l0c_bytes": 65536,
+      "ub_bytes": 65536
+    },
+    "accumulation": {
+      "k_tiles": 2,
+      "single_l0c_across_all_k_blocks": true,
+      "init_first_k_block_only": true,
+      "half_partial": false,
+      "fp32_ub_partial_sum": false,
+      "final_output_dtype": "float32"
+    },
+    "batched": {
+      "per_head_distinct_b": true,
+      "head_offset_applied_to_a_b_c": true,
+      "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+    },
+    "capability": {
+      "compile_soc": "Ascend910B",
+      "runtime_expected_soc": "Ascend910B",
+      "Intrinsic_mmad_f162f32": true,
+      "core_num": 30,
+      "l1_size": 1048576,
+      "l0c_size": 262144,
+      "ub_size": 262144
+    },
+    "suggested_smoke_geometry": [
+      2,
+      128,
+      256,
+      128
+    ],
+    "no_bias_operand": true,
+    "no_fp32_weight_shadow": true,
+    "per_head_distinct_b_required": true,
+    "host_packing_required": [
+      "pack_a",
+      "pack_w"
+    ],
+    "host_unpacking_required": [
+      "unpack_c"
+    ],
+    "host_padding": {
+      "m_pad_rows": 0,
+      "a_zero_m_padding": true,
+      "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+      "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+    }
+  },
+  "newmeta": {
+    "round": 96,
+    "scope": "fused two-Half-probability P@V: two independent FP32 L0C accumulations over the full K axis, Float32 UB combine, one Half cast, one launch",
+    "executed": false,
+    "compiled_now": true,
+    "not_a_speed_claim": true,
+    "not_h3_end_to_end_result": true,
+    "full_encoder_precision_accepted": false,
+    "whole_goal_complete": false,
+    "kernel_name": "pv_hi_lo96_h2_m128_k256_n128_mb128_nb128_kb128_c2",
+    "kernel_symbol": "pv_hi_lo96_h2_m128_k256_n128_mb128_nb128_kb128_c2__kernel0",
+    "block_dim": 2,
+    "core_type": "AiCore",
+    "obj_path": "/tmp/h3_round96_fused01/smoke_fused/pv_hi_lo96_h2_m128_k256_n128_mb128_nb128_kb128_c2/pv_hi_lo96_h2_m128_k256_n128_mb128_nb128_kb128_c2.o",
+    "obj_sha256": "17e728bcf09ad2b3b6fdcfdf7d0d99e6a140a79a3253ee7f6b8b33297c5156cb",
+    "json_path": "/tmp/h3_round96_fused01/smoke_fused/pv_hi_lo96_h2_m128_k256_n128_mb128_nb128_kb128_c2/pv_hi_lo96_h2_m128_k256_n128_mb128_nb128_kb128_c2.json",
+    "source_sha256": "99b7dadd1d279de5316c20faa4c36744fbc5f475c492f225e41c86dab02a2e32",
+    "reference_r85_source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+    "reference_runtime_module_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6",
+    "reference_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+    "dtype": "float16_in_float16_out_two_float32_accumulators",
+    "dst_dtype": "float16",
+    "input_dtype": "float16",
+    "accumulator_dtype": "float32",
+    "output_dtype": "float16",
+    "kernel_arg_order": [
+      "hi_gm_float16",
+      "lo_gm_float16",
+      "v_gm_float16",
+      "aux_gm_float32",
+      "out_gm_float16"
+    ],
+    "GM_argument_count": 5,
+    "fused_products": [
+      "high",
+      "low"
+    ],
+    "low_scale_1024": 1024.0,
+    "low_downscale": 0.0009765625,
+    "single_final_half_cast": true,
+    "one_kernel_launch_per_tile": true,
+    "no_mid_product_fp32_gm": true,
+    "no_host_combine": true,
+    "uses_fp32_bias": false,
+    "no_bias_operand": true,
+    "no_fp32_weight_shadow": true,
+    "no_half_partial": true,
+    "logical_shape": {
+      "batch": 2,
+      "m": 128,
+      "k": 256,
+      "n": 128
+    },
+    "batch": 2,
+    "padded_shape": {
+      "m_pad": 128,
+      "k1": 16,
+      "n1": 8
+    },
+    "tiles": {
+      "mb": 128,
+      "nb": 128,
+      "kb": 128
+    },
+    "grid": {
+      "m_tiles": 1,
+      "n_tiles": 1,
+      "per_head_tasks": 1,
+      "tasks": 2,
+      "cores": 2,
+      "steps": 1
+    },
+    "head_stride_elems": {
+      "hi": 32768,
+      "lo": 32768,
+      "b": 32768,
+      "out": 16384
+    },
+    "gm_shapes": {
+      "hi": [
+        2,
+        16,
+        128,
+        16
+      ],
+      "lo": [
+        2,
+        16,
+        128,
+        16
+      ],
+      "b": [
+        2,
+        16,
+        128,
+        16
+      ],
+      "out": [
+        2,
+        8,
+        128,
+        16
+      ],
+      "aux": [
+        16
+      ],
+      "aux_dtype": "float32"
+    },
+    "gm_elems": {
+      "hi": 65536,
+      "lo": 65536,
+      "b": 65536,
+      "out": 32768
+    },
+    "gm_bytes": {
+      "hi": 131072,
+      "lo": 131072,
+      "b": 131072,
+      "out": 65536,
+      "aux": 64
+    },
+    "dma": {
+      "a_load": {
+        "nburst": 8,
+        "burst": 128,
+        "src_stride": 0,
+        "dst_stride": 0
+      },
+      "b_load": {
+        "nburst": 8,
+        "burst": 128,
+        "src_stride": 0,
+        "dst_stride": 0
+      },
+      "l0c_to_ub": {
+        "block_mode": "m",
+        "nburst": 1,
+        "burst_len_kb": 64
+      },
+      "out_store": {
+        "nburst": 8,
+        "burst": 128,
+        "src_stride": 0,
+        "dst_stride": 0
+      }
+    },
+    "buffers": {
+      "l1_a_hi_bytes": 32768,
+      "l1_a_lo_bytes": 32768,
+      "l1_b_bytes": 32768,
+      "l1_total_bytes": 98304,
+      "l0c_high_bytes": 65536,
+      "l0c_low_bytes": 65536,
+      "l0c_total_bytes": 131072,
+      "ub_high_bytes": 65536,
+      "ub_low_bytes": 65536,
+      "ub_half_bytes": 32768,
+      "ub_total_bytes": 163840
+    },
+    "vector_plan": {
+      "mask": 64,
+      "rep_stride": 8,
+      "elements_per_repeat": 64,
+      "bytes_per_repeat": 256,
+      "chunks_per_tile": 8,
+      "elements_per_chunk": 2048,
+      "repeats_per_chunk": 32,
+      "max_repeat_immediate": 255,
+      "chunk_split_reason": "the Float32 tile is 16384 elements; one call would need 256 repeats, above the 8-bit repeat immediate, so each static chunk stays at 32 repeats",
+      "float_vector_calls": 16,
+      "h_cast_calls": 1,
+      "scale_op": "vec_muls(low chunk, LOW_DOWNSCALE) in place",
+      "add_op": "vec_add(high chunk, high chunk, low chunk) in place, Float32",
+      "order": [
+        "tensor_mov_low_L0C_to_UB",
+        "tensor_mov_high_L0C_to_UB",
+        "vec_muls_low_downscale",
+        "vec_add_high_plus_scaled_low",
+        "h_cast_once_none",
+        "data_move_half_store"
+      ],
+      "scale_is_power_of_two": true
+    },
+    "accumulation": {
+      "k_tiles": 2,
+      "products": [
+        "high",
+        "low"
+      ],
+      "independent_l0c_per_product": true,
+      "single_l0c_across_all_k_blocks": true,
+      "init_first_k_block_only": true,
+      "half_partial": false,
+      "fp32_ub_partial_sum": false,
+      "mid_product_gm_output": false,
+      "host_combine_required": false,
+      "final_output_dtype": "float16",
+      "one_half_cast": true
+    },
+    "batched": {
+      "per_head_distinct_b": true,
+      "per_head_distinct_hi_and_lo_a": true,
+      "head_offset_applied_to_all_gms": true,
+      "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile",
+      "b_l1_reused_by_both_products": true
+    },
+    "capability": {
+      "compile_soc": "Ascend910B",
+      "runtime_expected_soc": "Ascend910B",
+      "Intrinsic_mmad_f162f32": true,
+      "core_num": 30,
+      "l1_size": 1048576,
+      "l0c_size": 262144,
+      "ub_size": 262144
+    },
+    "suggested_smoke_geometry": [
+      2,
+      128,
+      256,
+      128
+    ],
+    "host_packing_required": [
+      "pack_a(hi)",
+      "pack_a(lo)",
+      "pack_w(V^T)"
+    ],
+    "host_unpacking_required": [
+      "unpack_out_half"
+    ],
+    "aux_operand": {
+      "role": "unused five-GM ABI placeholder",
+      "dtype": "float32",
+      "elements": 16,
+      "read_by_kernel": false
+    },
+    "host_padding": {
+      "m_pad_rows": 0,
+      "a_zero_m_padding": true,
+      "out_pad_rows_cropped_by_host": true,
+      "key_padding": "host zero-fills padded key rows; the kernel has no mask",
+      "head_dim_padding": "host zero-fills columns 72..127 for both operands"
+    }
+  },
+  "fused_vs_old_two_products": {
+    "npu": {
+      "shape": [
+        2,
+        128,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 65536,
+      "sha256": "99443047662058c99d8b9cafbe485ab488fb68094057ec1b7e3dbc3e7ad02d0d",
+      "finite": true,
+      "max_abs": 0.81005859375
+    },
+    "cpu": {
+      "shape": [
+        2,
+        128,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 65536,
+      "sha256": "99443047662058c99d8b9cafbe485ab488fb68094057ec1b7e3dbc3e7ad02d0d",
+      "finite": true,
+      "max_abs": 0.81005859375
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": true,
+    "elements": 32768,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_rms": 0.0
+  },
+  "fused_repeat": {
+    "npu": {
+      "shape": [
+        2,
+        128,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 65536,
+      "sha256": "99443047662058c99d8b9cafbe485ab488fb68094057ec1b7e3dbc3e7ad02d0d",
+      "finite": true,
+      "max_abs": 0.81005859375
+    },
+    "cpu": {
+      "shape": [
+        2,
+        128,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 65536,
+      "sha256": "99443047662058c99d8b9cafbe485ab488fb68094057ec1b7e3dbc3e7ad02d0d",
+      "finite": true,
+      "max_abs": 0.81005859375
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": true,
+    "elements": 32768,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_rms": 0.0
+  },
+  "all_inputs_unchanged": true
+}

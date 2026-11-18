@@ -1,0 +1,324 @@
+{
+  "api": {
+    "engine_class": "AccurateVisionAttentionPv96(candidate, runtime, kernel_dir)",
+    "engine_factory": "install(candidate, runtime, kernel_dir)",
+    "engine_methods": [
+      "prepare",
+      "set_enabled",
+      "forward",
+      "snapshot",
+      "uninstall",
+      "padding_selfcheck"
+    ],
+    "geometry_helpers": [
+      "query_chunks",
+      "planned_launch_counts",
+      "planned_qk_shapes",
+      "planned_pv_shapes",
+      "check_activation_spec",
+      "padded_buffer_bytes",
+      "helper_source_digest"
+    ],
+    "kernel_builder": "pv_high_low96.build_kernel(batch, m, k, n, out_dir)",
+    "kernel_helpers": [
+      "plan_tiling",
+      "_check_budget",
+      "flatten_task",
+      "gm_offsets",
+      "kernel_name_for",
+      "capability_report",
+      "check_reference_sources",
+      "pack_a",
+      "pack_w",
+      "unpack_out_half"
+    ]
+  },
+  "compiled_by_author": false,
+  "compiled_or_executed_by": "root agent only, under its own supervisor",
+  "contracted_but_unverified_here": [
+    "the fused kernel compiles at all",
+    "two live FP32 L0C accumulators coexist in one task body",
+    "the float32 vector unit rounds vec_muls/vec_add exactly like the Round88 host combine",
+    "any speedup measured inside a real encode",
+    "any reduction of the whole-encoder or CPU-FP16 deviation"
+  ],
+  "emission_verified_here": [
+    "5 GM operands in the exact ABI order (hi,lo,v,aux_float32,out)",
+    "2 independent FP32 L0C accumulators, 3 UB tiles, 3 L1 tiles",
+    "32 K blocks x (2 A loads + 1 shared V load + 2 matmuls)",
+    "init_l1out true only on the first K block, for both products",
+    "L0C->UB low before high; 8 Float32 scales then 8 Float32 adds; exactly 1 h_cast('none')",
+    "Half store nburst/burst/stride = 8/128/0/384, not the FP32 256/768",
+    "emitted A/B/out addresses equal the planned head-strided K-block offsets",
+    "no bias operand, no relu, no Float32 weight teacher in the body"
+  ],
+  "engine": {
+    "binaries": {
+      "fused_pv": 2,
+      "qk": 2,
+      "total": 4
+    },
+    "default_disabled": true,
+    "launch_reduction": {
+      "round88_per_call": 24,
+      "round96_per_call": 16
+    },
+    "patched_attribute": "candidate._vision_sdpa_bf16_compatible",
+    "patches_torch_functional": false,
+    "patches_torch_global": false,
+    "per_instance_patch_only": true,
+    "pins": {
+      "batch_gemm85_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "candidate_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+      "helper_source_sha256": "6393bee7067d4854a7f4d47f192d0b3b6673acfc7cf951e6c86eb52b5a39d2e5",
+      "launcher_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+      "runtime5gm83_sha256": "c8890dbcd825fe9177c7ee8d5c6b46e4d00231d4d61e6421f83491fec85c52a6"
+    },
+    "pv_shapes": [
+      [
+        16,
+        512,
+        4096,
+        128
+      ],
+      [
+        16,
+        448,
+        4096,
+        128
+      ]
+    ],
+    "qk_shapes": [
+      [
+        16,
+        512,
+        128,
+        4096
+      ],
+      [
+        16,
+        448,
+        128,
+        4096
+      ]
+    ]
+  },
+  "executed": false,
+  "files": {
+    "README.md": {
+      "bytes": 8642,
+      "sha256": "394db87b1c8aecfacc18f770397320c6d648ce46879c3dc5bfe9e161e3c395cf"
+    },
+    "accurate_vision_attention_pv96.py": {
+      "bytes": 29568,
+      "sha256": "43d62990c755f3795c0c2aea1c4b5e4f813259677263477d55f0d3dcdf230f97"
+    },
+    "pv_high_low96.py": {
+      "bytes": 36649,
+      "sha256": "99b7dadd1d279de5316c20faa4c36744fbc5f475c492f225e41c86dab02a2e32"
+    },
+    "refresh_manifest96.py": {
+      "bytes": 1806,
+      "sha256": "8a3c65c46c3d2f9ddf20c5f4c1e5465c9ec7702d7158f33c956e26653e6b4b1c"
+    },
+    "test_accurate_vision_attention_pv96.py": {
+      "bytes": 15749,
+      "sha256": "9b863d18b8b413ae8ec7082d99d968a96020ab294b302dbfe15051c9b01e31bc"
+    },
+    "test_emission96.py": {
+      "bytes": 19543,
+      "sha256": "299f9d1da3350665ef6c846edfb2bf72dab9174b8b6121bfd7e17069213da463"
+    },
+    "test_pv_high_low96.py": {
+      "bytes": 15157,
+      "sha256": "aa21d35539262cac77bc3a3c5b50a2cc079cd8730c34a0128a6d300042a87c15"
+    }
+  },
+  "full_encoder_precision_accepted": false,
+  "kernel": {
+    "GM_argument_count": 5,
+    "accumulator_dtype": "float32",
+    "aux_operand": {
+      "dtype": "float32",
+      "elements": 16,
+      "read_by_kernel": false,
+      "role": "unused five-GM ABI placeholder"
+    },
+    "block_dim": 30,
+    "compile_soc": "Ascend910B",
+    "core_num": 30,
+    "dst_dtype": "float16",
+    "fused_products": [
+      "high",
+      "low"
+    ],
+    "input_dtype": "float16",
+    "kernel_arg_order": [
+      "hi_gm_float16",
+      "lo_gm_float16",
+      "v_gm_float16",
+      "aux_gm_float32",
+      "out_gm_float16"
+    ],
+    "l0c_size": 262144,
+    "l1_size": 1048576,
+    "low_scale_1024": 1024.0,
+    "name_pattern": "pv_hi_lo96_h{H}_m{M}_k{K}_n{N}_mb128_nb128_kb128_c30",
+    "no_fp32_weight_shadow": true,
+    "no_half_partial": true,
+    "no_host_combine": true,
+    "no_mid_product_fp32_gm": true,
+    "plans": {
+      "pv_full_chunk": {
+        "cores": 30,
+        "float_chunks_per_tile": 8,
+        "gm_shapes": {
+          "aux": [
+            16
+          ],
+          "aux_dtype": "float32",
+          "b": [
+            16,
+            256,
+            128,
+            16
+          ],
+          "hi": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "lo": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "out": [
+            16,
+            8,
+            512,
+            16
+          ]
+        },
+        "half_out_store": {
+          "burst": 128,
+          "dst_stride": 384,
+          "nburst": 8,
+          "src_stride": 0
+        },
+        "k_tiles": 32,
+        "l0c_bytes": 131072,
+        "l1_bytes": 98304,
+        "m_pad": 512,
+        "m_pad_rows": 0,
+        "repeats_per_chunk": 32,
+        "steps": 3,
+        "tasks": 64,
+        "ub_bytes": 163840
+      },
+      "pv_tail_chunk": {
+        "cores": 30,
+        "float_chunks_per_tile": 8,
+        "gm_shapes": {
+          "aux": [
+            16
+          ],
+          "aux_dtype": "float32",
+          "b": [
+            16,
+            256,
+            128,
+            16
+          ],
+          "hi": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "lo": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "out": [
+            16,
+            8,
+            512,
+            16
+          ]
+        },
+        "half_out_store": {
+          "burst": 128,
+          "dst_stride": 384,
+          "nburst": 8,
+          "src_stride": 0
+        },
+        "k_tiles": 32,
+        "l0c_bytes": 131072,
+        "l1_bytes": 98304,
+        "m_pad": 512,
+        "m_pad_rows": 64,
+        "repeats_per_chunk": 32,
+        "steps": 3,
+        "tasks": 64,
+        "ub_bytes": 163840
+      }
+    },
+    "runtime_soc_expected": "Ascend910B",
+    "single_final_half_cast": true,
+    "suggested_smoke_geometry": [
+      2,
+      128,
+      256,
+      128
+    ],
+    "target_shapes": {
+      "pv_full_chunk": [
+        16,
+        512,
+        4096,
+        128
+      ],
+      "pv_tail_chunk": [
+        16,
+        448,
+        4096,
+        128
+      ]
+    },
+    "ub_floor": 196608,
+    "ub_min_needed": 163840,
+    "uses_fp32_bias": false,
+    "vector_mask_fp32": 64,
+    "vector_rep_stride_fp32": 8
+  },
+  "measured_speedup": null,
+  "not_a_precision_result": true,
+  "not_a_speed_claim": true,
+  "not_h3_end_to_end_result": true,
+  "numerical_tolerance": null,
+  "purpose": "Replace the Round88 two-launch, two-FP32-GM, host-combined P@V with ONE fused kernel: two independent FP32 L0C accumulations over the full K axis, Float32 UB scale+add, one Half cast, one Half store.",
+  "round": 96,
+  "scope": "artifacts/diagnostics/round96/pv",
+  "source_only": true,
+  "status": "SOURCE ONLY - authored, contract-tested on stdlib only, never compiled or executed by the author",
+  "tests": {
+    "command": "python3 -m unittest test_pv_high_low96 test_accurate_vision_attention_pv96 test_emission96",
+    "count": null,
+    "extra_guarantee": "test_emission96 runs the real emitter against a recording stub and evaluates every emitted address numerically with fixed core/step samples",
+    "modules": [
+      "test_pv_high_low96",
+      "test_accurate_vision_attention_pv96",
+      "test_emission96"
+    ],
+    "tik_required": false,
+    "torch_required": false
+  },
+  "whole_goal_complete": false,
+  "root_review_original_engine_SHA256": "7dc3bcd4de6c40c720d4461faab9c4541fd150463d98019951c38eed9823c34c",
+  "root_review_corrections": "R85QKmetafieldlogical_shape(notlogical_geometry);actualruntimelauncherlibrarySHAverification;publicPVcapitalizationalias.Cube/FloatUBmathunchanged."
+}

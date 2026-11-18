@@ -1,6 +1,9 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round98 actual full TP8: NZ attention reduces corrected17.04%→9.92%/8.04%, fastest2.034s still not accepted](<artifacts/diagnostics/round98/README.md>),
+> [Round97 direct-NZ softmax/packing: real leaves47ms→26.5ms, accurate vision1.825s; not native-bit lossless or full precision pass](<artifacts/diagnostics/round97/README.md>),
+> [Round96 fused PV: exact all27/DeepStack/merger bits, real leaves~10% faster; batch-shape failure fixed and preserved](<artifacts/diagnostics/round96/README.md>),
 > [Round95 actual8rank CPU-exact RoPE A/B is non-monotonic; corrected17%→13.6% only one case, fastest2.038s still not accepted](<artifacts/diagnostics/round95/README.md>),
 > [Round93 CPU Half alone amplifies0.253%→17.16%, first15.8× jump at43; no NPU arithmetic needed to explain scale](<artifacts/diagnostics/round93/README.md>),
 > [Round94 actual RoPE one-ULP differences; same-input rsqrt CPU exact and Newton worse, no redundant norm patch](<artifacts/diagnostics/round94/README.md>),

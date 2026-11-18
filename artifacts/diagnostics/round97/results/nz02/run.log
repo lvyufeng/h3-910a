@@ -1,0 +1,466 @@
+[W1118 13:56:54.620996630 NPUCachingAllocator.cpp:204] Warning: The current CANN and HDK(driver) versions require processing for 32 padding size, with memory allocation. (function operator())
+{
+  "completed": false,
+  "cases": {
+    "512": {
+      "meta": {
+        "round": 97,
+        "scope": "Float32 NZ score row -> true-4032 unmasked Float softmax -> Half hi + Half lo NZ probability packing, one launch",
+        "executed": false,
+        "compiled_now": true,
+        "not_a_speed_claim": true,
+        "not_h3_end_to_end_result": true,
+        "full_encoder_precision_accepted": false,
+        "whole_goal_complete": false,
+        "numerical_tolerance": null,
+        "kernel_name": "softmax_pack97_h16_m512_n4096_vk4032_c30",
+        "kernel_symbol": "softmax_pack97_h16_m512_n4096_vk4032_c30__kernel0",
+        "obj_block": 30,
+        "block_dim": 30,
+        "core_type": "AiCore",
+        "obj_path": "/tmp/h3_round97_nz02/softmax/softmax_pack97_h16_m512_n4096_vk4032_c30/softmax_pack97_h16_m512_n4096_vk4032_c30.o",
+        "obj_sha256": "287218f370567eb4acae59a3c3b9293735be826d866e6b0986e4f46524c28d90",
+        "json_path": "/tmp/h3_round97_nz02/softmax/softmax_pack97_h16_m512_n4096_vk4032_c30/softmax_pack97_h16_m512_n4096_vk4032_c30.json",
+        "source_sha256": "8503040d859327f03ea5701454001861e766f38c5ca6d80af3ad370b7a8ef45b",
+        "GM_argument_count": 5,
+        "kernel_arg_order": [
+          "scores_gm_float32",
+          "aux0_gm_float32",
+          "aux1_gm_float32",
+          "hi_gm_float16",
+          "lo_gm_float16"
+        ],
+        "ABI": "five GM pointers, args retained by the caller",
+        "input_dtype": "float32",
+        "output_dtype": "float16",
+        "output_hi_lo": true,
+        "lo_rescale_inverse": 1024.0,
+        "score_scale": 0.11785113019775792,
+        "score_scale_basis": "head_dim 72 ** -0.5 (original; not padded 128)",
+        "reduction": {
+          "order": "hardware vcmax + vcadd; not a Torch replay",
+          "float_reduce_gated_by_intrinsic_check": true,
+          "newton_steps_for_reciprocal": 2,
+          "bit_identity_with_torch_softmax_claimed": false,
+          "vreduce_signature_assumption": "vec_reduce_max/vec_reduce_add(mask, dst, src, work, repeat_times, src_rep_stride) with one call over all 64 repeats leaving the row result in dst[0]; confirmed for vec_reduce_add by the executed Round61/62 AdaLN norm, assumed identical for vec_reduce_max (same vreduce family, vcmax registered). Root build/probe is the authority; the author never compiled this kernel.",
+          "partial_ub_slice_operands": "s_f[valid_keys] is used as a vector_dup destination so only the 64-slot key tail is written; the project FA patch already passes offset tensor slices to vector_dup (scores[block, 0, 0])."
+        },
+        "masking": {
+          "motto": "true 4032 keys only, unmasked (no causal)",
+          "tail_keys_zeroed": 64,
+          "tail_masked_before_max_and_exp": true,
+          "tail_explicitly_zeroed_before_denominator": true,
+          "negative_max_finite": true,
+          "padded_query_rows_forced_zero": true,
+          "padded_rows_uniform_softmax_forbidden": true
+        },
+        "logical": {
+          "batch": 16,
+          "m": 512,
+          "n": 4096,
+          "valid_keys": 4032,
+          "head_dim": 72,
+          "score_scale": 0.11785113019775792,
+          "lo_scale": 1024.0
+        },
+        "padded": {
+          "m_pad": 512,
+          "zero_rows": 0,
+          "n1": 256,
+          "block": 16,
+          "tail_keys": 64,
+          "n1_blocks_in_row": 256
+        },
+        "grid": {
+          "tasks": 8192,
+          "cores": 30,
+          "steps": 274,
+          "last_step_live": 2,
+          "per_head_rows": 512
+        },
+        "head_stride_elems": {
+          "score_f32": 2097152,
+          "hi_half": 2097152,
+          "lo_half": 2097152
+        },
+        "gm_shapes": {
+          "score_f32": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "aux0_f32": [
+            16
+          ],
+          "aux1_f32": [
+            16
+          ],
+          "hi_half": [
+            16,
+            256,
+            512,
+            16
+          ],
+          "lo_half": [
+            16,
+            256,
+            512,
+            16
+          ]
+        },
+        "gm_bytes": {
+          "score_f32": 134217728,
+          "aux0_f32": 64,
+          "aux1_f32": 64,
+          "hi_half": 67108864,
+          "lo_half": 67108864
+        },
+        "dma": {
+          "score_load": {
+            "nburst": 256,
+            "burst": 2,
+            "src_stride": 1022,
+            "dst_stride": 0
+          },
+          "prob_store": {
+            "nburst": 256,
+            "burst": 1,
+            "src_stride": 0,
+            "dst_stride": 511
+          }
+        },
+        "dma_row_coverage": {
+          "load_units_per_n1_step": 1024,
+          "expected_row_units_f32": 1024,
+          "store_units_per_n1_step": 512,
+          "expected_row_units_half": 512,
+          "load_covers_row": true,
+          "store_covers_row": true,
+          "load_elements": 4096,
+          "store_elements": 4096
+        },
+        "vector": {
+          "mask": 64,
+          "repeats": 64,
+          "rep_stride": 8,
+          "reduce_work": 64,
+          "newton_steps": 2,
+          "masked_tail_keys": 64,
+          "negative_max": -3.4028234663852886e+38
+        },
+        "buffers": {
+          "s_f": 16384,
+          "aux_f": 16384,
+          "zero_f": 16384,
+          "hi_h": 8192,
+          "lo_h": 8192,
+          "max_t": 32,
+          "sum_t": 32,
+          "max_work": 256,
+          "sum_work": 256,
+          "den_f": 32,
+          "inv_f": 32,
+          "newton_f": 32,
+          "neg_f": 32,
+          "ub_total_bytes": 66240,
+          "ub_safe_bytes": 196608
+        },
+        "math_steps": [
+          "load_score_row",
+          "scale_head_dim",
+          "mask_key_tail",
+          "reduce_row_max",
+          "subtract_max",
+          "exp_row",
+          "zero_key_tail",
+          "reduce_row_sum",
+          "reciprocal_newton",
+          "normalise",
+          "half_hi",
+          "widen_hi",
+          "residual_scaled",
+          "half_lo",
+          "store_hi",
+          "store_lo",
+          "zero_pad_rows"
+        ],
+        "capability": {
+          "compile_soc": "Ascend910",
+          "core_num": 32,
+          "ub_size": 262144,
+          "intrinsic_checks": {
+            "Intrinsic_vmax:float32": true,
+            "Intrinsic_vmax:f32": false,
+            "Intrinsic_vcadd:float32": true,
+            "Intrinsic_vcadd:f32": false
+          },
+          "float_vreduce_supported": true,
+          "float_vreduce_query_answered": true,
+          "launched_usable_cores": 30,
+          "physical_core_spec_may_be_32": true
+        },
+        "limits": {
+          "cores": 30,
+          "compile_soc": "Ascend910",
+          "mask_repeat_max": 255,
+          "vreduce_repeat_max": 4095
+        },
+        "no_float_linear_weight": true,
+        "no_teacher_or_bf16_gold_cast": true,
+        "caches_no_pixel_patch_hidden_deepstack_or_conditioning": true,
+        "aux_gm_operands_are_unused_placeholders": true,
+        "layout_equals_pv_a_nz": true,
+        "a2_only_features_used": false
+      },
+      "recovered_float_probabilities_vs_CPU": {
+        "npu": {
+          "shape": [
+            16,
+            512,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "bytes": 132120576,
+          "sha256": "b88fe838a2758e6a21b0032ba3ee040e85f5467f5394db117f89d6f9b5c16753",
+          "finite": true,
+          "max_abs": 0.001580529846251011
+        },
+        "cpu": {
+          "shape": [
+            16,
+            512,
+            4032
+          ],
+          "dtype": "torch.float32",
+          "bytes": 132120576,
+          "sha256": "a5864dc9b614b9cd6f43fc800fdc0f14f4068f386a29cfbefcd46a1acb9dabf3",
+          "finite": true,
+          "max_abs": 0.001580529729835689
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 33030144,
+        "max_abs_error": 1.0477378964424133e-09,
+        "RMSE": 7.014255246915173e-11,
+        "relative_rms": 2.656792359853417e-07
+      },
+      "sum_max_abs_error": 2.384185791015625e-07,
+      "key_tail64_zero_and_padded_M_rows_zero": true,
+      "repeat_bits_equal": true,
+      "input_SHA_unchanged": true,
+      "runtime_s": [
+        0.0016341395676136017,
+        0.0014115199446678162,
+        0.0014044796116650105,
+        0.0019661197438836098,
+        0.0014231200329959393
+      ],
+      "median_s": 0.0014231200329959393
+    }
+  },
+  "failure": {
+    "type": "TBEPythonError",
+    "message": "\n[errClass:Inner Error]\n[errCode:[EB9000]]\n[message:Error: Inner Error\nFile path: /tmp/h3_round97_nz02/softmax_pack97.py, line 360\nThe context code cause the exception is:\n357            s_f = t.Tensor(\"float32\", (N_KEYS,), name=\"s_f\", scope=ubuf)\n358            aux_f = t.Tensor(\"float32\", (N_KEYS,), name=\"aux_f\", scope=ubuf)\n359            zero_f = t.Tensor(\"float32\", (N_KEYS,), name=\"zero_f\", scope=ubuf)\n360 ->         hi_h = t.Tensor(\"float16\", (N_KEYS,), name=\"hi_h\", scope=ubuf)\n361            lo_h = t.Tensor(\"float16\", (N_KEYS,), name=\"lo_h\", scope=ubuf)\n362            max_t = t.Tensor(\"float32\", (8,), name=\"max_t\", scope=ubuf)\n363            sum_t = t.Tensor(\"float32\", (8,), name=\"sum_t\", scope=ubuf)\nTraceback (most recent call last):\n  141: TVMFuncCall\n  140: 0x0000fffd87f95e6b\n  139: ascend_tvm::LowerSchedule(ascend_tvm::te::Schedule, ascend_tvm::runtime::Array<ascend_tvm::runtime::ObjectRef, void> const&, std::string const&, std::unordered_map<ascend_tvm::te::Tensor, ascend_tvm::tir::Buffer, std::hash<ascend_tvm::te::Tensor>, std::equal_to<ascend_tvm::te::Tensor>, std::allocator<std::pair<ascend_tvm::te::Tensor const, ascend_tvm::tir::Buffer> > > const&, ascend_tvm::PrimExpr, bool)\n  138: ascend_tvm::LowerWithPassList(ascend_tvm::IRModule, ascend_tvm::runtime::Array<ascend_tvm::transform::Pass, void>)\n  137: ascend_tvm::transform::Pass::operator()(ascend_tvm::IRModule) const\n  136: ascend_tvm::transform::Pass::operator()(ascend_tvm::IRModule, ascend_tvm::transform::PassContext const&) const\n  135: ascend_tvm::transform::SequentialNode::operator()(ascend_tvm::IRModule, ascend_tvm::transform::PassContext const&) const\n  134: ascend_tvm::transform::Pass::operator()(ascend_tvm::IRModule, ascend_tvm::transform::PassContext const&) const\n  133: ascend_tvm::tir::transform::PrimFuncPassNode::operator()(ascend_tvm::IRModule, ascend_tvm::transform::PassContext const&) const\n  132: 0x0000fffd8a49a6cf\n  131: ascend_tvm::tir::SetSPROptimizer(ascend_tvm::tir::Stmt)\n  130: ascend_tvm::tir::SetSPROptMutator::OptSetSPR(ascend_tvm::tir::Stmt&)\n  129: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  128: 0x0000fffd8a979df3\n  127: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  126: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  125: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  124: 0x0000fffd8a979df3\n  123: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  122: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  121: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  120: 0x0000fffd8a979df3\n  119: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  118: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  117: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  116: 0x0000fffd8a979df3\n  115: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  114: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  113: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  112: 0x0000fffd8a979df3\n  111: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  110: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  109: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  108: 0x0000fffd8a979df3\n  107: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  106: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  105: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  104: 0x0000fffd8a979df3\n  103: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  102: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  101: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  100: 0x0000fffd8a979df3\n  99: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  98: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  97: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  96: 0x0000fffd8a979df3\n  95: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  94: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  93: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  92: 0x0000fffd8a979df3\n  91: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  90: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  89: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  88: 0x0000fffd8a979df3\n  87: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  86: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  85: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  84: 0x0000fffd8a979df3\n  83: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  82: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  81: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  80: 0x0000fffd8a979df3\n  79: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  78: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  77: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  76: 0x0000fffd8a979df3\n  75: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  74: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  73: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  72: 0x0000fffd8a979df3\n  71: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  70: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  69: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  68: 0x0000fffd8a979df3\n  67: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  66: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  65: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  64: 0x0000fffd8a97b00b\n  63: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  62: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  61: 0x0000fffd8a97b00b\n  60: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  59: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  58: 0x0000fffd8a97b00b\n  57: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  56: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  55: 0x0000fffd8a97b00b\n  54: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  53: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  52: 0x0000fffd8a97b00b\n  51: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  50: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  49: 0x0000fffd8a97b00b\n  48: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  47: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  46: 0x0000fffd8a97b00b\n  45: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  44: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  43: 0x0000fffd8a97b00b\n  42: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  41: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  40: 0x0000fffd8a97b00b\n  39: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  38: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  37: 0x0000fffd8a97b00b\n  36: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  35: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  34: 0x0000fffd8a97b00b\n  33: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  32: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  31: 0x0000fffd8a97b00b\n  30: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  29: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  28: 0x0000fffd8a97b00b\n  27: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)\n  26: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  25: 0x0000fffd8a97bd43\n  24: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::SeqStmtNode const*)\n  23: void ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void>::MutateByApply<ascend_tvm::tir::StmtMutator::Internal::Mutate(ascend_tvm::tir::StmtMutator*, ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void> const&)::{lambda(ascend_tvm::tir::Stmt const&)#1}>(ascend_tvm::tir::StmtMutator::Internal::Mutate(ascend_tvm::tir::StmtMutator*, ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void> const&)::{lambda(ascend_tvm::tir::Stmt const&)#1})\n  22: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  21: 0x0000fffd8a97b57b\n  20: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::ForNode const*)\n  19: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  18: 0x0000fffd8a979df3\n  17: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  16: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)\n  15: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  14: 0x0000fffd8a97ba8b\n  13: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::IfThenElseNode const*)\n  12: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  11: 0x0000fffd8a97bd43\n  10: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::SeqStmtNode const*)\n  9: void ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void>::MutateByApply<ascend_tvm::tir::StmtMutator::Internal::Mutate(ascend_tvm::tir::StmtMutator*, ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void> const&)::{lambda(ascend_tvm::tir::Stmt const&)#1}>(ascend_tvm::tir::StmtMutator::Internal::Mutate(ascend_tvm::tir::StmtMutator*, ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void> const&)::{lambda(ascend_tvm::tir::Stmt const&)#1})\n  8: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)\n  7: 0x0000fffd8a97ba8b\n  6: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::IfThenElseNode const*)\n  5: ascend_tvm::tir::SetSPROptMutator::PeelOpInIf(ascend_tvm::tir::IfThenElseNode const*, ascend_tvm::tir::SetOpInfo&, ascend_tvm::tir::SetOpInfo&, bool)\n  4: ascend_tvm::tir::MakeSelectCall(ascend_tvm::PrimExpr const&, ascend_tvm::tir::CallNode const*, ascend_tvm::tir::CallNode const*)\n  3: ascend_tvm::tir::Select::Select(ascend_tvm::PrimExpr, ascend_tvm::PrimExpr, ascend_tvm::PrimExpr, ascend_tvm::Span)\n  2: ascend_tvm::BinaryOpMatchTypes(ascend_tvm::PrimExpr&, ascend_tvm::PrimExpr&, ascend_tvm::Span)\n  1: ascend_tvm::runtime::detail::LogFatal::Entry::Finalize()\n  0: ascend_tvm::runtime::Backtrace()\n  File \"op.cc\", line 163\n\nTVMError: [EB9000] Cannot match type int64 vs handle]\n[errPcause:N/A]\n[errSolution:N/A]"
+  }
+}
+Traceback (most recent call last):
+  File "/tmp/h3_round97_nz02/softmax_smoke_fixed97.py", line 61, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/tmp/h3_round97_nz02/softmax_smoke_fixed97.py", line 23, in main
+    meta=kernel.build_kernel(batch=16,m=m,n=4096,valid_keys=4032,out_dir=ROOT/'softmax')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/h3_round97_nz02/softmax_pack97.py", line 575, in build_kernel
+    t.BuildCCE(kernel_name=name,
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tik/tik_lib/tik_source_info.py", line 127, in wrapper
+    f_return = func(*args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tik/api/tik_build.py", line 363, in BuildCCE
+    build_cce(build_cce_obj)
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tik/debug/decorators.py", line 157, in wrapper
+    return func(build_obj)
+           ^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tik/tik_lib/tik_build_.py", line 158, in build_cce
+    build_schedules(build_obj.config, schedule, input_placeholder + input_vars + res + output_flowtable_vars,
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tik/tik_lib/tik_build_.py", line 452, in build_schedules
+    return build_schedules_impl(schedules, args, kernel_name, build_parmas)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tik/tik_lib/tik_build_.py", line 438, in build_schedules_impl
+    return tvm.build(schedules, args, "cce", name=kernel_name, rules=rules, binds=binds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/driver/build_module.py", line 257, in build
+    build_cce(inputs, args, target, target_host, name, rules, binds, evaluates)
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/driver/cce_build_module.py", line 109, in wrapper
+    r = fn(*args, **kw)
+        ^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/driver/cce_build_module.py", line 1238, in build_cce
+    input_mod = ffi.lower_schedule(
+                ^^^^^^^^^^^^^^^^^^^
+  File "/home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/_ffi/_ctypes/packed_func.py", line 239, in __call__
+    raise get_last_ffi_error()
+tvm.error_mgr.tbe_python_error_mgr.TBEPythonError: 
+[errClass:Inner Error]
+[errCode:[EB9000]]
+[message:Error: Inner Error
+File path: /tmp/h3_round97_nz02/softmax_pack97.py, line 360
+The context code cause the exception is:
+357            s_f = t.Tensor("float32", (N_KEYS,), name="s_f", scope=ubuf)
+358            aux_f = t.Tensor("float32", (N_KEYS,), name="aux_f", scope=ubuf)
+359            zero_f = t.Tensor("float32", (N_KEYS,), name="zero_f", scope=ubuf)
+360 ->         hi_h = t.Tensor("float16", (N_KEYS,), name="hi_h", scope=ubuf)
+361            lo_h = t.Tensor("float16", (N_KEYS,), name="lo_h", scope=ubuf)
+362            max_t = t.Tensor("float32", (8,), name="max_t", scope=ubuf)
+363            sum_t = t.Tensor("float32", (8,), name="sum_t", scope=ubuf)
+Traceback (most recent call last):
+  141: TVMFuncCall
+  140: 0x0000fffd87f95e6b
+  139: ascend_tvm::LowerSchedule(ascend_tvm::te::Schedule, ascend_tvm::runtime::Array<ascend_tvm::runtime::ObjectRef, void> const&, std::string const&, std::unordered_map<ascend_tvm::te::Tensor, ascend_tvm::tir::Buffer, std::hash<ascend_tvm::te::Tensor>, std::equal_to<ascend_tvm::te::Tensor>, std::allocator<std::pair<ascend_tvm::te::Tensor const, ascend_tvm::tir::Buffer> > > const&, ascend_tvm::PrimExpr, bool)
+  138: ascend_tvm::LowerWithPassList(ascend_tvm::IRModule, ascend_tvm::runtime::Array<ascend_tvm::transform::Pass, void>)
+  137: ascend_tvm::transform::Pass::operator()(ascend_tvm::IRModule) const
+  136: ascend_tvm::transform::Pass::operator()(ascend_tvm::IRModule, ascend_tvm::transform::PassContext const&) const
+  135: ascend_tvm::transform::SequentialNode::operator()(ascend_tvm::IRModule, ascend_tvm::transform::PassContext const&) const
+  134: ascend_tvm::transform::Pass::operator()(ascend_tvm::IRModule, ascend_tvm::transform::PassContext const&) const
+  133: ascend_tvm::tir::transform::PrimFuncPassNode::operator()(ascend_tvm::IRModule, ascend_tvm::transform::PassContext const&) const
+  132: 0x0000fffd8a49a6cf
+  131: ascend_tvm::tir::SetSPROptimizer(ascend_tvm::tir::Stmt)
+  130: ascend_tvm::tir::SetSPROptMutator::OptSetSPR(ascend_tvm::tir::Stmt&)
+  129: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  128: 0x0000fffd8a979df3
+  127: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  126: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  125: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  124: 0x0000fffd8a979df3
+  123: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  122: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  121: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  120: 0x0000fffd8a979df3
+  119: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  118: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  117: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  116: 0x0000fffd8a979df3
+  115: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  114: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  113: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  112: 0x0000fffd8a979df3
+  111: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  110: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  109: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  108: 0x0000fffd8a979df3
+  107: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  106: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  105: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  104: 0x0000fffd8a979df3
+  103: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  102: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  101: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  100: 0x0000fffd8a979df3
+  99: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  98: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  97: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  96: 0x0000fffd8a979df3
+  95: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  94: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  93: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  92: 0x0000fffd8a979df3
+  91: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  90: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  89: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  88: 0x0000fffd8a979df3
+  87: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  86: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  85: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  84: 0x0000fffd8a979df3
+  83: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  82: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  81: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  80: 0x0000fffd8a979df3
+  79: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  78: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  77: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  76: 0x0000fffd8a979df3
+  75: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  74: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  73: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  72: 0x0000fffd8a979df3
+  71: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  70: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  69: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  68: 0x0000fffd8a979df3
+  67: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  66: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  65: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  64: 0x0000fffd8a97b00b
+  63: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  62: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  61: 0x0000fffd8a97b00b
+  60: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  59: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  58: 0x0000fffd8a97b00b
+  57: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  56: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  55: 0x0000fffd8a97b00b
+  54: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  53: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  52: 0x0000fffd8a97b00b
+  51: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  50: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  49: 0x0000fffd8a97b00b
+  48: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  47: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  46: 0x0000fffd8a97b00b
+  45: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  44: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  43: 0x0000fffd8a97b00b
+  42: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  41: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  40: 0x0000fffd8a97b00b
+  39: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  38: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  37: 0x0000fffd8a97b00b
+  36: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  35: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  34: 0x0000fffd8a97b00b
+  33: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  32: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  31: 0x0000fffd8a97b00b
+  30: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  29: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  28: 0x0000fffd8a97b00b
+  27: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AllocateNode const*)
+  26: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  25: 0x0000fffd8a97bd43
+  24: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::SeqStmtNode const*)
+  23: void ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void>::MutateByApply<ascend_tvm::tir::StmtMutator::Internal::Mutate(ascend_tvm::tir::StmtMutator*, ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void> const&)::{lambda(ascend_tvm::tir::Stmt const&)#1}>(ascend_tvm::tir::StmtMutator::Internal::Mutate(ascend_tvm::tir::StmtMutator*, ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void> const&)::{lambda(ascend_tvm::tir::Stmt const&)#1})
+  22: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  21: 0x0000fffd8a97b57b
+  20: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::ForNode const*)
+  19: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  18: 0x0000fffd8a979df3
+  17: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  16: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::AttrStmtNode const*)
+  15: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  14: 0x0000fffd8a97ba8b
+  13: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::IfThenElseNode const*)
+  12: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  11: 0x0000fffd8a97bd43
+  10: ascend_tvm::tir::StmtMutator::VisitStmt_(ascend_tvm::tir::SeqStmtNode const*)
+  9: void ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void>::MutateByApply<ascend_tvm::tir::StmtMutator::Internal::Mutate(ascend_tvm::tir::StmtMutator*, ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void> const&)::{lambda(ascend_tvm::tir::Stmt const&)#1}>(ascend_tvm::tir::StmtMutator::Internal::Mutate(ascend_tvm::tir::StmtMutator*, ascend_tvm::runtime::Array<ascend_tvm::tir::Stmt, void> const&)::{lambda(ascend_tvm::tir::Stmt const&)#1})
+  8: ascend_tvm::tir::StmtMutator::VisitStmt(ascend_tvm::tir::Stmt const&)
+  7: 0x0000fffd8a97ba8b
+  6: ascend_tvm::tir::SetSPROptMutator::VisitStmt_(ascend_tvm::tir::IfThenElseNode const*)
+  5: ascend_tvm::tir::SetSPROptMutator::PeelOpInIf(ascend_tvm::tir::IfThenElseNode const*, ascend_tvm::tir::SetOpInfo&, ascend_tvm::tir::SetOpInfo&, bool)
+  4: ascend_tvm::tir::MakeSelectCall(ascend_tvm::PrimExpr const&, ascend_tvm::tir::CallNode const*, ascend_tvm::tir::CallNode const*)
+  3: ascend_tvm::tir::Select::Select(ascend_tvm::PrimExpr, ascend_tvm::PrimExpr, ascend_tvm::PrimExpr, ascend_tvm::Span)
+  2: ascend_tvm::BinaryOpMatchTypes(ascend_tvm::PrimExpr&, ascend_tvm::PrimExpr&, ascend_tvm::Span)
+  1: ascend_tvm::runtime::detail::LogFatal::Entry::Finalize()
+  0: ascend_tvm::runtime::Backtrace()
+  File "op.cc", line 163
+
+TVMError: [EB9000] Cannot match type int64 vs handle]
+[errPcause:N/A]
+[errSolution:N/A]
+[ERROR] 2026-11-18-13:57:35 (PID:3517624, Device:0, RankID:-1) ERR99999 UNKNOWN applicaiton exception
