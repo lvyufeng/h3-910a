@@ -1,0 +1,131 @@
+{
+  "round": 91,
+  "task": "task-38",
+  "owner": "geometry91-fresh",
+  "kind": "bit-exact early cache for the two vision geometry operators (SOURCE ONLY)",
+  "scope": "artifacts/diagnostics/round91/cache",
+  "files": {
+    "geometry_cache91.py": {
+      "bytes": 30021,
+      "sha256": "10b9f4fff0ac1d5e43bc03372c979891fa5fe81d9905031f20967ea4611737d4"
+    },
+    "test_geometry_cache91.py": {
+      "bytes": 24771,
+      "sha256": "70c12b3ded9c535c2977695d1e0a254d779481361219e839b36713346f571132"
+    },
+    "README.md": {
+      "bytes": 4747,
+      "sha256": "51a94c14baac8c431b6066b349e6b7ed2e44fdfe9854dc7290f40f726687828a"
+    }
+  },
+  "compiled": false,
+  "executed_on_npu": false,
+  "runs_real_model": false,
+  "compiles_or_runs_anything": false,
+  "no_ssh_or_remote_command": true,
+  "no_cannon_or_tik_build": true,
+  "no_installation": true,
+  "no_production_files_modified": true,
+  "no_git_commit": true,
+  "proves_precision": false,
+  "proves_speed": false,
+  "claims_h3_improvement": false,
+  "api": {
+    "class": "VisionGeometryCache91(vision, candidate_path=None)",
+    "methods": [
+      "prime(grid)",
+      "set_enabled(bool)",
+      "snapshot(verify_cache=True)",
+      "uninstall()"
+    ],
+    "factories": [
+      "install(vision)",
+      "prime_and_enable(vision, grid)"
+    ]
+  },
+  "patched_methods": [
+    "fast_pos_embed_interpolate",
+    "rot_pos_emb"
+  ],
+  "patch_mechanism": "types.MethodType per instance; class-level and global torch untouched",
+  "cache_scope": "geometry only: vision position samples and rotary frequency rows; no pixels, patch embeddings, hidden states, DeepStack or text outputs",
+  "cached_outputs": {
+    "fast_pos_embed_interpolate": {
+      "shape": [
+        8064,
+        1152
+      ],
+      "dtype": "torch.float16",
+      "bytes": 18579456
+    },
+    "rot_pos_emb": {
+      "shape": [
+        8064,
+        36
+      ],
+      "dtype": "torch.float32",
+      "bytes": 1161216
+    }
+  },
+  "extra_bytes": 19740672,
+  "identity_verification": "original operators called twice at prime; raw byte equality required",
+  "fail_closed": [
+    "pos_embed.weight signature",
+    "_inv_freq signature+raw value SHA",
+    "rotary dim/theta",
+    "num_grid_per_side",
+    "spatial_merge_size",
+    "configured geometry",
+    "grid values",
+    "grid raw int64 fixture SHA",
+    "instance-identity grid fast path only"
+  ],
+  "real_grid": [
+    [
+      1,
+      48,
+      84
+    ],
+    [
+      1,
+      48,
+      84
+    ]
+  ],
+  "grid_raw_sha256": "6a43f833fe86f2b0ae8abf21273d8b739d07df42a6b4c8195a96712e00116a4e",
+  "candidate_sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+  "method_source_sha256": {
+    "fast_pos_embed_interpolate": "d01d45c34f99d94bcb87c42dab6e43431e9caff1b2f52ed168afc0c8d6828832",
+    "rot_pos_emb": "71e6c4006c2851e15e20be27735b4f446bc71bab8e870fd8d545a9bf77d07600"
+  },
+  "no_torch_import": "module uses duck-typed tensor attributes only; AST-checked",
+  "model_parameters_modified": false,
+  "float_weights": 0,
+  "tests": {
+    "file": "test_geometry_cache91.py",
+    "count": 29,
+    "kind": "stdlib duck-typed doubles, no torch",
+    "covers": [
+      "two-method per-instance patch",
+      "pristine restore",
+      "gating",
+      "raw-bit prime identity",
+      "cache counts/bytes/SHA",
+      "grid value key",
+      "grid byte fixture pin",
+      "recycled pointer",
+      "version-bump re-read",
+      "weight/inv_freq/theta/grid-side/config drift",
+      "consumer mutation detection",
+      "non-claims",
+      "source pins"
+    ],
+    "count_note": "28 contract tests + 1 manifest consistency test"
+  },
+  "numerical_tolerance": null,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "pending_parent_evidence": "real NPU prime + complete vision/full-encoder output SHA equality across 8 ranks, fresh grid allocation, enable/disable bit recovery",
+  "root_review_original_source_SHA256": "449e994f4f9aba25723bd5d7599a16a07ba5276c3314b03c348e318322fae939",
+  "root_review_correction": "Supportunversionedinferencegridsbyforcedvaluevalidationeverycall;nevertrustsameobjectwhen._versionisunavailable. Originalgeometrymathunchanged."
+}
