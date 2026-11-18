@@ -1,0 +1,1604 @@
+{
+  "scope": "Test batched accurate FP32 QK/PV on frozen real decoder0 Half operands.\n\nActual CPU Half MATH SDPA is the teacher. Float score/PV intermediates and the\nhigh/scaled-low P representation are leaf diagnostics,not another model oracle.\n",
+  "completed": true,
+  "kernel_launch_executed": true,
+  "source_sha256": "e524272db6b726584a217597b186f5227a4ad2008943e2dbfadc7a3a8b8afcc5",
+  "kernel_source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+  "frozen_capture_sha256": "491452f41e1efbc4e671e7275a60a0522649d3b60587a55f5e049a0b5db67bbc",
+  "actual_CPU_Half_MATH_reference_sha256": "0f9484a4cb68635335bab86456251eaabc203e3b04f820ce768c2830c213ceb9",
+  "batched_distinct_head_twoK_smoke": {
+    "npu": {
+      "shape": [
+        2,
+        128,
+        128
+      ],
+      "dtype": "torch.float32",
+      "bytes": 131072,
+      "sha256": "0ffe5787cc67efceeeeb6d5dbfbea2f0b30a4cd86075a23fe3c582014df8b469",
+      "finite": true,
+      "max_abs": 1.0925722122192383
+    },
+    "cpu": {
+      "shape": [
+        2,
+        128,
+        128
+      ],
+      "dtype": "torch.float32",
+      "bytes": 131072,
+      "sha256": "4aee6420a9f16acbd1bd36e804b837f66f0c11d88f75cf9cb3d784515777e54a",
+      "finite": true,
+      "max_abs": 1.0925716161727905
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": false,
+    "elements": 32768,
+    "max_abs_error": 7.152557373046875e-07,
+    "RMSE": 7.079317276690452e-08,
+    "relative_rms": 2.829420491929864e-07
+  },
+  "smoke_repeat_bits": {
+    "npu": {
+      "shape": [
+        2,
+        128,
+        128
+      ],
+      "dtype": "torch.float32",
+      "bytes": 131072,
+      "sha256": "0ffe5787cc67efceeeeb6d5dbfbea2f0b30a4cd86075a23fe3c582014df8b469",
+      "finite": true,
+      "max_abs": 1.0925722122192383
+    },
+    "cpu": {
+      "shape": [
+        2,
+        128,
+        128
+      ],
+      "dtype": "torch.float32",
+      "bytes": 131072,
+      "sha256": "0ffe5787cc67efceeeeb6d5dbfbea2f0b30a4cd86075a23fe3c582014df8b469",
+      "finite": true,
+      "max_abs": 1.0925722122192383
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": true,
+    "elements": 32768,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_rms": 0.0
+  },
+  "smoke_wrong_layout_guard_is_not_model_precision_tolerance": true,
+  "custom_vs_CPU_Half_MATH": {
+    "npu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "f6fc0106a7204407d3824182fa41400783c7fd942cf7a9cf13c1184dc1dab034",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "cpu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "0f9484a4cb68635335bab86456251eaabc203e3b04f820ce768c2830c213ceb9",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": false,
+    "elements": 2092032,
+    "max_abs_error": 3.0517578125e-05,
+    "RMSE": 2.3474547900349676e-07,
+    "relative_rms": 1.5472656933754774e-05
+  },
+  "saved_native_vs_CPU_Half_MATH": {
+    "npu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "89b82e1921d09d0b3da5be880dd0a9804de504eebb01877bd52fd1140da1c695",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "cpu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "0f9484a4cb68635335bab86456251eaabc203e3b04f820ce768c2830c213ceb9",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": false,
+    "elements": 2092032,
+    "max_abs_error": 0.000244140625,
+    "RMSE": 3.5505627247794302e-06,
+    "relative_rms": 0.00023402639827398492
+  },
+  "custom_repeat_bits": {
+    "npu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "f6fc0106a7204407d3824182fa41400783c7fd942cf7a9cf13c1184dc1dab034",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "cpu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "f6fc0106a7204407d3824182fa41400783c7fd942cf7a9cf13c1184dc1dab034",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": true,
+    "elements": 2092032,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_rms": 0.0
+  },
+  "original_operands_unchanged": true,
+  "no_FP32_model_weight_shadows": true,
+  "FP32_score_and_PV_before_single_Half_attention_output": true,
+  "query_chunks": [
+    {
+      "query_start": 0,
+      "query_end": 512,
+      "score_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "2786ed59aa8b3802955731476162bdf43e70da34da91daf6032d457b9ac16281",
+          "finite": true,
+          "max_abs": 16.379549026489258
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "9e8cbf32fb219213c7ecacd8a0959edf434ff788f1598c3053e9780b29016637",
+          "finite": true,
+          "max_abs": 16.379549026489258
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8368128,
+        "max_abs_error": 8.58306884765625e-06,
+        "RMSE": 5.674113595624539e-07,
+        "relative_rms": 1.8421941500173238e-07
+      },
+      "probability_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "64e7e63edfa5ba9365123e44400852f0e5be0a2ed38e4fa1f9d5e1f7c4d7a257",
+          "finite": true,
+          "max_abs": 1.0
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "567e324f166f2070024974c4da69b6146bcce7e950fcfc1fd3082929c82ff43c",
+          "finite": true,
+          "max_abs": 1.0
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8368128,
+        "max_abs_error": 1.996755599975586e-06,
+        "RMSE": 7.3785220085315666e-09,
+        "relative_rms": 5.025849116864925e-07
+      },
+      "P_reconstruction": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "6b57f5201a92520d529d1250d3168552db4a9901fce95dc90ee90ec128ff63bc",
+          "finite": true,
+          "max_abs": 1.0
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "64e7e63edfa5ba9365123e44400852f0e5be0a2ed38e4fa1f9d5e1f7c4d7a257",
+          "finite": true,
+          "max_abs": 1.0
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8368128,
+        "max_abs_error": 5.960464477539063e-08,
+        "RMSE": 5.063217352855796e-10,
+        "relative_rms": 3.4487894147663694e-08
+      },
+      "PV_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float32",
+          "bytes": 2097152,
+          "sha256": "6adb219749dc10245b263f9e33b10efba350c6770cec993e7e9762efbf836451",
+          "finite": true,
+          "max_abs": 0.2587181329727173
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float32",
+          "bytes": 2097152,
+          "sha256": "4eba57f5f66167b110208b12998a68c8a9929bcdf0e8e2bf9eef751151a0ce19",
+          "finite": true,
+          "max_abs": 0.2587181031703949
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 524288,
+        "max_abs_error": 2.980232238769531e-07,
+        "RMSE": 7.453562432514756e-09,
+        "relative_rms": 4.809475821712937e-07
+      },
+      "half_output_vs_actual_CPU_Half_MATH": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float16",
+          "bytes": 1048576,
+          "sha256": "62071f184e2c118411f859184bba4bd6fc15046e844cfe860b9ddb66866bf378",
+          "finite": true,
+          "max_abs": 0.2587890625
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float16",
+          "bytes": 1048576,
+          "sha256": "ac320029e39de64014bd6c3448fd04ed5ccfd76a60dc2790cff6bcf71e76ae5c",
+          "finite": true,
+          "max_abs": 0.2587890625
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 524288,
+        "max_abs_error": 3.0517578125e-05,
+        "RMSE": 1.9735041114341452e-07,
+        "relative_rms": 1.2734170792573474e-05
+      }
+    },
+    {
+      "query_start": 512,
+      "query_end": 1024,
+      "score_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "58d93fc761d973948fcb0984c29a71ca5ddededb86c9c9d0a5853d55e17812d8",
+          "finite": true,
+          "max_abs": 16.72451400756836
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "ebcf4f061eeb11a03d82185e6e2575f4e91a789c4ac21ce25ee7e171b1824b53",
+          "finite": true,
+          "max_abs": 16.724512100219727
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8368128,
+        "max_abs_error": 1.239776611328125e-05,
+        "RMSE": 5.855740317785718e-07,
+        "relative_rms": 1.8478803819875258e-07
+      },
+      "probability_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "c62d9649dfa58327ec9a5341684c2242bbe69f56c2c68b6e30becd93dbba1733",
+          "finite": true,
+          "max_abs": 0.999981164932251
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "2782c225a673207c19bb81fd9aade45e47169ad98f34f140ac97755f404b3947",
+          "finite": true,
+          "max_abs": 0.9999819993972778
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8368128,
+        "max_abs_error": 3.0994415283203125e-06,
+        "RMSE": 1.2343921742924215e-08,
+        "relative_rms": 8.885276213419174e-07
+      },
+      "P_reconstruction": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "94e6b1b846d309c96eac1f42e52393206b045ccb4c2781208c87d1c4903d60c2",
+          "finite": true,
+          "max_abs": 0.999981164932251
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "c62d9649dfa58327ec9a5341684c2242bbe69f56c2c68b6e30becd93dbba1733",
+          "finite": true,
+          "max_abs": 0.999981164932251
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8368128,
+        "max_abs_error": 5.960464477539063e-08,
+        "RMSE": 4.79128989810015e-10,
+        "relative_rms": 3.448818668716574e-08
+      },
+      "PV_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float32",
+          "bytes": 2097152,
+          "sha256": "1000cef375d222584111b15d7709730843683bf399d9c6e016aac726b6ad0b0c",
+          "finite": true,
+          "max_abs": 0.2584282159805298
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float32",
+          "bytes": 2097152,
+          "sha256": "39d16d0459dc70d62528dde5047540595e6378f1e87d7cc2058e6db335ef8b26",
+          "finite": true,
+          "max_abs": 0.2584281861782074
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 524288,
+        "max_abs_error": 4.284083843231201e-07,
+        "RMSE": 1.4873745506694033e-08,
+        "relative_rms": 9.730800151906301e-07
+      },
+      "half_output_vs_actual_CPU_Half_MATH": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float16",
+          "bytes": 1048576,
+          "sha256": "1cdc91806d24deed82f8c3c71006719d778876aac08648e3f807276b70315b2f",
+          "finite": true,
+          "max_abs": 0.258544921875
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float16",
+          "bytes": 1048576,
+          "sha256": "55ac847018af8095f8cef91721d0c6f063b42794903a8702a9e05cdc28ab0d16",
+          "finite": true,
+          "max_abs": 0.258544921875
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 524288,
+        "max_abs_error": 3.0517578125e-05,
+        "RMSE": 2.7296913134963144e-07,
+        "relative_rms": 1.7858313644693253e-05
+      }
+    },
+    {
+      "query_start": 1024,
+      "query_end": 1536,
+      "score_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "795c730f9ac7b6c2e7671dc585fb8c77d4125c3abd2d33835864de5445d1dd76",
+          "finite": true,
+          "max_abs": 15.644457817077637
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "57ee12d36f747d5435695b796c06f9b087f48ce50a7498c67f2e374ad680d192",
+          "finite": true,
+          "max_abs": 15.64445686340332
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8368128,
+        "max_abs_error": 1.1444091796875e-05,
+        "RMSE": 6.896995048580445e-07,
+        "relative_rms": 1.8633151569828588e-07
+      },
+      "probability_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "4f9ebe69966de08eb5db08050e858b3a5627347b6c06f512df2755b553e1e24f",
+          "finite": true,
+          "max_abs": 0.9961780309677124
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "d8683ac5e80902947b3ada741b4d594ab879dab8427a421dbbb40cb163ba5eec",
+          "finite": true,
+          "max_abs": 0.9961779117584229
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8368128,
+        "max_abs_error": 2.086162567138672e-06,
+        "RMSE": 7.261921903147994e-09,
+        "relative_rms": 5.683348657893602e-07
+      },
+      "P_reconstruction": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "f00ebee428915c451a0e1f36be57e3a57a2432482c66ff1187ac11bb56e9e7c4",
+          "finite": true,
+          "max_abs": 0.9961780309677124
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33472512,
+          "sha256": "4f9ebe69966de08eb5db08050e858b3a5627347b6c06f512df2755b553e1e24f",
+          "finite": true,
+          "max_abs": 0.9961780309677124
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8368128,
+        "max_abs_error": 5.960464477539063e-08,
+        "RMSE": 4.506225051267151e-10,
+        "relative_rms": 3.5266766962324976e-08
+      },
+      "PV_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float32",
+          "bytes": 2097152,
+          "sha256": "7f29e081ced1941d492035a7855e6625b0fffefc5144dbede7cdef986c93f465",
+          "finite": true,
+          "max_abs": 0.14269699156284332
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float32",
+          "bytes": 2097152,
+          "sha256": "91b5b58f7069629e3f98eefb1cd6ea6d79e2c2f166316bafa0affec1552fd92b",
+          "finite": true,
+          "max_abs": 0.14269688725471497
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 524288,
+        "max_abs_error": 2.0116567611694336e-07,
+        "RMSE": 7.534633208587048e-09,
+        "relative_rms": 5.095460316704524e-07
+      },
+      "half_output_vs_actual_CPU_Half_MATH": {
+        "npu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float16",
+          "bytes": 1048576,
+          "sha256": "a0929ebc4ae0f7339e3ddd576d84a3aa0de57a6a7ef693be968b7b260887290b",
+          "finite": true,
+          "max_abs": 0.1427001953125
+        },
+        "cpu": {
+          "shape": [
+            8,
+            512,
+            128
+          ],
+          "dtype": "torch.float16",
+          "bytes": 1048576,
+          "sha256": "aa50dce894af46f0c3bb7bb28f8e8fbd8c0eb623e1c0805a1fd60cb82a8192c1",
+          "finite": true,
+          "max_abs": 0.1427001953125
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 524288,
+        "max_abs_error": 3.0517578125e-05,
+        "RMSE": 2.2233386636884577e-07,
+        "relative_rms": 1.5035793342551032e-05
+      }
+    },
+    {
+      "query_start": 1536,
+      "query_end": 2043,
+      "score_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            507,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33145632,
+          "sha256": "c6954e3e95583f107021462e2b511e3a6b4cd62e8ae904ff0f5c8551e5b87511",
+          "finite": true,
+          "max_abs": 17.39497947692871
+        },
+        "cpu": {
+          "shape": [
+            8,
+            507,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33145632,
+          "sha256": "c80b1883eb141ef1c7c03913e518d524f04b3d94d388b66c7a50c48ccdc999ec",
+          "finite": true,
+          "max_abs": 17.394975662231445
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8286408,
+        "max_abs_error": 9.5367431640625e-06,
+        "RMSE": 7.011948552914691e-07,
+        "relative_rms": 1.850417127139477e-07
+      },
+      "probability_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            507,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33145632,
+          "sha256": "6bdb2966f06bd82b02c20e190e61ffc8890de2915a81058c34889690c21909f1",
+          "finite": true,
+          "max_abs": 0.9993361830711365
+        },
+        "cpu": {
+          "shape": [
+            8,
+            507,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33145632,
+          "sha256": "843665216ca04eca3ede993d69ce29d1b56a5554bcf826ccda352489f07a6164",
+          "finite": true,
+          "max_abs": 0.9993361830711365
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8286408,
+        "max_abs_error": 3.039836883544922e-06,
+        "RMSE": 1.186953870153607e-08,
+        "relative_rms": 9.197988925689723e-07
+      },
+      "P_reconstruction": {
+        "npu": {
+          "shape": [
+            8,
+            507,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33145632,
+          "sha256": "a5cda13af4af4e9a3253002ca636c4d9f27703dade456626859ac87114457c4c",
+          "finite": true,
+          "max_abs": 0.9993362426757812
+        },
+        "cpu": {
+          "shape": [
+            8,
+            507,
+            2043
+          ],
+          "dtype": "torch.float32",
+          "bytes": 33145632,
+          "sha256": "6bdb2966f06bd82b02c20e190e61ffc8890de2915a81058c34889690c21909f1",
+          "finite": true,
+          "max_abs": 0.9993361830711365
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 8286408,
+        "max_abs_error": 5.960464477539063e-08,
+        "RMSE": 4.576612663864965e-10,
+        "relative_rms": 3.546527692560054e-08
+      },
+      "PV_vs_CPU_Float": {
+        "npu": {
+          "shape": [
+            8,
+            507,
+            128
+          ],
+          "dtype": "torch.float32",
+          "bytes": 2076672,
+          "sha256": "c5ca11f1ed79a7b8c710f80c5a960c7a0cd3a1249e073805d0e7f40addb7c8ed",
+          "finite": true,
+          "max_abs": 0.2520613372325897
+        },
+        "cpu": {
+          "shape": [
+            8,
+            507,
+            128
+          ],
+          "dtype": "torch.float32",
+          "bytes": 2076672,
+          "sha256": "2eae46b87c6913ae46f2cd9ee186164d0673680059ece5f0cf13a6d4053d3db4",
+          "finite": true,
+          "max_abs": 0.25206130743026733
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 519168,
+        "max_abs_error": 4.3213367462158203e-07,
+        "RMSE": 1.4470829950416006e-08,
+        "relative_rms": 9.578896115839706e-07
+      },
+      "half_output_vs_actual_CPU_Half_MATH": {
+        "npu": {
+          "shape": [
+            8,
+            507,
+            128
+          ],
+          "dtype": "torch.float16",
+          "bytes": 1038336,
+          "sha256": "ed235a2136dd890d94215ca652082b5396ab54e0e2e03d7d370794d7e5131761",
+          "finite": true,
+          "max_abs": 0.251953125
+        },
+        "cpu": {
+          "shape": [
+            8,
+            507,
+            128
+          ],
+          "dtype": "torch.float16",
+          "bytes": 1038336,
+          "sha256": "14cd0eef2c638b4103ccdfed4986f1f5593400db43eb529de0319d5201e6361c",
+          "finite": true,
+          "max_abs": 0.251953125
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 519168,
+        "max_abs_error": 3.0517578125e-05,
+        "RMSE": 2.3990413023990834e-07,
+        "relative_rms": 1.588031383553131e-05
+      }
+    }
+  ],
+  "resident_leaf_SDPA_samples_s": [
+    0.015754010062664747,
+    0.01547023979946971,
+    0.01573651982471347
+  ],
+  "resident_leaf_SDPA_median_s": 0.01573651982471347,
+  "timing_includes_activation_padding_packing_score_softmax_split_two_PV_and_Halfcast": true,
+  "not_whole_encoder_timing": true,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "builds": [
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": true,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round85_batch01/kernels/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "91a076d232ac90427430826ac0c4c3bad709f6accb1a6806a1e5e2be49aaf74f",
+      "json_path": "/tmp/h3_round85_batch01/kernels/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 512,
+        "k": 128,
+        "n": 2048
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 8,
+        "n1": 128
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 16,
+        "per_head_tasks": 64,
+        "tasks": 512,
+        "cores": 30,
+        "steps": 18
+      },
+      "head_stride_elems": {
+        "a": 65536,
+        "b": 262144,
+        "c": 1048576
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          8,
+          2048,
+          16
+        ],
+        "c": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 524288,
+        "b": 2097152,
+        "c": 8388608
+      },
+      "gm_bytes": {
+        "a": 1048576,
+        "b": 4194304,
+        "c": 33554432
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 1,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 0,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    },
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": true,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round85_batch01/kernels/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "3f8fbd082e9d72540c6aa88b07f6f2a283f451e97190fcadef143fb218204f68",
+      "json_path": "/tmp/h3_round85_batch01/kernels/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 512,
+        "k": 2048,
+        "n": 128
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 128,
+        "n1": 8
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 1,
+        "per_head_tasks": 4,
+        "tasks": 32,
+        "cores": 30,
+        "steps": 2
+      },
+      "head_stride_elems": {
+        "a": 1048576,
+        "b": 262144,
+        "c": 65536
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          128,
+          128,
+          16
+        ],
+        "c": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 8388608,
+        "b": 2097152,
+        "c": 524288
+      },
+      "gm_bytes": {
+        "a": 16777216,
+        "b": 4194304,
+        "c": 2097152
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 16,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 0,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    },
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": true,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round85_batch01/kernels/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "1bb606d8a6d0704f15e650f12f6d358bc841b9afadacbe2a72d939f3b6d6970e",
+      "json_path": "/tmp/h3_round85_batch01/kernels/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 507,
+        "k": 128,
+        "n": 2048
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 8,
+        "n1": 128
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 16,
+        "per_head_tasks": 64,
+        "tasks": 512,
+        "cores": 30,
+        "steps": 18
+      },
+      "head_stride_elems": {
+        "a": 65536,
+        "b": 262144,
+        "c": 1048576
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          8,
+          2048,
+          16
+        ],
+        "c": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 524288,
+        "b": 2097152,
+        "c": 8388608
+      },
+      "gm_bytes": {
+        "a": 1048576,
+        "b": 4194304,
+        "c": 33554432
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 1,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 5,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    },
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": true,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round85_batch01/kernels/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "c957a08b8bbc778b2d05857b32d8a86dc42e113e3bd21712b92fb289ccd4d33e",
+      "json_path": "/tmp/h3_round85_batch01/kernels/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 507,
+        "k": 2048,
+        "n": 128
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 128,
+        "n1": 8
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 1,
+        "per_head_tasks": 4,
+        "tasks": 32,
+        "cores": 30,
+        "steps": 2
+      },
+      "head_stride_elems": {
+        "a": 1048576,
+        "b": 262144,
+        "c": 65536
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          128,
+          128,
+          16
+        ],
+        "c": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 8388608,
+        "b": 2097152,
+        "c": 524288
+      },
+      "gm_bytes": {
+        "a": 16777216,
+        "b": 4194304,
+        "c": 2097152
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 16,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 5,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    }
+  ]
+}

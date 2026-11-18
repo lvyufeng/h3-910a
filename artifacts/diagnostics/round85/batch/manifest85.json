@@ -1,0 +1,121 @@
+{
+  "round": 85,
+  "task": "task-26",
+  "owner": "batch85-fresh",
+  "kind": "batched per-head Half x Half -> FP32 L0C -> FP32 GM GEMM builder (source only)",
+  "scope": "artifacts/diagnostics/round85/batch",
+  "files": {
+    "batch_gemm85.py": {
+      "bytes": 30347,
+      "sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a"
+    },
+    "test_batch_gemm85.py": {
+      "bytes": 34091,
+      "sha256": "c126f0b6f7969c4a107b2abc2de5b46ccfd5a58101b146b86b7e1b322e2bd5b4"
+    }
+  },
+  "compiled": false,
+  "executed_on_npu": false,
+  "no_ssh_or_remote_command": true,
+  "no_model_run": true,
+  "no_installation": true,
+  "no_production_files_modified": true,
+  "no_git_commit": true,
+  "proves_precision": false,
+  "proves_speed": false,
+  "claims_h3_improvement": false,
+  "pinned": {
+    "round83_reference_source": "blocked_dynamic_steps83.py",
+    "round83_reference_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+    "round83_runtime_module": "runtime5gm83.py",
+    "round83_runtime_library_sha256": "bd50d7005bf48e9a9a853c01750eaea4eefbb3e0f69abb2e7153aa7139e8b043",
+    "compile_soc": "Ascend910B",
+    "runtime_soc": "Ascend910B",
+    "physical_cores": 30,
+    "l1_size": 1048576,
+    "l0c_size": 262144
+  },
+  "gm_abi": {
+    "argument_count": 5,
+    "order": [
+      "A_Half",
+      "B_Half",
+      "aux0_Half16",
+      "aux1_Half16",
+      "C_Float32"
+    ],
+    "a_layout": "(H,K1,Mp,16) float16",
+    "b_layout": "(H,K1,N,16) float16",
+    "c_layout": "(H,N1,Mp,16) float32",
+    "aux_unused": true,
+    "aux_passed_explicitly_to_BuildCCE": true
+  },
+  "target_geometries": {
+    "score": {
+      "H": 8,
+      "M": 512,
+      "K": 128,
+      "N": 2048,
+      "m_pad": 512,
+      "k_tiles": 1,
+      "m_tiles": 4,
+      "n_tiles": 16,
+      "tasks": 512,
+      "cores": 30,
+      "steps": 18
+    },
+    "pv": {
+      "H": 8,
+      "M": 512,
+      "K": 2048,
+      "N": 128,
+      "m_pad": 512,
+      "k_tiles": 16,
+      "m_tiles": 4,
+      "n_tiles": 1,
+      "tasks": 32,
+      "cores": 30,
+      "steps": 2
+    },
+    "last_chunk_M507": {
+      "m_pad": 512,
+      "m_pad_rows": 5
+    },
+    "smoke": {
+      "H": 2,
+      "M": 128,
+      "K": 256,
+      "N": 128,
+      "purpose": "proves 2 K blocks + distinct per-head B"
+    }
+  },
+  "contracts": [
+    "task = head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile, bijective and head-complete",
+    "A/B/C GM offsets all include the head stride; verified no cross-head read or write",
+    "DMA burst/strides identical to the executed Round83 per-head values",
+    "single FP32 L0C live across all K blocks; only kt==0 initialises (static python K loop)",
+    "no Half partial, no FP32 UB partial sum, no FP32 weight shadow, no bias operand",
+    "only the outer tile-step iteration is dynamic; the head is folded into the task index",
+    "each K block wrapped in new_stmt_scope(disable_sync=False) for the L1 WAR ordering",
+    "host pack_a zero-fills only padded M rows; pack_w keeps original Half values per head",
+    "unique build workspace per compile, artefacts copied, object SHA recorded, no path delete/move",
+    "fcntl compile lock and refusal to overwrite an existing kernel directory",
+    "module scope is stdlib only; torch and tbe are imported lazily inside functions"
+  ],
+  "tests": {
+    "runner": "python3 artifacts/diagnostics/round85/batch/test_batch_gemm85.py",
+    "count": 68,
+    "requires_torch": false,
+    "result": "OK"
+  },
+  "root_next_steps": [
+    "root prebuilds serially on owned ts-217 before the runtime run",
+    "root packs the real captured H3 QKV per local head and launches via runtime5gm83",
+    "root owns every numeric/timing receipt; this fork claims none"
+  ],
+  "differences_from_earlier_wrong_assumption": {
+    "note": "R84 caught a stale intermediate-size assumption (K3456 vs actual K3200).",
+    "this_round_uses_only_declared_attention_head_geometry": "head_dim 128, 8 local heads per TP8 rank, sequence 2043 (padded 2048 keys / 512 query rows)",
+    "does_not_derive_model_MLP_width": true
+  }
+}

@@ -1,0 +1,591 @@
+{
+  "scope": "Capture actual TP8 decoder0 Half QKV and compare the leaf to CPU Half MATH SDPA.\n\nOnly the original first decoder block is constructed/loaded; original CPUFP16\nmultimodal input is reused to isolate attention. This is not a full encode timer.\n",
+  "rank": 0,
+  "world_size": 8,
+  "completed": true,
+  "source_sha256": "3e9051cacaa241c13f8b5288b9069b366631349a55ac45bbdecc148f391de948",
+  "not_full_encoder_timing": true,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "numerical_tolerance": null,
+  "cpu_reference_gate": {
+    "completed": true,
+    "full_multimodal_reference_completed": true,
+    "repeat_pre_final_norm_bits_equal": true,
+    "repeat_post_final_norm_bits_equal": true,
+    "pre_final_norm_matches_layer49_identity": true
+  },
+  "cpu_reference": {
+    "root": "/tmp/h3_round78_hf_fp1601",
+    "source_sha256": "50165e77adb393b4573fbe0fdb29c62a6ddb14b8f39082d0ea67e904848010ea",
+    "original_selected_parameter_sha256": "a69676bac5e6f3a513ce44080d29c73974553b6e0a327ea272e47b600d84e46e",
+    "boundary": "original HF selected-50 decoder layers, PRE final norm",
+    "vision_layers": 27,
+    "language_layers": 50,
+    "isolation": "recomputed original HF FP16 graph; old BF16 outputs were never cast to FP16"
+  },
+  "candidate": {
+    "path": "/tmp/h3_round85_capture01/candidate_encoder79.py",
+    "sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "module_name": "candidate_encoder79",
+    "origin_production_sha256": null
+  },
+  "text_attention": {
+    "scope": "module-level candidate._scaled_dot_product_attention replacement",
+    "global_functional_monkeypatch": false,
+    "torch_nn_functional_replaced": false,
+    "operands": "FP16 Q/K/V in, FP32 scores, FP32 softmax, FP32 P@V, single FP16 out",
+    "causal": true,
+    "clamp_applied": false,
+    "clamp_note": "the 910A-only +/-50000 clamp of the production shim is deliberately absent; the CPU reference baseline has no such clamp",
+    "query_chunk": 512,
+    "query_chunk_note": "row-wise softmax is exactly decomposable; GEMM tiling differs from a single-shot FP32 matmul, so bit-equality with CPU is not asserted",
+    "original_reference": {
+      "module": "candidate_encoder79",
+      "qualname": "_scaled_dot_product_attention"
+    }
+  },
+  "loaded_parameter_tensors": 8,
+  "raw_decoder0_vs_CPU": {
+    "npu": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 20920320,
+      "sha256": "29a39654df6143e0280d53fa0088e8454fdd6bf46a3b9ff5f4f45ebe0f0ad5ef",
+      "finite": true,
+      "max_abs": 49.78125
+    },
+    "cpu": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 20920320,
+      "sha256": "f0d4f73cb660dae162aa390a96c5296cd98b4f6ba415e5bc16d2028a43d52049",
+      "finite": true,
+      "max_abs": 49.78125
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": false,
+    "elements": 10460160,
+    "max_abs_error": 0.03125,
+    "RMSE": 0.0001770464892838558,
+    "relative_rms": 0.00014568573019138094
+  },
+  "raw_decoder0_repeat": {
+    "npu": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 20920320,
+      "sha256": "29a39654df6143e0280d53fa0088e8454fdd6bf46a3b9ff5f4f45ebe0f0ad5ef",
+      "finite": true,
+      "max_abs": 49.78125
+    },
+    "cpu": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 20920320,
+      "sha256": "29a39654df6143e0280d53fa0088e8454fdd6bf46a3b9ff5f4f45ebe0f0ad5ef",
+      "finite": true,
+      "max_abs": 49.78125
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": true,
+    "elements": 10460160,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_rms": 0.0
+  },
+  "raw_decoder0_reproduces_R84_native_CPU_input": true,
+  "operand_repeat": {
+    "q": {
+      "npu": {
+        "shape": [
+          1,
+          8,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 4184064,
+        "sha256": "de7699baf199097b88385cab4362a72d8af43b7cd0a4933feddb376bf2ced401",
+        "finite": true,
+        "max_abs": 16.4375
+      },
+      "cpu": {
+        "shape": [
+          1,
+          8,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 4184064,
+        "sha256": "de7699baf199097b88385cab4362a72d8af43b7cd0a4933feddb376bf2ced401",
+        "finite": true,
+        "max_abs": 16.4375
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": true,
+      "elements": 2092032,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_rms": 0.0
+    },
+    "k": {
+      "npu": {
+        "shape": [
+          1,
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "fb0145820ab4e0a869e7dad59cfd21b7b00fc223d86c28d927f3848165f4817e",
+        "finite": true,
+        "max_abs": 123.375
+      },
+      "cpu": {
+        "shape": [
+          1,
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "fb0145820ab4e0a869e7dad59cfd21b7b00fc223d86c28d927f3848165f4817e",
+        "finite": true,
+        "max_abs": 123.375
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": true,
+      "elements": 261504,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_rms": 0.0
+    },
+    "v": {
+      "npu": {
+        "shape": [
+          1,
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "75350029024696ed07117c152ec3e8bdd4ffdb57e4c950ec6237971d002ccd9d",
+        "finite": true,
+        "max_abs": 0.260986328125
+      },
+      "cpu": {
+        "shape": [
+          1,
+          1,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 523008,
+        "sha256": "75350029024696ed07117c152ec3e8bdd4ffdb57e4c950ec6237971d002ccd9d",
+        "finite": true,
+        "max_abs": 0.260986328125
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": true,
+      "elements": 261504,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_rms": 0.0
+    },
+    "native_out": {
+      "npu": {
+        "shape": [
+          1,
+          8,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 4184064,
+        "sha256": "89b82e1921d09d0b3da5be880dd0a9804de504eebb01877bd52fd1140da1c695",
+        "finite": true,
+        "max_abs": 0.2587890625
+      },
+      "cpu": {
+        "shape": [
+          1,
+          8,
+          2043,
+          128
+        ],
+        "dtype": "torch.float16",
+        "bytes": 4184064,
+        "sha256": "89b82e1921d09d0b3da5be880dd0a9804de504eebb01877bd52fd1140da1c695",
+        "finite": true,
+        "max_abs": 0.2587890625
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": true,
+      "elements": 2092032,
+      "max_abs_error": 0.0,
+      "RMSE": 0.0,
+      "relative_rms": 0.0
+    }
+  },
+  "attention_native_vs_CPU_Half_MATH": {
+    "npu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "89b82e1921d09d0b3da5be880dd0a9804de504eebb01877bd52fd1140da1c695",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "cpu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "0f9484a4cb68635335bab86456251eaabc203e3b04f820ce768c2830c213ceb9",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": false,
+    "elements": 2092032,
+    "max_abs_error": 0.000244140625,
+    "RMSE": 3.5505627247794302e-06,
+    "relative_rms": 0.00023402639827398492
+  },
+  "CPU_Half_MATH_repeat": {
+    "npu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "0f9484a4cb68635335bab86456251eaabc203e3b04f820ce768c2830c213ceb9",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "cpu": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "0f9484a4cb68635335bab86456251eaabc203e3b04f820ce768c2830c213ceb9",
+      "finite": true,
+      "max_abs": 0.2587890625
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": true,
+    "elements": 2092032,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_rms": 0.0
+  },
+  "capture": {
+    "path": "/tmp/h3_round85_capture01/QKV_rank0.pt",
+    "sha256": "491452f41e1efbc4e671e7275a60a0522649d3b60587a55f5e049a0b5db67bbc",
+    "q": {
+      "shape": [
+        1,
+        8,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 4184064,
+      "sha256": "de7699baf199097b88385cab4362a72d8af43b7cd0a4933feddb376bf2ced401",
+      "finite": true,
+      "max_abs": 16.4375
+    },
+    "k": {
+      "shape": [
+        1,
+        1,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 523008,
+      "sha256": "fb0145820ab4e0a869e7dad59cfd21b7b00fc223d86c28d927f3848165f4817e",
+      "finite": true,
+      "max_abs": 123.375
+    },
+    "v": {
+      "shape": [
+        1,
+        1,
+        2043,
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 523008,
+      "sha256": "75350029024696ed07117c152ec3e8bdd4ffdb57e4c950ec6237971d002ccd9d",
+      "finite": true,
+      "max_abs": 0.260986328125
+    }
+  },
+  "first_512_query_leaf_diagnostics": {
+    "scores_unmasked": {
+      "npu": {
+        "shape": [
+          1,
+          8,
+          512,
+          2043
+        ],
+        "dtype": "torch.float32",
+        "bytes": 33472512,
+        "sha256": "2786ed59aa8b3802955731476162bdf43e70da34da91daf6032d457b9ac16281",
+        "finite": true,
+        "max_abs": 16.379549026489258
+      },
+      "cpu": {
+        "shape": [
+          1,
+          8,
+          512,
+          2043
+        ],
+        "dtype": "torch.float32",
+        "bytes": 33472512,
+        "sha256": "9e8cbf32fb219213c7ecacd8a0959edf434ff788f1598c3053e9780b29016637",
+        "finite": true,
+        "max_abs": 16.379549026489258
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 8368128,
+      "max_abs_error": 8.58306884765625e-06,
+      "RMSE": 5.674113595624539e-07,
+      "relative_rms": 1.8421941500173238e-07
+    },
+    "probabilities": {
+      "npu": {
+        "shape": [
+          1,
+          8,
+          512,
+          2043
+        ],
+        "dtype": "torch.float32",
+        "bytes": 33472512,
+        "sha256": "64e7e63edfa5ba9365123e44400852f0e5be0a2ed38e4fa1f9d5e1f7c4d7a257",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "cpu": {
+        "shape": [
+          1,
+          8,
+          512,
+          2043
+        ],
+        "dtype": "torch.float32",
+        "bytes": 33472512,
+        "sha256": "567e324f166f2070024974c4da69b6146bcce7e950fcfc1fd3082929c82ff43c",
+        "finite": true,
+        "max_abs": 1.0
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 8368128,
+      "max_abs_error": 1.996755599975586e-06,
+      "RMSE": 7.3785220085315666e-09,
+      "relative_rms": 5.025849116864925e-07
+    },
+    "PV_native_probabilities": {
+      "npu": {
+        "shape": [
+          1,
+          8,
+          512,
+          128
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2097152,
+        "sha256": "665059b951346e2dc9f3bfd6a9fbd86686c8a43490b7f98173089e80527a9cdd",
+        "finite": true,
+        "max_abs": 0.25869855284690857
+      },
+      "cpu": {
+        "shape": [
+          1,
+          8,
+          512,
+          128
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2097152,
+        "sha256": "4eba57f5f66167b110208b12998a68c8a9929bcdf0e8e2bf9eef751151a0ce19",
+        "finite": true,
+        "max_abs": 0.2587181031703949
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 524288,
+      "max_abs_error": 6.124377250671387e-05,
+      "RMSE": 1.924458498363856e-06,
+      "relative_rms": 0.0001241773541386732
+    },
+    "PV_exact_CPU_probabilities": {
+      "npu": {
+        "shape": [
+          1,
+          8,
+          512,
+          128
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2097152,
+        "sha256": "1e8b1b561d98543a7b1cc08c8e11a728e333a27891ce2fb62a2f451501f1e4b2",
+        "finite": true,
+        "max_abs": 0.25869855284690857
+      },
+      "cpu": {
+        "shape": [
+          1,
+          8,
+          512,
+          128
+        ],
+        "dtype": "torch.float32",
+        "bytes": 2097152,
+        "sha256": "4eba57f5f66167b110208b12998a68c8a9929bcdf0e8e2bf9eef751151a0ce19",
+        "finite": true,
+        "max_abs": 0.2587181031703949
+      },
+      "shape_mismatch": false,
+      "comparable": true,
+      "finite": true,
+      "dtype_matches": true,
+      "raw_bits_equal": false,
+      "elements": 524288,
+      "max_abs_error": 6.124377250671387e-05,
+      "RMSE": 1.9247325321487185e-06,
+      "relative_rms": 0.00012419503640637486
+    },
+    "scope": "Float intermediate diagnostics on actual frozen HalfQKV;not a new whole-FP32teacher"
+  },
+  "parameters_unchanged": true,
+  "CPU_reference_receipt_unchanged": true,
+  "kv_padding_final": {
+    "installed": true,
+    "primed": false,
+    "original_kv_rows": 128,
+    "padded_output_rows": 256,
+    "only_zero_output_rows_added": true,
+    "trailing_output_discarded": true,
+    "cache_entries": 2,
+    "expected_cache_entries": 100,
+    "cache_bytes": 5242880,
+    "padding_bytes": 2621440,
+    "pad_ratio": 2.0,
+    "max_abs_prefix_mismatch": 0.0,
+    "all_prefix_exact": true,
+    "tail_nonzero_count": 0,
+    "all_cached_padded_are_zero_offset": true,
+    "no_cached_padded_requires_grad": true,
+    "no_cached_padded_holds_autograd_graph": true,
+    "cached_prefix_sha256": null,
+    "param_signature_contract": "storage_data_ptr+storage_offset+shape+stride+dtype+device+_version",
+    "transform": {
+      "candidate_module": "candidate_encoder79",
+      "class_name": "MiniMaxH3Qwen3VLTextAttention",
+      "original_forward_source_sha256": "668456bf92d7ea2e8c3e0e1c0d623251d71ba3bb30dd9732385fd1b04256e397",
+      "transformed_source_sha256": "604442a074c5073836512615f6045041faa277c34d64ae43c26098931460bd5b",
+      "matched_calls": [
+        "k_weight",
+        "v_weight"
+      ],
+      "rewritten_call_count": 2,
+      "helper_name": "_r81_kv_linear",
+      "exec_namespace": "live_candidate_module_dict",
+      "module_namespace_left_behind": [
+        "_r81_kv_linear"
+      ],
+      "global_functional_patched": false,
+      "quantized_qkv_path_untouched": true,
+      "q_projection_untouched": true,
+      "mlp_untouched": true
+    },
+    "stats": {
+      "helper_calls": 4,
+      "padded_calls": 4,
+      "passthrough_calls": 0,
+      "cache_hits": 4,
+      "cache_misses": 2,
+      "cache_evictions": 0
+    },
+    "not_executed_here": true,
+    "proves_full_encoder_precision": false
+  }
+}

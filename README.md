@@ -1,6 +1,7 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
 > **Current native/lossless optimization work:** see the
+> [Round85 actual PV error reduced15× at leaf; full attention/native-row CPU gap1.82%, combined path3.064s still not accepted](<artifacts/diagnostics/round85/README.md>),
 > [Round84 actual FP32 row-HCCL TP8: CPU-condition gap2.19%, native gap7.58%, encode2.434s; not accepted](<artifacts/diagnostics/round84/README.md>),
 > [Round83 portable FP32 bias error reduced26× at H3 KV size; four generic FP32 GEMM shapes executed](<artifacts/diagnostics/round83/README.md>),
 > [Round82 CPU conditioning isolation: residual2.48%; actual FP16→FP32 TIK GEMM micro executed](<artifacts/diagnostics/round82/README.md>),
