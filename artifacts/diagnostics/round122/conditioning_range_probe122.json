@@ -1,0 +1,108 @@
+{
+  "scope": "GPU-only range probe of the exact captured H3 FP16 conditioning projection input.\n\nNot a BF16 reference and not a CPU inference baseline. Reuse the actual first-trial\nFP16 encoder output, load the same official conditioning weights directly on this\nRTX4090, and distinguish Half-output range overflow from nonfinite input/weights.\n",
+  "completed": true,
+  "input": {
+    "dtype": "torch.float16",
+    "device": "cuda:0",
+    "shape": [
+      2043,
+      5120
+    ],
+    "nan": 0,
+    "positive_inf": 0,
+    "negative_inf": 0,
+    "finite_max_abs": 19520.0,
+    "finite_rms": 14.821109771728516
+  },
+  "weight": {
+    "dtype": "torch.float16",
+    "device": "cuda:0",
+    "shape": [
+      5376,
+      5120
+    ],
+    "nan": 0,
+    "positive_inf": 0,
+    "negative_inf": 0,
+    "finite_max_abs": 4.65625,
+    "finite_rms": 0.12183680385351181
+  },
+  "bias": {
+    "dtype": "torch.float16",
+    "device": "cuda:0",
+    "shape": [
+      5376
+    ],
+    "nan": 0,
+    "positive_inf": 0,
+    "negative_inf": 0,
+    "finite_max_abs": 5.125,
+    "finite_rms": 0.13758912682533264
+  },
+  "original_weight_dtype": "torch.bfloat16",
+  "token_tag_counts": {
+    "0": 2020,
+    "1": 23
+  },
+  "weights_are_official_original_checkpoint": true,
+  "no_CPU_inference_baseline": true,
+  "FP16_output": {
+    "dtype": "torch.float16",
+    "device": "cuda:0",
+    "shape": [
+      2043,
+      5376
+    ],
+    "nan": 0,
+    "positive_inf": 6,
+    "negative_inf": 5,
+    "finite_max_abs": 64128.0,
+    "finite_rms": 158.1300506591797
+  },
+  "FP32_using_identical_FP16_input_and_weight_values": {
+    "dtype": "torch.float32",
+    "device": "cuda:0",
+    "shape": [
+      2043,
+      5376
+    ],
+    "nan": 0,
+    "positive_inf": 0,
+    "negative_inf": 0,
+    "finite_max_abs": 92795.5859375,
+    "finite_rms": 176.40419006347656
+  },
+  "FP32_using_original_weight_values_and_same_input": {
+    "dtype": "torch.float32",
+    "device": "cuda:0",
+    "shape": [
+      2043,
+      5376
+    ],
+    "nan": 0,
+    "positive_inf": 0,
+    "negative_inf": 0,
+    "finite_max_abs": 92795.5859375,
+    "finite_rms": 176.40419006347656
+  },
+  "FP16_finite_limit": 65504.0,
+  "FP32_entries_outside_FP16_range": 11,
+  "rows_with_out_of_FP16_range_entries": 6,
+  "overflow_rows_by_token_tag": {
+    "0": 5,
+    "1": 1
+  },
+  "refiner_final_norm_weight": {
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "shape": [
+      5376
+    ],
+    "nan": 0,
+    "positive_inf": 0,
+    "negative_inf": 0,
+    "finite_max_abs": 3.46875,
+    "finite_rms": 2.0449767112731934
+  },
+  "confirmed_Half_output_range_overflow": true
+}

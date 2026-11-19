@@ -1,0 +1,123 @@
+{
+  "scope": "Actual full FP16 H3 generation via vLLM-Omni on the leased 8xRTX4090.\n\nUse the original (non-4-step) checkpoint, real live encoder and VAE, 49 DiT\n evaluations, no cached conditioning, no LoRA, no sparse/quantized approximation.\nEncoder and main DiT weights are FP16 via the recorded dtype-only adapter. Original\nFP32 time/latent/final projections and VAE weights remain FP32 by upstream design;\nvideo decode runs with upstream FP16 autocast. No BF16 model/activation is permitted\non the adapted text/DiT route. Export a real MP4 with audio and the uncompressed WAV.\n",
+  "completed": false,
+  "actual_generated_video": false,
+  "FP16_quality_accepted": false,
+  "case": "raw_fp16",
+  "versions": {
+    "torch": "2.11.0",
+    "vllm": "0.26.0",
+    "vllm-omni": "0.26.0",
+    "transformers": "5.14.1",
+    "diffusers": "0.38.0"
+  },
+  "model_repo": "MiniMaxAI/MiniMax-H3",
+  "model_revision": "0919fb684102ef115126612f3fbb84d1027e7317",
+  "vllm_omni_commit": "1c2a81f6d84aea4fff53bd2f894c2a287c237245",
+  "checkpoint_root": "/home/mseco/h3_gpu12201/checkpoint/FL2VA",
+  "request": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "seed": 1234,
+    "width": 1344,
+    "height": 768,
+    "nominal_seconds": 5,
+    "fps": 24,
+    "requested_frames": 120,
+    "expected_aligned_frames": 124,
+    "dit_evaluations": 49,
+    "task": "fl2va"
+  },
+  "live_encoder_used": true,
+  "old_conditioning_cache_loaded": false,
+  "FP32_intentional_exceptions": [
+    "time/latent/final-output projections",
+    "original video/audio VAE weights",
+    "upstream normalization/softmax/rotary accumulation"
+  ],
+  "checkpoint_verified_files": 81,
+  "checkpoint_verified_total_bytes": 144051182625,
+  "dtype_adaptation": {
+    "scope": "Make explicit FP16 dtype-only adaptation inside the isolated CUDA checkout.\n\nThe stock H3 encoder, DiT and transport route hard-code BF16. These three literal\nreplacements are required for a real FP16 trial; --dtype half alone does not do it.\nDo not change attention math, weight values, the schedule, VAE, image conditioning,\nnormalization, or any accelerator-wide settings. Raw official BF16 checkpoint bytes\nremain untouched and are converted only by the actual parameter loaders.\n",
+    "completed": true,
+    "commit": "1c2a81f6d84aea4fff53bd2f894c2a287c237245",
+    "source_archive_sha256": "9d0d4c7836bab47ae899069b8f91303bd2f176ee8231818dbe713b30c966244e",
+    "original_sources_verified_against_official_Git_blob_SHA1": true,
+    "official_checkpoint_modified": false,
+    "global_environment_modified": false,
+    "FP32_exceptions_retained": [
+      "time/patch/final-output projections",
+      "video/audio VAE original FP32 parameters",
+      "normalization/softmax/rotary accumulation where defined by upstream"
+    ],
+    "files": {
+      "encoder.py": {
+        "original_sha256": "65857c6564476fdaa01b013d35eb67482881dbac4071a46563f5ae17c028e3f6",
+        "adapted_sha256": "610b497fdde7945468b989e7956dd7f9178c3c7949cd6983e943941802ea7803",
+        "replacement": "torch.bfloat16 -> torch.float16",
+        "occurrences": 4
+      },
+      "minimax_h3_transformer.py": {
+        "original_sha256": "9d246c5995b6962f7fd3451c9538fb3f01995a258a078ea2d49b1b762597c5e6",
+        "adapted_sha256": "e67d95da1e83c7eba92b8c5af41c514cb0e41533399f8f7c34b59bf4aa9df295",
+        "replacement": "torch.bfloat16 -> torch.float16",
+        "occurrences": 1
+      },
+      "pipeline_minimax_h3.py": {
+        "original_sha256": "5512343a805cac13f1ede216b105e6b2c9a9f4e33fd062892b1cd9c9eaedc283",
+        "adapted_sha256": "f6787d113e4bf2dd1ffd95516409bc9ca5cd215f109dd441c687177bb69735e4",
+        "replacement": "torch.bfloat16 -> torch.float16",
+        "occurrences": 3
+      }
+    }
+  },
+  "GPU_names": [
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090"
+  ],
+  "input_images": {
+    "first": {
+      "file": "/home/mseco/h3_gpu12201/results/raw_fp16/first.png",
+      "sha256": "aef653db0fde05489b1bad708062727881019bfefac3452fd5f9f0c1c6045118"
+    },
+    "last": {
+      "file": "/home/mseco/h3_gpu12201/results/raw_fp16/last.png",
+      "sha256": "bfe0ecf871a793d7056e1e2a09126b985df1047c6237609cad5386b89de4497e"
+    }
+  },
+  "engine_kwargs": {
+    "trust_remote_code": true,
+    "task_type": "fl2va",
+    "num_gpus": 8,
+    "tensor_parallel_size": 8,
+    "text_encoder_tp_size": 8,
+    "ulysses_degree": 1,
+    "ring_degree": 1,
+    "dtype": "half",
+    "enforce_eager": true,
+    "enable_layerwise_offload": true,
+    "vae_use_tiling": true,
+    "vae_parallel_mode": "tile",
+    "vae_patch_parallel_size": 8,
+    "diffusion_attention_backend": "TORCH_SDPA",
+    "stage_init_timeout": 2400,
+    "init_timeout": 2400
+  },
+  "engine_initialization_s": 640.592735117767,
+  "sigma_schedule_contract": {
+    "sampling_num_inference_steps": 50,
+    "sigma_points": 50,
+    "actual_dit_evaluations_expected": 49,
+    "reason": "Pinned upstream version counts sigma points; equivalent 50 boundaries to the newer 49-evaluation API."
+  },
+  "failure": {
+    "type": "RuntimeError",
+    "message": "Original FP16 trial produced nonfinite values at condition_proj"
+  },
+  "engine_close_called": true
+}

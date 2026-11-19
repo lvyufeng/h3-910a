@@ -1,0 +1,137 @@
+{
+  "scope": "Short GPU-only range check of the two conditioning refiner blocks.\n\nUses the exact captured FP16 encoder output and original checkpoint values. This\nis a functional range preflight, NOT a complete vLLM-Omni generation or a BF16\nquality comparison. Candidate: FP32 condition projection and FP32 refiner residual/\nRMS accumulation, with refiner attention/MLP matrix operations still FP16.\n",
+  "completed": true,
+  "finite": true,
+  "stages": {
+    "FP32_condition_projection": {
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        5376
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 92795.5859375,
+      "finite_rms": 176.40419006347656
+    },
+    "token_refiner.blocks.0.FP16_qkv": {
+      "dtype": "torch.float16",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        21504
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 96.75,
+      "finite_rms": 10.792678833007812
+    },
+    "token_refiner.blocks.0.FP32_attention_residual": {
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        5376
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 95227.5859375,
+      "finite_rms": 212.61203002929688
+    },
+    "token_refiner.blocks.0.FP16_SwiGLU_product": {
+      "dtype": "torch.float16",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        14336
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 462.75,
+      "finite_rms": 10.239646911621094
+    },
+    "token_refiner.blocks.0.FP32_MLP_residual": {
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        5376
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 95687.3359375,
+      "finite_rms": 402.8384704589844
+    },
+    "token_refiner.blocks.1.FP16_qkv": {
+      "dtype": "torch.float16",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        21504
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 90.5625,
+      "finite_rms": 8.27086353302002
+    },
+    "token_refiner.blocks.1.FP32_attention_residual": {
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        5376
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 95908.7109375,
+      "finite_rms": 427.9740905761719
+    },
+    "token_refiner.blocks.1.FP16_SwiGLU_product": {
+      "dtype": "torch.float16",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        14336
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 17568.0,
+      "finite_rms": 11.367376327514648
+    },
+    "token_refiner.blocks.1.FP32_MLP_residual": {
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        5376
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 91816.7109375,
+      "finite_rms": 342.8076171875
+    },
+    "normalized_FP16_refiner_output": {
+      "dtype": "torch.float16",
+      "device": "cuda:0",
+      "shape": [
+        2043,
+        5376
+      ],
+      "nan": 0,
+      "positive_inf": 0,
+      "negative_inf": 0,
+      "finite_max_abs": 94.6875,
+      "finite_rms": 2.2143771648406982
+    }
+  }
+}
