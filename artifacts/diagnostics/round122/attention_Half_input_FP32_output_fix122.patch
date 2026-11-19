@@ -1,0 +1,12 @@
+--- MLP_wide_output/minimax_h3_transformer.py
++++ attention_wide_output/minimax_h3_transformer.py
+@@ -375,6 +375,9 @@
+             quant_config=quant_config,
+             prefix=f"{prefix}.out_proj",
+         )
++        if quant_config is not None:
++            raise ValueError("The FP16 reference trial disallows quantization")
++        self.out_proj.quant_method = _MiniMaxH3HalfInputFP32OutputLinearMethod()
+         self.attention = Attention(
+             num_heads=self.num_heads,
+             num_kv_heads=self.num_kv_heads,

@@ -1,6 +1,17 @@
 {
   "task": "User-requested full original-checkpoint H3 FP16 FL2VA generation on owned RTX4090 via vLLM-Omni",
-  "status": "range_safe_FP16_matrix_full_candidate_running",
+  "status": "full_generation_complete_actual_media_verified_GPU_released",
+  "first_step_all_50_DiT_blocks_finite": true,
+  "last_verified_complete_steps_all_8_ranks": 49,
+  "request_wall_s": 2271.714394030161,
+  "max_rank_step_median_excluding_first_s": 43.936037028441206,
+  "audio_peak_very_quiet": 0.00015872558287810534,
+  "actual_video_duration_s": 5.166666666666667,
+  "quality_accepted": false,
+  "GPU_lease_released_after_verified_worker_exit": true,
+  "live_GPU_workers_after_cleanup": 0,
+  "MLP_wide_output_candidate_failed": "First-step block44 attention output Inf on ranks2/3/4/5; other SP groups waited; own process group stopped and verified no live members",
+  "latest_wide_output_contract": "FP16 large matrix inputs/weights; FP32 MLP and attention output projections/TP reduction; FP32 residual/RMS and conditioning; no BF16 fallback or clipping",
   "residual_only_candidate_failed": "First-step block18 MLP returned 7 +Inf after blocks0-17 finite; exact internal audits preserved",
   "latest_candidate_contract": "FP16 encoder and large GEMM inputs/weights; FP32 conditioning, RMS/residual, SwiGLU point math; exact power-of-two MLP input range scale and CUDA FP16 GEMM native FP32 output/TP reduction",
   "latest_candidate_GPU_parallelism": "8x4090, TP2/USP4, encoderTP8; changed from diagnostic TP8 to reduce replicated-token communication; same model/input/sigmas",
@@ -14,8 +25,8 @@
   "checkpoint_total_bytes": 144051182625,
   "eighth_shard_recovery_completed": true,
   "redundant_second_full_checkpoint_hash_stopped_before_generation": true,
-  "completed": false,
-  "actual_video_generated": false,
+  "completed": true,
+  "actual_video_generated": true,
   "host": "ts-134",
   "GPU": "8x RTX4090 24 GiB",
   "lease_expires_local": "2026-11-20T11:26:15+08:00",
@@ -28,7 +39,7 @@
   "torch_version": "2.11.0+cu130",
   "transformers_version": "5.14.1",
   "diffusers_version": "0.38.0",
-  "actual_encoder_and_DiT_dtype": "FP16; runtime-audited before inference",
+  "actual_encoder_and_DiT_dtype": "FP16 encoder and large matrix inputs/weights; FP32 conditioning, range-safe projection outputs/TP reduction, RMS/residual and SwiGLU point math; all deliberate exceptions recorded and runtime-audited",
   "native_FP32_exceptions": "VAE parameters and upstream time/patch/final projections; FP32 VAE loading guard prevents a hidden Half roundtrip",
   "request": {
     "prompt": "a red ball bouncing from left to right on the floor",
@@ -48,14 +59,14 @@
   "ts_133_new_lease_released_immediately": true,
   "earlier_bootstrap_checkout_preserved_but_not_used": true,
   "earlier_supervisor_failure_preserved": "Python3.13 Anaconda stdlib lacks os.pidfd_open; no generation was launched. Corrected stdlib supervisor uses /usr/bin/python3.",
-  "active_supervisor": {
-    "job_id": "bash-619f468a2e0b4a60",
-    "pid": 851552,
-    "generation_pid": 851553,
-    "process_group": 851552,
-    "script": "/home/mseco/h3_gpu12201/supervise_full_fp16_range_safe122.py",
-    "state_receipt": "/home/mseco/h3_gpu12201/full_generation_range_safe_supervisor122.json",
-    "log": "/home/mseco/h3_gpu12201/logs/full_generation_range_safe_fp16_122.log"
+  "completed_supervisor": {
+    "job_id": "bash-5a4f4606b39d4abc",
+    "pid": 853469,
+    "generation_pid": 853470,
+    "process_group": 853469,
+    "script": "/home/mseco/h3_gpu12201/supervise_full_fp16_wide_output122.py",
+    "state_receipt": "/home/mseco/h3_gpu12201/full_generation_wide_output_supervisor122.json",
+    "log": "/home/mseco/h3_gpu12201/logs/full_generation_wide_output_fp16_122.log"
   },
   "completed_preparation_processes": {
     "primary_GPU_download_pid": 837068,
@@ -71,13 +82,14 @@
     "audio_VAE_original_FP32_loading_integrity_checked": true,
     "all_mirror_metadata_independently_matches_official_HF_sizes_Git_blob_ids_and_LFS_SHA256": true
   },
-  "next_actions": [
-    "Collect audio VAE loading-integrity check; it performs no CPU inference baseline.",
-    "Supervisor waits on kernel process-exit notifications, verifies every official checkpoint file, then launches a single real full FP16 request.",
-    "Read full worker dtype/finite audits and actual 49-step logs; do not claim success from the exporter smoke test or from a partial result.",
-    "Transfer only final MP4, WAV, PNG frames, logs and receipts to local artifacts; never transfer model weights.",
-    "Check actual video frames, report bounded quality observations, publish the actual media.",
-    "Verify all owned experiment processes exited and GPUs idle, then release ts-134."
+  "completed_actions": [
+    "All 81 official checkpoint file identities verified directly on the GPU host.",
+    "Actual full vLLM-Omni request ran with a live encoder and 49 DiT evaluations on every rank; native VAE decode and audio output completed.",
+    "Delivered MP4/WAV SHA256 match the GPU originals; media decodes to 124 video frames and native stereo audio.",
+    "All audited first-step blocks and all 49 prediction outputs are finite; no BF16 fallback, clipping, student checkpoint or hidden conditioning reuse.",
+    "Sampled output frames show ball movement with no obvious prior logo/glow/ghosting; native audio is very quiet, and GPU BF16 quality parity is not yet established.",
+    "Verified zero remaining live owned workers and idle GPUs, then released ts-134. Model weights remain remote only."
   ],
+  "further_quality_work_not_started": "A same-input full original-BF16 GPU comparison remains useful but was not run in this task.",
   "long_term_910A_goal": "Not completed; remains paused because runtime goal controls rejected resume/new-goal requests. This direct GPU request is being executed independently in the current turn."
 }

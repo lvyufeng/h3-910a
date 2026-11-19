@@ -147,7 +147,10 @@ def instrument_pipeline(cls):
         self.transformer.token_refiner.register_forward_hook(hook('token_refiner', repeat=True))
         for i, block in enumerate(self.transformer.blocks):
             block.adaln_proj.register_forward_hook(hook(f'dit_block_{i:02d}_adaln_first_step'))
+            block.attn.qkv_proj.register_forward_hook(hook(f'dit_block_{i:02d}_qkv_projection_first_step'))
+            block.attn.attention.register_forward_hook(hook(f'dit_block_{i:02d}_attention_kernel_first_step'))
             block.attn.register_forward_hook(hook(f'dit_block_{i:02d}_attention_first_step'))
+            block.mlp.fc1.register_forward_hook(hook(f'dit_block_{i:02d}_MLP_up_projection_first_step'))
             block.mlp.register_forward_hook(hook(f'dit_block_{i:02d}_MLP_first_step'))
             block.register_forward_hook(hook(f'dit_block_{i:02d}_first_step'))
         def pre_step(module, args, kwargs):

@@ -1,0 +1,13 @@
+{
+  "scope": "Extend measured FP16-GEMM/FP32-output protection to attention output projections.\n\nTP2/USP4 trial first-step block44 attention output overflowed on a subset of row\nshards. Keep attention output projection matrix weights/inputs FP16; retain CUDA\nFP32 GEMM outputs and FP32 row-parallel reduction, then FP32 gated residuals. This\nuses the already tested exact scale/wide-output method, with no clipping, BF16 or\nnew FP32 matrix-weight copy. Existing precision changes remain explicit.\n",
+  "applied": true,
+  "original_sha256": "f16b5c2f8803c09e4af3deb902a1eec7dda682d8792fe76e2b1e3d79acb81a90",
+  "modified_sha256": "7cf0c53e6d9199b7944d9026c2bdc1120b1e32084cffe266c434d2d6449b8029",
+  "attention_out_projection_weight_and_input_FP16": true,
+  "attention_out_projection_GEMM_output_and_TP_reduction_FP32": true,
+  "new_FP32_matrix_weights_added": [],
+  "checkpoint_bytes_changed": false,
+  "clipping_added": false,
+  "BF16_fallback": false,
+  "complete_generation_still_required": true
+}
