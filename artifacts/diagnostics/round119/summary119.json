@@ -1,0 +1,86 @@
+{
+  "round": 119,
+  "goal_id": "goal-8ca95bc7-2104-4c18-bb14-12812846af1c",
+  "goal_revision": 23,
+  "goal_active": true,
+  "headline": "Even the DiT+VAE pair alone does not fit: with only the text encoder offloaded the stack still runs out of NPU memory, short by 74 MiB, and allocator defragmentation recovers 113 MiB but still leaves it 103 MiB short of the 222 MiB the next allocation demands. Layer-wise DiT offload is mandatory at this request shape.",
+  "why_this_round": "Round 118 showed decode is residency-sensitive (13.62 s resident vs ~468 s offloaded) and round 117 showed the stack is only a few hundred MiB short of full residency. The obvious way to get both the fast step and the fast decode with a live encoder is to keep the DiT and VAE resident and offload only the text encoder, whose encode takes only about 1.3 s. This round tried exactly that.",
+  "configuration_api_discovered": {
+    "finding": "the engine accepts a component-selective offload policy through diffusion_offload_config, which the H3 pipeline honours via should_offload_component()",
+    "schema": "keys are mode, components, layer_options, pin_memory; mode is required and takes 'module' or 'layer' (OffloadMode), NOT the internal strategy names",
+    "components": "OFFLOAD_COMPONENTS = {dit, text_encoder}; DEFAULT_OFFLOAD_COMPONENTS = {dit}, which is why every previous run offloaded the DiT and left the encoder resident",
+    "strategy_derivation": "mode='module' maps to MODEL_LEVEL; mode='layer' maps to DISTRIBUTED_LAYER_WISE when any component requests allgather transfer or resident_layers, else LAYER_WISE",
+    "constraint": "the legacy enable_*_offload booleans cannot be combined with diffusion_offload_config (the resolver raises), so the boolean must be set False",
+    "first_attempt_error": "passing mode='distributed_layer_wise' failed in _parse_enum because mode is OffloadMode, not OffloadStrategy; corrected to mode='layer'",
+    "attempted_policy": "{'mode': 'layer', 'components': ['text_encoder']}"
+  },
+  "results": [
+    {
+      "variant": "encoder offloaded, DiT+VAE resident",
+      "outcome": "NPU out of memory",
+      "ranks": "all eight, 15 OOM reports",
+      "detail": "31.32 GiB allocated of 32.00 GiB, 6.62-10.26 MiB free, requesting 74.00 MiB; the failure is at INITIALISATION, not during decode: rank 0 was loading the 14 VAE shards (reached 71%) while the DiT (10.4337 GiB per rank) and the layerwise-offloaded encoder were already placed",
+      "shortfall_MiB": 74,
+      "reached_denoise_loop": false,
+      "s_per_step": null
+    },
+    {
+      "variant": "same, with allocator defragmentation (max_split_size_mb:64)",
+      "outcome": "still NPU out of memory",
+      "detail": "31.34 GiB allocated, free improved from about 6 MiB to 119.35 MiB and reserved reduced from 31.79 to 31.52 GiB, but the failing allocation is 222.00 MiB; still at initialisation while loading VAE shards",
+      "fragmentation_recovered_MiB": 113,
+      "remaining_shortfall_MiB": 103,
+      "reached_denoise_loop": false,
+      "s_per_step": null
+    }
+  ],
+  "the_three_residency_bands": [
+    {
+      "configuration": "encoder + DiT + VAE all resident (no offload)",
+      "round": 117,
+      "outcome": "OOM, short 222-498 MiB"
+    },
+    {
+      "configuration": "DiT layer-wise offloaded, encoder resident",
+      "round": 116,
+      "outcome": "works, 33.45 s/step, total 2169.11 s",
+      "decode": "~468 s derived"
+    },
+    {
+      "configuration": "DiT+VAE resident, encoder offloaded",
+      "round": 119,
+      "outcome": "OOM, short 74 MiB (103 MiB after defragmentation)"
+    }
+  ],
+  "conclusion": "The DiT alone fits comfortably (10.4337 GiB per rank) and the encoder can be offloaded (77 blocks, rank-local layerwise). What fails is holding the DiT resident while the VAE is loaded: the allocation dies during VAE shard loading at 31.3 of 32.0 GiB. The VAE must therefore be staged, and staged VAE residency is exactly what round 118 showed costs ~468 s at decode. So the fast-step-plus-fast-decode configuration is not reachable on 8x32 GiB at this request shape, and layer-wise DiT offload remains the only configuration that runs end to end.",
+  "what_would_close_it": {
+    "measured_gap_MiB": "74 at the failing VAE-load allocation (103 after allocator defragmentation), i.e. 0.23-0.32% of capacity",
+    "as_fraction_of_capacity": "about 0.23% to 0.32%",
+    "candidate_levers": [
+      "reduce the VAE's transient load footprint (load it shard-by-shard with a lower concurrent shard count, or free staging buffers before the DiT is placed)",
+      "reduce resident weight bytes by ~100+ MiB per rank",
+      "accept staged VAE and attack the ~468 s decode swap cost directly instead, since that is the measured loss"
+    ],
+    "note": "the shortfall is a load-time transient rather than a decode activation peak, so the fix belongs in load ordering/staging, not in the attention tiling"
+  },
+  "not_claimed": [
+    "no speedup",
+    "no quality pass",
+    "the DiT-resident mode was never achieved, so no per-step figure exists for it",
+    "the overall goal remains active"
+  ],
+  "next": [
+    "Test a smaller decode-time footprint (vae_patch_parallel_size below 8) with the encoder offloaded, since the failing 222 MiB allocation arrives during decode",
+    "If that fits, the reward is large: a resident-DiT step near 14.7 s plus a resident decode near 13.6 s with the encoder still live, which would be the first configuration meeting both targets at once",
+    "Otherwise accept layer-wise DiT offload and optimise the offload path itself, since it is the only configuration that runs"
+  ],
+  "load_time_evidence": {
+    "dit_resident_GiB_per_rank": 10.4337,
+    "dit_load_seconds": 222.3,
+    "encoder_offload": "INFO [layerwise_backend.py:363] Enabled rank-local layerwise offload for encoder text_encoder (77 blocks)",
+    "offloader_backend_engaged": "INFO [__init__.py:179] Enabling offloader backend: LayerWiseOffloadBackend",
+    "encoder_staged": "INFO [component_utils.py:153] Prepared text_encoder for pipeline-managed staged offload",
+    "oom_phase": "rank 0 was at 71% of 14 VAE shards when the allocation failed; no 'Initialization complete' and no 'Prepared video_vae' line appears",
+    "significance": "the intended policy (DiT resident, encoder offloaded) was accepted and the DiT fits at 10.4337 GiB per rank; what does not fit is loading the VAE on top of it"
+  }
+}
