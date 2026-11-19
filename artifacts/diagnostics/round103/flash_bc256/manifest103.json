@@ -1,0 +1,356 @@
+{
+  "accuracy_claim": null,
+  "api": {
+    "GM_argument_count": 5,
+    "build_kernel_signature": "(batch: 'int' = 16, m: 'int' = 4032, n: 'int' = 4032, d: 'int' = 72, out_dir=None, cores_max: 'int' = 30) -> 'dict'",
+    "build_outputs": [
+      "<out_dir>/<kernel>/<kernel>.o",
+      "<out_dir>/<kernel>/<kernel>.json",
+      "<out_dir>/<kernel>/spec103.json"
+    ],
+    "compile_soc": "Ascend910",
+    "kernel_arg_order": [
+      "q_gm_float16",
+      "k_gm_float16",
+      "v_gm_float16",
+      "aux_gm_float32",
+      "out_gm_float16"
+    ],
+    "kernel_name_for_real_geometry": "flash_vision103_h16_m4032_n4032_np4096_d72_mb32_bc256_c30_kv16",
+    "metadata_fields": [
+      "obj_path",
+      "obj_sha256",
+      "kernel_symbol",
+      "block_dim",
+      "GM_argument_count",
+      "kernel_arg_order",
+      "logical",
+      "grid",
+      "dma",
+      "buffers",
+      "vector",
+      "math",
+      "host_protocol",
+      "assumptions",
+      "capability"
+    ],
+    "module": "flash_vision103",
+    "parameter_order": [
+      "batch",
+      "m",
+      "n",
+      "d",
+      "out_dir",
+      "cores_max"
+    ],
+    "plan_kernel": "(batch: 'int' = 16, m: 'int' = 4032, n: 'int' = 4032, d: 'int' = 72, mb: 'int' = 32, bc: 'int' = 256, cores_max: 'int' = 30) -> 'dict'"
+  },
+  "assumptions": [
+    "h_reduce_max/h_reduce_sum(axis=1) on a (MB,16) tile yields a (MB,) row tensor",
+    "Tensor.reshape((n1,MB,16)) is a metadata view of the same flat UB buffer",
+    "masked vector_dup(repeat_times=n1, blk_stride=1, rep_stride=2*MB=64) writes one 16-value NZ row slot per group; 64 is inside the 8-bit immediate",
+    "Scalar.set_as(<UB element>) is a legal UB-to-scalar load",
+    "h_reduce_sum on Float compiles to Float vcadd; h_max to Float vmax",
+    "the 16-group Half fold is emitted as explicit vec_max calls, because the high-level h_max rejected the inferred step of a sliced NZ tensor in Round99",
+    "the Half shift estimate uses Half vcmax (Float vcmax is unsupported here)",
+    "vector_dup(mask,dst,scalar,1,1,1) with an explicit repeat slice fills exactly one repeat",
+    "a 32-lane vector_dup tail mask is legal for both row dtypes an MB=32 row can need: 32 Float = 128 B (half of one 64-lane Float repeat) and 32 Half = 64 B (one quarter of a 128-lane Half repeat), both 32 B aligned; this design only fills Float rows (row_prev/row_zero/denominator) while Half rows come from h_reduce_max and h_cast",
+    "in-place same-shape h_sub/h_mul/h_add/h_exp with dst==src0 is supported",
+    "a Float UB buffer can be reused sequentially (score->exp->low residual, Half score->P_hi, row expansion->widened P_hi) without an explicit alias API",
+    "h_cast of -FLT_MAX to Half saturates rather than producing NaN; the phantom mask is still correct if it saturates to -inf, because every real scaled score is above -16384 so max() selects a real value",
+    "a dynamic if_scope (no else_scope) around only vector_dup phantom fills does not re-trigger the Round99 high-level if/else canonicalisation crash",
+    "a 32 KiB single tensor_mov L0C->UB burst is legal (Round85 executed a 64 KiB single burst of the same form)",
+    "the 16-group Float denominator fold is emitted as pairwise vec_add stages on flat operands, so its association differs from Round101's 8-group fold and from Round99's 4-group fold",
+    "a masked data_move with burst=256 32 B units (8192 B) is legal; the CANN DMA burst immediate is far larger than 128, but the ROOT must confirm this on the real compiler -- this builder does not shrink it to a previously proven 128",
+    "the Cube accepts m=32, k=80, n=256 for QK and m=32, k=256, n=80 for P@V: L0A needs 5120 B and 16384 B, L0B needs 40960 B and 40960 B, both inside 64 KiB"
+  ],
+  "author_never_executed_it": true,
+  "compiled": false,
+  "default_enabled": false,
+  "dma": {
+    "k_load": {
+      "burst": 256,
+      "dst_stride": 0,
+      "nburst": 5,
+      "src_stride": 3840
+    },
+    "out_store": {
+      "burst": 32,
+      "dst_stride": 4000,
+      "nburst": 5,
+      "src_stride": 0
+    },
+    "p_to_l1": {
+      "burst": 32,
+      "nburst": 16
+    },
+    "pv_l0c_to_ub": {
+      "block_mode": "m",
+      "burst_len_kb": 10,
+      "nburst": 1
+    },
+    "q_load": {
+      "burst": 32,
+      "dst_stride": 0,
+      "nburst": 5,
+      "src_stride": 4000
+    },
+    "score_l0c_to_ub": {
+      "block_mode": "m",
+      "burst_len_kb": 32,
+      "nburst": 1
+    },
+    "v_load": {
+      "burst": 80,
+      "dst_stride": 0,
+      "nburst": 16,
+      "src_stride": 0
+    }
+  },
+  "executed": false,
+  "experiment": "MB=32 x BC=256 single-launch streaming vision flash attention",
+  "fake_sdk_dry_run": {
+    "all_required_metadata_keys_present": true,
+    "block_dim": 30,
+    "block_dim_guard_refused": true,
+    "cache_hit": true,
+    "compiled": false,
+    "does_not_prove": "that the emitted program compiles or runs; the .o is a placeholder blob, not a binary",
+    "executed": false,
+    "fake_sdk": true,
+    "file": "dryrun103.json",
+    "kernel_symbol": "flash_vision103_h16_m4032_n4032_np4096_d72_mb32_bc256_c30_kv16",
+    "plan_refusals": {
+      "{'bc': 128}": true,
+      "{'d': 64}": true,
+      "{'m': 48}": true,
+      "{'mb': 64}": true
+    },
+    "proves": "build_kernel spec assembly, object-SHA self-consistency, cache hit, block_dim guard and the exact metadata keys the root engine and Runtime5GM read",
+    "runtime5gm_keys_present": true,
+    "smoke_block_dim": 4
+  },
+  "files": {
+    "README.md": {
+      "sha256": "e945b02173221701389e0d47949f05eab190ad21a76c530cd9e1fdd21e32375a"
+    },
+    "dryrun103.json": {
+      "sha256": "ca54747c5797899e6d491ae44bdce1c66469c038478bdf5645f50767cb74171c"
+    },
+    "dryrun_build103.py": {
+      "sha256": "f193f00274228c20bc8133309255e45fccef03c860eccad7271cd1c859400830"
+    },
+    "flash_vision103.py": {
+      "lines": 1145,
+      "sha256": "035b36c9e9ee68659668ae542221915905efc6e0c5b7ba67f37d57992422d78e"
+    },
+    "make_manifest103.py": {
+      "sha256": "043d0e2907eb688642bae6cf3ca71fee682a1d268ac140432be7e62cee829a56"
+    },
+    "test_flash_vision103.py": {
+      "imports_cann_or_torch": false,
+      "sha256": "923eefef8d7011dbe7be4a0c6f1e16a32865da467286c91fcbac69a0759e0d79",
+      "structural_only": true,
+      "tests": 64
+    }
+  },
+  "full_encoder_precision_accepted": false,
+  "geometry": {
+    "dynamic_steps": 68,
+    "grid": {
+      "cores": 30,
+      "dynamic_kv_loop": true,
+      "kv_tiles": 16,
+      "m_tiles": 126,
+      "steps": 68,
+      "tasks": 2016
+    },
+    "kv_tiles": 16,
+    "launched_cores": 30,
+    "physical_cores": 32,
+    "query_tiles": 126,
+    "real": {
+      "bc": 256,
+      "d": 72,
+      "heads": 16,
+      "kb1": 16,
+      "m": 4032,
+      "mb": 32,
+      "n": 4032,
+      "n_pad": 4096,
+      "padded_head_dim": 80,
+      "phantom_groups": 4,
+      "phantom_keys": 64,
+      "real_groups_last": 12,
+      "scale": 0.11785113019775792,
+      "score_groups": 16,
+      "tail_keys": 192
+    },
+    "smoke": {
+      "geometry": [
+        2,
+        64,
+        192,
+        72
+      ],
+      "grid": {
+        "cores": 4,
+        "dynamic_kv_loop": true,
+        "kv_tiles": 1,
+        "m_tiles": 2,
+        "steps": 1,
+        "tasks": 4
+      },
+      "logical": {
+        "m": 64,
+        "n": 192,
+        "n_pad": 256,
+        "phantom_keys": 64,
+        "tail_keys": 192
+      }
+    },
+    "tasks": 2016
+  },
+  "host_protocol": {
+    "bound": 16384.0,
+    "clamped": false,
+    "enforced_by": "check_host_protocol",
+    "formula": "max|scaled QK| <= 16384, measured finitely by the caller or bounded by sqrt(d) * max|q| * max|k|",
+    "half_shift_ulp_at_bound": 8.0,
+    "max_exp_at_bound": 2980.9579870417283
+  },
+  "math": {
+    "accumulator_dtype": "float32",
+    "denominator_dtype": "float32",
+    "denominator_fold": {
+      "association_changes_low_bits_vs_round101_and_round99": true,
+      "groups": 16,
+      "order": "a=g0+g1; then for left=2,4,...,14: b=g[left]+g[left+1]; a=a+b. 15 explicit vec_add calls on flat operands",
+      "reduction": "h_reduce_sum(axis=1) -> Float vcadd"
+    },
+    "final_output_dtype": "float16",
+    "init": {
+      "denominator": 0.0,
+      "output": 0.0,
+      "row_max": -3.4028234663852886e+38
+    },
+    "low_downscale": 0.0009765625,
+    "main_scores_dtype": "float32",
+    "main_softmax_dtype": "float32",
+    "phantom_key_mask": {
+      "after_exp_before_denominator": 0.0,
+      "before_shift_and_exp": -3.4028234663852886e+38,
+      "groups": 4,
+      "keys": 64,
+      "padded_v_alone_is_not_sufficient": true,
+      "why": "zero-padded K rows make the phantom scores exactly 0; exp(0 - shift) would add 1.0 to every denominator row"
+    },
+    "probability_split": [
+      "hi = Half(exp)",
+      "store_lo = (exp - Float(hi)) * 1024 in place",
+      "lo = Half(store_lo)"
+    ],
+    "residual_scale": 1024.0,
+    "row_broadcast": "explicit per-row vector_dup expansion (no implicit broadcast); the Half-representable shift uses the exact native uint16 copy + Half transpose path",
+    "score_buffer_reused_for_low_residual": true,
+    "score_l0c_burst_kb": 32,
+    "shift_estimate_dtype": "float16",
+    "shift_fold": {
+      "groups": 16,
+      "order": "a=max(g0,g1); then for left=2,4,...,14: b=max(g[left],g[left+1]); a=max(a,b). max is exact under any association"
+    },
+    "shift_is_exact": false
+  },
+  "memory": {
+    "cube_operand_bytes": {
+      "pv_l0a": 16384,
+      "pv_l0b": 40960,
+      "qk_l0a": 5120,
+      "qk_l0b": 40960
+    },
+    "every_ub_allocation_is_derived_from_plan": true,
+    "l0c_capacity_bytes": 262144,
+    "l0c_total_bytes": 53248,
+    "l1_capacity_bytes": 1048576,
+    "l1_total_bytes": 119808,
+    "no_fake_capacity_caps": true,
+    "ub_derived_detail": {
+      "fold_float_a": 2048,
+      "fold_float_b": 2048,
+      "fold_half_a": 1024,
+      "fold_half_b": 1024,
+      "out_acc_float": 10240,
+      "out_half": 5120,
+      "prob_hi_float_also_row_broadcast": 32768,
+      "prob_hi_half_also_half_score": 16384,
+      "prob_lo_half": 16384,
+      "pv_hi_float": 10240,
+      "pv_lo_float": 10240,
+      "row_denominator": 128,
+      "row_diff": 128,
+      "row_new": 128,
+      "row_prev": 128,
+      "row_rescale": 128,
+      "row_sum": 128,
+      "row_zero": 128,
+      "score_float_also_exp_also_lo": 32768,
+      "shift_half_row": 64
+    },
+    "ub_informational_aliases_not_summed": [
+      "ub_score_bytes",
+      "ub_half_score_bytes",
+      "ub_exp_bytes",
+      "ub_prob_half_bytes",
+      "ub_prob_float_bytes",
+      "ub_pv_bytes",
+      "ub_out_bytes"
+    ],
+    "ub_named_total_bytes": 141248,
+    "ub_safe_bound_bytes": 196608,
+    "ub_shift_extra_bytes": 3584,
+    "ub_total_bytes": 144832
+  },
+  "not_run_here": true,
+  "numerical_tolerance": null,
+  "purpose": "halve the per-row Float row-broadcast and cumulative O/L update count versus Round101 MB=64 x BC=128, at the explicit cost of roughly doubling K/V reload traffic; the net effect is NOT assumed",
+  "round": 103,
+  "source_only": true,
+  "speed_claim": null,
+  "starting_source": {
+    "expected_sha256": "ef21123261574bf31aa03e8d0ba8666dfc0f5fbb54a0c1d4694cce4c0749e69d",
+    "immutable_during_root_execution": true,
+    "note": "Round103 was authored from this exact file; the executed Round101 kernel is unchanged by this experiment",
+    "path": "../round101/flash_vision_mask_fixed101.py",
+    "sha256": "ef21123261574bf31aa03e8d0ba8666dfc0f5fbb54a0c1d4694cce4c0749e69d"
+  },
+  "status": "SOURCE ONLY",
+  "unverified_on_real_cann": [
+    "masked data_move with burst=256 32 B units (8192 B)",
+    "Cube m=32,k=80,n=256 (QK) and m=32,k=256,n=80 (P@V) operand residency",
+    "32-lane Float vector_dup tail mask (128 B) for an MB=32 row",
+    "two 16-row uint16 vec_or + native Half vec_trans shift broadcast",
+    "16-group explicit vec_max / vec_add folds",
+    "a 32 KiB single tensor_mov L0C->UB burst"
+  ],
+  "vector": {
+    "broadcast_blk_stride": 1,
+    "broadcast_mask": 16,
+    "broadcast_rep_stride": 64,
+    "f32_mask": 64,
+    "f32_rep_stride": 8,
+    "group_repeats": 8,
+    "half_mask": 128,
+    "half_rep_stride": 8,
+    "half_repeats": 4,
+    "half_row_groups": 2,
+    "pv_elems": 2560,
+    "pv_groups": 5,
+    "row_elems": 32,
+    "row_tail_mask": 32,
+    "score_elems": 8192,
+    "score_groups": 16,
+    "shift_broad_elems": 512,
+    "shift_copy_elems": 256
+  },
+  "whole_goal_complete": false
+}

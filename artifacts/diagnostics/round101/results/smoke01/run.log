@@ -1,0 +1,32 @@
+Error: tensor overflow, the stop(65) of slice should in [0, 1].
+File path: /tmp/h3_round101_smoke01/flash_vision101.py, line 565
+The context code cause the exception is:
+562            raise FlashVisionError(f"cannot fill {elements} with {per_repeat}-value repeats")
+563        repeats = elements // per_repeat
+564        for index in range(repeats):
+565 ->         t.vector_dup(per_repeat, dst[index * per_repeat], value, 1, 1, 1)
+566        return repeats
+567    
+568
+
+{
+  "completed": false,
+  "cases": {},
+  "failure": {
+    "type": "SystemExit",
+    "message": "Traceback:\n  File /tmp/h3_round101_smoke01/bc128_smoke101.py, line 72, in <module>\n if __name__=='__main__':main()\n  File /tmp/h3_round101_smoke01/bc128_smoke101.py, line 23, in main\n         meta=kernel.build_kernel(batch=2,m=128,n=192,d=72,out_dir=ROOT/'kernels');r['meta']=meta\n  File /tmp/h3_round101_smoke01/flash_vision101.py, line 941, in build_kernel\n         gm = _emit_kernel(t, plan, tik)\n  File /tmp/h3_round101_smoke01/flash_vision101.py, line 818, in _emit_kernel\n                             _mask_phantom_scores(t, s_f_flat, plan, NEG_MAX)\n  File /tmp/h3_round101_smoke01/flash_vision101.py, line 586, in _mask_phantom_scores\n     return _fill_flat(t, s_f_flat[start], value, elements, F32_MASK)\n  File /tmp/h3_round101_smoke01/flash_vision101.py, line 565, in _fill_flat\n         t.vector_dup(per_repeat, dst[index * per_repeat], value, 1, 1, 1)"
+  }
+}
+Traceback:
+  File /tmp/h3_round101_smoke01/bc128_smoke101.py, line 72, in <module>
+ if __name__=='__main__':main()
+  File /tmp/h3_round101_smoke01/bc128_smoke101.py, line 23, in main
+         meta=kernel.build_kernel(batch=2,m=128,n=192,d=72,out_dir=ROOT/'kernels');r['meta']=meta
+  File /tmp/h3_round101_smoke01/flash_vision101.py, line 941, in build_kernel
+         gm = _emit_kernel(t, plan, tik)
+  File /tmp/h3_round101_smoke01/flash_vision101.py, line 818, in _emit_kernel
+                             _mask_phantom_scores(t, s_f_flat, plan, NEG_MAX)
+  File /tmp/h3_round101_smoke01/flash_vision101.py, line 586, in _mask_phantom_scores
+     return _fill_flat(t, s_f_flat[start], value, elements, F32_MASK)
+  File /tmp/h3_round101_smoke01/flash_vision101.py, line 565, in _fill_flat
+         t.vector_dup(per_repeat, dst[index * per_repeat], value, 1, 1, 1)

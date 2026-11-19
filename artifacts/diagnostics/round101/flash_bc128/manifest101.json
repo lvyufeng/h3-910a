@@ -1,0 +1,244 @@
+{
+  "authority": "source only: not compiled, not launched, no accuracy or speed claim",
+  "build_api": {
+    "GM_argument_count": 5,
+    "build_cce": {
+      "inputs": [
+        "q_gm_float16",
+        "k_gm_float16",
+        "v_gm_float16",
+        "aux_gm_float32"
+      ],
+      "outputs": [
+        "out_gm_float16"
+      ]
+    },
+    "cli": "--plan H M N D | --capability | --build H M N D --out-dir DIR",
+    "entry": "build_kernel(batch, m, n, d, out_dir=None, cores_max=30)",
+    "explicit_4_inputs_1_output": true,
+    "kernel_arg_order": [
+      "q_gm_float16",
+      "k_gm_float16",
+      "v_gm_float16",
+      "aux_gm_float32",
+      "out_gm_float16"
+    ],
+    "kernel_name": "flash_vision101_h16_m4032_n4032_np4096_d72_mb64_bc128_c30_kv32",
+    "kernel_name_rule": "flash_vision101_h{H}_m{M}_n{N}_np{NPAD}_d{D}_mb{MB}_bc{BC}_c{cores}_kv{kvtiles}",
+    "metadata_fields": [
+      "kernel_name",
+      "kernel_symbol",
+      "block_dim",
+      "core_type",
+      "obj_path",
+      "obj_sha256",
+      "json_path",
+      "source_sha256",
+      "logical",
+      "grid",
+      "dma",
+      "buffers",
+      "vector",
+      "math",
+      "host_protocol",
+      "assumptions",
+      "capability"
+    ]
+  },
+  "capability_optional_never_required": [
+    "Intrinsic_vcmax:float32",
+    "Intrinsic_vexp:float16"
+  ],
+  "capability_required": [
+    "Intrinsic_vcmax:float16",
+    "Intrinsic_vor:uint16",
+    "Intrinsic_vtranspose:float16",
+    "Intrinsic_vmax:float16",
+    "Intrinsic_vcadd:float32",
+    "Intrinsic_vmax:float32",
+    "Intrinsic_vadd:float32",
+    "Intrinsic_vmul:float32",
+    "Intrinsic_vexp:float32",
+    "Intrinsic_vdiv:float32"
+  ],
+  "compiled_now": false,
+  "executed": false,
+  "files": {
+    "README.md": {
+      "role": "design/memory/masking notes and non-claims",
+      "sha256": "3425d060afc75daf866d2facc6150f2cade4b3415d1e18d26a7296e86c57541d"
+    },
+    "flash_vision101.py": {
+      "role": "builder: plan + emitter + build_kernel",
+      "sha256": "d7e5f2fe0fbc524e7094baaaac984001e60d1364c8f8bfcc10f42b2a29fc40bb"
+    },
+    "make_manifest101.py": {
+      "role": "this generator",
+      "sha256": "658ef19d8cae7fc16fcede86b0dc48db326eed89eee124fc16ef6b2e66559801"
+    },
+    "test_flash_vision101.py": {
+      "role": "stdlib-only contract tests + recording TIK stub",
+      "sha256": "eb25ab63afa5c7d6cbfd9dd656a55b5a93903355ba863466e7a5e606754739ea"
+    }
+  },
+  "full_encoder_precision_accepted": false,
+  "geometry": {
+    "causal": false,
+    "cores": 30,
+    "kv_block_bc": 128,
+    "kv_tiles": 32,
+    "padded_key_length": 4096,
+    "phantom_groups": 4,
+    "phantom_keys_in_last_kv_tile": 64,
+    "pv_groups": 5,
+    "query_tile_mb": 64,
+    "query_tiles": 63,
+    "real": "H=16, M=N=4032 (48x84), D=72 padded to 80 = 5 NZ blocks",
+    "scale": 0.11785113019775792,
+    "scale_is_original_head_dim_not_padded": true,
+    "score_groups": 8,
+    "smoke": {
+      "cores": 4,
+      "geometry": [
+        2,
+        128,
+        192,
+        72
+      ],
+      "kv_tiles": 2,
+      "n_pad": 256,
+      "note": "last KV tile is half real, so the smoke covers padding",
+      "phantom_keys": 64
+    },
+    "steps": 34,
+    "tail_real_keys_in_last_kv_tile": 64,
+    "tasks": 1008,
+    "unmasked": true
+  },
+  "host_protocol": {
+    "bound": 16384.0,
+    "clamped": false,
+    "enforced_by": "check_host_protocol",
+    "formula": "max|scaled QK| <= 16384, measured finitely by the caller or bounded by sqrt(d) * max|q| * max|k|",
+    "half_shift_ulp_at_bound": 8.0,
+    "max_exp_at_bound": 2980.9579870417283
+  },
+  "math": {
+    "accumulator_dtype": "float32",
+    "denominator_dtype": "float32",
+    "denominator_fold": {
+      "association_changes_low_bits_vs_round99": true,
+      "groups": 8,
+      "order": "fold_f_a=(g0+g1); fold_f_b=(g2+g3); fold_f_a=fold_f_a+fold_f_b; fold_f_b=(g4+g5); fold_f_a=fold_f_a+fold_f_b; fold_f_b=(g6+g7); fold_f_a=fold_f_a+fold_f_b",
+      "reduction": "h_reduce_sum(axis=1) -> Float vcadd"
+    },
+    "final_output_dtype": "float16",
+    "init": {
+      "denominator": 0.0,
+      "output": 0.0,
+      "row_max": -3.4028234663852886e+38
+    },
+    "low_downscale": 0.0009765625,
+    "main_scores_dtype": "float32",
+    "main_softmax_dtype": "float32",
+    "phantom_key_mask": {
+      "after_exp_before_denominator": 0.0,
+      "before_shift_and_exp": -3.4028234663852886e+38,
+      "groups": 4,
+      "keys": 64,
+      "padded_v_alone_is_not_sufficient": true,
+      "why": "zero-padded K rows make the phantom scores exactly 0; exp(0 - shift) would add 1.0 to every denominator row"
+    },
+    "probability_split": [
+      "hi = Half(exp)",
+      "store_lo = (exp - Float(hi)) * 1024 in place",
+      "lo = Half(store_lo)"
+    ],
+    "residual_scale": 1024.0,
+    "row_broadcast": "explicit per-row vector_dup expansion (no implicit broadcast); the Half-representable shift uses the exact native uint16 copy + Half transpose path",
+    "score_l0c_burst_kb": 32,
+    "shift_estimate_dtype": "float16",
+    "shift_fold": {
+      "groups": 8,
+      "order": "pairwise Half vec_max in the same 3+4 stage pattern as the denominator fold; max is exact under any association"
+    },
+    "shift_is_exact": false
+  },
+  "memory": {
+    "bytes_delta_vs_round99": {
+      "doubling_adds": 65536,
+      "removed_low_residual_float": -16384,
+      "round101_ub_total": 190848,
+      "round99_ub_total": 158080
+    },
+    "doubled_buffers": [
+      "score Float (also exp, also low residual)",
+      "P_hi Half",
+      "P_hi Float (also row broadcast)",
+      "P_lo Half"
+    ],
+    "l0c_breakdown": {
+      "pv_hi": 20480,
+      "pv_lo": 20480,
+      "score": 32768
+    },
+    "l0c_total_bytes": 73728,
+    "l1_total_bytes": 83968,
+    "removed_round99_buffer": "separate Float low-residual score tile (16384 B)",
+    "ub_headroom_bytes": 5760,
+    "ub_named_total_bytes": 184192,
+    "ub_safe_bound_bytes": 196608,
+    "ub_shift_extra_bytes": 6656,
+    "ub_total_bytes": 190848
+  },
+  "must_be_verified_by_root": [
+    "compile of the 32 KiB single L0C->UB tensor_mov burst",
+    "compile of the dynamic if_scope (no else) containing only Float vector_dup",
+    "compile of 8-group explicit vec_max Half fold and vec_add Float fold",
+    "compile of the 1024-element Float holding-tile h_cast plus 8 NZ copies",
+    "compile of the 8192-element whole-tile h_sub/h_exp/h_cast chain",
+    "exact real-input comparison against the Round78 CPU Half MATH reference on the frozen Round88 QKV (3fb5d524...)",
+    "smoke H=2 M=128 N=192 first, then the real 4032 geometry"
+  ],
+  "non_claims": [
+    "no accuracy result",
+    "no speed result",
+    "no compiler result",
+    "no tolerance",
+    "no default-enable",
+    "no Float linear weight teacher",
+    "no BF16 gold cast",
+    "no clamps",
+    "no cached conditioning",
+    "no promotion of the Round99 bit pattern: the KV blocking and the Float reduction association changed, so low bits may differ"
+  ],
+  "not_a_speed_claim": true,
+  "not_h3_end_to_end_result": true,
+  "numerical_tolerance": null,
+  "round": 101,
+  "scope": "flash_bc128 source-only builder (MB=64 x BC=128 streaming attention)",
+  "unverified_cann_behaviours_for_the_root_smoke": [
+    "h_reduce_max/h_reduce_sum(axis=1) on a (MB,16) tile yields a (MB,) row tensor",
+    "Tensor.reshape((n1,MB,16)) is a metadata view of the same flat UB buffer",
+    "masked vector_dup(repeat_times=n1, blk_stride=1, rep_stride=2*MB=128) writes one 16-value NZ row slot per group; 128 is inside the 8-bit immediate",
+    "Scalar.set_as(<UB element>) is a legal UB-to-scalar load",
+    "h_reduce_sum on Float compiles to Float vcadd; h_max to Float vmax",
+    "the 8-group Half fold is emitted as explicit vec_max calls, because the high-level h_max rejected the inferred step of a sliced NZ tensor in Round99",
+    "the Half shift estimate uses Half vcmax (Float vcmax is unsupported here)",
+    "vector_dup(mask,dst,scalar,1,1,1) with an explicit repeat slice fills exactly one repeat",
+    "in-place same-shape h_sub/h_mul/h_add/h_exp with dst==src0 is supported",
+    "a Float UB buffer can be reused sequentially (score->exp->low residual, Half score->P_hi, row expansion->widened P_hi) without an explicit alias API",
+    "h_cast of -FLT_MAX to Half saturates rather than producing NaN; the phantom mask is still correct if it saturates to -inf, because every real scaled score is above -16384 so max() selects a real value",
+    "a dynamic if_scope (no else_scope) around only vector_dup phantom fills does not re-trigger the Round99 high-level if/else canonicalisation crash",
+    "a 32 KiB single tensor_mov L0C->UB burst is legal (Round85 executed a 64 KiB single burst of the same form)",
+    "the 8-group Float denominator fold is emitted as three pairwise vec_add stages, so its association differs from Round99's 4-group fold"
+  ],
+  "upstream_start_source": {
+    "actual_sha256": "d45cac797d25c8f5b0534e6cf12fb6fcad6f531ee33557debb35bc59cdcf6013",
+    "expected_sha256": "d45cac797d25c8f5b0534e6cf12fb6fcad6f531ee33557debb35bc59cdcf6013",
+    "note": "immutable executed Round99 kernel this builder starts from; it was not modified by this round",
+    "path": "artifacts/diagnostics/round99/flash/flash_vision_shift_temp_fixed99.py",
+    "unchanged_on_disk": true
+  },
+  "whole_goal_complete": false
+}

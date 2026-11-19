@@ -1,0 +1,121 @@
+{
+  "round": 101,
+  "goal_round": 42,
+  "goal_revision": 17,
+  "goal_phase": "active",
+  "goal_activation": "armed",
+  "base_commit": "5e2d6ed",
+  "status": "ACTUALBC128realLeafAndWhole27Vision_completeFull8rankR102_done_finalglobalAuditPassed_owned217released",
+  "whole_goal_complete": false,
+  "full_encoder_precision_accepted": false,
+  "numerical_tolerance": null,
+  "owned_lease": {
+    "host": "ts-217",
+    "expires_at": "2026-11-19T03:36:19+00:00",
+    "live_FREE_claim": true,
+    "unused_new_CUDA133134_released_without_compute": true,
+    "noCI_or_dormant_requested": true,
+    "other_sessions_leases_untouched": true,
+    "released_after_R105_final_audit": true
+  },
+  "required_fresh_fork": {
+    "agent": "bc128-101-fresh",
+    "task": "task54completedrevision3",
+    "scope": "flash_bc128/",
+    "source_only_noSSH_CANN_Torch_GPU_model_execution": true,
+    "not_resume_inactive_old_agent": true,
+    "result_must_be_collected_reviewed_before_actual_build": false,
+    "source_result_collected_reviewed": true,
+    "source_SHA256": "d7e5f2fe0fbc524e7094baaaac984001e60d1364c8f8bfcc10f42b2a29fc40bb"
+  },
+  "new_geometry": {
+    "query_m": 4032,
+    "true_key_n": 4032,
+    "padded_key_n": 4096,
+    "head_dim": 72,
+    "padded_head_dim": 80,
+    "heads": 16,
+    "MB": 64,
+    "BC": 128,
+    "query_tiles": 63,
+    "KV_tiles": 32,
+    "tasks": 1008,
+    "usable_cores": 30,
+    "original_compile_soc": "Ascend910_not_A2"
+  },
+  "precision_math": "Float main QK scores/softmax/online O+L; Half ONLY shift estimate; 2Half unnormalizedexp PV/fullFloatL0C; onefinalHalfoutput; original72^-0.5/unmasked. AftertrueFloatdenominator overwriteFloatscore for residual-low probability to saveUB; noHalfcumulativeO/rescale/denom downgrades, teacher/BFgoldcasts/clamps/fakefinalnorm or hiddenconditioningcache.",
+  "padding_protocol": "OnlyK/V pad4032->4096. Last64 phantom key scores masked beforeHalfmax+Floatexp; expPadzero beforeFloatdenominator; paddedVzero ALONE is insufficient. RootcheapSmokeH2Q128TrueK192Pad256 will compare zero versus POISONnonzeroK/Vtail and exactCPUHalfMATH constantuniform result.",
+  "actual_smoke_job": {
+    "id": "bash-5e551ebe0eac4c78",
+    "root": "/tmp/h3_round101_smoke01",
+    "running_or_result_notcollected": false,
+    "source": "bc128_smoke101.py",
+    "kernel": "flash_bc128/flash_vision101.py",
+    "runtime_limit_seconds": 600,
+    "exit_code": 1,
+    "collected": true,
+    "failure": "oneelementTensorSlice_reindexed_expectedExtent1_notNumericFailure"
+  },
+  "root_sources": {
+    "engine": "flash_engine101.py",
+    "smoke": "bc128_smoke101.py",
+    "real_leaf": "leaf_compare101.py",
+    "expected": "expected_inputs101.json",
+    "tests": "test_root101.py"
+  },
+  "R100_context": "Full8rankHalf CPUreference originalR78. R100streamingCPUgap8.171percent/full2.406s vsnative7.420percent/2.179s; R98fastest2.034s stillnotaccepted. R99accuratevision1.583s vsnativefix1.357s. Allpriorjobscollected/audit/workerszero/leasesreleased beforefreshclaim.",
+  "next": "AllR101/R102/R103/R105workclosed_audited_workerszero_ownedleaseReleased. Read../round105/NEXT.md beforefreshcompute. goal17active_noCPUprecision/textunder2/default/fullgoalpass.",
+  "original_failed_source_preserved": "flash_bc128/flash_vision101.py",
+  "root_fixed_source": "flash_vision_mask_fixed101.py",
+  "fixed_smoke": {
+    "root": "/tmp/h3_round101_smoke02",
+    "job": "bash-47c8615b0a7d474c",
+    "exit_code": 0,
+    "collected": true,
+    "results": "results/smoke02/bc128_smoke101.json",
+    "random_CPU_Half_relativeRMS": 7.0835765225770535e-06,
+    "poison_nonzero_KV_tail_vs_zero_tail_bit_equal": true,
+    "constantuniform_true192keys_CPUHalfbits_exact": true,
+    "all_warm_repeats_and_inputs_unchanged": true
+  },
+  "real_leaf_job": {
+    "id": "bash-595d53d130db4880",
+    "root": "/tmp/h3_round101_leaf01",
+    "running_or_result_notcollected": false,
+    "source": "leaf_compare101.py",
+    "runtime_limit_seconds": 900,
+    "old_R99_BC64_SHA_must_match": true,
+    "CPU_HalfMATH_oracle_unchanged": true,
+    "all_shapes_1_16_4032_72_before_metric": true,
+    "exit_code": 0,
+    "collected": true,
+    "results": "results/leaf01/leaf_compare101.json",
+    "BC128_CPU_RMS": [
+      1.3540546896900214e-05,
+      1.5566948307411827e-05
+    ],
+    "BC128_median_ms": [
+      22.672269959002733,
+      22.89348002523184
+    ],
+    "BC64_over_BC128_speedup": [
+      1.087017753268961,
+      1.0985249913889148
+    ]
+  },
+  "complete_vision_job": {
+    "id": "bash-ea07eb8e826544ee",
+    "root": "/tmp/h3_round101_vision01",
+    "running_or_result_notcollected": false,
+    "source": "vision_probe101.py",
+    "runtime_limit_seconds": 600,
+    "exit_code": 0,
+    "collected": true,
+    "results": "results/vision01/vision101.json",
+    "median_s": 1.4868455296382308,
+    "CPU_RMS": 0.007288935263629625
+  },
+  "summary": "summary101.json",
+  "final_global_audit": "../round105/final_source_verification_cpu105.json",
+  "all_relevant_background_jobs_collected_no_running_jobs": true
+}

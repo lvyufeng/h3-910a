@@ -1,0 +1,68 @@
+{
+  "block_dim_guard": {
+    "message": "cached kernel flash_vision103_h2_m64_n192_np256_d72_mb32_bc256_c4_kv1 has blockDim 30 but the plan needs 4; refusing to reuse a mismatched binary",
+    "refused": true
+  },
+  "cache_hit": {
+    "compiled_now": false,
+    "same_obj_path": true,
+    "same_obj_sha256": true
+  },
+  "cann_used": false,
+  "compiled": false,
+  "executed": false,
+  "fake_sdk": true,
+  "not_an_accuracy_or_speed_result": true,
+  "plan_refusals": {
+    "{'bc': 128}": true,
+    "{'d': 64}": true,
+    "{'m': 48}": true,
+    "{'mb': 64}": true
+  },
+  "real_geometry": {
+    "GM_argument_count": 5,
+    "all_required_metadata_keys_present": true,
+    "block_dim": 30,
+    "capability_all_required_supported": true,
+    "capability_compile_soc": "Ascend910",
+    "engine_block_dim_assert_30": true,
+    "grid": {
+      "cores": 30,
+      "dynamic_kv_loop": true,
+      "kv_tiles": 16,
+      "m_tiles": 126,
+      "steps": 68,
+      "tasks": 2016
+    },
+    "kernel_name": "flash_vision103_h16_m4032_n4032_np4096_d72_mb32_bc256_c30_kv16",
+    "kernel_symbol": "flash_vision103_h16_m4032_n4032_np4096_d72_mb32_bc256_c30_kv16",
+    "l0c_total_bytes": 53248,
+    "l1_total_bytes": 119808,
+    "missing_keys": [],
+    "obj_sha256": "4d80194e8034e6d2c420e481fc5856d74a8df0be71e471dd0966303f6cb69197",
+    "obj_sha256_self_consistent": true,
+    "runtime5gm_keys_present": true,
+    "source_sha256": "035b36c9e9ee68659668ae542221915905efc6e0c5b7ba67f37d57992422d78e",
+    "spec103_executed_flag": false,
+    "spec103_not_a_speed_claim": true,
+    "spec103_numerical_tolerance": null,
+    "spec103_round": 103,
+    "ub_total_bytes": 144832
+  },
+  "scope": "Dry-run ``build_kernel`` against a FAKE TIK/CANN, to prove spec assembly only.\n\nThis is NOT a compile. It replaces ``tbe.tik`` and ``tbe.common.platform`` with\nin-memory fakes so the real ``build_kernel`` code path (plan -> emit -> BuildCCE ->\nkernel_meta copy -> spec103.json -> cache hit -> block_dim guard) executes with no\nCANN, no compiler, no NPU and no torch. The written .o is a placeholder blob; the\nSHA256 is therefore a *file* hash, not a binary identity.\n\nWhat this proves: the metadata dict contains every key the root engine and\nRuntime5GM read (obj_path, obj_sha256, kernel_symbol, block_dim), that the object\nSHA check is self-consistent, that block_dim equals the launched core count, that\n`spec103.json` is valid JSON, and that a second call is served from cache.\nWhat this does NOT prove: that the emitted program compiles or runs.\n",
+  "smoke_geometry": {
+    "block_dim": 4,
+    "grid": {
+      "cores": 4,
+      "dynamic_kv_loop": true,
+      "kv_tiles": 1,
+      "m_tiles": 2,
+      "steps": 1,
+      "tasks": 4
+    },
+    "kernel_name": "flash_vision103_h2_m64_n192_np256_d72_mb32_bc256_c4_kv1",
+    "logical_n_pad": 256,
+    "obj_sha256_self_consistent": true,
+    "phantom_keys": 64
+  }
+}
