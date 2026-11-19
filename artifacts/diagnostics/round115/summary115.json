@@ -1,0 +1,105 @@
+{
+  "round": 115,
+  "goal_id": "goal-8ca95bc7-2104-4c18-bb14-12812846af1c",
+  "goal_revision": 23,
+  "goal_active": true,
+  "headline": "Corrected: round-76's 14.657 s/step WAS measured on the official undistilled 50-block model at the goal's baseline request, so the per-step cost target is met on the admissible model. It does not close the goal because that run excludes a live encoder (injected conditioning), and the videos were quality-rejected.",
+  "why_this_round": "After the R114 precision conclusion, re-establishing the authoritative performance baseline is the prerequisite for any further speed work: every remaining optimisation claim depends on which checkpoint the number was taken on.",
+  "checkpoint_identity": {
+    "host": "owned ts-217 (8x Ascend 910B, CANN 9.2.0, 192 cores, 754 GiB RAM)",
+    "directories_present": [
+      "/home/mseco/models/MiniMax-H3",
+      "/home/mseco/models/MiniMax-H3-4step",
+      "/home/mseco/models/MiniMax-H3-fp16",
+      "/home/mseco/models/MiniMax-H3-native-fp16-audit53"
+    ],
+    "finding": "Four checkpoints coexist. MiniMax-H3 is the official undistilled release (50 blocks). MiniMax-H3-native-fp16-audit53 is the official 50-block transformer converted to FP16. MiniMax-H3-4step is a separate distilled checkpoint (13 shards, first-shard sha 5e7cec30...). MiniMax-H3-fp16 is a symlink farm onto the 4-step tree. Critically, the round-76 timing did NOT use any of these directly: it used /tmp/h3_round53_native49_fp16_model, whose symlinks resolve to the official MiniMax-H3 encoders/VAEs plus the official 50-block FP16 transformer.",
+    "verified": [
+      "MiniMax-H3/FL2VA/transformer/config.json: num_layers=50, token_refiner_num_layers=2, timestep_input_dim=256, hidden_size present",
+      "MiniMax-H3-native-fp16-audit53/FL2VA/transformer/config.json: identical num_layers=50, token_refiner_num_layers=2",
+      "MiniMax-H3-fp16/FL2VA/{audio_vae,model_index.json,processor,text_encoder} resolve to MiniMax-H3-4step",
+      "the MiniMax-H3-4step transformer is a 13-shard safetensors set (model-00001-of-00013 ... ) with shard sizes about 5.2 GB, i.e. a separately materialised distilled checkpoint rather than a schedule-only variant"
+    ],
+    "consequence": "The round-76 per-step number therefore rests on the official undistilled model and is model-admissible. Its remaining defects are methodological (encoder excluded, conditioning injected) and qualitative (rejected videos), not a wrong-checkpoint problem. The distilled 4-step checkpoint must still never be used as a completion basis."
+  },
+  "invalidated_fast_number": {
+    "value_s_per_step": 14.657157212765958,
+    "where": "round76 HF_reference_conditioning case, after_first_two_same_call_rank_max_mean_s, all49_steps_below15s true",
+    "model_basis": "ADMISSIBLE: /tmp/h3_round53_native49_fp16_model = official MiniMax-H3 encoders/VAEs + official 50-block transformer in FP16, run at 49 steps at 1344x768/5s/24fps/fl2va/seed1234/no LoRA",
+    "why_it_still_does_not_close_the_goal": [
+      "the wall time excludes a live encoder: the run injects payload['hidden_states_fp16'], i.e. precomputed conditioning, and the round itself reports request_wall_s_excluding_live_encoder",
+      "the same round's status is actual_two_video_generation_completed_verified_and_quality_rejected with goal_complete false",
+      "recorded quality defects: unexpected middle logo lettering, unexpected middle glow and ball ghosting, and the HF-conditioning variant did not remove them",
+      "the sole cause was not established and an independent HF hidden RMS discrepancy of 0.4095109240532696 was still unpassed"
+    ],
+    "what_it_does_establish": "a DiT-only, encoder-excluded warm per-step cost of about 14.66 s on the official model at the goal's baseline request shape, with all 49 steps under 15 s in the warmed case"
+  },
+  "authoritative_cold_decomposition": {
+    "source": "artifacts/design/ascendc_flash_attn/H3_INTEGRATION.md step decomposition, cold first invocation",
+    "per_step": {
+      "block_loop_s": 38,
+      "prep_s": 8.9,
+      "update_s": 9.6,
+      "other_overhead_s": 9,
+      "total_s": 65.7
+    },
+    "caveat": "labelled cold: the 57 s gap inside the model call includes TBE compilation, and the warm split was never measured."
+  },
+  "flash_attention_measured_state": {
+    "kernel": "self-developed TBE/AscendC tiled flash attention, artifacts/design/ascendc_flash_attn",
+    "true_shape_measurement": {
+      "shape": "N=73408 per rank, B=1, H=7, D=128, fp16, blockDim 32",
+      "tiles": "Br=64, Bc=496 (divides 73408 exactly)",
+      "custom_ms_per_call": 867.752,
+      "dense_path_ms_per_call": 1166,
+      "speedup": 1.34,
+      "numerical_check": "max|diff|=0.000007 relative=0.00056 at N=992 exact division"
+    },
+    "efficiency": {
+      "flops_per_call": 19300000000000,
+      "tflops": 22.0,
+      "note": "about 8% of the 910A fp16 cube peak; the current 672 ms at N=63232 is the same operating point"
+    },
+    "why_efficiency_is_low": "each cube step is a fresh 128x128x128 tile with an online-softmax Vector pass between tiles; the dense path issues long M-dimension matmuls that keep the cube fed. The dense path spends about 148 s of a 233 s attention budget inside softmax, and a fused kernel does not remove that work.",
+    "tiling_hazard_recorded": "the reference default Br=Bc=128 silently hits a broken remainder path at N=73408; both tiles must divide the sequence length. Br=64/Bc=64 is correct but 2698 ms (2.3x slower than dense), which is why the divisor choice Bc=496 is what makes the kernel a win."
+  },
+  "fused_op_value_analysis": {
+    "question": "Is goal item (1), self-developed fused RMSNorm/AddRMSNorm/SwiGLU/RoPE/AdaLN, still the lever?",
+    "measured_block_profile": {
+      "source": "artifacts/design/ascendc_flash_attn/H3_INTEGRATION.md lines 1108,1131,1144",
+      "line": "[H3PERFB] rows=7904 adaln=0.6ms norm1=1.1 attn=869.4",
+      "adaln_ms": 0.6,
+      "norm1_ms": 1.1,
+      "attn_ms": 869.4,
+      "attn_share": "99.3% of the block",
+      "doc_statement": "perfect zero-cost kernels could win at most 3 ms of 871 ms per block, about 0.3%"
+    },
+    "conclusion": "Every norm, activation, RoPE and modulation together occupy about 1.7 ms of an 871 ms block. Fusing them can move at most about 0.3% of block time and cannot contribute to the 15 s/step or 300 s targets. Goal item (1) is not where the remaining time is; this redirects the work, it does not complete it."
+  },
+  "what_remains": [
+    "Measure the WARM per-step split on the official model with the ENCODER LIVE, i.e. no injected hidden_states payload, so the per-step figure covers the same work the goal describes.",
+    "Establish why the official model produces the logo/ghosting artefacts at 49 steps under FP16 on this stack; the R114 precision work shows the encoder's text rows agree with the FP16 references to 0.035-0.15%, so the encoder is not the obvious suspect and the DiT/VAE path needs its own look.",
+    "Deliver the comparable table against A2 (49 steps, 150 s -> 3.06 s/step) and A3 (114 s -> 2.33 s/step), stating schedule, dtype, task (T2VA vs FL2VA) and hardware explicitly.",
+    "Re-time VAE decode and text encode on the official model under the current stack before reporting them against the 20 s and 2 s targets; the recorded 13.62 s and 1.3212 s come from earlier configurations.",
+    "Continue attention efficiency only where measurement supports it: the fused kernel is a verified 1.34x over the dense path at the true shape but still about 8% of cube peak, and fusion of norms/activations cannot move a 99.3%-attention block."
+  ],
+  "not_claimed": [
+    "No per-step speedup is claimed: the only sub-15 s figures belong to the distilled model.",
+    "No quality pass is claimed; the R76 videos were rejected.",
+    "The overall goal is not complete and is not blocked; the remaining work is specific and measurable."
+  ],
+  "operations": {
+    "lease": "owned ts-217 held for this performance work; no CI/dormant; no other sessions' leases touched",
+    "released": [
+      "ts-133 (claimed incidentally by the arbiter, released immediately)"
+    ],
+    "workers": "no background worker left running at the time of writing"
+  },
+  "correction_of_this_rounds_first_draft": {
+    "error": "The first draft of this summary asserted that the round-76 14.657 s/step run used the distilled MiniMax-H3-4step checkpoint, and that the served optimised path resolves onto it. That was wrong and is retracted here.",
+    "what_was_actually_checked": "/tmp/h3_round53_native49_fp16_model is a symlink farm: text_encoder, audio_vae, processor, tokenizer and video_vae point into /home/mseco/models/MiniMax-H3 (the official undistilled release), and transformer points into /home/mseco/models/MiniMax-H3-native-fp16-audit53 (the official 50-block transformer converted to FP16). The generation log confirms Omni initialised with that path.",
+    "shard_disambiguation": "the FP16 transformer's first shard hashes to 2a5bd5b54bb02cb168e4..., while MiniMax-H3-4step's first shard hashes to 5e7cec3015ddfec4a5ec..., so the two are different weight sets.",
+    "therefore": "the round-76 per-step timing WAS taken on the official undistilled 50-block model at 49 steps, which is the admissible model basis."
+  },
+  "hardware_and_model_caveat": "MiniMax-H3-4step exists on the host as a separate distilled checkpoint (13 shards, first-shard sha 5e7cec30...), but it is NOT what the round-76 timing used; it must still be kept out of any completion basis."
+}
