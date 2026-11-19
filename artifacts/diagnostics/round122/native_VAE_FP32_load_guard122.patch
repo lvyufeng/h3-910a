@@ -1,0 +1,27 @@
+--- upstream/vae.py
++++ FP32_load_guard/vae.py
+@@ -47,11 +47,19 @@
+     class_reference = auto_map.get("AutoModel")
+     if not isinstance(class_reference, str):
+         raise ValueError(f"{component_path}/config.json must define auto_map.AutoModel")
+-    component_cls = get_class_from_dynamic_module(
+-        class_reference,
+-        component_path,
+-    )
+-    return component_cls.from_pretrained(component_path)
++    # H3's native video/audio VAE weights are intentionally FP32. The
++    # engine-wide Half default must not round them during nn.Module factory
++    # construction before the wrapper restores the final FP32 dtype.
++    previous_dtype = torch.get_default_dtype()
++    torch.set_default_dtype(torch.float32)
++    try:
++        component_cls = get_class_from_dynamic_module(
++            class_reference,
++            component_path,
++        )
++        return component_cls.from_pretrained(component_path)
++    finally:
++        torch.set_default_dtype(previous_dtype)
+ 
+ 
+ class _AudioVAEDeterminismContext(AbstractContextManager):

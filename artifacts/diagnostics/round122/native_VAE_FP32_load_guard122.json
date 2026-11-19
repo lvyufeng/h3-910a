@@ -1,0 +1,9 @@
+{
+  "scope": "Preserve upstream's original FP32 VAE weight contract under a Half engine default.\n\nThe remote audio-VAE factory constructs nn.Modules and uses load_state_dict, which\ncopies into the newly constructed parameter dtype. Its construction must occur\nunder FP32, otherwise final .float() can hide a Half roundtrip. This patch changes\nloading only, not VAE inference, weights, input conditioning or output math.\n",
+  "applied": true,
+  "original_sha256": "37d1d323f1f9b5fea1444be2e429d10c0424f237fae89c6e4b8fd818d4b503f9",
+  "guarded_sha256": "70178bfb4aa32432b09c8b76f6fa7adfce525fbf7c7fbdc1e571eaaf4ed228c2",
+  "native_weight_contract": "video/audio VAE parameters remain original FP32 values",
+  "inference_math_changed": false,
+  "checkpoint_bytes_changed": false
+}

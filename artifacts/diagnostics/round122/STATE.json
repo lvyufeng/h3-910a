@@ -1,0 +1,69 @@
+{
+  "task": "User-requested full original-checkpoint H3 FP16 FL2VA generation on owned RTX4090 via vLLM-Omni",
+  "status": "preparing_checkpoint_on_GPU",
+  "completed": false,
+  "actual_video_generated": false,
+  "host": "ts-134",
+  "GPU": "8x RTX4090 24 GiB",
+  "lease_expires_local": "2026-11-20T09:04:29+08:00",
+  "remote_root": "/home/mseco/h3_gpu12201",
+  "checkpoint": "/home/mseco/h3_gpu12201/checkpoint/FL2VA",
+  "model_repository": "MiniMaxAI/MiniMax-H3",
+  "model_revision": "0919fb684102ef115126612f3fbb84d1027e7317",
+  "final_vllm_omni_commit": "1c2a81f6d84aea4fff53bd2f894c2a287c237245",
+  "vllm_version": "0.26.0",
+  "torch_version": "2.11.0+cu130",
+  "transformers_version": "5.14.1",
+  "diffusers_version": "0.38.0",
+  "actual_encoder_and_DiT_dtype": "FP16; runtime-audited before inference",
+  "native_FP32_exceptions": "VAE parameters and upstream time/patch/final projections; FP32 VAE loading guard prevents a hidden Half roundtrip",
+  "request": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "seed": 1234,
+    "width": 1344,
+    "height": 768,
+    "nominal_seconds": 5,
+    "fps": 24,
+    "requested_frames": 120,
+    "expected_aligned_frames": 124,
+    "task": "fl2va",
+    "keyframes": [0, -1],
+    "pinned_version_sampling_steps_counts_sigma_points": 50,
+    "expected_actual_DiT_evaluations": 49
+  },
+  "no_local_weight_download_or_relay": true,
+  "ts_133_new_lease_released_immediately": true,
+  "earlier_bootstrap_checkout_preserved_but_not_used": true,
+  "earlier_supervisor_failure_preserved": "Python3.13 Anaconda stdlib lacks os.pidfd_open; no generation was launched. Corrected stdlib supervisor uses /usr/bin/python3.",
+  "active_supervisor": {
+    "job_id": "bash-2d066f5c94bd4f8d",
+    "pid": 842551,
+    "process_group": 842551,
+    "script": "/home/mseco/h3_gpu12201/supervise_full_fp16_122b.py",
+    "state_receipt": "/home/mseco/h3_gpu12201/full_generation_supervisor122b.json",
+    "log": "/home/mseco/h3_gpu12201/logs/full_generation_supervisor122b.log"
+  },
+  "active_preparation_processes": {
+    "primary_GPU_download_pid": 837068,
+    "first_failed_shard_recovery_pid": 841306,
+    "disjoint_shards_10_to_13_prefetch_pid": 841413,
+    "audio_VAE_load_integrity_check_job": "bash-48a64ca87ae34863"
+  },
+  "preflight_passed": {
+    "runtime_imports": true,
+    "first_and_last_frame_support": true,
+    "sigma_count_50_and_actual_evaluation_count_49": true,
+    "audio_video_export_and_decode_codec_smoke_test": true,
+    "audio_VAE_original_FP32_loading_integrity_checked": true,
+    "all_mirror_metadata_independently_matches_official_HF_sizes_Git_blob_ids_and_LFS_SHA256": true
+  },
+  "next_actions": [
+    "Collect audio VAE loading-integrity check; it performs no CPU inference baseline.",
+    "Supervisor waits on kernel process-exit notifications, verifies every official checkpoint file, then launches a single real full FP16 request.",
+    "Read full worker dtype/finite audits and actual 49-step logs; do not claim success from the exporter smoke test or from a partial result.",
+    "Transfer only final MP4, WAV, PNG frames, logs and receipts to local artifacts; never transfer model weights.",
+    "Check actual video frames, report bounded quality observations, publish the actual media.",
+    "Verify all owned experiment processes exited and GPUs idle, then release ts-134."
+  ],
+  "long_term_910A_goal": "Not completed; remains paused because runtime goal controls rejected resume/new-goal requests. This direct GPU request is being executed independently in the current turn."
+}
