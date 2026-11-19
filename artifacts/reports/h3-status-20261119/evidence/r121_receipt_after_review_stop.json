@@ -1,0 +1,124 @@
+{
+  "scope": "Two identical live-encoder requests in one process: isolates warm-up from steady state.\n\nThis is the measurement every earlier per-step figure was missing. Round 76 timed the\nsame request with `text_encoder=False` and an injected precomputed conditioning payload,\nso its 14.657 s/step covered DiT and VAE only. Here the encoder is resident and runs\ninside each request, so the per-step numbers cover the whole stack at the goal's\nbaseline request (1344x768, 5 s, 24 fps, 124 frames, seed 1234, 49 steps, fl2va,\nUSP8 on 8x910A) using the official MiniMax-H3 50-block model in FP16.\n\nTwo identical requests are issued: the first absorbs TBE compilation and residency\nwarm-up, the second is the measured one. Timing is reported per step from the engine's\nown stage durations, and the pipeline [H3PERF] lines are captured from stdout so the\nprep/model/update split can be read for a WARM step rather than a cold one.\n",
+  "completed": false,
+  "goal_complete": false,
+  "quality_pass": false,
+  "numerical_tolerance": null,
+  "model": "/tmp/h3_round53_native49_fp16_model",
+  "model_basis": "official undistilled MiniMax-H3 50-block encoders/VAEs + official 50-block FP16 transformer",
+  "request": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "width": 1344,
+    "height": 768,
+    "fps": 24,
+    "aligned_frames": 124,
+    "seconds": 5,
+    "seed": 1234,
+    "num_inference_steps": 49,
+    "task": "fl2va"
+  },
+  "encoder_in_generation_engine": true,
+  "conditioning_is_precomputed_for_this_request": false,
+  "live_full_encoder_end_to_end_performance_proven": false,
+  "cases": [
+    {
+      "case": "request1_cold",
+      "request_wall_s_with_live_encoder": 2160.59386947006,
+      "request_id": "0_9fc54a72-58d1-44e5-80f3-e3b14f2ebe4a",
+      "metrics": {
+        "stage_metrics": {
+          "0": {
+            "stage_id": 0,
+            "final_output_type": "video",
+            "finish_reason": null,
+            "num_tokens_in": 0,
+            "num_tokens_out": 0,
+            "stage_gen_time_ms": 2160591.7370319366,
+            "postprocess_time_ms": 0.0,
+            "audio_frames": 165600,
+            "audio_sample_rate": 32000,
+            "audio_duration_s": 5.175,
+            "image_pixels": 0,
+            "denoise_step_latency_ms": 0.0,
+            "output_unit_type": "video",
+            "output_unit_count": 1,
+            "serving_time_to_first_output_ms": 2160592.047929764,
+            "image_time_to_first_output_ms": 0.0,
+            "time_per_output_unit_ms": 0.0,
+            "inter_output_latency_ms": 0.0,
+            "inter_output_latencies_ms": {
+              "type": "<class 'list'>",
+              "length": 0
+            },
+            "vllm_ttft_ms": 0.0,
+            "vllm_tpot_ms": 0.0,
+            "vllm_itl_ms": 0.0,
+            "vllm_itls_ms": {
+              "type": "<class 'list'>",
+              "length": 0
+            },
+            "stage_name": "diffusion"
+          }
+        },
+        "stage_id": 0,
+        "final_output_type": "video",
+        "num_tokens_in": 0,
+        "num_tokens_out": 0
+      },
+      "stage_durations": {
+        "queue_wait_ms": 0.615919940173626,
+        "stage_0_gen_ms": 2160591.7370319366
+      },
+      "multimodal_output_schema": {
+        "metadata": {
+          "audio": {
+            "sample_rate": 32000
+          },
+          "video": {
+            "fps": 24
+          }
+        },
+        "audio": {
+          "type": "ndarray",
+          "shape": [
+            1,
+            2,
+            165600
+          ],
+          "dtype": "float32"
+        },
+        "audio_sample_rate": 32000,
+        "fps": 24
+      },
+      "custom_output_schema": {},
+      "frames_present": true,
+      "aligned_frames": 124,
+      "raw_RGB_frame_sha256": "758b19bb3a2e6a49512369933e59388456f70ae31abd5a741b7da54118bc243e",
+      "frame_min": 0,
+      "frame_max": 255
+    }
+  ],
+  "engine_kwargs": {
+    "trust_remote_code": true,
+    "task_type": "fl2va",
+    "num_gpus": 8,
+    "ulysses_degree": 8,
+    "ring_degree": 1,
+    "text_encoder_tp_size": 8,
+    "vae_parallel_mode": "tile",
+    "vae_use_tiling": true,
+    "vae_patch_parallel_size": 8,
+    "diffusion_attention_backend": "TORCH_SDPA",
+    "stage_init_timeout": 2400,
+    "init_timeout": 2400,
+    "dtype": "half",
+    "enable_distributed_layerwise_offload": true,
+    "model_loaded": {
+      "transformer": true,
+      "vae": true,
+      "text_encoder": true,
+      "vae_encoder": true
+    }
+  },
+  "engine_startup_seconds_excluded": 220.16594220977277
+}
