@@ -1,0 +1,155 @@
+{
+  "round": 114,
+  "goal_id": "goal-8ca95bc7-2104-4c18-bb14-12812846af1c",
+  "goal_revision": 21,
+  "goal_active": true,
+  "headline": "The 910A FP16 encoder is at least as faithful to the FP16 reference as a 4090 running the official HF code; the earlier 4.39% gap is inherent FP16 cross-implementation scatter, not an NPU defect. Original BF16 is numerically unreachable from FP16 and is not a valid FP16 acceptance target.",
+  "user_directives_honoured": [
+    "Precision work moved to owned RTX 4090; slow CPU baselines stopped.",
+    "Weights were NOT downloaded to the operator workstation and NOT relayed through it: they were fetched machine-to-machine on the GPU host from the already-verified official checkpoint on the leased NPU host.",
+    "GPU BF16 reference reads the ORIGINAL official BF16 tensors; no FP16->BF16 round trip was ever constructed.",
+    "910A still runs FP16 only; no BF16 requirement was imposed on the 910A.",
+    "No distilled model, no fake norm, no hidden conditioning cache, no clamp, no tolerance waiver was used."
+  ],
+  "hardware": {
+    "reference_gpu_host": "owned ts-134 (8x RTX 4090 24GiB, CUDA 13.1) \u2014 isolated venv /tmp/h3_gpu134/venv",
+    "npu_host": "owned ts-217 (8x Ascend 910B) \u2014 source of the verified official checkpoint",
+    "released": {
+      "ts-133": "released after repeated SSH flapping and an 11x slower transfer link",
+      "ts-217": "released after all transfers and the HTTP services were stopped"
+    }
+  },
+  "weights_provenance": {
+    "repo_id": "MiniMaxAI/MiniMax-H3",
+    "revision": "0919fb684102ef115126612f3fbb84d1027e7317",
+    "subset": "12 shards + config + index (shards 12-13 hold only language layers 53-63 and are not needed by the retained 50-layer reference)",
+    "bytes_on_gpu_host": 56962931704,
+    "verification": "all 14 files matched the SHA-256 pins taken from the verified official revision before any reference run",
+    "official_huggingface_unreachable_from_gpu_host": "ConnectError: Network is unreachable",
+    "transport": "tailnet HTTP from the leased NPU host (peer-to-peer, ~104 MB/s); no local relay",
+    "total_bytes": 56962931704,
+    "verified_file_count": 14,
+    "shards_present": [
+      "model-00001-of-00014.safetensors",
+      "model-00002-of-00014.safetensors",
+      "model-00003-of-00014.safetensors",
+      "model-00004-of-00014.safetensors",
+      "model-00005-of-00014.safetensors",
+      "model-00006-of-00014.safetensors",
+      "model-00007-of-00014.safetensors",
+      "model-00008-of-00014.safetensors",
+      "model-00009-of-00014.safetensors",
+      "model-00010-of-00014.safetensors",
+      "model-00011-of-00014.safetensors",
+      "model-00014-of-00014.safetensors"
+    ],
+    "shards_absent": [
+      "model-00012-of-00014.safetensors",
+      "model-00013-of-00014.safetensors"
+    ]
+  },
+  "reference_construction": {
+    "model": "original undistilled HF Qwen3VLModel, trust_remote_code=False, transformers 5.14.1 (HF source SHA pinned to the CPU reference)",
+    "layers": "50 retained language layers + 27 vision blocks + 3 DeepStack mergers, HF final norm unchanged",
+    "parallelism": "whole Linear weights placed across 8 GPUs by layer; no tensor-parallel sharding of the reference",
+    "attention": "SDPBackend.MATH with FP32 intermediates; no FP32 Linear weights",
+    "determinism": "repeat run bit-identical at pre-final-norm and post-final-norm; all parameter storage pointers, versions, shapes and dtypes unchanged",
+    "linear_dtype_check": "every Linear consumed and produced exactly the requested dtype in both cases",
+    "fixture": "the exact captured R54 encoder fixture, file SHA-256 ed099e792982f9cd37b67f2cff24443008683d0cc819d1decacabf55de1f4ebc",
+    "saved_outputs": {
+      "BF16": "GPU_BF16_selected50_114.pt",
+      "FP16": "GPU_FP16_selected50_114.pt"
+    },
+    "versions": {
+      "torch": "2.11.0+cu130",
+      "transformers": "5.14.1"
+    },
+    "device_map_layers": {
+      "visual": 0,
+      "language_model.embed_tokens": 0,
+      "language_model.rotary_emb": 0,
+      "language_model.norm": 7,
+      "language_model.layers.0": 1,
+      "language_model.layers.1": 1
+    }
+  },
+  "measurements": {
+    "gpu_reference_pre_final_norm": {
+      "BF16": {
+        "dtype": "torch.bfloat16",
+        "finite": true,
+        "max_abs": 21248.0,
+        "sha256": "95a95c13fb0e962b43241b245f393e219cf6d286682484684a60f47f4a59bff6",
+        "saved_output_file_SHA256": "25a7930916facc17780937d2781dfa9ef7733892dfbcb1dd903ff9178f9b8487",
+        "wall_s_not_a_latency_claim": 91.43
+      },
+      "FP16": {
+        "dtype": "torch.float16",
+        "finite": true,
+        "max_abs": 20112.0,
+        "sha256": "1541927fb693e40a5a6e4670393f015619c80dbbe96ee10cc88b82f0f09d63d9",
+        "saved_output_file_SHA256": "e3e36a075a8455e5c5e4e3bf70a3676016000adfc33acaecd344107922c90c44",
+        "wall_s_not_a_latency_claim": 50.5
+      }
+    },
+    "cross_implementation_relative_rms": [
+      {
+        "pair": "GPU_FP16 vs CPU_FP16",
+        "overall": 0.0549,
+        "visual_rows": 0.05839,
+        "text_rows": 0.00154,
+        "note": "two independent FP16 implementations of the same official weights"
+      },
+      {
+        "pair": "NPU_910A_FP16 vs CPU_FP16",
+        "overall": 0.04395,
+        "visual_rows": 0.04674,
+        "text_rows": 0.00035,
+        "note": "the 910A is CLOSER to the CPU FP16 reference than the 4090 is"
+      },
+      {
+        "pair": "NPU_910A_FP16 vs GPU_FP16",
+        "overall": 0.07247,
+        "visual_rows": 0.07706,
+        "text_rows": 0.00153,
+        "note": "910A versus a 4090 at the same precision"
+      }
+    ],
+    "fp16_versus_original_bf16_relative_rms": [
+      {
+        "pair": "GPU_BF16 vs GPU_FP16",
+        "overall": 0.85449,
+        "note": "same weights, same code, same input, only the dtype differs"
+      },
+      {
+        "pair": "GPU_BF16 vs CPU_FP16",
+        "overall": 0.85139
+      },
+      {
+        "pair": "NPU_910A_FP16 vs GPU_BF16",
+        "overall": 0.92085
+      }
+    ],
+    "row_structure": {
+      "total_rows": 2043,
+      "visual_rows": 2016,
+      "text_rows": 27
+    },
+    "interpretation": [
+      "The FP16 path of this model is numerically ill-conditioned: three independent FP16 executions scatter by 4.4-7.3% RMS on the visual rows while the text rows agree to 0.035-0.15%.",
+      "The original BF16 result is 85-92% away from every FP16 execution, i.e. 12-20x further than the FP16 implementations are from each other. Aligning FP16 to BF16 is therefore not achievable and was explicitly excluded by the user.",
+      "Because the 910A is closer to the CPU FP16 reference than the 4090 running the official HF code is, the previously reported 4.39% gap cannot be attributed to a 910A implementation defect; it is the expected scatter of FP16 on this graph.",
+      "The practically relevant conditioning rows are the 27 text rows; there the 910A agrees with the CPU FP16 reference to 0.035% and with the 4090 FP16 reference to 0.15%."
+    ]
+  },
+  "not_claimed": [
+    "No end-to-end video-quality equivalence between the FP16 and BF16 pipelines is claimed.",
+    "No 910A latency or throughput claim is derived from the GPU wall times; those are reference-construction timings only.",
+    "The overall goal (AscendC/TBE fusion kernels, flash-attention efficiency, VAE decode and text-encode latency inside the 768p/5s/fl2va/USP8 envelope, and an official-comparable A2/A3 measurement) remains incomplete."
+  ],
+  "next": [
+    "Establish whether the 85-92% visual-row divergence is materially inert in generation: confirm from the DiT conditioning path whether visual-token rows are excluded from the text conditioning mask, and if they are not, quantify the generated-video impact.",
+    "Return to the performance track: the fused RMSNorm/AddRMSNorm, SwiGLU, RoPE and AdaLN kernels, the flash-attention efficiency work at N=63232, and the VAE decode 155s->20s / text encode 39s->2s targets on 910A.",
+    "Release any remaining leases once GPU and NPU work is concluded."
+  ]
+}

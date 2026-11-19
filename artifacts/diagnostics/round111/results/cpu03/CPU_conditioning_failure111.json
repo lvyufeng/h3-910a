@@ -1,0 +1,544 @@
+{
+  "scope": "SOURCE ONLY original-Half CPU FP16 reference for the real H3 DiT conditioning stack.\n\nSTATUS: the author of this file never imported torch, never ran a model, never\ntouched CANN/SSH/NPU and produced no numerical result.  Everything below is a\nreusable torch-CPU reference that the root executes on the 910A host.\n\nWhat this reference is\n----------------------\nThe genuine conditioning path of the checkpoint's ``MiniMaxH3DiTModel``\n(original source: ``vllm_omni/diffusion/models/minimax_h3/minimax_h3_transformer.py``,\nSHA256 54e45b10c1650822cb6896df7bb90d107c15d3eea52d47b57a078de64c410d13):\n\n``condition_proj`` (biased ``nn.Linear`` text 5120 -> hidden 5376)\n-> ``token_refiner`` = 2 pre-norm blocks ``x = x + attn(norm1(x));\nx = x + mlp(norm2(x))`` with per-head q/k RMSNorm, **no RoPE, no causal mask,\nno attention bias, 56 q heads == 56 kv heads**, then the *original*\n``token_refiner.final_norm``.\n\nOnly the 19 original Half parameters of that stack are used.  Weights are the\nofficial dense checkpoint values converted exactly once to the native FP16\nalias (root verified the BF16 -> Half bytes); no BF16 tensor is ever read as an\noutput and no FP32 Linear weight teacher exists.\n\nNumerics that are taken from the original source, not invented here\n------------------------------------------------------------------\n* ``RMSNorm.forward_native``: FP32 variance/rsqrt, FP32 gamma multiply, and a\n  **single** cast back to the activation dtype -- no intermediate Half norm\n  round (this is the H3 norm, not the HF Qwen two-round norm).\n* ``SiluAndMul.forward_native``: ``F.silu(gate) * up`` on Half operands.\n* attention: ``softmax_scale = head_dim ** -0.5``, unmasked non-causal SDPA in\n  the MATH backend on Half q/k/v.\n* residual adds and ``F.linear`` stay Half end to end; the receipt flags say\n  ``numerical_tolerance: None``, ``full_encoder_precision_accepted: False`` and\n  ``whole_goal_complete: False`` -- this reference proves nothing on its own\n  about the encoder gap.\n\nModule-scope imports are stdlib only; torch/numpy are imported lazily inside\nthe API functions so the source can be parsed and tested without a tensor\nruntime.\n",
+  "round": 111,
+  "kind": "original-Half CPU FP16 DiT conditioning: biased condition_proj, 2 original pre-norm token-refiner blocks with per-head q/k RMSNorm and unmasked non-causal MATH SDPA, then the original token_refiner.final_norm",
+  "source_SHA256": "c089e4e4081385cd8ff28075a750018bc79b9386234a283474ce6ff74e2d29c4",
+  "status": "SOURCE ONLY at authoring time; the root executes this file",
+  "completed": false,
+  "cpu_conditioning_reference_completed": false,
+  "not_a_new_oracle": true,
+  "original_half_parameters_only": true,
+  "half_parameters_only": true,
+  "float_linear_weight_teacher": false,
+  "bf16_gold_cast": false,
+  "fake_encoder_final_norm": false,
+  "original_dit_final_norm_applied_from_original_source": true,
+  "hidden_conditioning_cache_used": false,
+  "numerical_tolerance": null,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "encoder_raw_gap_validated_here": false,
+  "architecture": {
+    "hidden_size": 5376,
+    "text_dim": 5120,
+    "num_attention_heads": 56,
+    "attention_head_dim": 128,
+    "ffn_hidden_size": 14336,
+    "token_refiner_num_layers": 2,
+    "norm_eps": 1e-05,
+    "qk_norm_eps": 1e-05,
+    "final_norm_eps": 1e-05
+  },
+  "derived": {
+    "inner_dim": 7168,
+    "qkv_rows": 21504,
+    "qkv_split": [
+      7168,
+      7168,
+      7168
+    ],
+    "fc1_rows": 28672,
+    "fc1_gate_then_up": [
+      14336,
+      14336
+    ],
+    "softmax_scale": 0.08838834764831845,
+    "qkv_checkpoint_groups": 56,
+    "qkv_checkpoint_group_stride": 384,
+    "qkv_reorder": "checkpoint [group, (q,k,v)*head_dim] -> model [all Q | all K | all V]",
+    "attention": "unmasked non-causal SDPA, MATH backend, Half q/k/v",
+    "num_kv_heads": 56,
+    "rope": false,
+    "adaln": false,
+    "attention_bias": false
+  },
+  "mandatory_stages": [
+    "projected",
+    "refiner0",
+    "refiner1",
+    "finalnorm"
+  ],
+  "detailed_stages": [
+    "block0.norm1",
+    "block0.qkv",
+    "block0.q",
+    "block0.k",
+    "block0.v",
+    "block0.attn",
+    "block0.attn_proj",
+    "block0.res1",
+    "block0.norm2",
+    "block0.fc1",
+    "block0.mlp_act",
+    "block0.mlp_out",
+    "block1.norm1",
+    "block1.qkv",
+    "block1.q",
+    "block1.k",
+    "block1.v",
+    "block1.attn",
+    "block1.attn_proj",
+    "block1.res1",
+    "block1.norm2",
+    "block1.fc1",
+    "block1.mlp_act",
+    "block1.mlp_out"
+  ],
+  "parameter_names": [
+    "condition_proj.weight",
+    "condition_proj.bias",
+    "token_refiner.blocks.0.attn.q_norm.weight",
+    "token_refiner.blocks.0.attn.k_norm.weight",
+    "token_refiner.blocks.0.attn.qkv_proj.weight",
+    "token_refiner.blocks.0.attn.out_proj.weight",
+    "token_refiner.blocks.0.mlp.fc1.weight",
+    "token_refiner.blocks.0.mlp.fc2.weight",
+    "token_refiner.blocks.0.norm1.weight",
+    "token_refiner.blocks.0.norm2.weight",
+    "token_refiner.blocks.1.attn.q_norm.weight",
+    "token_refiner.blocks.1.attn.k_norm.weight",
+    "token_refiner.blocks.1.attn.qkv_proj.weight",
+    "token_refiner.blocks.1.attn.out_proj.weight",
+    "token_refiner.blocks.1.mlp.fc1.weight",
+    "token_refiner.blocks.1.mlp.fc2.weight",
+    "token_refiner.blocks.1.norm1.weight",
+    "token_refiner.blocks.1.norm2.weight",
+    "token_refiner.final_norm.weight"
+  ],
+  "root": "/tmp/h3_round111_cpu03",
+  "dry_run": false,
+  "passes_requested": 2,
+  "threads_requested": 16,
+  "expected_parameters": {
+    "path": "/tmp/h3_round111_cpu03/expected_half_parameters111.json",
+    "file_sha256": "ffed39118f08e6c3f64f504a6c2e8acc287659699156581c09a0d5bc4b243646",
+    "all19Halfvalues_exact_original_conversion": true,
+    "parameter_count": 19
+  },
+  "expected_inputs": {
+    "path": "/tmp/h3_round111_cpu03/expected_payload_inputs111.json",
+    "declared_cases": [
+      "CPU_original",
+      "corrected_VisionTP8_native_text",
+      "corrected_VisionTP8_precise_text"
+    ],
+    "schema": "inputs[] with name/path/tensor_sha256 (+ optional file_sha256, shape, role)"
+  },
+  "source_pins": {
+    "strict": true,
+    "missing": [],
+    "checks": {
+      "config": {
+        "path": "/home/mseco/models/MiniMax-H3-native-fp16-audit53/FL2VA/transformer/config.json",
+        "expected_sha256": "f619093a231fcfbcc3d035bec26c50ad864e7331a500d5c519f5045dc1e50458",
+        "exists": true,
+        "actual_sha256": "f619093a231fcfbcc3d035bec26c50ad864e7331a500d5c519f5045dc1e50458",
+        "matches_pin": true,
+        "value_matches_reference_architecture": true
+      },
+      "index": {
+        "path": "/home/mseco/models/MiniMax-H3-native-fp16-audit53/FL2VA/transformer/model.safetensors.index.json",
+        "expected_sha256": "fb457a26ffa6294660e249b0ddd03a337f2e5393f770b5c34c8b8f90a29a7efb",
+        "exists": true,
+        "actual_sha256": "fb457a26ffa6294660e249b0ddd03a337f2e5393f770b5c34c8b8f90a29a7efb",
+        "matches_pin": true
+      },
+      "original_source": {
+        "path": "/home/mseco/vllm-omni/vllm_omni/diffusion/models/minimax_h3/minimax_h3_transformer.py",
+        "expected_sha256": "54e45b10c1650822cb6896df7bb90d107c15d3eea52d47b57a078de64c410d13",
+        "exists": true,
+        "actual_sha256": "54e45b10c1650822cb6896df7bb90d107c15d3eea52d47b57a078de64c410d13",
+        "matches_pin": true
+      }
+    }
+  },
+  "gold_files": {
+    "pins": {
+      "/tmp/h3_round78_hf_fp1601/reference.json": "44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9",
+      "/tmp/h3_round78_hf_fp1601/FP16_selected50.pt": "0137a434148366c3dcbf825970274ad0faa036666561d7aecc0170cf136b3fe4",
+      "/tmp/h3_round78_hf_fp1601/FP16_vision.pt": "c01bbe180f454fe44b182bd9307491ef0f4c342b6c2ff6be08d1e3453d8c312a",
+      "/tmp/h3_round54_capture01/encoder_input.pt": "ed099e792982f9cd37b67f2cff24443008683d0cc819d1decacabf55de1f4ebc"
+    },
+    "sha256_before": {
+      "/tmp/h3_round78_hf_fp1601/reference.json": "44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9",
+      "/tmp/h3_round78_hf_fp1601/FP16_selected50.pt": "0137a434148366c3dcbf825970274ad0faa036666561d7aecc0170cf136b3fe4",
+      "/tmp/h3_round78_hf_fp1601/FP16_vision.pt": "c01bbe180f454fe44b182bd9307491ef0f4c342b6c2ff6be08d1e3453d8c312a",
+      "/tmp/h3_round54_capture01/encoder_input.pt": "ed099e792982f9cd37b67f2cff24443008683d0cc819d1decacabf55de1f4ebc"
+    },
+    "all_match_before": true
+  },
+  "torch": {
+    "version": "2.10.0+cpu",
+    "threads": 16,
+    "mkldnn_enabled": true,
+    "device": "cpu",
+    "math_sdpa_forced": true
+  },
+  "checkpoint": {
+    "checkpoint_dir": "/home/mseco/models/MiniMax-H3-native-fp16-audit53/FL2VA/transformer",
+    "checkpoint_metadata": {
+      "path": "/tmp/h3_round111_cpu03/checkpoint_conditioning111.json",
+      "file_sha256": "e5519548a09a9c4276ab854bed993fc49a4b1761259893170de0d44aa24dfe41",
+      "roots": [
+        {
+          "path": "/home/mseco/models/MiniMax-H3/FL2VA/transformer",
+          "config_sha256": "f619093a231fcfbcc3d035bec26c50ad864e7331a500d5c519f5045dc1e50458",
+          "index_sha256": "fb457a26ffa6294660e249b0ddd03a337f2e5393f770b5c34c8b8f90a29a7efb",
+          "parameter_dtypes": [
+            "BF16"
+          ],
+          "config_matches_reference_architecture": true,
+          "parameter_shapes_match_reference": true
+        },
+        {
+          "path": "/home/mseco/models/MiniMax-H3-native-fp16-audit53/FL2VA/transformer",
+          "config_sha256": "f619093a231fcfbcc3d035bec26c50ad864e7331a500d5c519f5045dc1e50458",
+          "index_sha256": "fb457a26ffa6294660e249b0ddd03a337f2e5393f770b5c34c8b8f90a29a7efb",
+          "parameter_dtypes": [
+            "F16"
+          ],
+          "config_matches_reference_architecture": true,
+          "parameter_shapes_match_reference": true
+        }
+      ]
+    },
+    "shards": {
+      "model-00001-of-00013.safetensors": {
+        "path": "/home/mseco/models/MiniMax-H3-native-fp16-audit53/FL2VA/transformer/model-00001-of-00013.safetensors",
+        "expected": "2a5bd5b54bb02cb168e4053e5db87aacb3feedc7c21e3bf06954de033e3b42d0",
+        "actual": "2a5bd5b54bb02cb168e4053e5db87aacb3feedc7c21e3bf06954de033e3b42d0",
+        "matches_pin": true
+      }
+    }
+  },
+  "parameters": {
+    "condition_proj.weight": {
+      "shape": [
+        5376,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 55050240,
+      "sha256": "b59e42b2af033cf326406855b22353f5fbd52e3093b9c4d10adb5724665d180f",
+      "finite": true,
+      "max_abs": 4.65625,
+      "pinned_sha256": "b59e42b2af033cf326406855b22353f5fbd52e3093b9c4d10adb5724665d180f",
+      "matches_original_half_pin": true
+    },
+    "condition_proj.bias": {
+      "shape": [
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 10752,
+      "sha256": "1361cfeba77e534962e959c0f3485339a64d8aa7a2acfafaf80e9caa5bf8db41",
+      "finite": true,
+      "max_abs": 5.125,
+      "pinned_sha256": "1361cfeba77e534962e959c0f3485339a64d8aa7a2acfafaf80e9caa5bf8db41",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.0.attn.q_norm.weight": {
+      "shape": [
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 256,
+      "sha256": "d37d72c855e8b96de16a83541fb7616798e11efc42c7879beb1f15622bfe693a",
+      "finite": true,
+      "max_abs": 1.5234375,
+      "pinned_sha256": "d37d72c855e8b96de16a83541fb7616798e11efc42c7879beb1f15622bfe693a",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.0.attn.k_norm.weight": {
+      "shape": [
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 256,
+      "sha256": "070545560af8ae9366e81a1fedb336bf44bedb0814f3b485e93e71d5b7cd9fb8",
+      "finite": true,
+      "max_abs": 1.5234375,
+      "pinned_sha256": "070545560af8ae9366e81a1fedb336bf44bedb0814f3b485e93e71d5b7cd9fb8",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.0.attn.qkv_proj.weight": {
+      "shape": [
+        21504,
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 231211008,
+      "sha256": "1380602505c6f30fd2bea2c62ae28586fa96736e94a3635ae2b84a1aedc01220",
+      "finite": true,
+      "max_abs": 0.83203125,
+      "pinned_sha256": "1380602505c6f30fd2bea2c62ae28586fa96736e94a3635ae2b84a1aedc01220",
+      "matches_original_half_pin": true,
+      "checkpoint_grouped_sha256": "1380602505c6f30fd2bea2c62ae28586fa96736e94a3635ae2b84a1aedc01220",
+      "model_layout_sha256": "1e71586a2a9207b76862789bfc0f9e993bbe5193e9e76d44d547ae1c8031b0de"
+    },
+    "token_refiner.blocks.0.attn.out_proj.weight": {
+      "shape": [
+        5376,
+        7168
+      ],
+      "dtype": "torch.float16",
+      "bytes": 77070336,
+      "sha256": "4eccad622d2c9ec7308edcf8dad8fa21691714fdf0a714d83a05dcc18a24c283",
+      "finite": true,
+      "max_abs": 0.77734375,
+      "pinned_sha256": "4eccad622d2c9ec7308edcf8dad8fa21691714fdf0a714d83a05dcc18a24c283",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.0.mlp.fc1.weight": {
+      "shape": [
+        28672,
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 308281344,
+      "sha256": "9ef84f6c7256aaebf409abc274332594a33a77afe2b2e31acc1fb74e53ac97c4",
+      "finite": true,
+      "max_abs": 2.03125,
+      "pinned_sha256": "9ef84f6c7256aaebf409abc274332594a33a77afe2b2e31acc1fb74e53ac97c4",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.0.mlp.fc2.weight": {
+      "shape": [
+        5376,
+        14336
+      ],
+      "dtype": "torch.float16",
+      "bytes": 154140672,
+      "sha256": "e817c3f6c35f9f634d586da0b4603d756d8ac238ecbd6f15a6d759e1fa97c9ae",
+      "finite": true,
+      "max_abs": 2.59375,
+      "pinned_sha256": "e817c3f6c35f9f634d586da0b4603d756d8ac238ecbd6f15a6d759e1fa97c9ae",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.0.norm1.weight": {
+      "shape": [
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 10752,
+      "sha256": "f3e9d94d936255b4bd478c0f8c6f052eb4595a0aafee900566945f779b4ac8ac",
+      "finite": true,
+      "max_abs": 1.359375,
+      "pinned_sha256": "f3e9d94d936255b4bd478c0f8c6f052eb4595a0aafee900566945f779b4ac8ac",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.0.norm2.weight": {
+      "shape": [
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 10752,
+      "sha256": "8a62b4b51043c47de07eaa60b97c69be3cb2597f934ee5d050d6b939b357fed5",
+      "finite": true,
+      "max_abs": 1.0078125,
+      "pinned_sha256": "8a62b4b51043c47de07eaa60b97c69be3cb2597f934ee5d050d6b939b357fed5",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.1.attn.q_norm.weight": {
+      "shape": [
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 256,
+      "sha256": "1cf4fcf7f090d0921d011130e8dbab2bd66dfd13feee96f6f4dfd0ccdd63be02",
+      "finite": true,
+      "max_abs": 1.53125,
+      "pinned_sha256": "1cf4fcf7f090d0921d011130e8dbab2bd66dfd13feee96f6f4dfd0ccdd63be02",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.1.attn.k_norm.weight": {
+      "shape": [
+        128
+      ],
+      "dtype": "torch.float16",
+      "bytes": 256,
+      "sha256": "dc4e41f35d0897c8769cf5996aef1ef948099ff1bca86925177e61727a05e869",
+      "finite": true,
+      "max_abs": 1.53125,
+      "pinned_sha256": "dc4e41f35d0897c8769cf5996aef1ef948099ff1bca86925177e61727a05e869",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.1.attn.qkv_proj.weight": {
+      "shape": [
+        21504,
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 231211008,
+      "sha256": "2d6c710d11b277923ff82a0973b106356a43d6d8407c0233d735b83485f2c6cd",
+      "finite": true,
+      "max_abs": 0.875,
+      "pinned_sha256": "2d6c710d11b277923ff82a0973b106356a43d6d8407c0233d735b83485f2c6cd",
+      "matches_original_half_pin": true,
+      "checkpoint_grouped_sha256": "2d6c710d11b277923ff82a0973b106356a43d6d8407c0233d735b83485f2c6cd",
+      "model_layout_sha256": "8974071bfb93001d382599a9c574b1e73145598a0b4b1f7bdf8cdc4dbfa20901"
+    },
+    "token_refiner.blocks.1.attn.out_proj.weight": {
+      "shape": [
+        5376,
+        7168
+      ],
+      "dtype": "torch.float16",
+      "bytes": 77070336,
+      "sha256": "2ce8a1cfd19912603f6929ac4ad454931ff6b5463ca6db036aa41b564d90a6b6",
+      "finite": true,
+      "max_abs": 1.40625,
+      "pinned_sha256": "2ce8a1cfd19912603f6929ac4ad454931ff6b5463ca6db036aa41b564d90a6b6",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.1.mlp.fc1.weight": {
+      "shape": [
+        28672,
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 308281344,
+      "sha256": "77302c52e7b82626c9dc3120cc1ced6c104b1454f81ba5f132cec1dc0fdf1a73",
+      "finite": true,
+      "max_abs": 1.015625,
+      "pinned_sha256": "77302c52e7b82626c9dc3120cc1ced6c104b1454f81ba5f132cec1dc0fdf1a73",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.1.mlp.fc2.weight": {
+      "shape": [
+        5376,
+        14336
+      ],
+      "dtype": "torch.float16",
+      "bytes": 154140672,
+      "sha256": "fd0475fd4611e6efbb336ddd2c76a9a76377c82cf2dd63c373ea345c73917a3d",
+      "finite": true,
+      "max_abs": 3.640625,
+      "pinned_sha256": "fd0475fd4611e6efbb336ddd2c76a9a76377c82cf2dd63c373ea345c73917a3d",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.1.norm1.weight": {
+      "shape": [
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 10752,
+      "sha256": "3467de264ee3cb85e016fbb75cef02c38876971744cc74b5725f3d5be9311727",
+      "finite": true,
+      "max_abs": 1.3828125,
+      "pinned_sha256": "3467de264ee3cb85e016fbb75cef02c38876971744cc74b5725f3d5be9311727",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.blocks.1.norm2.weight": {
+      "shape": [
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 10752,
+      "sha256": "352e570e6ef05fd276322e3f80c89cd238afa3fea79d5146895908948abf2fa2",
+      "finite": true,
+      "max_abs": 1.0390625,
+      "pinned_sha256": "352e570e6ef05fd276322e3f80c89cd238afa3fea79d5146895908948abf2fa2",
+      "matches_original_half_pin": true
+    },
+    "token_refiner.final_norm.weight": {
+      "shape": [
+        5376
+      ],
+      "dtype": "torch.float16",
+      "bytes": 10752,
+      "sha256": "e72dd3c6af750f60cf01a06bcd6eddecf660827996ee1c711cc80480b11f2091",
+      "finite": true,
+      "max_abs": 3.46875,
+      "pinned_sha256": "e72dd3c6af750f60cf01a06bcd6eddecf660827996ee1c711cc80480b11f2091",
+      "matches_original_half_pin": true
+    }
+  },
+  "qkv_reorder_rule": "checkpoint [head_group, (q,k,v)*head_dim] rows -> model [all Q | all K | all V] rows",
+  "qkv_reorder_rows": 21504,
+  "original_half_values_verified_before_build": true,
+  "parameters_before_run": {
+    "condition_proj.weight": "b59e42b2af033cf326406855b22353f5fbd52e3093b9c4d10adb5724665d180f",
+    "condition_proj.bias": "1361cfeba77e534962e959c0f3485339a64d8aa7a2acfafaf80e9caa5bf8db41",
+    "token_refiner.blocks.0.attn.q_norm.weight": "d37d72c855e8b96de16a83541fb7616798e11efc42c7879beb1f15622bfe693a",
+    "token_refiner.blocks.0.attn.k_norm.weight": "070545560af8ae9366e81a1fedb336bf44bedb0814f3b485e93e71d5b7cd9fb8",
+    "token_refiner.blocks.0.attn.qkv_proj.weight": "1e71586a2a9207b76862789bfc0f9e993bbe5193e9e76d44d547ae1c8031b0de",
+    "token_refiner.blocks.0.attn.out_proj.weight": "4eccad622d2c9ec7308edcf8dad8fa21691714fdf0a714d83a05dcc18a24c283",
+    "token_refiner.blocks.0.mlp.fc1.weight": "9ef84f6c7256aaebf409abc274332594a33a77afe2b2e31acc1fb74e53ac97c4",
+    "token_refiner.blocks.0.mlp.fc2.weight": "e817c3f6c35f9f634d586da0b4603d756d8ac238ecbd6f15a6d759e1fa97c9ae",
+    "token_refiner.blocks.0.norm1.weight": "f3e9d94d936255b4bd478c0f8c6f052eb4595a0aafee900566945f779b4ac8ac",
+    "token_refiner.blocks.0.norm2.weight": "8a62b4b51043c47de07eaa60b97c69be3cb2597f934ee5d050d6b939b357fed5",
+    "token_refiner.blocks.1.attn.q_norm.weight": "1cf4fcf7f090d0921d011130e8dbab2bd66dfd13feee96f6f4dfd0ccdd63be02",
+    "token_refiner.blocks.1.attn.k_norm.weight": "dc4e41f35d0897c8769cf5996aef1ef948099ff1bca86925177e61727a05e869",
+    "token_refiner.blocks.1.attn.qkv_proj.weight": "8974071bfb93001d382599a9c574b1e73145598a0b4b1f7bdf8cdc4dbfa20901",
+    "token_refiner.blocks.1.attn.out_proj.weight": "2ce8a1cfd19912603f6929ac4ad454931ff6b5463ca6db036aa41b564d90a6b6",
+    "token_refiner.blocks.1.mlp.fc1.weight": "77302c52e7b82626c9dc3120cc1ced6c104b1454f81ba5f132cec1dc0fdf1a73",
+    "token_refiner.blocks.1.mlp.fc2.weight": "fd0475fd4611e6efbb336ddd2c76a9a76377c82cf2dd63c373ea345c73917a3d",
+    "token_refiner.blocks.1.norm1.weight": "3467de264ee3cb85e016fbb75cef02c38876971744cc74b5725f3d5be9311727",
+    "token_refiner.blocks.1.norm2.weight": "352e570e6ef05fd276322e3f80c89cd238afa3fea79d5146895908948abf2fa2",
+    "token_refiner.final_norm.weight": "e72dd3c6af750f60cf01a06bcd6eddecf660827996ee1c711cc80480b11f2091"
+  },
+  "parameter_dtypes": [
+    "torch.float16"
+  ],
+  "no_float32_parameter_shadow": true,
+  "inputs": {
+    "CPU_original": {
+      "path": "/tmp/h3_round78_hf_fp1601/FP16_selected50.pt",
+      "file_sha256": "0137a434148366c3dcbf825970274ad0faa036666561d7aecc0170cf136b3fe4",
+      "tensor_sha256": "82944620090359e7fc7eccb86471117e010b7838da83de5a43ceb46bf3453bd5",
+      "raw_shape": [
+        1,
+        2043,
+        5120
+      ],
+      "raw_dtype": "torch.float16",
+      "text_rows": 2043,
+      "role": null,
+      "matches_pinned_tensor_sha256": true,
+      "matches_pinned_file_sha256": true
+    },
+    "corrected_VisionTP8_native_text": {
+      "path": "/tmp/h3_round108_full01/NPU_selected50_corrected_VisionTP8_native_text.pt",
+      "file_sha256": "121c958b94683b11ddb8e6a2f4eea5e108366ac3ff306eb8398eddc659633e39",
+      "tensor_sha256": "8ced872d3c94857b1acb5501fd7b01068fd8ff8ccbe1db1476138b0fcd0e775b",
+      "raw_shape": [
+        1,
+        2043,
+        5120
+      ],
+      "raw_dtype": "torch.float16",
+      "text_rows": 2043,
+      "role": null,
+      "matches_pinned_tensor_sha256": true,
+      "matches_pinned_file_sha256": true
+    },
+    "corrected_VisionTP8_precise_text": {
+      "path": "/tmp/h3_round108_full01/NPU_selected50_corrected_VisionTP8_precise_text.pt",
+      "file_sha256": "c284cc4d55440fcf4de833d8c3c5ce237d4be6f959c3dd85f91ab1bddb64f900",
+      "tensor_sha256": "ad4c3dc2019fb931213c6d5897e49d6538cc6aea8a954ace4b1d9254bd7cf16a",
+      "raw_shape": [
+        1,
+        2043,
+        5120
+      ],
+      "raw_dtype": "torch.float16",
+      "text_rows": 2043,
+      "role": null,
+      "matches_pinned_tensor_sha256": true,
+      "matches_pinned_file_sha256": true
+    }
+  },
+  "passes": {
+    "passes": 2,
+    "exact_repeat_required": true,
+    "cases": {}
+  },
+  "cases": {},
+  "failure": {
+    "stage": "forward",
+    "type": "RuntimeError",
+    "message": "stage projected contains non-finite values",
+    "source_SHA256": "c089e4e4081385cd8ff28075a750018bc79b9386234a283474ce6ff74e2d29c4"
+  }
+}

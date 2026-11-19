@@ -1,0 +1,136 @@
+{
+  "scope": "Compare the 910A FP16 encoder against 4090 FP16 and original-BF16 references.\n\nGPU FP16 vs GPU BF16 isolates the inherent loss of FP16 conversion on the *same*\nundistilled official weights; 910A FP16 vs GPU FP16 isolates the 910A stack itself.\nNo reference is cast to FP16 to flatter the comparison, and no tolerance is declared.\n",
+  "completed": true,
+  "whole_goal_complete": false,
+  "full_encoder_precision_accepted": false,
+  "numerical_tolerance": null,
+  "gpu_reference": {
+    "BF16": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.bfloat16",
+      "bytes": 20920320,
+      "sha256": "95a95c13fb0e962b43241b245f393e219cf6d286682484684a60f47f4a59bff6",
+      "finite": true,
+      "max_abs": 21248.0
+    },
+    "FP16": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 20920320,
+      "sha256": "1541927fb693e40a5a6e4670393f015619c80dbbe96ee10cc88b82f0f09d63d9",
+      "finite": true,
+      "max_abs": 20112.0
+    }
+  },
+  "comparisons": {
+    "GPU_FP16_vs_GPU_BF16": {
+      "name": "inherent_FP16_loss",
+      "candidate_dtype": "torch.float16",
+      "reference_dtype": "torch.bfloat16",
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "compared_elements": 10460160,
+      "relative_rms": 0.9387094417605538,
+      "max_abs_error": 19970.0,
+      "relative_max_abs_error": 0.9398531626506024,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    },
+    "GPU_FP16_vs_GPU_BF16_visual": {
+      "name": "inherent_FP16_loss_visual_rows",
+      "rows": 2016,
+      "relative_rms": 1.0100922191451218,
+      "max_abs_error": 19970.0
+    },
+    "GPU_FP16_vs_GPU_BF16_text": {
+      "name": "inherent_FP16_loss_text_rows",
+      "rows": 27,
+      "relative_rms": 0.012510965516571493,
+      "max_abs_error": 192.0
+    },
+    "NPU_corrected_VisionTP8_native_text_vs_GPU_FP16": {
+      "name": "910A_vs_same_precision_reference",
+      "candidate_dtype": "torch.float16",
+      "reference_dtype": "torch.float16",
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "compared_elements": 10460160,
+      "relative_rms": 0.07247227246301657,
+      "max_abs_error": 2144.0,
+      "relative_max_abs_error": 0.10660302307080351,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    },
+    "NPU_corrected_VisionTP8_native_text_vs_GPU_FP16_visual": {
+      "name": "910A_vs_GPU_FP16_visual",
+      "rows": 2016,
+      "relative_rms": 0.07706032248727655,
+      "max_abs_error": 2144.0
+    },
+    "NPU_corrected_VisionTP8_native_text_vs_GPU_FP16_text": {
+      "name": "910A_vs_GPU_FP16_text",
+      "rows": 27,
+      "relative_rms": 0.0015336391989664645,
+      "max_abs_error": 24.0
+    },
+    "NPU_corrected_VisionTP8_native_text_vs_GPU_BF16": {
+      "name": "910A_FP16_vs_original_BF16",
+      "candidate_dtype": "torch.float16",
+      "reference_dtype": "torch.bfloat16",
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "compared_elements": 10460160,
+      "relative_rms": 0.9208504658553675,
+      "max_abs_error": 19250.0,
+      "relative_max_abs_error": 0.9059676204819277,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    },
+    "NPU_native_vs_GPU_FP16": {
+      "name": "910A_vs_same_precision_reference",
+      "candidate_dtype": "torch.float16",
+      "reference_dtype": "torch.float16",
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "compared_elements": 10460160,
+      "relative_rms": 0.059994012144713144,
+      "max_abs_error": 1576.0,
+      "relative_max_abs_error": 0.07836117740652347,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    },
+    "NPU_native_vs_GPU_FP16_visual": {
+      "name": "910A_vs_GPU_FP16_visual",
+      "rows": 2016,
+      "relative_rms": 0.06379111293794149,
+      "max_abs_error": 1576.0
+    },
+    "NPU_native_vs_GPU_FP16_text": {
+      "name": "910A_vs_GPU_FP16_text",
+      "rows": 27,
+      "relative_rms": 0.0016026101359403935,
+      "max_abs_error": 24.0
+    },
+    "NPU_native_vs_GPU_BF16": {
+      "name": "910A_FP16_vs_original_BF16",
+      "candidate_dtype": "torch.float16",
+      "reference_dtype": "torch.bfloat16",
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "compared_elements": 10460160,
+      "relative_rms": 0.9116278501840411,
+      "max_abs_error": 18754.0,
+      "relative_max_abs_error": 0.8826242469879518,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    }
+  }
+}

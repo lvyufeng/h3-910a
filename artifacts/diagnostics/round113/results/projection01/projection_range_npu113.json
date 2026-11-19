@@ -1,0 +1,577 @@
+{
+  "scope": "Diagnose genuine Half condition-projection overflow, never redefine the oracle.\n\nPower-of-two controls preserve the original Half weights and keep F.linear operands\nand its output Half. Float rescaling is diagnostic only, not a replacement model,\nFloat-weight teacher, hidden conditioning cache, clamp or tolerance waiver.\n",
+  "completed": true,
+  "device": "npu",
+  "original_Half_parameter_SHAs": {
+    "condition_proj.weight": "b59e42b2af033cf326406855b22353f5fbd52e3093b9c4d10adb5724665d180f",
+    "condition_proj.bias": "1361cfeba77e534962e959c0f3485339a64d8aa7a2acfafaf80e9caa5bf8db41"
+  },
+  "original_half_only_Flinear": true,
+  "no_Float_Linear_weights": true,
+  "no_BF16_gold_or_clamp": true,
+  "no_full_encoder_or_conditioning_acceptance": true,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "numerical_tolerance": null,
+  "cases": {
+    "CPU_original": {
+      "input": {
+        "shape": [
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "sha256": "82944620090359e7fc7eccb86471117e010b7838da83de5a43ceb46bf3453bd5",
+        "finite": true,
+        "NaN_count": 0,
+        "positive_Inf_count": 0,
+        "negative_Inf_count": 0,
+        "nonfinite_row_count": 0,
+        "max_abs_finite": 19216.0
+      },
+      "original_unmodified_Half_projection": {
+        "shape": [
+          2043,
+          5376
+        ],
+        "dtype": "torch.float16",
+        "sha256": "5ec31d929e0c0e8529eb0c0e5396d5cee128535ddb656338cdf283c0c2760b40",
+        "finite": true,
+        "NaN_count": 0,
+        "positive_Inf_count": 0,
+        "negative_Inf_count": 0,
+        "nonfinite_row_count": 0,
+        "max_abs_finite": 65504.0
+      },
+      "original_repeat_bits_equal": true,
+      "range_controls": {
+        "2": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "a674d7e685ee4c774cc717857e523b5f648a5b19b1a5246562eedb7ae807697c",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 45664.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "7b39aec61fe75a9f1fbbe0c36ba0431f77018a0117ba2c337c14c7711bd4c755",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 91328.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 0,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.09141565388948725,
+          "finite_elements_max_abs_error": 25824.0,
+          "not_an_oracle_or_model_fix": true
+        },
+        "4": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "c1039fcee28ee0e75be153348e1f8d1617452c9b6597c04cbcf546ac5237e70a",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 22832.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "7b39aec61fe75a9f1fbbe0c36ba0431f77018a0117ba2c337c14c7711bd4c755",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 91328.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 2,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.09141565388948725,
+          "finite_elements_max_abs_error": 25824.0,
+          "not_an_oracle_or_model_fix": true
+        },
+        "8": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "6776cc6dc1b46f7b23843e13295673e5de1115b9061e3d9dd8eeeec15915f1db",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 11416.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "bafc822d7d7750afbce07c4b2c728404186102b5b441a083a6c3da5109fd0a69",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 91328.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 3,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.09141565388948725,
+          "finite_elements_max_abs_error": 25824.0,
+          "not_an_oracle_or_model_fix": true
+        },
+        "16": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "b1e83a3daf8cc9892b6e334227034889d5c968230536a0aefe612d691650b5fe",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 5708.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "9f25d3032562c9691c96855c605995415b1f0d4be92a598b651b0cf9e42eaa62",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 91328.0
+          },
+          "Half_input_values_changed_by_divide_restore": 3,
+          "Half_bias_values_changed_by_divide_restore": 4,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.09141565388948725,
+          "finite_elements_max_abs_error": 25824.0,
+          "not_an_oracle_or_model_fix": true
+        }
+      },
+      "controls_are_NOT_original_four_stage_reference": true
+    },
+    "corrected_VisionTP8_native_text": {
+      "input": {
+        "shape": [
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "sha256": "8ced872d3c94857b1acb5501fd7b01068fd8ff8ccbe1db1476138b0fcd0e775b",
+        "finite": true,
+        "NaN_count": 0,
+        "positive_Inf_count": 0,
+        "negative_Inf_count": 0,
+        "nonfinite_row_count": 0,
+        "max_abs_finite": 19392.0
+      },
+      "original_unmodified_Half_projection": {
+        "shape": [
+          2043,
+          5376
+        ],
+        "dtype": "torch.float16",
+        "sha256": "9375398734e91179645bb00b03ea6eabaf55212d909452960055300c26ed78f4",
+        "finite": true,
+        "NaN_count": 0,
+        "positive_Inf_count": 0,
+        "negative_Inf_count": 0,
+        "nonfinite_row_count": 0,
+        "max_abs_finite": 65504.0
+      },
+      "original_repeat_bits_equal": true,
+      "range_controls": {
+        "2": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "65244721d3c6740bab790beef11c278057261caaca6c02be8895e26eac800989",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 46080.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "ce2fefed782e2894cd4aea3638081a3442089428faf353b4f291b88efca107e1",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 92160.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 0,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.0842810396392505,
+          "finite_elements_max_abs_error": 26656.0,
+          "not_an_oracle_or_model_fix": true
+        },
+        "4": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "c872718e400010678b43633fd8a1abca57143b1d6d04f3f70d30836371004e64",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 23040.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "ce2fefed782e2894cd4aea3638081a3442089428faf353b4f291b88efca107e1",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 92160.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 2,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.0842810396392505,
+          "finite_elements_max_abs_error": 26656.0,
+          "not_an_oracle_or_model_fix": true
+        },
+        "8": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "6ab3d2e18c2b438a61f6ff494a6797b505e8c047dc85152c8b7888c9d7465ad2",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 11520.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "0da0441b0996c7d02fa021217b7c50ed9101c8ad79283db98381ad24f460d9ff",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 92160.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 3,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.0842810396392505,
+          "finite_elements_max_abs_error": 26656.0,
+          "not_an_oracle_or_model_fix": true
+        },
+        "16": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "c7cfd07c17fd810a2a946373ac3af115c7ef9b2d53feb3bdb46a68ae08a204f4",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 5760.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "6682432a5b073eb08e50dee4419ad7f61089b65071d5379fa026f2b05c1d6947",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 92160.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 4,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.0842810396392505,
+          "finite_elements_max_abs_error": 26656.0,
+          "not_an_oracle_or_model_fix": true
+        }
+      },
+      "controls_are_NOT_original_four_stage_reference": true
+    },
+    "corrected_VisionTP8_precise_text": {
+      "input": {
+        "shape": [
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "sha256": "ad4c3dc2019fb931213c6d5897e49d6538cc6aea8a954ace4b1d9254bd7cf16a",
+        "finite": true,
+        "NaN_count": 0,
+        "positive_Inf_count": 0,
+        "negative_Inf_count": 0,
+        "nonfinite_row_count": 0,
+        "max_abs_finite": 19568.0
+      },
+      "original_unmodified_Half_projection": {
+        "shape": [
+          2043,
+          5376
+        ],
+        "dtype": "torch.float16",
+        "sha256": "df44da8a29217c513fc930896cf6e564c04231800f10e1c8b611b6340e01aab1",
+        "finite": true,
+        "NaN_count": 0,
+        "positive_Inf_count": 0,
+        "negative_Inf_count": 0,
+        "nonfinite_row_count": 0,
+        "max_abs_finite": 65504.0
+      },
+      "original_repeat_bits_equal": true,
+      "range_controls": {
+        "2": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "2ce179c5cd13813d0702eded66307f74fde61e191a97846c352b5a4d4d04421e",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 46496.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "da43a1f3f8da60cc36632b57237a5f5c3579298e05e45bf5d6fd03ebfdacd0ea",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 92992.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 0,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.08690282573964266,
+          "finite_elements_max_abs_error": 27488.0,
+          "not_an_oracle_or_model_fix": true
+        },
+        "4": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "74139be63201528f1ff92b811817663c304cdfd22bde14d81b715b028f9fb4d0",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 23248.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "da43a1f3f8da60cc36632b57237a5f5c3579298e05e45bf5d6fd03ebfdacd0ea",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 92992.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 2,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.08690282573964266,
+          "finite_elements_max_abs_error": 27488.0,
+          "not_an_oracle_or_model_fix": true
+        },
+        "8": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "990eaef96c8f11ad858c098296bbc14d842d7d266427aa7d7383413b833fadec",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 11624.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "ad401459c2eb6dd0f4b48ddee9d2d5fbf4a950574ca4bc9dc141d6093e1b41eb",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 92992.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 3,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.08690282573964266,
+          "finite_elements_max_abs_error": 27488.0,
+          "not_an_oracle_or_model_fix": true
+        },
+        "16": {
+          "scaled_Half_projection": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float16",
+            "sha256": "dee87437b8bf80d591965f4412bd74516582f66c60d1efdc605d8a054291332d",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 5812.0
+          },
+          "Float_rescaled_diagnostic": {
+            "shape": [
+              2043,
+              5376
+            ],
+            "dtype": "torch.float32",
+            "sha256": "08f4a87cc8a2b5c5269518a240ce8e18db2921850cb21872cd31794bb94ffb7c",
+            "finite": true,
+            "NaN_count": 0,
+            "positive_Inf_count": 0,
+            "negative_Inf_count": 0,
+            "nonfinite_row_count": 0,
+            "max_abs_finite": 92992.0
+          },
+          "Half_input_values_changed_by_divide_restore": 0,
+          "Half_bias_values_changed_by_divide_restore": 4,
+          "all_original_nonfinite_explained_by_rescaled_Half_overflow": true,
+          "finite_original_elements_compared": 10983168,
+          "finite_original_Half_recast_bits_equal": false,
+          "finite_elements_relativeRMS": 0.08690282573964266,
+          "finite_elements_max_abs_error": 27488.0,
+          "not_an_oracle_or_model_fix": true
+        }
+      },
+      "controls_are_NOT_original_four_stage_reference": true
+    }
+  },
+  "original_parameters_inputs_and_capture_files_unchanged": true
+}

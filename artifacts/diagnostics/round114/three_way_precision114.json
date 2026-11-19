@@ -1,0 +1,133 @@
+{
+  "scope": "Three-way FP16 cross-implementation scatter plus FP16-vs-original-BF16 divergence on identical official weights, input and 50-layer/27-vision graph.",
+  "completed": true,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "numerical_tolerance": null,
+  "references": {
+    "CPU_FP16": {
+      "dtype": "torch.float16",
+      "sha256": "82944620090359e7fc7eccb86471117e010b7838da83de5a43ceb46bf3453bd5",
+      "max_abs": 19216.0
+    },
+    "GPU_FP16": {
+      "dtype": "torch.float16",
+      "sha256": "1541927fb693e40a5a6e4670393f015619c80dbbe96ee10cc88b82f0f09d63d9",
+      "max_abs": 20112.0
+    },
+    "GPU_BF16_original": {
+      "dtype": "torch.bfloat16",
+      "sha256": "95a95c13fb0e962b43241b245f393e219cf6d286682484684a60f47f4a59bff6",
+      "max_abs": 21248.0
+    },
+    "NPU_910A_FP16_VisionTP8_native_text": {
+      "dtype": "torch.float16",
+      "sha256": "8ced872d3c94857b1acb5501fd7b01068fd8ff8ccbe1db1476138b0fcd0e775b",
+      "max_abs": 19392.0
+    }
+  },
+  "comparisons": {
+    "GPU_FP16_vs_CPU_FP16": {
+      "name": "cross_FP16_implementation",
+      "candidate_dtype": "torch.float64",
+      "reference_dtype": "torch.float64",
+      "relative_rms": 0.05490334075289932,
+      "max_abs_error": 1264.0,
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    },
+    "GPU_FP16_vs_CPU_FP16_visual": {
+      "name": "cross_FP16_visual",
+      "rows": 2016,
+      "relative_rms": 0.05838787596197784,
+      "max_abs_error": 1264.0
+    },
+    "GPU_FP16_vs_CPU_FP16_text": {
+      "name": "cross_FP16_text",
+      "rows": 27,
+      "relative_rms": 0.0015410327562473808,
+      "max_abs_error": 24.0
+    },
+    "NPU_FP16_vs_CPU_FP16": {
+      "name": "910A_vs_CPU_FP16",
+      "candidate_dtype": "torch.float64",
+      "reference_dtype": "torch.float64",
+      "relative_rms": 0.043950214430833766,
+      "max_abs_error": 1712.0,
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    },
+    "NPU_FP16_vs_CPU_FP16_visual": {
+      "name": "910A_vs_CPU_FP16_visual",
+      "rows": 2016,
+      "relative_rms": 0.04674155484497059,
+      "max_abs_error": 1712.0
+    },
+    "NPU_FP16_vs_CPU_FP16_text": {
+      "name": "910A_vs_CPU_FP16_text",
+      "rows": 27,
+      "relative_rms": 0.0003475229938090581,
+      "max_abs_error": 1.0
+    },
+    "NPU_FP16_vs_GPU_FP16": {
+      "name": "910A_vs_GPU_FP16",
+      "candidate_dtype": "torch.float64",
+      "reference_dtype": "torch.float64",
+      "relative_rms": 0.07247227246301657,
+      "max_abs_error": 2144.0,
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    },
+    "NPU_FP16_vs_GPU_FP16_visual": {
+      "name": "910A_vs_GPU_FP16_visual",
+      "rows": 2016,
+      "relative_rms": 0.07706032248727655,
+      "max_abs_error": 2144.0
+    },
+    "NPU_FP16_vs_GPU_FP16_text": {
+      "name": "910A_vs_GPU_FP16_text",
+      "rows": 27,
+      "relative_rms": 0.0015336391989664645,
+      "max_abs_error": 24.0
+    },
+    "GPU_BF16_vs_CPU_FP16": {
+      "name": "original_BF16_vs_CPU_FP16",
+      "candidate_dtype": "torch.float64",
+      "reference_dtype": "torch.float64",
+      "relative_rms": 0.8513874866744814,
+      "max_abs_error": 19074.0,
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    },
+    "GPU_BF16_vs_GPU_FP16": {
+      "name": "original_BF16_vs_GPU_FP16",
+      "candidate_dtype": "torch.float64",
+      "reference_dtype": "torch.float64",
+      "relative_rms": 0.8544859535224631,
+      "max_abs_error": 19970.0,
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    },
+    "NPU_FP16_vs_GPU_BF16": {
+      "name": "910A_FP16_vs_original_BF16",
+      "candidate_dtype": "torch.float64",
+      "reference_dtype": "torch.float64",
+      "relative_rms": 0.9208504658553675,
+      "max_abs_error": 19250.0,
+      "nonfinite_candidate": 0,
+      "nonfinite_reference": 0,
+      "numerical_tolerance": null,
+      "declared_pass": false
+    }
+  }
+}

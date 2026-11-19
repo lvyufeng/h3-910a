@@ -1,0 +1,27 @@
+{
+  "status": "GPU reference priority set; original BF16 weights packaged and verified; ts-133 temporarily OFFLINE; no GPU precision result",
+  "goal_revision": 20,
+  "goal_active": true,
+  "latest_user_precision_direction": "RTX 4090 FP16 and original BF16 references; no further slow CPU baselines",
+  "CPU_reference_jobs_completed": true,
+  "GPU_reference_completed": false,
+  "container_sudo_authorization": "User explicitly approved an isolated cached CUDA container on owned ts-133 only; no other project/container modifications",
+  "leases": {
+    "ts-133": {"expires_at": "2026-11-19T08:46:03+00:00", "latest_live_probe": "OFFLINE: SSH timeout after 15 seconds"},
+    "ts-217": {"expires_at": "2026-11-19T07:35:44+00:00", "role": "Pinned original model/fixture source"}
+  },
+  "never_touch_other_session_leases_CI_or_dormant": true,
+  "packaging_jobs": {
+    "projection": {"id": "bash-73b12b592f9e4eab", "exit_code": 0, "collected": true, "root": "/tmp/h3_round114_transfer01/projection", "parameters": 2, "bytes": 55061296},
+    "encoder": {"id": "bash-a032bdbcee2e4806", "exit_code": 0, "reported_result": true, "root": "/tmp/h3_round114_transfer01/encoder", "parameters": 903, "bytes": 51506310824, "original_BF16_parameter_aggregate": "a69676bac5e6f3a513ce44080d29c73974553b6e0a327ea272e47b600d84e46e"}
+  },
+  "uncertain_GPU_remote_work": {
+    "private_environment_installer": {"id": "bash-74a430d9d51e4220", "local_cancellation_requested": true, "remote_state_unknown_until_SSH_recovers": true},
+    "small_projection_transfer": {"id": "bash-bee506f29de24af8", "local_cancellation_requested": true, "partial_destination_requires_SHA_reconciliation": true},
+    "encoder_transfer": {"id": "bash-c1c71975e9854ce2", "exit_code": 255, "collected": true, "failure": "SSH timeout on target 4090-133", "partial_destination_requires_SHA_reconciliation": true}
+  },
+  "cached_image": {"id": "3ba1351d9740", "name": "team1591:v4", "runtime_not_yet_verified": true, "probe_job": "bash-bf14ceced9e745a7", "exit_code": 255, "reason": "Target SSH timeout"},
+  "SSH_agent_forwarding_or_disabled_host_key_checks": false,
+  "no_blind_replay": true,
+  "next": "When owned GPU SSH recovers, first inspect storage capacity, exact owned processes, partial file SHAs and the private environment/cache image. Do not blindly replay installers/transfers. Run actual original-HF GPU FP16 and original-BF16 vision plus 50 text layers; keep 910A FP16. Gather all job results and source/worker audits before releases. Goal remains active; this is not a precision pass."
+}

@@ -1,0 +1,17 @@
+INFO 11-19 03:39:53 [__init__.py:52] Available plugins for group vllm.platform_plugins:
+INFO 11-19 03:39:53 [__init__.py:54] - ascend -> vllm_ascend:register
+INFO 11-19 03:39:53 [__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+INFO 11-19 03:39:53 [__init__.py:272] Platform plugin ascend is activated
+INFO 11-19 03:39:54 [platform.py:74] Breakable CUDAGraph on Ascend is opt-in; using VLLM_USE_BREAKABLE_CUDAGRAPH=0.
+INFO 11-19 03:40:06 [patch_indexer_kv_dtype.py:102] Patched AttentionConfig.indexer_kv_dtype to accept 'int8' (DeepSeek V4 Ascend indexer K cache dtype).
+INFO 11-19 03:40:06 [patch_kv_cache_dtype.py:117] Patched CacheConfig.cache_dtype to accept 'int8' and 'mxfp8' (Ascend KV cache dtypes).
+INFO 11-19 03:40:06 [patch.py:253] NVFP4 W4A4 weight_scale NaN-clamp: skipped — upstream serves ModelOpt linears through the generic ModelOptLinearMethod and rejects any NaN weight_scale (unloaded-scale sentinel), so a load-time error replaces the `!!!!` decode-time collapse.
+INFO 11-19 03:40:06 [patch.py:551] inductor factorable-divisibility patch: skipped (upstream already proves it).
+INFO 11-19 03:40:06 [patch.py:630] [cumem-cuda] CuMemAllocator._python_free_callback patched: asleep guard extended to all platforms.
+WARNING 11-19 03:40:10 [ring_globals.py:97] FlashInfer ring kernels are unavailable. Reason: No module named 'flashinfer'
+{
+  "RMSNorm_forward": "    def forward(self, *args, **kwargs) -> Any:\n        return self._forward_method(*args, **kwargs)\n",
+  "SiluAndMul_forward_native": "    @staticmethod\n    def forward_native(x: torch.Tensor) -> torch.Tensor:\n        \"\"\"PyTorch-native implementation equivalent to forward().\"\"\"\n        d = x.shape[-1] // 2\n        return F.silu(x[..., :d]) * x[..., d:]\n",
+  "SiluAndMul_forward_oot": "    def forward_oot(self, *args, **kwargs):\n        # By default, we assume that OOT ops are compatible with the\n        # PyTorch-native implementation.\n        return self.forward_native(*args, **kwargs)\n",
+  "dtype_source": "torch.float16"
+}
