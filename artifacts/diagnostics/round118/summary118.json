@@ -1,0 +1,81 @@
+{
+  "round": 118,
+  "goal_id": "goal-8ca95bc7-2104-4c18-bb14-12812846af1c",
+  "goal_revision": 23,
+  "goal_active": true,
+  "headline": "The co-residency regression is dominated by VAE decode, not the DiT step: decode goes from 13.62 s with resident weights to about 468 s when the VAE must be swapped in per tile, a 34x penalty. Goal item (3)'s 20 s target is therefore already met in the resident configuration and destroyed only by the memory-forced offload.",
+  "why_this_round": "Round 117 established that layerwise offload is load-bearing and that the stack is only a few hundred MiB per rank short of full residency. This round asked the follow-up that actually directs the work: which phase does the offload penalise most?",
+  "method": "Arithmetic decomposition of two verified full-request measurements of the same baseline request (1344x768, 5 s, 24 fps, 124 frames, seed 1234, 49 steps, fl2va, USP8, official undistilled 50-block model in FP16). No new run was needed and none was fabricated; both inputs are existing receipts.",
+  "inputs": {
+    "staged_mode": {
+      "source": "artifacts/diagnostics/round76/STATE.json, case HF_reference_conditioning",
+      "request_wall_s_excluding_live_encoder": 735.6894669998437,
+      "per_step_mean_of_rank_maxima_s": 14.657157212765958,
+      "decode_reporter_rank_max_s": 13.62,
+      "all_49_steps_below_15s": true,
+      "encoder_in_engine": false
+    },
+    "co_resident_mode": {
+      "source": "artifacts/diagnostics/round116/encoder_live_timing116.json, case measured_49steps",
+      "request_wall_s": 2169.1100500896573,
+      "denoise_loop_total_s_from_progress_bar": 1697,
+      "denoise_loop_average_s_per_step": 34.63,
+      "steady_state_s_per_step": 33.45,
+      "encoder_in_engine": true
+    }
+  },
+  "decomposition": {
+    "staged": {
+      "wall_s": 735.689467,
+      "denoise_s": 718.201,
+      "decode_s": 13.62,
+      "prep_and_other_s": 3.869,
+      "check": "49 x 14.657157 = 718.201; 718.201 + 13.62 + 3.869 = 735.690"
+    },
+    "co_resident": {
+      "wall_s": 2169.11005,
+      "denoise_loop_s": 1697,
+      "post_loop_residual_s": 472.11,
+      "decode_s_derived": 468.24,
+      "derivation": "472.110 - 3.869 (prep/other held at the staged value) = 468.24 s of decode"
+    },
+    "delta_attribution": {
+      "total_extra_wall_s": 1433.42,
+      "extra_denoise_s": 978.8,
+      "extra_decode_s": 454.6,
+      "share_of_extra_wall_from_decode": 0.317,
+      "note": "the two terms account for the whole delta (978.8 + 454.6 = 1433.4)"
+    }
+  },
+  "why_decode_collapses": {
+    "mechanism": "the round-116 log shows 'Prepared video_vae for pipeline-managed staged offload' on all eight ranks (SP0-SP7, 8 occurrences), so VAE weights are not resident and must be moved in for decoding; under the memory pressure of round 117 that swap-in dominates",
+    "evidence": "co-resident run log lines: 'INFO [component_utils.py:153] Prepared video_vae for pipeline-managed staged offload' on every rank",
+    "cross_check": "round 76's cold first request reported decode 128.27 s against 13.62 s on the warmed second request (verified in round76/STATE.json), so decode is already known to be sensitive to weight residency rather than to arithmetic"
+  },
+  "consequences_for_the_goal": [
+    "Goal item (3)'s VAE decode target is reachable: 13.62 s is measured, comfortably inside the 20 s bound, when the VAE weights are resident. What defeats it is residency pressure, not the decoder kernel.",
+    "Fixing decode therefore means keeping the VAE resident (or making the swap cheap), which competes with the DiT and the encoder for the same few hundred MiB per rank identified in round 117.",
+    "The DiT step penalty (2.28x) and the decode penalty (34x) have different fixes: the step wants fewer resident bytes or better offload scheduling, the decode wants the VAE resident during decode.",
+    "The staged operating mode remains the only configuration that meets the per-step target and the decode target simultaneously, so the comparable measurement to report against official lossless is the staged one."
+  ],
+  "caveats": [
+    "the co-resident decode figure of 468.24 s is DERIVED, not directly instrumented: the stack's decode reporter and [H3PERF] instrumentation were round-76 local patches that are absent from the current installed tree, so the derivation holds prep/other constant at the staged value",
+    "the honest bound is that decode plus any other unmeasured post-loop cost totals 472.1 s; attributing 468.24 s to decode assumes the small prep term is unchanged",
+    "no single-run staged end-to-end measurement exists yet; that remains the next measurement"
+  ],
+  "incidental_observation": {
+    "cleanup_error_at_shutdown": "the co-resident log ends with 'ERROR [base.py:37] Cleanup failed while restoring a rank-local block' during worker shutdown at 11:14:01",
+    "impact_on_measurement": "none: the receipt had already been written and the request wall was recorded before shutdown began, so the numbers stand; it is noted because it indicates the offloader does not restore cleanly, which matters for any long-lived server process"
+  },
+  "not_claimed": [
+    "no speedup",
+    "no quality pass",
+    "the 468.24 s decode figure is derived rather than instrumented",
+    "the overall goal remains active"
+  ],
+  "next": [
+    "Instrument decode directly in one run: the current tree has no decode reporter, so the cheapest path is a sitecustomize-based wrapper reaching spawned workers, or a single-run staged end-to-end measurement that removes the composition question altogether.",
+    "Test whether pinning the VAE resident during decode (an offload policy change) recovers the 13.62 s without regressing the DiT step.",
+    "Run the staged mode end to end in one process so the comparable figure stops being composed."
+  ]
+}
