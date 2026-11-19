@@ -1,0 +1,72 @@
+{
+  "round": 120,
+  "goal_id": "goal-8ca95bc7-2104-4c18-bb14-12812846af1c",
+  "goal_revision": 23,
+  "goal_active": true,
+  "headline": "The H3 pipeline is already architected as DiT-resident with on-demand encoder and VAEs. That reframes rounds 117-119 and forces a correction: round 76's 13.62 s decode was a WARM SECOND request with the VAE already loaded, while its cold first request decoded in 128.27 s - so decode cost is dominated by on-demand VAE weight loading, not by decoder compute.",
+  "why_this_round": "Round 119 concluded the DiT-resident-plus-resident-VAE configuration is unreachable and pointed at load-time staging. This round read the actual pipeline offload plan instead of guessing, to find where the residency decisions are made.",
+  "pipeline_architecture_as_found": {
+    "class": "MiniMaxH3Pipeline, current patched file dated 2026-11-16, with local patch backups present (agbak, decodefp16, decodesplit, teblock, teondemand, pre_round64_20261116)",
+    "offload_plan": {
+      "offload_submodules": {
+        "token_refiner": "blocks"
+      },
+      "resident_dit_paths": "frozenset({'transformer'}) - the DiT is RESIDENT by design",
+      "on_demand_component_paths": "frozenset({'text_encoder', 'video_vae', 'audio_vae'}) - the encoder and both VAEs are loaded ON DEMAND",
+      "encoder_component_types": {
+        "text_encoder": "text_encoder"
+      },
+      "encoder_block_attrs": {
+        "text_encoder": [
+          "vision.blocks",
+          "text_model.layers"
+        ]
+      }
+    },
+    "conditional_wiring": "load_text_encoder controls whether the encoder is loaded at all: when False the encoder block attrs, the on_demand path and the encode_prompt profiler target are all removed; load_vae_encoder independently gates _encode_local_media",
+    "significance": "there is no 'DiT resident vs offloaded' choice to make - the DiT is always resident in this stack. What varies between my runs is whether the ENCODER is present, and the VAE is always on-demand."
+  },
+  "component_sizes_measured": {
+    "note": "measured with du on the host; the deployed model path /tmp/h3_round53_native49_fp16_model symlinks these exact directories",
+    "transformer_fp16_total": "62 GiB across 13 shards, from /home/mseco/models/MiniMax-H3-native-fp16-audit53/FL2VA/transformer",
+    "dit_per_rank_measured": "10.4337 GiB, from the round-119 load log 'Model loading took 10.4337 GiB'",
+    "video_vae": "9.8 GiB, from /home/mseco/models/MiniMax-H3/FL2VA/video_vae",
+    "audio_vae": "578 MiB, from /home/mseco/models/MiniMax-H3/FL2VA/audio_vae",
+    "steady_state_weights_if_all_resident": "roughly 20 GiB per rank, which would fit in 32 GiB, so the round-119 OOM at 31.3 GiB during VAE shard loading is a load-time transient"
+  },
+  "correction_to_round_118": {
+    "what_round_118_said": "decode is 13.62 s when resident versus about 468 s offloaded, a 34x collapse attributed to the VAE being swapped in per decode",
+    "what_is_actually_true": "round 76 reported 128.27 s of decode on its COLD FIRST request and 13.62 s on its WARM SECOND request in the same process. The 13.62 s therefore already had the VAE loaded and reused, and about 115 s of the cold request was VAE on-demand loading.",
+    "why_this_matters": "the decode penalty is mostly the cost of loading 9.8 GiB of VAE weights on demand rather than a property of the decoder kernel, and the relevant comparison for a single cold request is 128.27 s, not 13.62 s",
+    "what_survives": "the direction of round 118's conclusion is intact - decode cost is dominated by weight residency, not arithmetic - but its magnitude for a single request was overstated and is corrected here",
+    "verified_numbers": {
+      "round76_cold_first_request_decode_s": 128.27,
+      "round76_warm_second_request_decode_s": 13.62,
+      "source": "artifacts/diagnostics/round76/STATE.json videos[]: case 'optimized' (first_request_cold) 128.27, case 'HF_reference_conditioning' (second_request_warmed) 13.62",
+      "implied_vae_load_s": "about 114.65"
+    }
+  },
+  "residency_pressure_explained": {
+    "round_116_encoder_live": "DiT resident 10.43 GiB + encoder present (77 blocks, rank-local layerwise) + VAE on-demand load: 33.45 s/step and a decode-plus-residual of 472.1 s",
+    "round_76_text_encoder_false": "DiT resident with NO encoder in the process: 14.657 s/step, cold decode 128.27 s, warm decode 13.62 s",
+    "difference": "the encoder's presence is what costs both the per-step time and the decode time; the VAE loading cost is unavoidable in either mode because the VAE is on-demand by design",
+    "round_119_attempt": "disabling the DiT from being offloaded was a misreading of the architecture - the DiT was never offloaded in the sense I assumed; the run still failed while loading the VAE on top of the resident DiT and a present encoder"
+  },
+  "actionable_conclusion": [
+    "The lever for decode is to stop paying the 9.8 GiB VAE load on every request: keep the VAE resident between requests (it already stays loaded within one process - that is exactly why round 76's second request decoded in 13.62 s), or reduce the VAE's footprint/transfer cost.",
+    "The lever for the per-step cost is the encoder's residency, which round 116 measured at 2.28x - and which production avoids by encoding before the DiT loop.",
+    "Both levers are scheduling/residency questions, not kernel questions, which is consistent with rounds 115 and 117.",
+    "For the comparable measurement, a staged run that loads the encoder once, encodes, releases it, then serves denoise plus decode with a warm VAE is the configuration that matches how an operator would actually deploy this."
+  ],
+  "not_claimed": [
+    "no speedup",
+    "no quality pass",
+    "no single-run staged end-to-end measurement yet",
+    "the overall goal remains active"
+  ],
+  "next": [
+    "Run staged mode end to end in ONE process with two requests, so the second request has a warm VAE: that single run yields the comparable per-step, decode and total figures without composition or cold-start contamination.",
+    "Measure the VAE on-demand load time directly by timing the first versus second decode in the same process.",
+    "Only after those, revisit whether the load-time transient can be shrunk enough to avoid VAE eviction entirely."
+  ]
+}
