@@ -1,0 +1,156 @@
+{
+  "scope": "Full original-checkpoint H3 generation using an explicitly mixed FP16 candidate.\n\nText/vision encoder, refiner attention/MLP matrices and all 50 main DiT blocks stay\nFP16. The measured overflowing condition projection and refiner residual/RMS path\nuse FP32; original FP32 stems/time/final projections and VAE parameters are retained.\nNo BF16 fallback, clipping, LoRA, student checkpoint or cached conditioning. The\noriginal direct-Half trial failed and remains separately preserved. This candidate\nmust actually finish 49 DiT evaluations and export valid synchronized audio/video.\n",
+  "completed": false,
+  "actual_generated_video": false,
+  "FP16_quality_accepted": false,
+  "case": "stable_fp16",
+  "versions": {
+    "torch": "2.11.0",
+    "vllm": "0.26.0",
+    "vllm-omni": "0.26.0",
+    "transformers": "5.14.1",
+    "diffusers": "0.38.0"
+  },
+  "model_repo": "MiniMaxAI/MiniMax-H3",
+  "model_revision": "0919fb684102ef115126612f3fbb84d1027e7317",
+  "vllm_omni_commit": "1c2a81f6d84aea4fff53bd2f894c2a287c237245",
+  "checkpoint_root": "/home/mseco/h3_gpu12201/checkpoint/FL2VA",
+  "request": {
+    "prompt": "a red ball bouncing from left to right on the floor",
+    "seed": 1234,
+    "width": 1344,
+    "height": 768,
+    "nominal_seconds": 5,
+    "fps": 24,
+    "requested_frames": 120,
+    "expected_aligned_frames": 124,
+    "dit_evaluations": 49,
+    "task": "fl2va"
+  },
+  "live_encoder_used": true,
+  "old_conditioning_cache_loaded": false,
+  "mixed_precision": true,
+  "original_direct_Half_trial_passed": false,
+  "main_DiT_50_blocks_FP16": true,
+  "refiner_attention_and_MLP_FP16": true,
+  "condition_projection_and_refiner_residual_RMS_FP32": true,
+  "FP32_intentional_exceptions": [
+    "time/latent/final-output projections",
+    "original video/audio VAE weights",
+    "upstream normalization/softmax/rotary accumulation",
+    "condition_proj and token-refiner residual/RMS path, justified by measured Half overflow"
+  ],
+  "conditioning_stability_fix": {
+    "scope": "Fix the measured Half output overflow only in H3's conditioning small branch.\n\nCondition projection and refiner residual/RMS arithmetic become FP32. Refiner\nattention/MLP and all 50 main DiT blocks remain FP16. Original checkpoint values,\nnormalization definitions/epsilons, masks, sampler and input are unchanged. No\nclipping and no BF16 fallback. This is explicitly a mixed-precision candidate,\nnot a successful pure-Half original trial.\n",
+    "applied": true,
+    "mixed_precision": true,
+    "original_sha256": "e67d95da1e83c7eba92b8c5af41c514cb0e41533399f8f7c34b59bf4aa9df295",
+    "modified_sha256": "af62bdbb2f995120c40ef30a50dc161c0ad3ec4a251b4f0fe0b9a2b152a9b8d5",
+    "confirmed_original_Half_projection_output_max_in_FP32": 92795.5859375,
+    "Half_range_limit": 65504.0,
+    "new_FP32_parameter_names": [
+      "condition_proj.weight",
+      "condition_proj.bias"
+    ],
+    "new_FP32_activation_paths": [
+      "condition_proj output",
+      "token_refiner residual streams and RMS accumulation"
+    ],
+    "unchanged_FP16_matrix_paths": [
+      "text/vision encoder",
+      "token_refiner attention/MLP",
+      "all 50 main DiT blocks"
+    ],
+    "checkpoint_bytes_changed": false,
+    "norm_replaced_with_fake": false,
+    "clipping_added": false,
+    "BF16_fallback": false,
+    "full_generation_still_required": true
+  },
+  "checkpoint_verified_files": 81,
+  "checkpoint_verified_total_bytes": 144051182625,
+  "dtype_adaptation": {
+    "scope": "Make explicit FP16 dtype-only adaptation inside the isolated CUDA checkout.\n\nThe stock H3 encoder, DiT and transport route hard-code BF16. These three literal\nreplacements are required for a real FP16 trial; --dtype half alone does not do it.\nDo not change attention math, weight values, the schedule, VAE, image conditioning,\nnormalization, or any accelerator-wide settings. Raw official BF16 checkpoint bytes\nremain untouched and are converted only by the actual parameter loaders.\n",
+    "completed": true,
+    "commit": "1c2a81f6d84aea4fff53bd2f894c2a287c237245",
+    "source_archive_sha256": "9d0d4c7836bab47ae899069b8f91303bd2f176ee8231818dbe713b30c966244e",
+    "original_sources_verified_against_official_Git_blob_SHA1": true,
+    "official_checkpoint_modified": false,
+    "global_environment_modified": false,
+    "FP32_exceptions_retained": [
+      "time/patch/final-output projections",
+      "video/audio VAE original FP32 parameters",
+      "normalization/softmax/rotary accumulation where defined by upstream"
+    ],
+    "files": {
+      "encoder.py": {
+        "original_sha256": "65857c6564476fdaa01b013d35eb67482881dbac4071a46563f5ae17c028e3f6",
+        "adapted_sha256": "610b497fdde7945468b989e7956dd7f9178c3c7949cd6983e943941802ea7803",
+        "replacement": "torch.bfloat16 -> torch.float16",
+        "occurrences": 4
+      },
+      "minimax_h3_transformer.py": {
+        "original_sha256": "9d246c5995b6962f7fd3451c9538fb3f01995a258a078ea2d49b1b762597c5e6",
+        "adapted_sha256": "e67d95da1e83c7eba92b8c5af41c514cb0e41533399f8f7c34b59bf4aa9df295",
+        "replacement": "torch.bfloat16 -> torch.float16",
+        "occurrences": 1
+      },
+      "pipeline_minimax_h3.py": {
+        "original_sha256": "5512343a805cac13f1ede216b105e6b2c9a9f4e33fd062892b1cd9c9eaedc283",
+        "adapted_sha256": "f6787d113e4bf2dd1ffd95516409bc9ca5cd215f109dd441c687177bb69735e4",
+        "replacement": "torch.bfloat16 -> torch.float16",
+        "occurrences": 3
+      }
+    }
+  },
+  "GPU_names": [
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090",
+    "NVIDIA GeForce RTX 4090"
+  ],
+  "input_images": {
+    "first": {
+      "file": "/home/mseco/h3_gpu12201/results/stable_fp16/first.png",
+      "sha256": "aef653db0fde05489b1bad708062727881019bfefac3452fd5f9f0c1c6045118"
+    },
+    "last": {
+      "file": "/home/mseco/h3_gpu12201/results/stable_fp16/last.png",
+      "sha256": "bfe0ecf871a793d7056e1e2a09126b985df1047c6237609cad5386b89de4497e"
+    }
+  },
+  "engine_kwargs": {
+    "trust_remote_code": true,
+    "task_type": "fl2va",
+    "num_gpus": 8,
+    "tensor_parallel_size": 8,
+    "text_encoder_tp_size": 8,
+    "ulysses_degree": 1,
+    "ring_degree": 1,
+    "dtype": "half",
+    "enforce_eager": true,
+    "enable_layerwise_offload": true,
+    "vae_use_tiling": true,
+    "vae_parallel_mode": "tile",
+    "vae_patch_parallel_size": 8,
+    "diffusion_attention_backend": "TORCH_SDPA",
+    "stage_init_timeout": 2400,
+    "init_timeout": 2400
+  },
+  "engine_initialization_s": 653.4973063273355,
+  "sigma_schedule_contract": {
+    "sampling_num_inference_steps": 50,
+    "sigma_points": 50,
+    "actual_dit_evaluations_expected": 49,
+    "reason": "Pinned upstream version counts sigma points; equivalent 50 boundaries to the newer 49-evaluation API."
+  },
+  "failure": {
+    "type": "RuntimeError",
+    "message": "Original FP16 trial produced nonfinite values at dit_block_00_first_step"
+  },
+  "engine_close_called": true
+}

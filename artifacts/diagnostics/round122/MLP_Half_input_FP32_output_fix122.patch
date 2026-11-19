@@ -1,0 +1,58 @@
+--- FP32_residual/minimax_h3_transformer.py
++++ FP16_GEMM_FP32_output/minimax_h3_transformer.py
+@@ -23,6 +23,7 @@
+     MergedColumnParallelLinear,
+     QKVParallelLinear,
+     RowParallelLinear,
++    UnquantizedLinearMethod,
+ )
+ from vllm.model_executor.model_loader.weight_utils import default_weight_loader
+ 
+@@ -488,6 +489,31 @@
+         return out
+ 
+ 
++class _MiniMaxH3HalfInputFP32OutputLinearMethod(UnquantizedLinearMethod):
++    def apply(
++        self, layer: nn.Module, x: torch.Tensor, bias: torch.Tensor | None = None,
++    ) -> torch.Tensor:
++        if x.device.type != "cuda" or layer.weight.dtype != torch.float16:
++            raise TypeError("This trial requires CUDA FP16 matrix weights")
++        # The FP32 activation product is narrowed only after a finite
++        # power-of-two scale. This is range protection, not clipping.
++        product = x.float()
++        peak = float(product.abs().amax())
++        if not math.isfinite(peak):
++            raise FloatingPointError("Nonfinite MLP product before matrix input")
++        exponent = max(0, math.ceil(math.log2(peak / 32752.0))) if peak > 32752.0 else 0
++        scale = float(2 ** exponent)
++        half_input = (product / scale).to(torch.float16)
++        result = torch.mm(
++            half_input.reshape(-1, half_input.shape[-1]),
++            layer.weight.t(), out_dtype=torch.float32,
++        ).reshape(*x.shape[:-1], layer.weight.shape[0])
++        result = result * scale
++        if bias is not None:
++            result = result + bias.float()
++        return result
++
++
+ class MiniMaxH3MLP(nn.Module):
+     def __init__(
+         self,
+@@ -517,11 +543,14 @@
+             quant_config=quant_config,
+             prefix=f"{prefix}.fc2",
+         )
++        if quant_config is not None:
++            raise ValueError("The reference trial disallows quantization")
++        self.fc2.quant_method = _MiniMaxH3HalfInputFP32OutputLinearMethod()
+ 
+     def forward(self, x: torch.Tensor) -> torch.Tensor:
+         hidden, _ = self.fc1(x)
+         gate, up = hidden.chunk(2, dim=-1)
+-        hidden = nn.functional.silu(gate) * up
++        hidden = nn.functional.silu(gate.float()) * up.float()
+         out, _ = self.fc2(hidden)
+         return out
+ 

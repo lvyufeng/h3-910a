@@ -1,0 +1,36 @@
+--- conditioning_only/minimax_h3_transformer.py
++++ FP32_residual/minimax_h3_transformer.py
+@@ -174,7 +174,18 @@
+     # RMSNorm uses fp32 accumulation with bf16 inputs and outputs.
+     # torch.nn.RMSNorm upcasts reduced-precision inputs for the variance
+     # reduction, matching that accumulation semantic.
+-    return nn.RMSNorm(size, eps=eps, dtype=dtype)
++    return _MiniMaxH3FP32AccumRMSNorm(size, eps=eps, dtype=dtype)
++
++
++class _MiniMaxH3FP32AccumRMSNorm(nn.RMSNorm):
++    def forward(self, x: torch.Tensor) -> torch.Tensor:
++        # This is the real learned RMSNorm with its original epsilon.
++        # Preserve the incoming stream dtype after FP32 accumulation.
++        # This retains FP32 residual streams and keeps Q/K norms Half,
++        # matching the FP16 attention Q/K/V dtype contract.
++        return nn.functional.rms_norm(
++            x.float(), self.normalized_shape, self.weight.float(), self.eps
++        ).to(x.dtype)
+ 
+ 
+ def _rotate_half(x: torch.Tensor) -> torch.Tensor:
+@@ -202,8 +213,11 @@
+     *,
+     dtype: torch.dtype,
+ ) -> torch.Tensor:
+-    # Apply the per-index gated residual: x + gate[idx] * other.
+-    return (x + gate.index_select(0, indices) * other).to(dtype)
++    # Keep gated residual accumulation in FP32. A real first-step
++    # block0 result exceeded the Half range; narrowing this state before
++    # the following RMSNorm creates Inf even when all matmuls are finite.
++    del dtype
++    return x.float() + gate.index_select(0, indices).float() * other.float()
+ 
+ 
+ class MiniMaxH3Rope(nn.Module):

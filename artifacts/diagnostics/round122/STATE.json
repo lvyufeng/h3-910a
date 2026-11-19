@@ -1,6 +1,11 @@
 {
   "task": "User-requested full original-checkpoint H3 FP16 FL2VA generation on owned RTX4090 via vLLM-Omni",
-  "status": "mixed_FP16_full_candidate_running_after_confirmed_projection_overflow",
+  "status": "range_safe_FP16_matrix_full_candidate_running",
+  "residual_only_candidate_failed": "First-step block18 MLP returned 7 +Inf after blocks0-17 finite; exact internal audits preserved",
+  "latest_candidate_contract": "FP16 encoder and large GEMM inputs/weights; FP32 conditioning, RMS/residual, SwiGLU point math; exact power-of-two MLP input range scale and CUDA FP16 GEMM native FP32 output/TP reduction",
+  "latest_candidate_GPU_parallelism": "8x4090, TP2/USP4, encoderTP8; changed from diagnostic TP8 to reduce replicated-token communication; same model/input/sigmas",
+  "conditioning_only_candidate_failed": "First main DiT block emitted one +Inf after finite conditioning/refiner; failure preserved",
+  "current_candidate_precision": "Encoder and all main/refiner matrix operations FP16; original learned RMS FP32 accumulation and gated residual streams FP32; no BF16 fallback or clipping",
   "raw_Half_trial_failed": true,
   "raw_Half_failure": "condition_proj produced 6 +Inf and 5 -Inf; same GPU input/weights FP32 peak 92795.5859375 exceeds Half range 65504",
   "stable_candidate_precision": "Encoder and all 50 main DiT blocks FP16; condition projection and refiner residual/RMS FP32; no BF16 fallback or clipping",
@@ -44,13 +49,13 @@
   "earlier_bootstrap_checkout_preserved_but_not_used": true,
   "earlier_supervisor_failure_preserved": "Python3.13 Anaconda stdlib lacks os.pidfd_open; no generation was launched. Corrected stdlib supervisor uses /usr/bin/python3.",
   "active_supervisor": {
-    "job_id": "bash-f3cc4674fc6a419d",
-    "pid": 847143,
-    "generation_pid": 847144,
-    "process_group": 847143,
-    "script": "/home/mseco/h3_gpu12201/supervise_full_fp16_stable122.py",
-    "state_receipt": "/home/mseco/h3_gpu12201/full_generation_stable_supervisor122.json",
-    "log": "/home/mseco/h3_gpu12201/logs/full_generation_stable_fp16_122.log"
+    "job_id": "bash-619f468a2e0b4a60",
+    "pid": 851552,
+    "generation_pid": 851553,
+    "process_group": 851552,
+    "script": "/home/mseco/h3_gpu12201/supervise_full_fp16_range_safe122.py",
+    "state_receipt": "/home/mseco/h3_gpu12201/full_generation_range_safe_supervisor122.json",
+    "log": "/home/mseco/h3_gpu12201/logs/full_generation_range_safe_fp16_122.log"
   },
   "completed_preparation_processes": {
     "primary_GPU_download_pid": 837068,

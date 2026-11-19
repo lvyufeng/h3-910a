@@ -1,0 +1,67 @@
+{
+  "source": "/home/mseco/h3_gpu12201/vllm-omni-fl2va-release/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py",
+  "dtype_only_sha256": "f6787d113e4bf2dd1ffd95516409bc9ca5cd215f109dd441c687177bb69735e4",
+  "instrumented_sha256": "f18222b48e5d874f1e7955cff5bff629b3d160947b576ee1e26b2cb9b2d929b1",
+  "audit_script_sha256": "9a4fe58c32b4f53a8f4978ece52cf29b7fe1ae5507249f3b9f7001bf65a126ad",
+  "generation_script_sha256": "0229123fa7b82d5c3c689022b78b35186bcb6f08f342e8948f2c68c1d9c328c3",
+  "math_modified_by_audit": false,
+  "precision_flags_applied_in_each_spawned_worker": true,
+  "supervisor_script_sha256": "84bf4199229be16535db53a9d0e0d6e94cf23d1532426aab7adbbfdec4de51fa",
+  "VAE_original_FP32_values_checked_against_checkpoint_on_rank0": true,
+  "VAE_native_FP32_load_guard": {
+    "scope": "Preserve upstream's original FP32 VAE weight contract under a Half engine default.\n\nThe remote audio-VAE factory constructs nn.Modules and uses load_state_dict, which\ncopies into the newly constructed parameter dtype. Its construction must occur\nunder FP32, otherwise final .float() can hide a Half roundtrip. This patch changes\nloading only, not VAE inference, weights, input conditioning or output math.\n",
+    "applied": true,
+    "original_sha256": "37d1d323f1f9b5fea1444be2e429d10c0424f237fae89c6e4b8fd818d4b503f9",
+    "guarded_sha256": "70178bfb4aa32432b09c8b76f6fa7adfce525fbf7c7fbdc1e571eaaf4ed228c2",
+    "native_weight_contract": "video/audio VAE parameters remain original FP32 values",
+    "inference_math_changed": false,
+    "checkpoint_bytes_changed": false
+  },
+  "supervisor_interpreter": "/usr/bin/python3",
+  "generation_interpreter": "/home/mseco/h3_gpu12201/venv/bin/python",
+  "conditioning_stability_fix": {
+    "scope": "Fix the measured Half output overflow only in H3's conditioning small branch.\n\nCondition projection and refiner residual/RMS arithmetic become FP32. Refiner\nattention/MLP and all 50 main DiT blocks remain FP16. Original checkpoint values,\nnormalization definitions/epsilons, masks, sampler and input are unchanged. No\nclipping and no BF16 fallback. This is explicitly a mixed-precision candidate,\nnot a successful pure-Half original trial.\n",
+    "applied": true,
+    "mixed_precision": true,
+    "original_sha256": "e67d95da1e83c7eba92b8c5af41c514cb0e41533399f8f7c34b59bf4aa9df295",
+    "modified_sha256": "af62bdbb2f995120c40ef30a50dc161c0ad3ec4a251b4f0fe0b9a2b152a9b8d5",
+    "confirmed_original_Half_projection_output_max_in_FP32": 92795.5859375,
+    "Half_range_limit": 65504.0,
+    "new_FP32_parameter_names": [
+      "condition_proj.weight",
+      "condition_proj.bias"
+    ],
+    "new_FP32_activation_paths": [
+      "condition_proj output",
+      "token_refiner residual streams and RMS accumulation"
+    ],
+    "unchanged_FP16_matrix_paths": [
+      "text/vision encoder",
+      "token_refiner attention/MLP",
+      "all 50 main DiT blocks"
+    ],
+    "checkpoint_bytes_changed": false,
+    "norm_replaced_with_fake": false,
+    "clipping_added": false,
+    "BF16_fallback": false,
+    "full_generation_still_required": true
+  },
+  "short_refiner_GPU_range_preflight_finite": true,
+  "pure_Half_claim": false,
+  "main_residual_range_fix": {
+    "scope": "Preserve FP32 gated residuals across H3 main blocks after observed Half overflow.\n\nThe second real vLLM-Omni trial passed conditioning and both refiner blocks but\nblock0 returned one +Inf. This candidate avoids narrowing gated residual sums to\nHalf and normalizes in FP32 before the bounded Half matrix-input boundary. Matrix\nweights/inputs in all 50 main DiT attention/MLP/AdaLN remain FP16. No clipping,\nBF16 fallback, fake normalization, dropped keyframes or checkpoint changes.\n",
+    "applied": true,
+    "original_sha256": "af62bdbb2f995120c40ef30a50dc161c0ad3ec4a251b4f0fe0b9a2b152a9b8d5",
+    "modified_sha256": "eac2e734dbd1aa6fab95210d99209e5688fb2a50228ad25fba3a0b8d0df5abac",
+    "main_DiT_matrix_weights_and_inputs_FP16": true,
+    "main_DiT_gated_residual_and_RMS_accumulation_FP32": true,
+    "existing_conditioning_stability_fix_retained": true,
+    "new_FP32_parameters_added_by_this_fix": [],
+    "BF16_fallback": false,
+    "norm_formula_and_epsilon_unchanged": true,
+    "clipping_added": false,
+    "full_generation_still_required": true
+  },
+  "additional_per_block_internal_range_hooks": true,
+  "FP16_matrix_precision_preserved": true
+}

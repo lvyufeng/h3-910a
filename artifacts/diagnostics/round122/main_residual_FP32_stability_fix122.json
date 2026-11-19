@@ -1,0 +1,14 @@
+{
+  "scope": "Preserve FP32 gated residuals across H3 main blocks after observed Half overflow.\n\nThe second real vLLM-Omni trial passed conditioning and both refiner blocks but\nblock0 returned one +Inf. This candidate avoids narrowing gated residual sums to\nHalf and normalizes in FP32 before the bounded Half matrix-input boundary. Matrix\nweights/inputs in all 50 main DiT attention/MLP/AdaLN remain FP16. No clipping,\nBF16 fallback, fake normalization, dropped keyframes or checkpoint changes.\n",
+  "applied": true,
+  "original_sha256": "af62bdbb2f995120c40ef30a50dc161c0ad3ec4a251b4f0fe0b9a2b152a9b8d5",
+  "modified_sha256": "eac2e734dbd1aa6fab95210d99209e5688fb2a50228ad25fba3a0b8d0df5abac",
+  "main_DiT_matrix_weights_and_inputs_FP16": true,
+  "main_DiT_gated_residual_and_RMS_accumulation_FP32": true,
+  "existing_conditioning_stability_fix_retained": true,
+  "new_FP32_parameters_added_by_this_fix": [],
+  "BF16_fallback": false,
+  "norm_formula_and_epsilon_unchanged": true,
+  "clipping_added": false,
+  "full_generation_still_required": true
+}

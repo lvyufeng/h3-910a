@@ -1,0 +1,17 @@
+{
+  "scope": "Range-safe H3 MLP with FP16-input/weight GEMM and native FP32 output.\n\nMeasured real vLLM-Omni block18 MLP output overflow motivates FP32 GEMM output and\nFP32 TP reduction. FP32 SiLU/product with an exact power-of-two scale prevents the\nintermediate-product Half range boundary. The actual down-projection matrix inputs\nand weights stay FP16; CUDA torch.mm(..., out_dtype=float32) retains a wide output.\nThe scale is undone BEFORE each rank's TP all-reduce, so independent partition\nscales preserve the mathematical linear transform. No clipping or BF16 fallback.\nThis changes rounding boundaries and must not be called bitwise/lossless BF16 parity.\n",
+  "applied": true,
+  "original_sha256": "eac2e734dbd1aa6fab95210d99209e5688fb2a50228ad25fba3a0b8d0df5abac",
+  "modified_sha256": "f16b5c2f8803c09e4af3deb902a1eec7dda682d8792fe76e2b1e3d79acb81a90",
+  "MLP_weight_dtype": "FP16",
+  "MLP_down_projection_GEMM_input_dtype": "FP16",
+  "MLP_down_projection_GEMM_output_dtype": "FP32",
+  "MLP_TP_reduction_dtype": "FP32",
+  "SwiGLU_point_math": "FP32 SiLU and product; exact power-of-two range scale before FP16 input; undo scale before TP reduction",
+  "new_FP32_matrix_weights_added": [],
+  "clipping_added": false,
+  "BF16_fallback": false,
+  "checkpoint_bytes_changed": false,
+  "bit_exact_or_lossless_claim": false,
+  "complete_generation_still_required": true
+}
