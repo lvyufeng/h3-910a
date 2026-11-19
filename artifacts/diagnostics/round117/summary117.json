@@ -1,0 +1,97 @@
+{
+  "round": 117,
+  "goal_id": "goal-8ca95bc7-2104-4c18-bb14-12812846af1c",
+  "goal_revision": 23,
+  "goal_active": true,
+  "headline": "The 33.45 s/step co-resident figure is memory-forced, not a configuration mistake: with distributed layerwise offload disabled all eight ranks run out of NPU memory by only a few hundred MiB, so the offload is what makes the live encoder fit. The stack is about 0.2-0.5 GiB per rank short of full residency.",
+  "why_this_round": "Round 116 measured 33.45 s/step with the text encoder live against 14.657 s/step for the DiT-only figure, a 2.28x gap. The obvious hypothesis was that enable_distributed_layerwise_offload was thrashing and could simply be switched off. This round tested that hypothesis directly instead of assuming it.",
+  "experiment": {
+    "design": "single-variable A/B on the same live-encoder 49-step request at the goal's baseline (1344x768, 5 s, 24 fps, 124 frames, seed 1234, fl2va, USP8, official undistilled 50-block model in FP16), changing only enable_distributed_layerwise_offload",
+    "arm_A_offload_on": {
+      "s_per_step": 33.45,
+      "round": 116,
+      "outcome": "completed, 124 frames"
+    },
+    "arm_B_offload_off": {
+      "s_per_step": null,
+      "round": 117,
+      "outcome": "FAILED - NPU out of memory on all 8 ranks"
+    },
+    "host": "owned ts-217, 8x Ascend 910B 32 GiB, CANN 9.2.0",
+    "module_overrides_same_in_both_arms": "dtype=half, ulysses_degree=8, ring_degree=1, text_encoder_tp_size=8, vae_parallel_mode=tile, vae_use_tiling=True, vae_patch_parallel_size=8, model_loaded={transformer,vae,text_encoder,vae_encoder}=True"
+  },
+  "out_of_memory_evidence": {
+    "ranks_failing": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "capacity_GiB": 32.0,
+    "already_allocated_GiB": 31.65,
+    "free_GiB": "0.006-0.012",
+    "requested_allocation_MiB": {
+      "ranks_1_to_7": 222,
+      "rank_0": 498
+    },
+    "shortfall_MiB_per_rank": "about 210-500, i.e. roughly 0.2-0.5 GiB",
+    "reserved_vs_allocated": "31.80 GiB reserved against 31.65 GiB allocated, so fragmentation is not the dominant term",
+    "log": "/tmp/h3_round117_offload_off/run.log on the host (preserved, not overwritten)"
+  },
+  "conclusions": [
+    "Layerwise offload is load-bearing: without it the encoder, DiT and VAE cannot be simultaneously resident at this request shape on 8x32 GiB.",
+    "Therefore the 2.28x per-step penalty is the measured price of the offload that memory forces, not a gratuitous setting that could be flipped off for free.",
+    "The shortfall is small - a few hundred MiB per rank, under 1.5% of capacity - so a modest reduction in resident or intermediate memory is the difference between co-resident and offloaded.",
+    "This gives the self-developed fused-op work a concrete, measurable target it previously lacked: fusing RMSNorm/AddRMSNorm, SwiGLU, RoPE and AdaLN removes intermediate tensors and their buffers, so it can be judged by whether it closes this specific gap."
+  ],
+  "two_legitimate_operating_modes": {
+    "staged": {
+      "how": "encode the prompt first, release the encoder, then denoise with the DiT and VAE resident",
+      "evidence": "round 76 measured this mode: text_encoder=False with conditioning computed beforehand, 14.657 s/step, all 49 steps under 15 s, 735.689 s wall excluding the live encoder",
+      "composed_end_to_end_s": 737.010667,
+      "composition": "735.689467 s (round 76 measured request wall excluding the live encoder; also verified: 14.657157 s/step mean of rank maxima and all 49 steps below 15 s) + 1.3212001398 s (round 108 median of five samples, each the 8-rank maximum, for the true Vision-block TP8 plus native-text TP8 encoder; the five samples were 1.311685 / 1.243577 / 1.322445 / 1.364717 / 1.321200 s, all under 2 s)",
+      "status": "COMPOSED FROM TWO SEPARATE MEASUREMENTS, not a single run; labelled as such deliberately",
+      "provenance_verified": true
+    },
+    "co_resident": {
+      "how": "encoder, DiT and VAE all loaded in one engine",
+      "measured_s_per_step": 33.45,
+      "measured_total_s": 2169.11,
+      "evidence": "round 116, single run, live encoder"
+    },
+    "which_is_the_fair_comparison": "Production serves prompts by encoding then denoising; the co-resident mode exists here only because the memory budget is too tight. The staged mode is the honest comparable basis, and it must be stated as a composed figure until a single staged run is performed."
+  },
+  "comparison_to_official_restated": {
+    "official_A2": {
+      "steps": 49,
+      "wall_s": 150,
+      "s_per_step": 3.06
+    },
+    "staged_mode_per_step": 14.657,
+    "ratio_staged_vs_A2_per_step": 4.8,
+    "co_resident_mode_per_step": 33.45,
+    "ratio_co_resident_vs_A2_per_step": 10.9,
+    "caveats": [
+      "A2/A3 are the official full-schedule release on different hardware",
+      "A2/A3 report T2VA; this workload is FL2VA",
+      "the staged figure is composed from two measurements rather than one run",
+      "these are directional ratios, not an apples-to-apples speed claim"
+    ],
+    "staged_composition_verified": true
+  },
+  "not_claimed": [
+    "no speedup",
+    "no quality pass",
+    "no single-run staged end-to-end measurement yet",
+    "the overall goal remains active"
+  ],
+  "next": [
+    "Run the staged mode end to end in one process to replace the composed 737 s with a single measurement: encode, release the encoder, denoise 49 steps, decode VAE, all timed in one engine.",
+    "Quantify the VAE decode share of the 472 s that round 116 measured outside the denoise loop, since the goal's item (3) asks for decode within 20 s.",
+    "Attack the few-hundred-MiB shortfall with the fused-op work and re-test full residency, which is the only path that removes the offload penalty without giving up the live encoder."
+  ]
+}
