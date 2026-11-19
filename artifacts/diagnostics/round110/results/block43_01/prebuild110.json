@@ -1,0 +1,687 @@
+{
+  "scope": "Verify four recorded text attention binaries before the exact-input block43 control.",
+  "kernels": [
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": false,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round110_block43_01/attention_kernels/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "91a076d232ac90427430826ac0c4c3bad709f6accb1a6806a1e5e2be49aaf74f",
+      "json_path": "/tmp/h3_round110_block43_01/attention_kernels/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k128_n2048_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 512,
+        "k": 128,
+        "n": 2048
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 8,
+        "n1": 128
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 16,
+        "per_head_tasks": 64,
+        "tasks": 512,
+        "cores": 30,
+        "steps": 18
+      },
+      "head_stride_elems": {
+        "a": 65536,
+        "b": 262144,
+        "c": 1048576
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          8,
+          2048,
+          16
+        ],
+        "c": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 524288,
+        "b": 2097152,
+        "c": 8388608
+      },
+      "gm_bytes": {
+        "a": 1048576,
+        "b": 4194304,
+        "c": 33554432
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 1,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 0,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    },
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": false,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round110_block43_01/attention_kernels/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "3f8fbd082e9d72540c6aa88b07f6f2a283f451e97190fcadef143fb218204f68",
+      "json_path": "/tmp/h3_round110_block43_01/attention_kernels/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m512_k2048_n128_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 512,
+        "k": 2048,
+        "n": 128
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 128,
+        "n1": 8
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 1,
+        "per_head_tasks": 4,
+        "tasks": 32,
+        "cores": 30,
+        "steps": 2
+      },
+      "head_stride_elems": {
+        "a": 1048576,
+        "b": 262144,
+        "c": 65536
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          128,
+          128,
+          16
+        ],
+        "c": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 8388608,
+        "b": 2097152,
+        "c": 524288
+      },
+      "gm_bytes": {
+        "a": 16777216,
+        "b": 4194304,
+        "c": 2097152
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 16,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 0,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    },
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": false,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round110_block43_01/attention_kernels/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "1bb606d8a6d0704f15e650f12f6d358bc841b9afadacbe2a72d939f3b6d6970e",
+      "json_path": "/tmp/h3_round110_block43_01/attention_kernels/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k128_n2048_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 507,
+        "k": 128,
+        "n": 2048
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 8,
+        "n1": 128
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 16,
+        "per_head_tasks": 64,
+        "tasks": 512,
+        "cores": 30,
+        "steps": 18
+      },
+      "head_stride_elems": {
+        "a": 65536,
+        "b": 262144,
+        "c": 1048576
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          8,
+          2048,
+          16
+        ],
+        "c": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 524288,
+        "b": 2097152,
+        "c": 8388608
+      },
+      "gm_bytes": {
+        "a": 1048576,
+        "b": 4194304,
+        "c": 33554432
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 1920,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 1,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 5,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    },
+    {
+      "round": 85,
+      "scope": "batched per-head FP16xFP16 -> FP32 L0C -> FP32 GM; no bias; no Half partial",
+      "executed": false,
+      "compiled_now": false,
+      "not_a_speed_claim": true,
+      "not_h3_end_to_end_result": true,
+      "full_encoder_precision_accepted": false,
+      "kernel_name": "batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30",
+      "kernel_symbol": "batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30__kernel0",
+      "block_dim": 30,
+      "core_type": "AiCore",
+      "obj_path": "/tmp/h3_round110_block43_01/attention_kernels/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30.o",
+      "obj_sha256": "c957a08b8bbc778b2d05857b32d8a86dc42e113e3bd21712b92fb289ccd4d33e",
+      "json_path": "/tmp/h3_round110_block43_01/attention_kernels/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30/batch_gemm85_h8_m507_k2048_n128_mb128_nb128_kb128_c30.json",
+      "source_sha256": "546cd211ddb3938c3d8dac9d5207a79646c1458a3887df7e8c8562426069854a",
+      "reference_r83_source_sha256": "b5a06cfdb4c83a2d2f8c84eb56e8794f8a38d2732c4ff5e1fbef0901b520facb",
+      "dtype": "float16_in_float32_out",
+      "dst_dtype": "float32",
+      "uses_fp32_bias": false,
+      "input_dtype": "float16",
+      "accumulator_dtype": "float32",
+      "output_dtype": "float32",
+      "kernel_arg_order": [
+        "a_gm_float16",
+        "b_gm_float16",
+        "aux0_gm_float16",
+        "aux1_gm_float16",
+        "c_gm_float32"
+      ],
+      "GM_argument_count": 5,
+      "logical_shape": {
+        "batch": 8,
+        "m": 507,
+        "k": 2048,
+        "n": 128
+      },
+      "batch": 8,
+      "padded_shape": {
+        "m_pad": 512,
+        "k1": 128,
+        "n1": 8
+      },
+      "tiles": {
+        "mb": 128,
+        "nb": 128,
+        "kb": 128
+      },
+      "grid": {
+        "m_tiles": 4,
+        "n_tiles": 1,
+        "per_head_tasks": 4,
+        "tasks": 32,
+        "cores": 30,
+        "steps": 2
+      },
+      "head_stride_elems": {
+        "a": 1048576,
+        "b": 262144,
+        "c": 65536
+      },
+      "gm_shapes": {
+        "a": [
+          8,
+          128,
+          512,
+          16
+        ],
+        "b": [
+          8,
+          128,
+          128,
+          16
+        ],
+        "c": [
+          8,
+          8,
+          512,
+          16
+        ],
+        "aux": [
+          16
+        ]
+      },
+      "gm_elems": {
+        "a": 8388608,
+        "b": 2097152,
+        "c": 524288
+      },
+      "gm_bytes": {
+        "a": 16777216,
+        "b": 4194304,
+        "c": 2097152
+      },
+      "dma": {
+        "a_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 384,
+          "dst_stride": 0
+        },
+        "b_load": {
+          "nburst": 8,
+          "burst": 128,
+          "src_stride": 0,
+          "dst_stride": 0
+        },
+        "c_store": {
+          "nburst": 8,
+          "burst": 256,
+          "src_stride": 0,
+          "dst_stride": 768
+        },
+        "l0c_to_ub": {
+          "block_mode": "m",
+          "nburst": 1,
+          "burst_len_kb": 64
+        }
+      },
+      "buffers": {
+        "l1_a_bytes": 32768,
+        "l1_b_bytes": 32768,
+        "l0c_bytes": 65536,
+        "ub_bytes": 65536
+      },
+      "accumulation": {
+        "k_tiles": 16,
+        "single_l0c_across_all_k_blocks": true,
+        "init_first_k_block_only": true,
+        "half_partial": false,
+        "fp32_ub_partial_sum": false,
+        "final_output_dtype": "float32"
+      },
+      "batched": {
+        "per_head_distinct_b": true,
+        "head_offset_applied_to_a_b_c": true,
+        "task_flatten": "head*(m_tiles*n_tiles) + m_tile*n_tiles + n_tile"
+      },
+      "capability": {
+        "compile_soc": "Ascend910B",
+        "runtime_expected_soc": "Ascend910B",
+        "Intrinsic_mmad_f162f32": true,
+        "core_num": 30,
+        "l1_size": 1048576,
+        "l0c_size": 262144,
+        "ub_size": 262144
+      },
+      "suggested_smoke_geometry": [
+        2,
+        128,
+        256,
+        128
+      ],
+      "no_bias_operand": true,
+      "no_fp32_weight_shadow": true,
+      "per_head_distinct_b_required": true,
+      "host_packing_required": [
+        "pack_a",
+        "pack_w"
+      ],
+      "host_unpacking_required": [
+        "unpack_c"
+      ],
+      "host_padding": {
+        "m_pad_rows": 5,
+        "a_zero_m_padding": true,
+        "c_pad_rows_zero_or_cropped": "cropped by unpack_c",
+        "score_n_padding": "host zero-fills padded key rows; kernel has no mask"
+      }
+    }
+  ],
+  "all4objects_SHA_verified_before8rank_priming": true,
+  "no_model_oracle_modified": true
+}

@@ -1,0 +1,116 @@
+{
+  "round": 109,
+  "task": "task-60",
+  "kind": "ORIGINAL-HF CPU FP16 raw layers 42/43 capture for an exact-input NPU block-43 probe",
+  "status": "SOURCE ONLY; never executed on a CPU model / NPU by its author",
+  "files": {
+    "newcapture_cpu_raw109.py": "4f9445f377f840f4fb87e9ada65b5e8eadaaa104a57ec4bed46fb412a7cda6e0",
+    "test_newcapture_cpu_raw109.py": "74cdfc65f8b577cd42736dd41631943668158b5e14fb9cf48cec2bcd4a47d6ea",
+    "make_manifest109.py": "284cf6ae5ae5c775a9f9b3ec69ed770f65f2d22b13094b982c4e62bd8e9fba51",
+    "README.md": "051deb3a9d455c945d97f6bc0bf57f03becf367316904c3e0dcac9e8ce436e25"
+  },
+  "file_lines": {
+    "newcapture_cpu_raw109.py": 445,
+    "test_newcapture_cpu_raw109.py": 230,
+    "make_manifest109.py": 120,
+    "README.md": 79
+  },
+  "external_pins": {
+    "suffix93.py": {
+      "path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round93/cpu/suffix93.py",
+      "sha256": "6d062fdb04e484a35a103df51024fb13ba622b6fdb60de148ba0a93205f4fdd6"
+    },
+    "original_cpu_block25_92.py": {
+      "path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round92/cpu/original_cpu_block25_92.py",
+      "sha256": "838027c883bed6d1e5a0b839e0c2accde2457bef9cc81d58129fdcad38d65f4b"
+    }
+  },
+  "r78_file_pins": {
+    "reference.json": "44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9",
+    "FP16_multimodal_inputs.pt": "6ab37f7202731843aebce9f3f8453232c72d45b2239caba679bcb2611e626e70",
+    "FP16_layer24.pt": "6d081a27aa99eeaf0bd73084a72d09c969f180788041d246cf0b1983e182b0e9",
+    "FP16_selected50.pt": "0137a434148366c3dcbf825970274ad0faa036666561d7aecc0170cf136b3fe4"
+  },
+  "r78_tensor_pins": {
+    "raw24": "7a2178195b3ec65e09ba4c7587acb052e04996a4023f6b1a5f1b2088e2eef084",
+    "raw49_selected50": "82944620090359e7fc7eccb86471117e010b7838da83de5a43ceb46bf3453bd5"
+  },
+  "hf_modeling_source_sha256": "fcb5571ef95e4a6679af866ef9ef4dfa5cee017f9f91453daf28c7804c7a50fe",
+  "suffix_layers": [
+    25,
+    49
+  ],
+  "capture_layers": [
+    42,
+    43
+  ],
+  "raw42_is_input_to_raw43": true,
+  "expected_tensor": {
+    "dtype": "torch.float16",
+    "shape": [
+      1,
+      2043,
+      5120
+    ]
+  },
+  "required_full_baseline_passes": 2,
+  "outputs_in_root": {
+    "root_default": "/tmp/h3_round109_cpu01",
+    "files": [
+      "CPU_raw42_109.pt",
+      "CPU_raw43_109.pt",
+      "CPU_raw49_109.pt",
+      "CPU_raw_reference109.json",
+      "CPU_raw_failure109.json"
+    ],
+    "always_written": [
+      "CPU_raw42_109.pt",
+      "CPU_raw43_109.pt",
+      "CPU_raw_reference109.json"
+    ],
+    "optional_raw49_flag": "--also-raw49",
+    "never_overwrites_existing": true,
+    "outside_R78_root": true
+  },
+  "api": {
+    "run": "run(root=PosixPath('/tmp/h3_round109_cpu01'), suffix_helper_path=None, original_helper_path=None, repeats=2, also_raw49=False) -> receipt dict (repeats must stay 2: two full gated passes)",
+    "main": "main(argv=None) -> int",
+    "cli": [
+      "--root",
+      "--suffix-helper",
+      "--original-helper",
+      "--also-raw49"
+    ],
+    "module_scope_imports": "stdlib only; torch/transformers imported lazily"
+  },
+  "gates": [
+    "staged suffix93.py byte SHA256 == pinned 6d062fdb...",
+    "staged original_cpu_block25_92.py byte SHA256 == pinned 838027c8...",
+    "staged helper constants equal this round's R78/HF pins",
+    "R78 reference.json + inputs + raw24 + selected50 file SHAs equal their pins",
+    "R78 raw24 tensor SHA == 7a2178... and raw49 tensor SHA == 829446...",
+    "ALL 25 original CPU suffix boundaries 25..49 reproduce R78 bit-exactly, twice",
+    "raw49 boundary == frozen selected-50 tensor; both full passes agree on all 25 SHAs",
+    "saved tensors reload as plain Half[1,2043,5120]; raw42 -> layer43 == raw43 bits",
+    "original parameters and every frozen R78 file hash unchanged afterwards"
+  ],
+  "no_new_oracle_or_teacher": {
+    "no_Float_linear_weights": true,
+    "no_BF16_gold_cast": true,
+    "no_corrected_NPU_input_read": true,
+    "no_NPU_input_bundle_opened": true,
+    "no_final_norm_injected": true,
+    "no_hidden_conditioning_cache": true,
+    "numerical_tolerance": null,
+    "not_a_speed_measurement": true,
+    "R78_gold_not_modified": true
+  },
+  "unverified_cpu_assumptions": [
+    "root must stage suffix93.py and original_cpu_block25_92.py into the private root",
+    "the private root must contain no previous capture/failure artifact",
+    "torch 2.10.0+cpu / transformers 5.14.1 and MKLDNN must match the R78 gold",
+    "two full suffix passes fit the root run limit (about 20 minutes of CPU)",
+    "the root runs this only after its NPU timers finish (no concurrent benchmark)"
+  ],
+  "root_follow_up_not_this_source": "root NPU block-43 probe and any numerical comparison are separate work (R110)"
+}

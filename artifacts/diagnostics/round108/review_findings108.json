@@ -1,0 +1,314 @@
+{
+  "round": 108,
+  "task": 61,
+  "reviewer": "review-tp108-fresh",
+  "fresh_fork": true,
+  "reviewed_at_utc": "2026-11-19T02:59:00Z",
+  "review_scope": "Independent read-only review of R107 true Vision TP8 adapter/backend/head2 engine and R108 full stock encoder evidence: TP tensor math vs the original CPU FP16 reference, hidden-state/pixel/oracle caching, timing protocol, capture ordering, grid-audit correction, and claim boundaries.",
+  "method": {
+    "read_only": true,
+    "no_npu_execution": true,
+    "no_cpu_model_execution": true,
+    "no_ssh": true,
+    "no_source_edited": true,
+    "no_git_write": true,
+    "allowed_ops_used": [
+      "file read/hash",
+      "stdlib json/ast parse and independent metric re-aggregation from raw rank receipts",
+      "python3 -m unittest on existing stdlib-only suites (no torch/CANN import path taken)"
+    ],
+    "note": "Every reviewed file SHA was compared against the audit-pinned executed copies so the review covers the bytes that actually ran."
+  },
+  "verdict": {
+    "p0_bugs": 0,
+    "p1_bugs": 0,
+    "p2_items": 1,
+    "p3_items": 4,
+    "performance_accepted_as_measurement_only": true,
+    "numerical_not_accepted": true,
+    "numerical_acceptance_status": "NOT ACCEPTED. Full encoder CPU FP16 relative RMS is 4.395021% (VisionTP8/native text) and 5.125418% (VisionTP8/precise text). full_encoder_precision_accepted=false, whole_goal_complete=false, numerical_tolerance=null in every receipt.",
+    "co_resident_unknown": true,
+    "goal_complete": false,
+    "goal_phase_observed": "active, revision 17, round 43",
+    "conclusion": "The true Vision TP8 implementation is mathematically consistent with the original Half model and the R108 <2s full-encoder measurement is supported by the recorded receipts. No numerical/BF16 claim is made and none would be supported. Remaining items are evidence-hygiene and wording issues, not implementation defects."
+  },
+  "reviewed_sources": [
+    {
+      "path": "artifacts/diagnostics/round107/tp_vision/vision_tp_adapter107.py",
+      "sha256": "691897d3b5b7f4d81b11d5108dfa11dcac8944c79a4af4d3820c966afb397a67",
+      "executed_copy_pins_matched": 2,
+      "lines_checked": "1-180 (geometry/planning), 181-370 (guards, param identity, segment lengths), 369-568 (column/row/all_reduce/bias widening, priming), 569-768 (instance wrappers, attention/MLP forward), 768-791 (snapshot/uninstall)"
+    },
+    {
+      "path": "artifacts/diagnostics/round107/vision_gemm_backend107.py",
+      "sha256": "dc948db0b53312fbf3d55c035c02a705688bb467213a1993dcf0ca264d433a33",
+      "executed_copy_pins_matched": 3,
+      "lines_checked": "1-91 (geometry, Half-weight packing roundtrip, zero-only K/N padding, Float bias, fresh input pack, Float row output)"
+    },
+    {
+      "path": "artifacts/diagnostics/round107/head2_attention107.py",
+      "sha256": "af373864ebff6a21f82f16858587ef4b3f2faa94c48abf1922640a9d95addb30",
+      "executed_copy_pins_matched": 3,
+      "lines_checked": "1-102 (standalone 2-head BC128 kernel build, strict [1,2,4032,72], no global helper patch)"
+    },
+    {
+      "path": "artifacts/diagnostics/round107/vision_tp_probe107.py",
+      "sha256": "0d2fca8d77929155bf66fcdbad79dd1966092410a8b0146d3abc2931ff51a82a",
+      "executed_copy_pins_matched": 1,
+      "lines_checked": "case flag matrix, TP counter delta assertion, 5-sample barrier/sync warm loop, timing_scope label, native recovery and unchanged params/pixels/gold"
+    },
+    {
+      "path": "artifacts/diagnostics/round108/full_encoder108.py",
+      "sha256": "dc0bfa9a21386c93519f843c1c33e1c576d3d3f110d1ca56543b69a4b6f4c4a4",
+      "executed_copy_pins_matched": 1,
+      "lines_checked": "20-79 (group/parallel init identical to committed R102, Half-weight assertion, vision param SHA vs CPU proof), 108-227 (5 cases, vision/DS/merger gate, capture-before-timer, 5-sample timers, CPU controls after warm), 228-251 (unchanged checks, memory, uninstall)"
+    },
+    {
+      "path": "artifacts/diagnostics/round108/collect108.py",
+      "sha256": "135d9695b9a4932cb710c80cbd8ccc00604b31ba2cd9e8900f1ccbe99ddf0efd",
+      "executed_copy_pins_matched": "local only (aggregator, not shipped to the node)",
+      "lines_checked": "1-46 (recomputes from 8 raw receipts, asserts cross-rank SHA equality, repeat/stock equivalence, R107 visual SHA, native recovery, gold unchanged; writes with mode 'x')"
+    },
+    {
+      "path": "artifacts/diagnostics/round108/prebuild108.py",
+      "sha256": "7f57bf3e916bbb619b344e68a2ca31bb9612514c0ef8c05b076e4836c6738c5b",
+      "executed_copy_pins_matched": 1,
+      "lines_checked": "full file (18-object serial verification before any 8-rank model priming)"
+    },
+    {
+      "path": "artifacts/diagnostics/round108/verify_final_grid_fixed108.py",
+      "sha256": "b63ec12434d2d7e45cd1236438487f4163d389ca48d3cfe580d112026d9aaee0",
+      "executed_copy_pins_matched": 1,
+      "lines_checked": "diff vs verify_final108.py: only the object block_dim rule and the execution-source manifest name changed"
+    },
+    {
+      "path": "artifacts/diagnostics/round79/candidate/candidate_encoder79.py",
+      "sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+      "executed_copy_pins_matched": 3,
+      "lines_checked": "658-674 (_NpuBF16CompatibleLinear), 677-706 (merger/MLP), 708-719 (vision rotary), 722-774 (reference SDPA + VisionAttention), 777-798 (VisionBlock forward signature)"
+    },
+    {
+      "path": "artifacts/diagnostics/round90/erf_gelu_fixed90.py",
+      "sha256": "5a5e85aaad5697a7a890ecb0b5b724bc3acd93d819978ab55d5eb68038cd0552",
+      "executed_copy_pins_matched": "existing R90 object, unchanged in this round",
+      "lines_checked": "788-846 (replaces ONLY the four GELU(approximate='none') mergers and refuses others, so the vision-block tanh GELU the TP MLP now calls is untouched)"
+    }
+  ],
+  "independent_verification": {
+    "tp_slicing_math": {
+      "status": "CORRECT",
+      "qkv": "original weight [3456,1152] is three 1152-row q/k/v segments; rank r takes rows [s*1152+r*144, s*1152+(r+1)*144] for s in {q,k,v} and concatenates to 432 = 3*2*72; bias sliced identically",
+      "local_heads": "each rank owns heads 2r,2r+1; qkv.reshape(seq,3,2,72) reproduces head order (2r,2r+1) inside each segment because 144 = 2*72",
+      "out_proj": "attn_output.transpose(1,2).reshape(seq,144) produces row t = [head 2r 72 | head 2r+1 72], exactly global columns r*144:(r+1)*144, matching the proj weight column shard",
+      "mlp": "4304 = 8*538 exactly; fc1 output rows r*538:(r+1)*538, fc2 input columns r*538:(r+1)*538, original nn.GELU(approximate='tanh') applied to exactly the 538 logical channels (elementwise, so channel splitting is exact)",
+      "attention": "unmasked, non-causal, original scale 72**-0.5, original cu_seqlens split into two 4032-token images, original Float rotary helper reused unmodified",
+      "collective": "row-mode partials stay Float32 into group.all_reduce; the original Half bias is widened to Float32 and added once AFTER the collective; exactly one Half cast at the end; column-mode qkv/fc1 add the exact original Half bias widened to Float inside the kernel and cast once to Half",
+      "empirical_cross_checks": [
+        "head2_probe107.json: all 16 (2 images x 8 ranks) 2-head standalone outputs are BIT-IDENTICAL to the corresponding slice of the 16-head BC128 run, and 8.17e-6..2.05e-5 relative RMS vs CPU Half MATH",
+        "per-rank receipt geometry tiles the widths with no gap/overlap: head spans 0/144/288/432/576/720/864/1008 -> 1152 and MLP spans 0/538/1076/1614/2152/2690/3228/3766 -> 4304",
+        "packed_Half_weight_bytes 127,401,984 and Float_bias_bytes 124,416 in the receipt reproduce exactly by hand from the padded shard shapes, so the reported memory layout is real and not a literal"
+      ]
+    },
+    "genuine_parallel_execution": {
+      "status": "VERIFIED",
+      "detail": "Every one of the 8 ranks reports the same enabled counters for the first TP forward: enabled_attention_calls=27, enabled_mlp_calls=27, attention_segments=54, column_runs=54, row_runs=54, all_reduce_calls=54, primed_weight_modules=108, half_outputs=54, activation_half_checks=27",
+      "delta_assertion": "vision_tp_probe107.py asserts the per-forward counter delta equals expected_counts_per_forward(2 segments) exactly, so 54 real Float collectives per vision forward are proven, not inferred",
+      "correct_result_implies_real_reduction": "A no-op or single-rank collective would leave each rank holding 1/8 of the projections; the observed merged vision error is 0.698518% vs CPU FP16, which is not achievable from an unreduced partial",
+      "disabled_counters": "648 disabled attention and 648 disabled MLP calls are exactly the 3 non-TP cases x 8 vision forwards x 27 blocks, confirming the flags were off where they should be"
+    },
+    "timing_protocol": {
+      "status": "ACCEPTED_AS_MEASUREMENT_ONLY",
+      "entry": "real stock entry encoder.encode_ids(payload input_ids, pixel_values, image_grid_thw); vision is not precomputed",
+      "scope": "includes 27 vision blocks with TP projections + Float HCCL, patch embed and mergers (replicated), all 50 text layers, HCCL/layout/packing, and the final D2H",
+      "synchronization": "torch.distributed.barrier() then torch.npu.synchronize() before start=time.perf_counter(); torch.npu.synchronize() after; 5 samples per case; each sample's output SHA is re-checked against the probed SHA",
+      "aggregation": "per sample index take max over the 8 ranks, then median over 5 -> matches the description '5 paired 8-rank-max'",
+      "reproduced_values": {
+        "corrected_VisionTP8_native_text": {
+          "samples_s": [
+            1.311685,
+            1.243577,
+            1.322445,
+            1.364717,
+            1.3212
+          ],
+          "median_s": 1.3212001398205757,
+          "all_5_under_2s": true,
+          "cpu_relative_rms": 0.04395021443083377
+        },
+        "corrected_VisionTP8_precise_text": {
+          "samples_s": [
+            1.967735,
+            1.903169,
+            1.860187,
+            1.853904,
+            1.852044
+          ],
+          "median_s": 1.8601869298145175,
+          "all_5_under_2s": true,
+          "cpu_relative_rms": 0.05125418295516788
+        },
+        "corrected_replica_BC128_native_text": {
+          "median_s": 2.156184430234134,
+          "cpu_relative_rms": 0.07405682674595006
+        },
+        "native": {
+          "median_s": 2.119597390294075,
+          "cpu_relative_rms": 0.07420123401951458
+        },
+        "corrected_vision_native_text": {
+          "median_s": 2.0133479796350002,
+          "cpu_relative_rms": 0.17037422169218858
+        }
+      },
+      "order_effect_control": "case order is native(1) 2.1196 -> fix(2) 2.0133 -> replica(3) 2.1562 -> TP(4) 1.3212 -> TP-precise(5) 1.8602. The 3rd case being slower than the 1st/2nd, and the 5th being slower than the 4th, shows no monotone warm-up drift that could explain the TP result",
+      "run_exit": "run_finished.json exit_code=0 at 2026-11-19T02:28:45Z"
+    },
+    "capture_and_caching": {
+      "status": "CORRECT",
+      "capture_ordering": "full_encoder108.py line 179 torch.save runs after the first full forward and before every warm timer (line 189-193), verified by both the source test and by reading the source",
+      "never_reloaded": "no case reads an NPU_selected50_*.pt back into inference; the only torch.load calls are the frozen fixture (encoder_input.pt), the R78 CPU gold tensors, and the audit's SHA-identity check",
+      "no_hidden_cache": "no activation/hidden-state/pixel/oracle cache is stored: pack_input allocates a fresh padded A every call (fresh_input_packs=108), backend snapshot reports no_activations_cached_across_calls=true, and only positions/rotary geometry is cached (R91 cache, bit-exact)"
+    },
+    "numerical_integrity_flags": {
+      "all_linear_model_weights_Half": true,
+      "Float_weight_shadows": 0,
+      "original_Half_weights_and_biases_untouched": "checked per forward via data_ptr/storage_offset/numel/shape/dtype/device/version identity, and by parameter_and_fixture_SHA_unchanged + CPU_reference_SHA_unchanged in all 8 receipts",
+      "no_FloatLinear_teacher_no_BF16_goldcast_no_fake_final_norm_no_clamp": true,
+      "cpu_gold_sha": "reference.json = 44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9 (verified locally and in every rank)",
+      "candidate_sha": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78 (verified on disk matches the pin asserted by the engineers)",
+      "no_bf16_hardware_requirement": "the review does not require BF16 anywhere; 910A lacks native BF16 and the CPU FP16 oracle choice is respected"
+    },
+    "gate_integrity": {
+      "status": "SOUND_NOT_CIRCULAR_IN_A_HARMFUL_WAY",
+      "detail": "expected_vision107.json is derived from the real R107 vision_tp01 receipts (all 4 case merged SHAs match the R107 rank0 receipt exactly). R108 then requires its own vision merged/27-boundary/DeepStack SHAs to equal that R107 identity, which proves cross-run bitwise determinism rather than correctness by construction. Correctness of the TP path is independently anchored by (a) the head2 probe's bit-equality against the 16-head BC128 head slices whose CPU error was measured, and (b) the whole-vision CPU FP16 merger RMS 0.698518% in R107."
+    },
+    "grid_audit_fix": {
+      "status": "LEGITIMATE_METADATA_FIX_NOT_A_NUMERIC_WAIVER",
+      "old_rule": "assert block_dim in (1, 4, 30)",
+      "new_rule": "assert isinstance(block,int) and 0 < block <= 30 and (if a recorded plan grid exists) block == grid['cores']",
+      "justification_verified": "the R107 probe (m=128) legitimately produces 4/5/9-core launches because cores = min(30, tasks): vision_bias87_m128_k1152_n512 -> 4 tasks, vision_bias87_m128_k1152_n640 -> 5 tasks, blocked_gemm83_m128_k256_n1152 -> 9 tasks; the real m=8064 models all use 30 cores",
+      "no_gate_weakened": "diff of verify_final108.py vs verify_final_grid_fixed108.py shows the only changes are this rule plus the execution-source manifest filename; the 23-production, 13-API, workers-zero, all-8-complete, HF/CPU-gold/FrozenQKV/launcher-unchanged, 5-saved-output and capture-outside-clock assertions are all preserved verbatim",
+      "manifest_diff": "expected_execution_sources108_grid_fixed.json vs expected_execution_sources108.json: 0 entries dropped, 0 SHAs changed, exactly 1 entry added (the new verify script itself)",
+      "failure_preserved": "results/audit_old_core_whitelist108.stdout is an empty file (the old audit produced no stdout) and audit_failure108.json records the whitelist rejection with exit_code 1 and states that inference was not replayed"
+    },
+    "prebuild": {
+      "status": "VERIFIED",
+      "detail": "18 recorded objects = local head2 kernel + 4 TP GEMM + 4 text + 7 vision + 1 erf + 1 flash, all serialized before any 8-rank model priming; real-path TP GEMM kernels are the 4 distinct (mode,kp,np) plans and all launch 30 cores"
+    },
+    "local_test_suites": {
+      "status": "PASS_REPRODUCED",
+      "runs": [
+        {
+          "suite": "artifacts/diagnostics/round107/tp_vision",
+          "tests": 36,
+          "result": "OK"
+        },
+        {
+          "suite": "artifacts/diagnostics/round107",
+          "tests": 15,
+          "result": "OK"
+        },
+        {
+          "suite": "artifacts/diagnostics/round108",
+          "tests": 11,
+          "result": "OK"
+        }
+      ],
+      "total": 62,
+      "note": "matches the claimed 36 fresh-author stdlib tests and additionally re-runs the root evidence suites; none of these constitute a hardware result"
+    }
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "P2",
+      "category": "evidence_hygiene",
+      "title": "Local mirrored capture set is still filling; every file must pass its receipt SHA before the set is called complete",
+      "evidence": [
+        "observed at review time: native SHA_OK (20,941,151 B), corrected_vision_native_text SHA_OK (20,941,413 B), corrected_replica_BC128_native_text completed during the review and now SHA_OK (20,941,604 B)",
+        "corrected_VisionTP8_native_text was mid-copy (17,756,160 B and growing, not yet equal to its receipt file_SHA256 121c958b94683b11...), and corrected_VisionTP8_precise_text (receipt file_SHA256 c284cc4d55440fcf...) was not present yet",
+        "a complete Half selected50 payload is 2043*5120*2 = 20,920,320 bytes, so any smaller file is necessarily a truncated copy",
+        "the mirror is actively being populated by the root between observations, so this is an in-progress state rather than a corrupt source"
+      ],
+      "impact": "The REMOTE evidence is intact: final_source_verification_grid_fixed108.json already verified all 5 remote files (Half dtype, correct tensor SHA, captured_outside_warm_clock_not_used_as_input=true). The risk is local only. If the remote /tmp/h3_round108_full01 root is cleaned when the owned 910A lease is released, an incompletely mirrored TP8 capture (the most relevant one for future DiT-conditioning precision work) would be lost, and a partially copied file must never be treated as immutable.",
+      "required_action": "Finish mirroring all five NPU_selected50_*.pt files and enforce sha256 == receipt file_SHA256 per file before declaring the captured set complete or releasing/cleaning the remote root. Replace, never keep, any file that fails that check.",
+      "not_a_numerical_failure": true
+    },
+    {
+      "id": "F2",
+      "severity": "P3",
+      "category": "reporting_precision",
+      "title": "Any '1.365 s' bound for the TP8 case would be knife-edge; the written evidence correctly uses <2 s and should keep doing so",
+      "evidence": [
+        "the 8-rank-max samples for corrected_VisionTP8_native_text are 1.311685 / 1.243577 / 1.322445 / 1.364717 / 1.321200 s; the largest is 1.364717, only 0.000283 s below 1.365",
+        "grep over round107/round108 docs finds no written 1.365 claim; README states the samples and 'all <2 s', which is correct and has a 31.7% margin"
+      ],
+      "impact": "None on the result. A bound picked just above the observed maximum is not a stable threshold and would be fragile if repeated as a settled property.",
+      "required_action": "Report the measured maximum (1.364717 s) or the <2 s target, and avoid restating a 1.365 s bound as if it were a design limit."
+    },
+    {
+      "id": "F3",
+      "severity": "P3",
+      "category": "arithmetic_rounding_in_doc",
+      "title": "README derives 'complete time reduced 38.73%' where the receipts give 38.724% -> 38.72%",
+      "evidence": [
+        "1 - 1.3212001398205757 / 2.156184430234134 = 0.3872445",
+        "the speedup 'about 1.632x' in the same sentence is correct (2.156184/1.321200 = 1.63201)"
+      ],
+      "impact": "Cosmetic 0.006 percentage-point discrepancy in a derived sentence; no metric is misstated materially.",
+      "required_action": "Use 38.72% or state the raw medians only."
+    },
+    {
+      "id": "F4",
+      "severity": "P3",
+      "category": "bookkeeping_consistency",
+      "title": "STATE records the grid-aware audit as collected=false although its exit_code=0 output file is present and passing",
+      "evidence": [
+        "artifacts/diagnostics/round108/STATE.json read_only_grid_aware_audit = {job: bash-0daebdc87d364703, exit_code: 0, collected: false, ...}",
+        "final_source_verification_grid_fixed108.json exists and its contents satisfy test_audit108 (23 production / 13 API / 60 execution sources / 34 objects / 5 saved outputs / workers empty)"
+      ],
+      "impact": "Metadata-only. Risk is that a final summary is written before the job handle is formally drained, or that 'collected' stays false in the durable record.",
+      "required_action": "Reconcile the flag (collect the job output, then set collected=true) before the final audit narrative/commit."
+    },
+    {
+      "id": "F5",
+      "severity": "P3",
+      "category": "robustness",
+      "title": "Backend and head2 engine express their contracts with bare assert statements",
+      "evidence": [
+        "vision_gemm_backend107.py prime/pack_input/run use `assert` for dtype/shape/device/bias contracts",
+        "head2_attention107.py forward uses `assert` for shape/dtype/device and the score-bound domain"
+      ],
+      "impact": "Under `python -O` those guards would be stripped and the backend could run on a mismatched dtype/shape instead of failing closed. The recorded runs were not invoked with -O, so no result is affected, and this mirrors the accepted style of earlier engines in this project.",
+      "required_action": "Optional hardening (explicit raises); not required to accept the current measurements."
+    },
+    {
+      "id": "F6",
+      "severity": "observation",
+      "category": "attribution",
+      "title": "The TP vision accuracy improvement and the 0.835 s encoder saving are not attributable to head-sharding alone",
+      "evidence": [
+        "TP vision CPU merger RMS is 0.698518% vs replicated BC128 0.728894%, but the TP path also changes the projection arithmetic to Float accumulation with Float bias and a single Half cast, so part of the accuracy change comes from precision, not from sharding",
+        "encoder-level TP delta is 2.156184 - 1.321200 = 0.834984 s while the vision-only R107 delta is 1.483958 - 0.675060 = 0.808898 s; about 0.026 s is unattributed (plausibly allocator/interaction noise, and the attention launch shape 16-head -> 2-head also changes)",
+        "both deltas point the same way and the per-case order control shows no drift, so this is not a fairness problem"
+      ],
+      "impact": "None on the acceptance boundary; the documents already state the Float row-partial arithmetic. Only a reader might over-read 'TP is more accurate' as a sharding property.",
+      "required_action": "None mandatory; if the number is quoted, keep the arithmetic description attached."
+    }
+  ],
+  "claims_audit": {
+    "no_eight_times_speedup_claimed": true,
+    "no_lossless_pass_claimed": true,
+    "no_co_residency_claimed": true,
+    "no_default_promotion": true,
+    "no_numerical_pass_or_threshold_anywhere": true,
+    "bf16_not_required_by_review": true,
+    "documented_limitations_match_evidence": "R107 README says 'not 8x' (2.198x vision vs replica, 2.032x vs corrected native attention, both recomputed and correct), and R108 README says the CPU precision gap is still 4.395% and not accepted; both match the raw receipts"
+  },
+  "blocking_for_any_future_acceptance": [
+    "Full-graph relative RMS vs the original CPU FP16 oracle remains 4.395021% (native text) / 5.125418% (precise text); no threshold exists or may be invented after the fact",
+    "encoder/DiT/VAE co-residency is unmeasured: the 8.627 GiB end / 11.858 GiB diagnostic peak is a benchmark footprint including baselines and capture, explicitly not a service steady state",
+    "official matched-condition comparison (A2/A3 T2VA, BF16, other hardware) still does not apply to this FL2VA FP16 910A composition"
+  ],
+  "final_note": "No P0/P1 defect found; the adapter, backend, head2 engine, drivers and collectors behave as documented. The only actionable item is F1 (verify and complete the local capture mirror before releasing/cleaning the remote root). Numerical acceptance remains open and the objective must stay active."
+}

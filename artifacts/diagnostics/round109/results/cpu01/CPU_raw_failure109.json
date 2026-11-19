@@ -1,0 +1,241 @@
+{
+  "scope": "R109: persist the ORIGINAL-HF CPU FP16 raw layers 42/43 for an exact-input NPU block-43 probe.\n\nSTATUS: SOURCE ONLY.  The author never ran this against torch / transformers / a CPU model /\nan NPU / CANN, never used SSH, and edited no production file.  The root stages the immutable R93\n``suffix93.py`` adapter and the pinned R92 ``original_cpu_block25_92.py`` helper into a NEW\nprivate root and runs this script *after* its NPU timers finish.\n\nIt reuses the R93 original-HF CPU suffix adapter verbatim: rebuild original text decoder layers\n25..49 from the pinned checkpoint, rebuild the original M-RoPE rows, causal mask and\n``SDPBackend.MATH`` attention context from the frozen R78 inputs, then propagate the frozen R78\nCPU raw layer-24 state through the suffix.  Before anything is written, **all 25** R78 raw\nboundaries (25..49) must match their frozen SHA256 values and a second full pass must reproduce\nall 25 SHAs bit-identically; raw49 must equal the frozen selected-50 tensor.\n\nOnly then are the two ORIGINAL CPU tensors R93 never persisted saved here, each a plain\n``torch.Tensor`` ``Half[1, 2043, 5120]``, CPU, contiguous:\n\n``CPU_raw42_109.pt``  state after original raw layer 42 == exact INPUT of raw layer 43\n``CPU_raw43_109.pt``  state after original raw layer 43\n\nRaw layer 42 is the real input of block 43 (no DeepStack after raw24, no final norm), so the\npair is the original CPU FP16 reference for an exact-input NPU layer-43 comparison.\n\nIt is not a new oracle, a Float-weight teacher, a BF16 gold cast, a corrected-input case, a\nhidden conditioning cache, a numerical tolerance or a speed measurement; the R78 files are\nread only and must hash unchanged.\n",
+  "round": 109,
+  "task": "task-60",
+  "kind": "original-HF CPU FP16 raw layers 42/43 capture (exact input to raw layer 43)",
+  "root": "/tmp/h3_round109_cpu01",
+  "source_sha256": "4f9445f377f840f4fb87e9ada65b5e8eadaaa104a57ec4bed46fb412a7cda6e0",
+  "capture_layers": [
+    42,
+    43
+  ],
+  "raw42_is_input_to_raw43": true,
+  "boundary": "original HF raw decoder layers 25..49, PRE DeepStack injection, PRE final norm; raw42 is the exact input of raw layer 43",
+  "no_DeepStack_in_suffix": true,
+  "no_final_norm_after_layer49": true,
+  "reads_only_original_CPU_baseline": true,
+  "no_NPU_input_bundle_read": true,
+  "no_corrected_raw24_case": true,
+  "no_Float_linear_weights_or_teacher": true,
+  "no_BF16_gold_output_cast": true,
+  "R78_files_not_modified": true,
+  "expected_tensor": {
+    "dtype": "torch.float16",
+    "shape": [
+      1,
+      2043,
+      5120
+    ]
+  },
+  "required_full_baseline_passes": 2,
+  "numerical_tolerance": null,
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "not_a_speed_measurement": true,
+  "completed": false,
+  "also_raw49_requested": false,
+  "suffix_helper": {
+    "module": "suffix93_r109",
+    "path": "/tmp/h3_round109_cpu01/suffix93.py",
+    "sha256": "6d062fdb04e484a35a103df51024fb13ba622b6fdb60de148ba0a93205f4fdd6",
+    "matches_pin": true,
+    "imported_by_verified_path_not_edited": true
+  },
+  "helper_constants": {
+    "pins_checked": [
+      "HELPER_SHA256",
+      "R78_MM_INPUTS_FILE_SHA256",
+      "R78_RAW24_TENSOR_SHA256",
+      "R78_RAW49_TENSOR_SHA256",
+      "R78_RECEIPT_SHA256",
+      "R78_SELECTED50_FILE_SHA256"
+    ],
+    "mismatched": {},
+    "all_match": true
+  },
+  "original_helper": {
+    "module": "original_cpu_block25_92",
+    "path": "/tmp/h3_round109_cpu01/original_cpu_block25_92.py",
+    "sha256": "838027c883bed6d1e5a0b839e0c2accde2457bef9cc81d58129fdcad38d65f4b",
+    "matches_pin": true,
+    "reused_verbatim_not_edited": true
+  },
+  "original_helper_constants": {
+    "pins_checked": [
+      "CPU_THREADS",
+      "EXPECTED_VERSIONS",
+      "HF_SOURCE_SHA256",
+      "MODEL",
+      "R78_MM_INPUTS_FILE_SHA256",
+      "R78_RAW24_FILE_SHA256",
+      "R78_RAW24_TENSOR_SHA256",
+      "R78_RECEIPT_SHA256"
+    ],
+    "mismatched": {},
+    "all_match": true
+  },
+  "helper_metrics": {
+    "module": null,
+    "path": null,
+    "sha256": null,
+    "compare_source": "internal_identical_formulas",
+    "tensor_info_source": "internal_identical_formulas"
+  },
+  "cpu_execution": {
+    "torch": "2.10.0+cpu",
+    "threads": 16,
+    "threads_source": "pinned R92 helper CPU_THREADS",
+    "mkldnn_enabled": true,
+    "works_on_cpu_only": true
+  },
+  "cpu_reference_receipt": {
+    "path": "/tmp/h3_round78_hf_fp1601/reference.json",
+    "sha256": "44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9",
+    "gates": {
+      "completed": true,
+      "full_multimodal_reference_completed": true,
+      "repeat_pre_final_norm_bits_equal": true,
+      "repeat_post_final_norm_bits_equal": true,
+      "pre_final_norm_matches_layer49_identity": true
+    },
+    "versions": {
+      "torch": "2.10.0+cpu",
+      "transformers": "5.14.1"
+    },
+    "CPU_num_threads": 16,
+    "CPU_mkldnn_enabled": true,
+    "boundary": "OriginalHFselected50decoderlayersPREfinalnorm;originalfinalnormexecutesunchanged,capturedviaprehook",
+    "raw_layer24_SHA256": "7a2178195b3ec65e09ba4c7587acb052e04996a4023f6b1a5f1b2088e2eef084",
+    "raw_layer25_SHA256": "a83f92f8f9108ff05c25d7967eb575ee9a2b93e7c7463a44b9536595b519c01d",
+    "original_selected_parameter_sha256": "a69676bac5e6f3a513ce44080d29c73974553b6e0a327ea272e47b600d84e46e",
+    "layer25_conversion_entries": 11,
+    "not_modified_by_this_round": true
+  },
+  "r78_files_before": {
+    "sha256": {
+      "reference.json": "44acac61f9b4d9bc8afc91632392502ccaa29dee7bfab951e2b15902a0be74c9",
+      "FP16_multimodal_inputs.pt": "6ab37f7202731843aebce9f3f8453232c72d45b2239caba679bcb2611e626e70",
+      "FP16_layer24.pt": "6d081a27aa99eeaf0bd73084a72d09c969f180788041d246cf0b1983e182b0e9",
+      "FP16_selected50.pt": "0137a434148366c3dcbf825970274ad0faa036666561d7aecc0170cf136b3fe4"
+    },
+    "mismatched": {},
+    "all_match_pins": true
+  },
+  "hf_source": {
+    "path": "/home/mseco/vllm910a/lib/python3.12/site-packages/transformers/models/qwen3_vl/modeling_qwen3_vl.py",
+    "sha256": "fcb5571ef95e4a6679af866ef9ef4dfa5cee017f9f91453daf28c7804c7a50fe",
+    "matches_pin": true
+  },
+  "conversion_inventory": {
+    "layer_indices": [
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49
+    ],
+    "parameters_per_layer": 11,
+    "expected_entries": 275,
+    "missing_entries": [],
+    "all_present": true
+  },
+  "cpu_raw24": {
+    "path": "/tmp/h3_round78_hf_fp1601/FP16_layer24.pt",
+    "file_sha256": "6d081a27aa99eeaf0bd73084a72d09c969f180788041d246cf0b1983e182b0e9",
+    "file_bytes": 20921897,
+    "tensor": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 20920320,
+      "sha256": "7a2178195b3ec65e09ba4c7587acb052e04996a4023f6b1a5f1b2088e2eef084",
+      "finite": true,
+      "max_abs": 15528.0
+    },
+    "boundary": "Round78 language_layers[24] rawdecoderPREDeepStackinjection"
+  },
+  "original_text_inputs": {
+    "path": "/tmp/h3_round78_hf_fp1601/FP16_multimodal_inputs.pt",
+    "file_sha256": "6ab37f7202731843aebce9f3f8453232c72d45b2239caba679bcb2611e626e70",
+    "file_bytes": 82905621,
+    "inputs_embeds": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 20920320,
+      "sha256": "aed76ae16f046bcaefe87296c680b0d274bbd530598e5d7fe9d7fa530d368de9",
+      "finite": true,
+      "max_abs": 37.9375
+    },
+    "position_ids": {
+      "shape": [
+        3,
+        1,
+        2043
+      ],
+      "dtype": "torch.int64",
+      "bytes": 49032,
+      "sha256": "05a92359cd6a171559fadc0185ea2c7619a1969f7d771bb89c6a7d4df31a814c",
+      "finite": true
+    },
+    "note": "exact tensors the original HF text model used; mask/rotary rebuilt from these"
+  },
+  "r78_boundary_truths": {
+    "25": "a83f92f8f9108ff05c25d7967eb575ee9a2b93e7c7463a44b9536595b519c01d",
+    "26": "12bf43dafa80025e73a6ba03f2a2f37d4f57ee219814202ff8a4c25aa167665a",
+    "27": "e34628ea727b14db4c85d0af768b4294aa2e9745177806d11e45b4bcd6d5e5c1",
+    "28": "186d7c3560ce32446c000cf7c0c90081087dd24014e5d1c091a0de433cdbb66a",
+    "29": "c3b6f947484d292c8b9a3b8a8bb850e81a1dccc3c2ac22d5af23bc3fb1928d85",
+    "30": "174eb573618b3f5b502caa818c46e72855b251e2e8591ababafefa804472c955",
+    "31": "e11a14fb21d0aac53b8a6f7024f9db2dddc6a4f8f3aa1a943eb829363b8afb4c",
+    "32": "ff5cd2c34584b53607cbe659c14cb7a9cb940ca3142706d385f8d48e78e27387",
+    "33": "69cbb62083a853dba3220461bc2e755b0e04e9945660e0b4ca1db413a8ae2a3a",
+    "34": "ad59f1cd9a3027be3408c69043badc2a08165244fb3befe7bfc32294b65d5c85",
+    "35": "5d3d6af85fa4094cc511339ee0408e109e7be3155b26f90c325e711cf91d1c19",
+    "36": "f6dca2f43273b6bf40638759c45896cf597203c2b4c55b944e102cc436ac11b7",
+    "37": "12853b78bea0f2a38d7f1ffb678184b34cb02c5d26586dc2dca6c4137167f66a",
+    "38": "7af040dec21d178e0731b74ebe91cd9461ca77007ccae6025e143214e1ab75aa",
+    "39": "694d08e6119c32ba8debfc69005d06af51ef61935aabacae5954f4030c5a7976",
+    "40": "a63454daea0d7a58509eea413347c227ba73ef8c1d35cf8d7818e22ea32a6ec8",
+    "41": "70f7104c9388783de9d3775e61683f83277d5d7e76a7f9f92190f13a4bc46060",
+    "42": "58af7295b0544fcf8c68994d769a6495402d30cf24c8b884ff3cf3b67847335f",
+    "43": "7600cf45e5230d4aa707d85f719a2a982bede75632a8fd86fb39f6826eecc23e",
+    "44": "2a5f4742f818401f8f3a7bd8f5d6503f27a2ae5393d5d13cc1a851bbaace487a",
+    "45": "6d33499e1c53a7b90724cc48e79d27126109a26098221a84737564eddfb66aef",
+    "46": "cee9cbd257debb0d6262f6010ef1d1b5feb478bf7ad456d52d4ec9a484f44148",
+    "47": "f07edb6583e8b2e988735cd03e523966884081b6fbbef9eb0dc7d1767f0dc534",
+    "48": "52df25a6c7f31111827a8dd29a82b570cd3b3536614268eda5583fb356cf05a8",
+    "49": "82944620090359e7fc7eccb86471117e010b7838da83de5a43ceb46bf3453bd5"
+  },
+  "failure": {
+    "stage": "build_suffix",
+    "type": "ImportError",
+    "message": "libhccl.so: cannot open shared object file: No such file or directory"
+  }
+}

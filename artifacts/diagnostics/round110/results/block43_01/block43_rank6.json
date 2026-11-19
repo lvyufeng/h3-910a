@@ -1,0 +1,1020 @@
+{
+  "scope": "Exact CPU raw42 rebase into NPU block43: genuine original-Half one-block precision diagnostic.\n\nNot a full-encoder benchmark. No injected final norm or DeepStack, no Float weights.\n",
+  "rank": 6,
+  "world_size": 8,
+  "completed": true,
+  "source_SHA256": "7863107186514574aa6c62f81c8c302f2881690b434d15d6497de71c0b48c022",
+  "full_encoder_precision_accepted": false,
+  "whole_goal_complete": false,
+  "numerical_tolerance": null,
+  "cases": {
+    "native": {
+      "exact_CPU_raw42_input": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 20920320,
+        "sha256": "58af7295b0544fcf8c68994d769a6495402d30cf24c8b884ff3cf3b67847335f",
+        "finite": true,
+        "max_abs": 15744.0
+      },
+      "raw43_vs_original_CPU_Half": {
+        "npu": {
+          "shape": [
+            1,
+            2043,
+            5120
+          ],
+          "dtype": "torch.float16",
+          "bytes": 20920320,
+          "sha256": "b01071feefa9b6f73a6c0a19112d1c452a5558cbe0f2eb70c0714e587da28e1f",
+          "finite": true,
+          "max_abs": 18736.0
+        },
+        "cpu": {
+          "shape": [
+            1,
+            2043,
+            5120
+          ],
+          "dtype": "torch.float16",
+          "bytes": 20920320,
+          "sha256": "7600cf45e5230d4aa707d85f719a2a982bede75632a8fd86fb39f6826eecc23e",
+          "finite": true,
+          "max_abs": 18736.0
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 10460160,
+        "max_abs_error": 8.0,
+        "RMSE": 0.003879009190604814,
+        "relative_rms": 0.0002708538386837151
+      },
+      "repeated_bits_equal": true,
+      "not_full_encoder_time": true,
+      "attention_snapshot": {
+        "enabled": false,
+        "calls": 0,
+        "kernel_calls": 0,
+        "half_output_chunks": 0,
+        "actual_FP32_before_Half_chunks": 0,
+        "meta_shapes": [
+          "(512, 128, 2048)",
+          "(512, 2048, 128)",
+          "(507, 128, 2048)",
+          "(507, 2048, 128)"
+        ],
+        "no_model_weight_shadow": true,
+        "source_sha256": "ead89fe1247e24019ccaa5d7c4467d484691e18017aaf856f59f4d2cdba2ceb1"
+      }
+    },
+    "precise_attention": {
+      "exact_CPU_raw42_input": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 20920320,
+        "sha256": "58af7295b0544fcf8c68994d769a6495402d30cf24c8b884ff3cf3b67847335f",
+        "finite": true,
+        "max_abs": 15744.0
+      },
+      "raw43_vs_original_CPU_Half": {
+        "npu": {
+          "shape": [
+            1,
+            2043,
+            5120
+          ],
+          "dtype": "torch.float16",
+          "bytes": 20920320,
+          "sha256": "769ed639f722587413c7e3e1ae1fd63431d94279eb8bd98f32b57a6a96766ea2",
+          "finite": true,
+          "max_abs": 18736.0
+        },
+        "cpu": {
+          "shape": [
+            1,
+            2043,
+            5120
+          ],
+          "dtype": "torch.float16",
+          "bytes": 20920320,
+          "sha256": "7600cf45e5230d4aa707d85f719a2a982bede75632a8fd86fb39f6826eecc23e",
+          "finite": true,
+          "max_abs": 18736.0
+        },
+        "shape_mismatch": false,
+        "comparable": true,
+        "finite": true,
+        "dtype_matches": true,
+        "raw_bits_equal": false,
+        "elements": 10460160,
+        "max_abs_error": 2.0,
+        "RMSE": 0.0009840598464470323,
+        "relative_rms": 6.871249172346704e-05
+      },
+      "repeated_bits_equal": true,
+      "not_full_encoder_time": true,
+      "attention_snapshot": {
+        "enabled": true,
+        "calls": 2,
+        "kernel_calls": 24,
+        "half_output_chunks": 8,
+        "actual_FP32_before_Half_chunks": 8,
+        "meta_shapes": [
+          "(512, 128, 2048)",
+          "(512, 2048, 128)",
+          "(507, 128, 2048)",
+          "(507, 2048, 128)"
+        ],
+        "no_model_weight_shadow": true,
+        "source_sha256": "ead89fe1247e24019ccaa5d7c4467d484691e18017aaf856f59f4d2cdba2ceb1"
+      }
+    }
+  },
+  "not_full_encoder_timing": true,
+  "no_FloatLinear_teacher_BFgoldcast_or_fake_final_norm": true,
+  "cpu_reference_gate": {
+    "completed": true,
+    "full_multimodal_reference_completed": true,
+    "repeat_pre_final_norm_bits_equal": true,
+    "repeat_post_final_norm_bits_equal": true,
+    "pre_final_norm_matches_layer49_identity": true
+  },
+  "cpu_reference": {
+    "root": "/tmp/h3_round78_hf_fp1601",
+    "source_sha256": "50165e77adb393b4573fbe0fdb29c62a6ddb14b8f39082d0ea67e904848010ea",
+    "original_selected_parameter_sha256": "a69676bac5e6f3a513ce44080d29c73974553b6e0a327ea272e47b600d84e46e",
+    "boundary": "original HF selected-50 decoder layers, PRE final norm",
+    "vision_layers": 27,
+    "language_layers": 50,
+    "isolation": "recomputed original HF FP16 graph; old BF16 outputs were never cast to FP16"
+  },
+  "candidate": {
+    "path": "/tmp/h3_round110_block43_01/candidate_encoder79.py",
+    "sha256": "2141b29adc9ecc601d7fa2599e6ba56351adfbdaa5f16acb62c00d95cee3cf78",
+    "module_name": "candidate_encoder79",
+    "origin_production_sha256": null
+  },
+  "text_attention": {
+    "scope": "module-level candidate._scaled_dot_product_attention replacement",
+    "global_functional_monkeypatch": false,
+    "torch_nn_functional_replaced": false,
+    "operands": "FP16 Q/K/V in, FP32 scores, FP32 softmax, FP32 P@V, single FP16 out",
+    "causal": true,
+    "clamp_applied": false,
+    "clamp_note": "the 910A-only +/-50000 clamp of the production shim is deliberately absent; the CPU reference baseline has no such clamp",
+    "query_chunk": 512,
+    "query_chunk_note": "row-wise softmax is exactly decomposable; GEMM tiling differs from a single-shot FP32 matmul, so bit-equality with CPU is not asserted",
+    "original_reference": {
+      "module": "candidate_encoder79",
+      "qualname": "_scaled_dot_product_attention"
+    }
+  },
+  "originalCPUHalf_full_layer43_weight_SHAs_verified": {
+    "language_model.layers.43.input_layernorm.weight": "50ea38f90632a13704d98fd5345c7e960d1cdae0a512268de2ecf07fa86bd83a",
+    "language_model.layers.43.mlp.gate_proj.weight": "e573bc3652cc95fcf90d3671756c698120371a1c1e6688c6c1fff22130ea4844",
+    "language_model.layers.43.post_attention_layernorm.weight": "4c5346499c117e5b2dcd10a35e3d136960aa876f5089ba7521d15f544b092851",
+    "language_model.layers.43.self_attn.k_norm.weight": "bf5a27aef33b10fa188455ac6de9309161f77776f1ddb9be6c2663445881d404",
+    "language_model.layers.43.self_attn.k_proj.weight": "faf810054bad9839389820c17d793bd126501b1d44f0278a500a50765821f674",
+    "language_model.layers.43.self_attn.o_proj.weight": "e3c7ae31a6ae840d6f168d1eb85f894ffece2ab4652ae5374692cd9c4aeb4b78",
+    "language_model.layers.43.self_attn.q_norm.weight": "8b2ba004a2e46a9d741e9035758602b82a9963d36b3fef68561676ee8cec1379",
+    "language_model.layers.43.self_attn.q_proj.weight": "9441cab7d92400452eeeb3a9d6c1377f3bc494e154c7b7dff751007e7c200151",
+    "language_model.layers.43.self_attn.v_proj.weight": "44eb9a164cffb5ff569d9cbd1113c2c31858a60ba327875a370c5eefeb010a35",
+    "language_model.layers.43.mlp.down_proj.weight": "c9605268046264185e9907b6b33270681bc2f50dc9bebeb8151589c5915f24ed",
+    "language_model.layers.43.mlp.up_proj.weight": "359de41fc301786757dbcacf30f2401c648b5589172a8ff213060e55bccaa403"
+  },
+  "original_CPU_pair_receipt_SHA256": "e6f25da49d9b933b782b3ec05940c408eb8f8adbdf8db80a2a707fed3329255d",
+  "native_recovery": {
+    "npu": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 20920320,
+      "sha256": "b01071feefa9b6f73a6c0a19112d1c452a5558cbe0f2eb70c0714e587da28e1f",
+      "finite": true,
+      "max_abs": 18736.0
+    },
+    "cpu": {
+      "shape": [
+        1,
+        2043,
+        5120
+      ],
+      "dtype": "torch.float16",
+      "bytes": 20920320,
+      "sha256": "b01071feefa9b6f73a6c0a19112d1c452a5558cbe0f2eb70c0714e587da28e1f",
+      "finite": true,
+      "max_abs": 18736.0
+    },
+    "shape_mismatch": false,
+    "comparable": true,
+    "finite": true,
+    "dtype_matches": true,
+    "raw_bits_equal": true,
+    "elements": 10460160,
+    "max_abs_error": 0.0,
+    "RMSE": 0.0,
+    "relative_rms": 0.0
+  },
+  "actual_layer43_MLP_leaf_controls": {
+    "scope": "Round86 late-layer FP16 normalisation / MLP leaf controls (SOURCE ONLY).",
+    "round": 86,
+    "leaf_layer": "late decoder block (index assigned by the root driver)",
+    "layer_geometry": {
+      "class_names": {
+        "decoder_layer": "MiniMaxH3Qwen3VLTextDecoderLayer",
+        "norm": "MiniMaxH3Qwen3VLRMSNorm",
+        "mlp": "MiniMaxH3Qwen3VLTextMLP",
+        "gate_up_proj": "MiniMaxH3Qwen3VLMergedColumnParallelLinear",
+        "down_proj": "MiniMaxH3Qwen3VLRowParallelLinear"
+      },
+      "intermediate_size_per_partition": 3200,
+      "gate_up_weight": {
+        "role": "gate_up_proj.weight",
+        "shape": [
+          6400,
+          5120
+        ],
+        "dtype": "torch.float16"
+      },
+      "down_weight": {
+        "role": "down_proj.weight",
+        "shape": [
+          5120,
+          3200
+        ],
+        "dtype": "torch.float16"
+      },
+      "norm_weight_shape": [
+        5120
+      ],
+      "norm_weight_dtype": "torch.float16",
+      "variance_epsilon": 1e-06,
+      "bias_free_and_unquantised": true,
+      "geometry": {
+        "sequence_length": 2043,
+        "hidden_size": 5120,
+        "intermediate_size_actual_checkpoint": 25600,
+        "world_size": 8,
+        "intermediate_per_partition": 3200,
+        "gate_up_weight_shape": [
+          6400,
+          5120
+        ],
+        "down_weight_shape": [
+          5120,
+          3200
+        ],
+        "gate_weight_slice": [
+          0,
+          3200
+        ],
+        "up_weight_slice": [
+          3200,
+          6400
+        ],
+        "rejected_stale_intermediate_size": 27648,
+        "gate_up_rows_local_validation": 6400
+      }
+    },
+    "activation_specs": {
+      "block_input": {
+        "name": "block_input",
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "device": "npu:6"
+      },
+      "mlp_input": {
+        "name": "mlp_input",
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "device": "npu:6"
+      }
+    },
+    "controls": {
+      "input_layernorm": {
+        "scope": "HF two-round FP16 order (Float reduce -> Half normalised -> Half gamma)",
+        "variance_epsilon": 1e-06,
+        "source": "actual Half block_input and the original Half input_layernorm.weight",
+        "native_vs_cpu_half": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              5120
+            ],
+            "dtype": "torch.float16",
+            "bytes": 20920320,
+            "sha256": "e6b750519d0dfac340fb13fe1f9e58c899123cc0d172a568c45803ca6b086e41",
+            "finite": true,
+            "max_abs": 22.53125
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              5120
+            ],
+            "dtype": "torch.float16",
+            "bytes": 20920320,
+            "sha256": "35ca3f0060c2355a18420003c45777239d31477265110dc504d4825dcf95e416",
+            "finite": true,
+            "max_abs": 22.53125
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": false,
+          "elements": 10460160,
+          "max_abs_error": 0.0009765625,
+          "RMSE": 1.3843927328972977e-06,
+          "relative_rms": 3.4632196637752922e-06
+        },
+        "native_repeat_bits": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              5120
+            ],
+            "dtype": "torch.float16",
+            "bytes": 20920320,
+            "sha256": "e6b750519d0dfac340fb13fe1f9e58c899123cc0d172a568c45803ca6b086e41",
+            "finite": true,
+            "max_abs": 22.53125
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              5120
+            ],
+            "dtype": "torch.float16",
+            "bytes": 20920320,
+            "sha256": "e6b750519d0dfac340fb13fe1f9e58c899123cc0d172a568c45803ca6b086e41",
+            "finite": true,
+            "max_abs": 22.53125
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": true,
+          "elements": 10460160,
+          "max_abs_error": 0.0,
+          "RMSE": 0.0,
+          "relative_rms": 0.0
+        },
+        "cpu_oracle": {
+          "order": "float_reduce_then_half_normalised_then_half_gamma",
+          "rounding_points": 2,
+          "one_float_gamma_cast_substituted": false
+        },
+        "output": {
+          "shape": [
+            1,
+            2043,
+            5120
+          ],
+          "dtype": "torch.float16",
+          "bytes": 20920320,
+          "sha256": "e6b750519d0dfac340fb13fe1f9e58c899123cc0d172a568c45803ca6b086e41",
+          "finite": true,
+          "max_abs": 22.53125
+        }
+      },
+      "mlp_gate_up_local_linear": {
+        "scope": "local shard Half x Half F.linear only (no tensor-parallel collective)",
+        "intermediate_size_per_partition": 3200,
+        "weight_rows_used": {
+          "gate": [
+            0,
+            3200
+          ],
+          "up": [
+            3200,
+            6400
+          ]
+        },
+        "gate_native_vs_cpu_half": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "6a1749737e7050fa5ecde72af60ed4d04009f0931cadbfd607ed99725df01466",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "e446a4226c45ea544b170bc670fd2507827ff608c10917bd09e8aaca9c8c2275",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": false,
+          "elements": 6537600,
+          "max_abs_error": 0.001953125,
+          "RMSE": 1.054830037986573e-05,
+          "relative_rms": 1.2807119043115405e-05
+        },
+        "up_native_vs_cpu_half": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "636e5a5db59486ac345f2a1fd54c5b4cdaab1e0f81287145513d3d08c4773dc2",
+            "finite": true,
+            "max_abs": 34.96875
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "2584a3131df5cb68395d1aecb7dd9e9fda34d823665b231a507c7c6646bf20b0",
+            "finite": true,
+            "max_abs": 34.96875
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": false,
+          "elements": 6537600,
+          "max_abs_error": 0.0009765625,
+          "RMSE": 7.419871874491256e-06,
+          "relative_rms": 1.2761496918107333e-05
+        },
+        "native_gate_repeat_bits": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "6a1749737e7050fa5ecde72af60ed4d04009f0931cadbfd607ed99725df01466",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "6a1749737e7050fa5ecde72af60ed4d04009f0931cadbfd607ed99725df01466",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": true,
+          "elements": 6537600,
+          "max_abs_error": 0.0,
+          "RMSE": 0.0,
+          "relative_rms": 0.0
+        },
+        "cpu_oracle": {
+          "operator": "functional.linear(Half,Half)",
+          "accumulation": "Aten CPU Half linear (FP32 accumulate, one Half round)",
+          "float_weight_teacher": false
+        },
+        "native_gate": {
+          "shape": [
+            1,
+            2043,
+            3200
+          ],
+          "dtype": "torch.float16",
+          "bytes": 13075200,
+          "sha256": "6a1749737e7050fa5ecde72af60ed4d04009f0931cadbfd607ed99725df01466",
+          "finite": true,
+          "max_abs": 8.609375
+        },
+        "native_up": {
+          "shape": [
+            1,
+            2043,
+            3200
+          ],
+          "dtype": "torch.float16",
+          "bytes": 13075200,
+          "sha256": "636e5a5db59486ac345f2a1fd54c5b4cdaab1e0f81287145513d3d08c4773dc2",
+          "finite": true,
+          "max_abs": 34.96875
+        }
+      },
+      "silu_on_actual_native_gate": {
+        "scope": "pointwise activation only; both sides consume the actual native Half gate",
+        "native_vs_cpu_half_on_same_native_gate": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "186ab50ee838da518b187ce0bb85d6af2708d4ed3e8f4a26f2a50e2f433ac52f",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "2c81014904660e76933af7819354f825d2f288945e5b168269bc18893b35fb56",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": false,
+          "elements": 6537600,
+          "max_abs_error": 0.0001220703125,
+          "RMSE": 2.8645218167964605e-07,
+          "relative_rms": 1.167384082985988e-06
+        },
+        "native_repeat_bits": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "186ab50ee838da518b187ce0bb85d6af2708d4ed3e8f4a26f2a50e2f433ac52f",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "186ab50ee838da518b187ce0bb85d6af2708d4ed3e8f4a26f2a50e2f433ac52f",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": true,
+          "elements": 6537600,
+          "max_abs_error": 0.0,
+          "RMSE": 0.0,
+          "relative_rms": 0.0
+        },
+        "float_activation_diagnostic_vs_cpu_half": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "186ab50ee838da518b187ce0bb85d6af2708d4ed3e8f4a26f2a50e2f433ac52f",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "2c81014904660e76933af7819354f825d2f288945e5b168269bc18893b35fb56",
+            "finite": true,
+            "max_abs": 8.609375
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": false,
+          "elements": 6537600,
+          "max_abs_error": 0.0001220703125,
+          "RMSE": 2.8645218167964605e-07,
+          "relative_rms": 1.167384082985988e-06
+        },
+        "float_activation_diagnostic_note": "diagnostic sizing of the pointwise rounding cost; the CPU FP16 leaf oracle stays Half and no FP32 weight shadow is created",
+        "output": {
+          "shape": [
+            1,
+            2043,
+            3200
+          ],
+          "dtype": "torch.float16",
+          "bytes": 13075200,
+          "sha256": "186ab50ee838da518b187ce0bb85d6af2708d4ed3e8f4a26f2a50e2f433ac52f",
+          "finite": true,
+          "max_abs": 8.609375
+        }
+      },
+      "silu_times_up": {
+        "scope": "Half elementwise product of the actual native activations",
+        "native_vs_cpu_half_from_native_values": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "8a053e9942e10ec94a9cfcdaea49a2802bf070c4127c653fc31855425d4befc0",
+            "finite": true,
+            "max_abs": 124.9375
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "75c4da8cbc5af81f375987306b4d56a385d7e4dc789e4b6d45d773bfa2c67b3d",
+            "finite": true,
+            "max_abs": 124.9375
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": false,
+          "elements": 6537600,
+          "max_abs_error": 0.000244140625,
+          "RMSE": 2.0564952278202325e-07,
+          "relative_rms": 1.0806882231806802e-06
+        },
+        "native_repeat_bits": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "8a053e9942e10ec94a9cfcdaea49a2802bf070c4127c653fc31855425d4befc0",
+            "finite": true,
+            "max_abs": 124.9375
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "8a053e9942e10ec94a9cfcdaea49a2802bf070c4127c653fc31855425d4befc0",
+            "finite": true,
+            "max_abs": 124.9375
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": true,
+          "elements": 6537600,
+          "max_abs_error": 0.0,
+          "RMSE": 0.0,
+          "relative_rms": 0.0
+        },
+        "context_combining_cpu_linear_and_pointwise": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "8a053e9942e10ec94a9cfcdaea49a2802bf070c4127c653fc31855425d4befc0",
+            "finite": true,
+            "max_abs": 124.9375
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              3200
+            ],
+            "dtype": "torch.float16",
+            "bytes": 13075200,
+            "sha256": "36ec0b082836925536f11d4a1de540c6f3d53383448cb2acd725f9947e9473b2",
+            "finite": true,
+            "max_abs": 124.9375
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": false,
+          "elements": 6537600,
+          "max_abs_error": 0.001953125,
+          "RMSE": 2.9424631169718363e-06,
+          "relative_rms": 1.546264382792139e-05
+        },
+        "context_note": "context only: mixes the gate/up linear deviation with the pointwise one and therefore does not isolate either",
+        "output": {
+          "shape": [
+            1,
+            2043,
+            3200
+          ],
+          "dtype": "torch.float16",
+          "bytes": 13075200,
+          "sha256": "8a053e9942e10ec94a9cfcdaea49a2802bf070c4127c653fc31855425d4befc0",
+          "finite": true,
+          "max_abs": 124.9375
+        }
+      },
+      "down_proj_local_linear": {
+        "scope": "local shard only: K=3200 -> 5120 on this rank's weight slice; the row-parallel all-reduce is deliberately NOT executed here",
+        "collective_executed": false,
+        "native_vs_cpu_half_on_same_product": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              5120
+            ],
+            "dtype": "torch.float16",
+            "bytes": 20920320,
+            "sha256": "77474781b887501fb1aa8378c5263add5364457312ff77c63fb2569510b93187",
+            "finite": true,
+            "max_abs": 247.5
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              5120
+            ],
+            "dtype": "torch.float16",
+            "bytes": 20920320,
+            "sha256": "6afcc7ea0aaddede485391a2e66e890cdc9dd65bb89635398d293dcf19b4c520",
+            "finite": true,
+            "max_abs": 247.5
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": false,
+          "elements": 10460160,
+          "max_abs_error": 0.001953125,
+          "RMSE": 2.477568017173319e-06,
+          "relative_rms": 9.340770336470733e-06
+        },
+        "native_repeat_bits": {
+          "npu": {
+            "shape": [
+              1,
+              2043,
+              5120
+            ],
+            "dtype": "torch.float16",
+            "bytes": 20920320,
+            "sha256": "77474781b887501fb1aa8378c5263add5364457312ff77c63fb2569510b93187",
+            "finite": true,
+            "max_abs": 247.5
+          },
+          "cpu": {
+            "shape": [
+              1,
+              2043,
+              5120
+            ],
+            "dtype": "torch.float16",
+            "bytes": 20920320,
+            "sha256": "77474781b887501fb1aa8378c5263add5364457312ff77c63fb2569510b93187",
+            "finite": true,
+            "max_abs": 247.5
+          },
+          "shape_mismatch": false,
+          "comparable": true,
+          "finite": true,
+          "dtype_matches": true,
+          "raw_bits_equal": true,
+          "elements": 10460160,
+          "max_abs_error": 0.0,
+          "RMSE": 0.0,
+          "relative_rms": 0.0
+        },
+        "cpu_oracle": {
+          "operator": "functional.linear(Half,Half)",
+          "float_weight_teacher": false
+        },
+        "output": {
+          "shape": [
+            1,
+            2043,
+            5120
+          ],
+          "dtype": "torch.float16",
+          "bytes": 20920320,
+          "sha256": "77474781b887501fb1aa8378c5263add5364457312ff77c63fb2569510b93187",
+          "finite": true,
+          "max_abs": 247.5
+        }
+      }
+    },
+    "frozen_before": {
+      "block_input": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 20920320,
+        "sha256": "58af7295b0544fcf8c68994d769a6495402d30cf24c8b884ff3cf3b67847335f",
+        "finite": true,
+        "max_abs": 15744.0
+      },
+      "mlp_input": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 20920320,
+        "sha256": "2d2558c6aa40ecff0a453ce2d6cb0b53c16a3b87470475600e1db3f58caa03d7",
+        "finite": true,
+        "max_abs": 36.125
+      },
+      "input_layernorm.weight": {
+        "shape": [
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 10240,
+        "sha256": "50ea38f90632a13704d98fd5345c7e960d1cdae0a512268de2ecf07fa86bd83a",
+        "finite": true,
+        "max_abs": 1.578125
+      },
+      "gate_up_proj.weight": {
+        "shape": [
+          6400,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 65536000,
+        "sha256": "b5a2e582fdea8bc9ff4e2e801d90536f54870ba707c9b6fd72ae0f3c91058ab9",
+        "finite": true,
+        "max_abs": 0.48828125
+      },
+      "down_proj.weight": {
+        "shape": [
+          5120,
+          3200
+        ],
+        "dtype": "torch.float16",
+        "bytes": 32768000,
+        "sha256": "fbc9969d12c06c4d3e53bd5eda2c24bff2f1b2a51f16f99d31f980e40b8dd842",
+        "finite": true,
+        "max_abs": 1.5390625
+      }
+    },
+    "frozen_after": {
+      "block_input": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 20920320,
+        "sha256": "58af7295b0544fcf8c68994d769a6495402d30cf24c8b884ff3cf3b67847335f",
+        "finite": true,
+        "max_abs": 15744.0
+      },
+      "mlp_input": {
+        "shape": [
+          1,
+          2043,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 20920320,
+        "sha256": "2d2558c6aa40ecff0a453ce2d6cb0b53c16a3b87470475600e1db3f58caa03d7",
+        "finite": true,
+        "max_abs": 36.125
+      },
+      "input_layernorm.weight": {
+        "shape": [
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 10240,
+        "sha256": "50ea38f90632a13704d98fd5345c7e960d1cdae0a512268de2ecf07fa86bd83a",
+        "finite": true,
+        "max_abs": 1.578125
+      },
+      "gate_up_proj.weight": {
+        "shape": [
+          6400,
+          5120
+        ],
+        "dtype": "torch.float16",
+        "bytes": 65536000,
+        "sha256": "b5a2e582fdea8bc9ff4e2e801d90536f54870ba707c9b6fd72ae0f3c91058ab9",
+        "finite": true,
+        "max_abs": 0.48828125
+      },
+      "down_proj.weight": {
+        "shape": [
+          5120,
+          3200
+        ],
+        "dtype": "torch.float16",
+        "bytes": 32768000,
+        "sha256": "fbc9969d12c06c4d3e53bd5eda2c24bff2f1b2a51f16f99d31f980e40b8dd842",
+        "finite": true,
+        "max_abs": 1.5390625
+      }
+    },
+    "frozen_unchanged": true,
+    "same_original_half_source": true,
+    "no_fp32_weight_shadow": true,
+    "no_bfloat16_teacher": true,
+    "no_parameter_mutation": true,
+    "no_collective_executed": true,
+    "numerical_tolerance": null,
+    "numerical_pass_field_absent": true,
+    "full_encoder_precision_accepted": false,
+    "whole_goal_complete": false,
+    "measured_only_one_block": true
+  },
+  "original_parameters_unchanged": true,
+  "exact_CPU_input_unchanged": true,
+  "original_CPU_gold_unchanged": true
+}
