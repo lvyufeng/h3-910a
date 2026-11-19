@@ -1,0 +1,122 @@
+{
+  "round": 116,
+  "goal_id": "goal-8ca95bc7-2104-4c18-bb14-12812846af1c",
+  "goal_revision": 23,
+  "goal_active": true,
+  "headline": "First per-step measurement with the text encoder LIVE on the official undistilled model at the goal's baseline request: 2169.11 s wall, 124 aligned frames, ~33.45 s/step steady state and 34.63 s/it across the 49-step loop - about 2.3x the DiT-only figure. The visible artefact reproduces with the live encoder and the official weights, so neither cached conditioning nor distillation explains it.",
+  "why_this_round": "Every earlier per-step number either excluded the encoder (round 76 injected precomputed conditioning with text_encoder=False) or was measured on a cold first invocation. The goal asks for a live, comparable measurement, and that number did not exist.",
+  "run": {
+    "host": "owned ts-217, 8x Ascend 910B, CANN 9.2.0",
+    "model": "/tmp/h3_round53_native49_fp16_model, whose symlinks resolve to the official MiniMax-H3 encoders/VAEs plus the official 50-block FP16 transformer",
+    "engine_kwargs": "dtype=half, ulysses_degree=8, ring_degree=1, text_encoder_tp_size=8, vae_parallel_mode=tile, vae_use_tiling=True, vae_patch_parallel_size=8, enable_distributed_layerwise_offload=True, model_loaded={transformer,vae,text_encoder,vae_encoder}=True",
+    "encoder_in_generation_engine": true,
+    "conditioning_is_precomputed_for_this_request": false,
+    "request": {
+      "prompt": "a red ball bouncing from left to right on the floor",
+      "width": 1344,
+      "height": 768,
+      "fps": 24,
+      "aligned_frames": 124,
+      "seconds": 5,
+      "seed": 1234,
+      "num_inference_steps": 49,
+      "task": "fl2va"
+    },
+    "engine_startup_seconds_excluded": 217.4,
+    "first_attempt_failed_and_why": {
+      "error": "RuntimeError: RPC call to execute_model timed out.",
+      "root_cause": "the client wait bound VLLM_OMNI_ASYNC_OUTPUT_TIMEOUT defaults to 600 s and the first steps (153 s for step 1 while TBE compiled the step's ops) exceeded the per-step wait, so the engine aborted a render that was still progressing",
+      "fix": "raised VLLM_OMNI_ASYNC_OUTPUT_TIMEOUT and VLLM_OMNI_DLO_DP_WAVE_TIMEOUT to 3600 s; this is a client wait bound, not a numerical tolerance",
+      "preserved": "/tmp/h3_round116_encoder_live01/run.log on the host"
+    }
+  },
+  "measurement": {
+    "total_request_wall_s_with_live_encoder": 2169.1100500896573,
+    "stage_gen_time_s": 2169.108247756958,
+    "aligned_frames": 124,
+    "frame_min_max": [
+      0,
+      255
+    ],
+    "raw_RGB_frame_sha256": "6308b208d36d3517b5034cfa35f2d09b3bc902229f85ee2595654f5aa8155c89",
+    "denoise_loop_total_s": 1697,
+    "denoise_loop_step_average_s": 34.63,
+    "steady_state_s_per_step": 33.45,
+    "steady_state_samples_s_per_step": [
+      33.43,
+      33.51,
+      33.44
+    ],
+    "remaining_s_for_encoder_plus_vae_and_prepost": 472,
+    "progress_trace_s_per_it": [
+      153.27,
+      87.1,
+      69.62,
+      41.85,
+      34.17,
+      33.49,
+      33.43,
+      33.51,
+      33.44,
+      34.63
+    ]
+  },
+  "co_residency_effect": {
+    "dit_and_vae_only_round76_s_per_step": 14.657,
+    "with_encoder_live_this_round_s_per_step": 33.45,
+    "ratio": 2.28,
+    "interpretation": "Residency of the text encoder alongside the DiT and VAE more than doubles the DiT per-step cost on this stack. The round-76 figure was measured with text_encoder=False and an injected conditioning payload, so it never contained this cost. This is the missing co-residency term the goal repeatedly flagged as unmeasured.",
+    "caveat": "the two runs differ in more than residency alone (the earlier one also had different step-count bookkeeping in its metrics), so the ratio is a measured indication rather than a clean single-variable experiment; a clean A/B would re-run the same request with text_encoder toggled."
+  },
+  "comparable_to_official": {
+    "official_A2": {
+      "steps": 49,
+      "wall_s": 150,
+      "s_per_step": 3.06
+    },
+    "official_A3": {
+      "steps": 49,
+      "wall_s": 114,
+      "s_per_step": 2.33
+    },
+    "this_stack_live_encoder": {
+      "steps": 49,
+      "wall_s": 2169.11,
+      "s_per_step_loop_average": 34.63
+    },
+    "ratio_vs_A2_per_step": 11.3,
+    "ratio_vs_A2_total": 14.5,
+    "honest_caveats": [
+      "A2/A3 are the official full-schedule release figures; this stack runs the official 50-block transformer in FP16 on 8x910A under USP8",
+      "A2/A3 report T2VA; this request is FL2VA (first/last-frame conditioned), so the workloads are related but not identical",
+      "the A2/A3 hardware is not the 910A",
+      "these ratios are therefore directional, not an apples-to-apples speed claim"
+    ]
+  },
+  "quality_finding": {
+    "artefact_reproduced": true,
+    "description": "frame 48 of the measured request shows a large MNSTXUS wordmark with three triangular marks centred in the frame, a warm glow halo behind it, and ball ghosting on the floor",
+    "frames_inspected": [
+      "measured_frame000.png",
+      "measured_frame048.png"
+    ],
+    "significance": [
+      "the run used the LIVE encoder, so cached/injected conditioning is not the cause",
+      "the run used the official undistilled weights, so distillation is not the cause",
+      "the red ball, grey backdrop and floor render correctly, so the defect is a superimposed learned artefact rather than a wholesale numerical failure",
+      "this reproduces the round-76 rejection (unexpected middle logo lettering plus glow and ball ghosting) under conditions that remove both of its remaining explanations"
+    ],
+    "quality_pass": false
+  },
+  "what_this_changes": [
+    "The stack's real per-step cost at the goal's baseline is ~33.45 s warm with the encoder resident, not 14.657 s. Any speed plan must target the co-resident configuration.",
+    "The quality defect is now pinned to the model/stack itself. Chasing encoder precision further cannot fix the logo/ghosting artefact, so the next quality investigation must look at the DiT conditioning consumption, the VAE, and the checkpoint's own behaviour.",
+    "The remaining performance gap to official lossless is about 11x per step, which no single kernel recovers; the plan needs the co-residency cost addressed first."
+  ],
+  "not_claimed": [
+    "no quality pass",
+    "no speedup",
+    "no claim that the 2.28x ratio is a clean single-variable result",
+    "the overall goal remains active"
+  ]
+}
