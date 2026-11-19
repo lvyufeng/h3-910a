@@ -1,0 +1,92 @@
+{
+  "report_scope": "Verified measurements and conditional plan, not goal completion or experimental-result acceptance",
+  "encoder": {
+    "replica_s": 2.156184430234134,
+    "vision_tp8_s": 1.3212001398205757,
+    "speedup_derived": 1.6319892537454264,
+    "time_reduction_derived": 0.38725086718249324,
+    "all_5_maxrank_samples_below_2s": true,
+    "service_integration_verified": false
+  },
+  "vision": {
+    "replica_s": 1.4839576603844762,
+    "tp8_s": 0.6750595197081566,
+    "speedup_derived": 2.1982619562583525
+  },
+  "precision": {
+    "optimized_npu_vs_gpu_fp16_rel_rms": 0.07247227246301657,
+    "native_npu_vs_gpu_fp16_rel_rms": 0.059994012144713144,
+    "gpu_fp16_vs_original_bf16_rel_rms_bf16_denominator": 0.9387094417605538,
+    "precision_accepted": false
+  },
+  "r76": {
+    "warmed_external_conditioning_case": {
+      "case": "HF_reference_conditioning",
+      "video": "HF_reference_conditioning.mp4",
+      "contact_sheet": "HF_reference_conditioning_contactsheet.png",
+      "sha256": "62d210c52a379a650bd05da0680a6719d28f7e9eaad6f21a2bf5d6e064ae774d",
+      "request_wall_s_excluding_live_encoder": 735.6894669998437,
+      "thermal_scope": "second_request_warmed",
+      "after_first_two_same_call_rank_max_mean_s": 14.657157212765958,
+      "all49_steps_below15s": true,
+      "steps_below15s": 49,
+      "decode_reporter_rank_max_s": 13.62,
+      "quality_pass": false
+    },
+    "scope": "external conditioning, live DiT/media VAE, not integrated encoder request"
+  },
+  "r116": {
+    "live_request_s": 2169.1100500896573,
+    "separately_measured_decode_s": null,
+    "non_denoise_residual_s_approximate": 472.1100500896573,
+    "residual_is_not_decode_time": true
+  },
+  "r121_snapshot": {
+    "completed": false,
+    "completed_case_count": 0,
+    "parent_pid": 2907194,
+    "root": "/tmp/h3_round121_two_requests",
+    "lease_expires_Asia_Shanghai": "2026-11-20T01:17:54+08:00",
+    "no_additional_long_experiment_started_for_this_request": true
+  },
+  "retracted_inferences": [
+    "468s VAE decode / 34x decoder regression",
+    "DiT always fully resident regardless of DLO hooks",
+    "OOM proves only 74-103MiB total shortage or VAE loading failure",
+    "20GiB steady device weights inferred from disk sizes and model-load delta",
+    "2.28x cross-round latency difference proves encoder-residency-only penalty",
+    "737s from different rounds is a measured staged service request",
+    "7.25% NPU/GPU error is proven harmless FP16 scatter",
+    "visible logo is proven learned official-model watermark"
+  ],
+  "report_source_checksums": {
+    "artifacts/reports/h3-status-20261119/REPORT.md": {
+      "bytes": 17014,
+      "sha256": "3d828e2c0dfd9d87de03a0941f58853d158d30e2f2bdfa6e72eb55266d12b21c"
+    },
+    "artifacts/reports/h3-status-20261119/evidence/r121_receipt_snapshot.json": {
+      "bytes": 2276,
+      "sha256": "5549e7b978f9480259d754dbea5f2f0d66ee2ba4d946ff9f56c3b39f83d0d3f9"
+    },
+    "artifacts/reports/h3-status-20261119/evidence/r121_log_snapshot.log": {
+      "bytes": 128766,
+      "sha256": "acd4eceea669dc07ff109085ad620e14ac4c496904406d2cfd61836c6a2faf2b"
+    },
+    "artifacts/reports/h3-status-20261119/evidence/component_utils.py": {
+      "bytes": 6936,
+      "sha256": "525df66c8e508cc19aedd63274c310b36453b33201c918599665b584649ea004"
+    },
+    "artifacts/reports/h3-status-20261119/evidence/distributed_layerwise_backend.py": {
+      "bytes": 96703,
+      "sha256": "3c1a5b9721c2c147024853ccb95c1ab3d13403200ccb315d6d58aa8b3218ec4f"
+    },
+    "artifacts/reports/h3-status-20261119/evidence/layerwise_backend.py": {
+      "bytes": 20432,
+      "sha256": "c8fd112e08d1ecb6e079d5b995400689bff28f83f2c520ee3c22143e7a65331c"
+    },
+    "artifacts/reports/h3-status-20261119/evidence/config.py": {
+      "bytes": 17659,
+      "sha256": "69eaec54e4d50adec7661c2b7c908287e07485461eb0f31e90ecc665fe7e4400"
+    }
+  }
+}
