@@ -1,0 +1,131 @@
+{
+  "round": 125,
+  "task": "Restore previously removed acceleration candidates on top of the committed R124 precision baseline and classify each as lossless or lossy",
+  "precision_baseline": {
+    "commit": "f3f1328",
+    "what_it_is": "R124 real 49-step original-50-layer 910A generation with its own FP16 encoder, original FP32 VAE/branch parameters and the verified FP16 range protections",
+    "policy_from_user": "This version is the precision baseline. Restore every previously removed acceleration; keep it when lossless, stop and ask the user when measurably lossy - an error inside the earlier 1% GPU-comparison tolerance is NOT auto-approved."
+  },
+  "completed": true,
+  "status": "round125_acceleration_candidates_measured_and_lossy_ones_stopped_for_user_decision",
+  "overall_speed_goal_complete": false,
+  "lossy_candidates_enabled_without_user_approval": false,
+  "resources_released": true,
+  "key_finding_baseline_is_not_bit_reproducible": {
+    "measured": true,
+    "bit_identical_across_identical_runs": false,
+    "video_relative_RMS_repeat_band": [
+      0.000259,
+      0.001034
+    ],
+    "audio_relative_RMS_repeat_band": [
+      0.000345,
+      0.002173
+    ],
+    "evidence": "artifacts/diagnostics/round125/noise_floor125.json",
+    "consequence": "Bit identity cannot gate any optimization on this device. A candidate is only called lossless when its deviation stays inside this measured self-repeat band; anything above it is reported as lossy.",
+    "implication_for_round124": "The five R124 GPU-comparison gates (0.036%-0.26% video, 0.056%-0.26% audio) sit inside this self-repeat band, so they demonstrate absence of gross implementation error, not operator-level bitwise agreement."
+  },
+  "candidates_measured": [
+    {
+      "candidate": "whole DiT resident (remove per-block CPU staging)",
+      "classification": "unavailable at the baseline precision configuration",
+      "measured": "NPU out of memory: 31.06 GiB already allocated, 404 MiB allocation failed on all 8 ranks",
+      "why": "TP2 leaves 16539411712 FP16 parameter elements (30.8 GiB) per rank, which cannot coexist with activations in 32 GiB",
+      "evidence": "artifacts/diagnostics/round125/resident_oom_rank0.json",
+      "note": "Becoming resident requires raising sharding (TP8/USP8), which changes reduction order and is therefore a lossy change that needs approval."
+    },
+    {
+      "candidate": "static device tensor cache (upload invariant branch/context tensors once)",
+      "classification": "lossless but no measurable gain",
+      "measured": {
+        "warm_step_median_s": 41.99,
+        "baseline_warm_step_medians_s": [
+          40.47,
+          43.84
+        ],
+        "deviation_inside_noise_band": true,
+        "cached_keys": 11,
+        "cached_bytes": 22335616
+      },
+      "evidence": "artifacts/diagnostics/round125/static_cache_rank0_b.json"
+    },
+    {
+      "candidate": "remove the FP32 patch/time projection guards (plain Half projections)",
+      "classification": "lossy - stopped for user decision",
+      "measured": {
+        "video_relative_RMS_vs_baseline": 0.022871,
+        "noise_floor_video_relative_RMS_max": 0.001034,
+        "exceeds_noise_band_by": "about 22x",
+        "replaced_modules": [
+          "audio_patch_proj",
+          "time_embedder.proj_in",
+          "time_embedder.proj_out",
+          "video_patch_proj"
+        ],
+        "predictions_finite_at_step0": true
+      },
+      "evidence": "artifacts/diagnostics/round125/naive_rank0.json",
+      "conclusion": "The FP32 residual protection in these four projections is numerically load-bearing, not conservative padding."
+    },
+    {
+      "candidate": "region cost attribution of one warm evaluation",
+      "classification": "measurement, not an optimization",
+      "measured": {
+        "attention_share_of_step": 0.5807,
+        "per_block_attention_avg_s": 0.6941,
+        "per_block_mlp_avg_s": 0.0568,
+        "attention_over_mlp_ratio": 12.21
+      },
+      "evidence": "artifacts/diagnostics/round125/cost_attribution125.json",
+      "caveat": "Per-module synchronize inflates absolute seconds; only relative shares are meaningful."
+    }
+  ],
+  "lossless_accelerations_available_but_small": [
+    "R124-native vision positional-interpolation / rotary geometry memoization (recompute is small relative to the encoder's attention cost)",
+    "R124-native text RoPE table memoization under fail-closed keys",
+    "VAE geometry-only caches: token ids, tabulated RoPE cos/sin, split_tiles / temporal frame plan",
+    "VAE mean/std and blend weight caching where the original tensors are reused unchanged",
+    "Fixed-shape tile gather workspace removing the all_gather_var_shape shape-to-list synchronization",
+    "Static Half layout pre-packing of original parameters (layout only, same values)"
+  ],
+  "lossy_candidates_waiting_for_user_decision": [
+    {
+      "candidate": "custom 910A TBE flash attention (fa910a.py + h3_910a_attn.py, VLLM_OMNI_910A_FLASH_ATTN=1)",
+      "known_numerics": "round63 measured 293102 differing FP16 words versus the native path",
+      "why_it_matters": "attention is ~58% of the DiT step and runs far below peak, so this is the only lever that can plausibly approach 15 s/step",
+      "risk": "different softmax accumulation and no 1/sqrt(d) inside the kernel; changes every prediction"
+    },
+    {
+      "candidate": "VAE fast path: Half decoder parameters plus fused qk_norm_rope / attention / SwiGLU instances",
+      "known_numerics": "R124 deliberately kept the original FP32 VAE parameters and skipped the whole installer; half-initialised-then-widened round63 evidence does not license rewriting the original FP32 tensors",
+      "why_it_matters": "decode is 138.55 s of the 2316.96 s wall",
+      "risk": "parameter rounding plus changed pointwise rounding in every VAE block"
+    },
+    {
+      "candidate": "FP16 (rather than FP32) residual stream and RMSNorm path in the DiT blocks",
+      "known_numerics": "not yet measured on R124 inputs",
+      "why_it_matters": "removes FP32 elementwise traffic and conversions in all 50 blocks",
+      "risk": "each block re-rounds the residual; error compounds over 49 steps"
+    },
+    {
+      "candidate": "raised sharding (TP4/TP8) to make residency possible or to cut per-rank work",
+      "known_numerics": "not yet measured on R124 inputs",
+      "why_it_matters": "only way to fit the DiT resident; also reduces per-rank attention work",
+      "risk": "different reduction order in every parallel linear"
+    },
+    {
+      "candidate": "fused FP16 QK-norm+RoPE, fused RMSNorm+AdaLN scale/shift, fused SiLU-and-mul",
+      "known_numerics": "prior fused helpers were BF16 and are not drop-in for the R124 FP16 contract",
+      "risk": "removes intermediate Half casts and changes rounding points"
+    }
+  ],
+  "what_was_not_done": [
+    "No lossy candidate was enabled in any generation.",
+    "No full 49-step generation was run in this round; only same-input single evaluations.",
+    "The 15 s/step, 2 s encoder and 20 s VAE targets remain unmet; no A2/A3 comparison was produced.",
+    "No new universal picture or audio quality claim is made."
+  ],
+  "next_work": "Await the user's decision on which lossy candidates to enable, then run the full 49-step generation and media comparison for the approved set.",
+  "evidence_root": "artifacts/diagnostics/round125"
+}

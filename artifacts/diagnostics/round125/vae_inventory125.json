@@ -1,0 +1,401 @@
+{
+  "round": 125,
+  "task_id": "task-69",
+  "author": "replay-review",
+  "status": "static_inventory_complete_not_deployed",
+  "scope": "只读本地源码/历史回执盘点；唯一新增文件是本清单。不运行模型、Torch/NPU算子、编译器、远端命令或资源领取。当前启用状态指R124成功出片版本的源码/审计，不冒充实时远端部署状态。",
+  "allowed_write_path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round125/vae_inventory125.json",
+  "model_or_remote_tests_executed_in_round125": [],
+  "baseline": {
+    "requested_commit": "f3f1328",
+    "basis": "R124成功出片的原始FP32 VAE参数 + 正常FP16视频autocast；不是R63 half-initialized再widen的参数状态，也不是BF16参考。",
+    "loader_contract": "alignment_hooks124.original_FP32_VAE_factory在FP32 default dtype下调用原始remote loader；加载后要求所有浮点参数为FP32。adapter之后也保持FP32。",
+    "disabled_installer_contract": "R124替换整个install_h3_vae_optimizations为返回False的preserve_vae_parameters；不只是跳过linear.to(Half)，该installer中的attention/FF/block实例fast forwards也不安装。",
+    "observed_parameter_element_counts": {"video_vae": {"torch.float32": 2603868984}, "audio_vae": {"torch.float32": 151321489}},
+    "video_latent_shape": [1, 24, 37, 48, 84],
+    "audio_latent_shape": [2, 32, 207],
+    "delivered_frame_shape": [124, 768, 1344, 3],
+    "native_audio_shape": [1, 2, 165600],
+    "fps": 24,
+    "audio_sample_rate": 32000,
+    "same_request_scope": "FL2VA seed1234，1344x768，120请求帧/124对齐帧，49次DiT前向，自身NPU encoder与原始VAE。",
+    "recorded_decode_wall_s": 138.55063852015883,
+    "decode_wall_scope": "pipeline.decode的video/audio staging、视频decode/crop、audio decode/相关输出转移及R124审计；不是resident-video-only，不是MP4/E2E速度达标。",
+    "nan_compatibility_calls_in_successful_decode": 0,
+    "source_refs": [
+      {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/alignment_hooks124.py", "start_line": 31, "end_line": 56},
+      {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/alignment_hooks124.py", "start_line": 158, "end_line": 183},
+      {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_full_run_audit/worker_alignment_pid2055031124.jsonl", "start_line": 107, "end_line": 109},
+      {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_pipeline_before124.py", "start_line": 2099, "end_line": 2125},
+      {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_generated/native_NPU_media_capture124.json", "start_line": 1, "end_line": 22}
+    ]
+  },
+  "mandatory_gates_for_future_authorized_ab": {
+    "permission": "本任务只盘点；不恢复任何实现。后续独立A/B必须保持R124参数、precision guards、采样及输入合同。任何可测同输入偏差，立刻停用候选并向用户报告/询问，不能继续用旧1%门或改称lossless。",
+    "parameter_gate": "加载前后以及多次load/offload后检查原始FP32参数与buffers的完整原始位摘要、dtype、shape、stride/offset、共享storage与版本。只看最终dtype=FP32不能证明原参数未先经Half舍入。",
+    "operator_gate": "每个新算子先比较完整输出原始位、shape/dtype/元素数/有限性；输入包含真实R124捕获数据、边界形状、signed-zero/subnormal/NaN/Inf。NPU浮点谓词不能替代CPU原始激活位或已核验IEEE整数分类。",
+    "video_gate": "固定同一R124真实完整latent，在原始FP32参数+Half autocast下生成完整baseline；比较候选全部36层tile及最终全部124帧/所有像素，同时比较量化前浮点输出或其分段完整摘要，不能让uint8量化隐藏可测中间偏差。首/中/末不同temporal tile与所有rank/collective输出必须覆盖。",
+    "repeat_gate": "baseline自身重复、candidate重复、baseline-restored都检验；原始输入不得被in-place候选改写。单一真实latent的逐位相同只授予该输入范围，不推广任意输入/BF16无损。",
+    "joint_av_gate": "涉及stage顺序/audio/流式输出时比较完整audio waveform、完整raw RGB、帧序/crop、音频长度/采样率/时间戳。历史native音频自身有重复差异；先测当前R124自身重复，若出现偏差先停问用户，不私自放宽gate或只验证视频。",
+    "integration_gate": "最终以完整49次DiT、自身encoder/keyframe VAE、同噪声/同sigma/同PNG重跑验证候选整合，不使用GPU隐藏激活或缓存模型输出替代新推理；单算子/单tile证据不能替代该整合检查。",
+    "concurrency_and_cleanup_gate": "per-instance/per-device/per-stream cache；缓存键含值/版本与所有geometry配置，禁用或invalidate时清理，不能仅靠data_ptr命中；输出拥有独立storage，复用scratch前等待完成；所有rank同一collective顺序；失败保存不能跳过资源清理。"
+  },
+  "measurement_boundaries": {
+    "operator": "准备真实输入与必要常量后同步，测完整候选wrapper，不只裸kernel；JIT/build/prime单列，D2H/hash在计时外；若线上每次需布局转换则必须包含。",
+    "tile": "模型权重resident，完整36层tile forward及同步；不含post-quant conv/空间gather/temporal blend/量化，不冒充全视频。",
+    "resident_video": "完整normalized latent已经在设备，decoder/post_quant参数已经resident；计时包含denormalize、所有native tiles、HCCL、temporal blend、正常revert/uint8 quantizer和NPU drain；排除模型搬运、audio与MP4，独立报告。",
+    "stage": "从pipeline.decode入口到同步完成，包含cache release、video/audio load/decode/offload、crop及实际stage输出搬运；预加载若挪到计时前必须计入前一stage或单独报告，不能称零成本加速。",
+    "end_to_end": "同一次live-encoder完整49-step请求，包含实际offload/worker传输/输出交付，MP4与audio mux范围明确。",
+    "distributed_aggregation": "按同一call index先取八rank最大wall，再对warm calls求median；保留每rank/每call与cold值。不能max(rank median)、sum(stage rank maxima)或把历史derived residual当实测decode。"
+  },
+  "candidates": [
+    {
+      "id": "V125-01",
+      "name": "原始FP32参数合同与installer解耦",
+      "category": "baseline_guard",
+      "currently_enabled_in_R124": true,
+      "state_evidence": "FP32 factory与installer bypass已在成功worker记录中触发；参数元素计数见baseline。",
+      "historical_fast_path": "NPU_vae_optimizations124.py:203-204将所有block to_qkv/to_out/ff.w1/ff.w2连bias一起直接Half化；206-212绑定三类fast forwards。",
+      "equivalence": "不能把.to(Half).to(Float)当原始FP32恢复；R63的参数已经half-initialized，故其往返证据不适用此基线。",
+      "rounding_or_safety_risk": "原始参数可能含不能Half精确表示的值；先Half舍入后widen永久丢位，x_embedder/proj_out/post_quant/norm/residual scale还有独立精度合同。",
+      "recommendation": "保持当前FP32工厂与bypass。若要恢复单个算子必须拆分installer，使之不改任何Parameter/buffer，不直接调用原installer。直接Half参数重写不授权自动恢复。",
+      "required_gates": ["parameter_gate", "video_gate", "integration_gate"],
+      "measurement": ["resident_video", "stage"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/alignment_hooks124.py", "start_line": 31, "end_line": 56},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_optimizations124.py", "start_line": 183, "end_line": 215},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/tile_replay03.py", "start_line": 96, "end_line": 128},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/summary.json", "start_line": 3, "end_line": 9}
+      ]
+    },
+    {
+      "id": "V125-02",
+      "name": "token ids与RoPE cos/sin原结果geometry cache",
+      "category": "geometry_constant_cache",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "native decoder每个tile在forward内重新create_token_ids并调用pos_embed；未见VAE geometry cache。R91缓存属于vision tower，不是VAE部署证据。",
+      "equivalence": "缓存同device/dtype/geometry下原始函数已生成且原始位核验的ids/cos/sin，不缓存hidden/QKV；满足键与不可变性条件时只是重用相同常量。",
+      "rounding_or_safety_risk": "不能改在CPU生成、FP32生成再cast或重排arange/div/mul顺序；VAE ids length-normalized，RoPE use_angle/angle_scale、inv_freq、rotary维48与suffix零坐标均入键。Half/Float img_ids会给不同原结果；sp padding亦入键。",
+      "recommendation": "最高优先级的无算术改变候选。按VAE实例、latent_T/H/W、B、device/index、dtype、suffix数、sp/pad、inv_freq原值/version、angle_scale/dim/n_dim/source digest缓存；不按tile输入data_ptr缓存，不缓存任何模型输出。",
+      "required_gates": ["parameter_gate", "operator_gate", "video_gate", "concurrency_and_cleanup_gate"],
+      "measurement": ["operator", "tile", "resident_video"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/vae_vit.py", "start_line": 293, "end_line": 345},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/func.py", "start_line": 12, "end_line": 47},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/base_module.py", "start_line": 157, "end_line": 196},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round91/cache/geometry_cache91.py", "start_line": 30, "end_line": 49}
+      ]
+    },
+    {
+      "id": "V125-03",
+      "name": "latent/revert mean/std与blend权重原结果cache",
+      "category": "geometry_constant_cache",
+      "currently_enabled_in_R124": null,
+      "state_evidence": "adapter._denormalize_latent与_revert_decoded_inplace逐次构造mean/std；temporal patch已有每次decode内norm tuple，非跨request缓存。native blend逐次arange和div。R124未存temporal patch实装状态。",
+      "equivalence": "对相同常量值+device+实际计算dtype重复使用原始结果，不合并算术，不改参数。",
+      "rounding_or_safety_risk": "latent * std + mean不能FMA；revert保持sub/div/clamp顺序；blend保留a_overlap*weight_a与b_overlap*weight_b两个乘法边界再add，不能改用lerp/in-place alpha。constant必须按实际dtype而非default-half建。",
+      "recommendation": "高优先级。缓存键含config常量值与版本、dtype/device、blend_extent与有效min长度/轴/rank；只读buffer，不返回可被下游修改的共享view。先区分已有decode-local缓存，避免重复优化。",
+      "required_gates": ["operator_gate", "video_gate", "concurrency_and_cleanup_gate"],
+      "measurement": ["operator", "resident_video", "stage"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 972, "end_line": 977},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 1023, "end_line": 1048},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/H3-source/FL2VA/video_vae/klvae.py", "start_line": 220, "end_line": 250},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/source/vae_temporal.py", "start_line": 142, "end_line": 173}
+      ]
+    },
+    {
+      "id": "V125-04",
+      "name": "spatial tile网格/ownership/temporal frame plan缓存",
+      "category": "geometry_plan_cache",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "adapter._decoder_tile_count和native split_tiles/frame plan是逐次geometry计算；未见跨call plan cache。",
+      "equivalence": "缓存纯整数tile offsets/lengths/overlaps/round-robin ownership与temporal输出计划，不缓存latent/tile内容。",
+      "rounding_or_safety_risk": "tile size/overlap/vae_ratio、isolated head/tail、frame_pre_padding/token_drop/overlap/clip length以及sp group/rank任一改变都必须重建；所有rank须同一计划，不能让tileless rank跳过collective。改变tile边界或blend次序不是该无损候选。",
+      "recommendation": "高优先级但可能只节省少量CPU调度。只缓存native计划原结果，保留too-few-tiles rank-local fallback和全局tile序。",
+      "required_gates": ["operator_gate", "video_gate", "concurrency_and_cleanup_gate"],
+      "measurement": ["resident_video", "stage"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/H3-source/FL2VA/video_vae/klvae.py", "start_line": 192, "end_line": 218},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/H3-source/FL2VA/video_vae/klvae.py", "start_line": 275, "end_line": 295},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 659, "end_line": 702},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 937, "end_line": 957},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/H3-source/FL2VA/video_vae/klvae.py", "start_line": 531, "end_line": 569}
+      ]
+    },
+    {
+      "id": "V125-05",
+      "name": "固定tile shape的persistent gather工作区与免shape D2H",
+      "category": "layout_collective_workspace",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "adapter._tile_gather_reuse_enabled仅返回device.type==xpu；R124是NPU，未装该路径。native all_gather_var_shape每次all_gather shape_info后tolist同步。",
+      "equivalence": "同shape native tiles可仅对task维padding，用预知ownership恢复全局tile序；gather/copy不做浮点reduction。",
+      "rounding_or_safety_risk": "先核验所有rank实际tile shape/dtype一致，不能把variable形状当固定；source buffer、group membership与sp size严格匹配。结果若alias工作区，下一temporal clip会覆盖旧tile；并发请求/多stream需独立workspace或租用与event。",
+      "recommendation": "优先独立试验，不能简单把xpu guard改为npu就放行。保留返回tile.clone()、最多grow到最大geometry、清理/失败路径，并对所有rank一致地替换collective合同。",
+      "required_gates": ["operator_gate", "video_gate", "repeat_gate", "concurrency_and_cleanup_gate"],
+      "measurement": ["operator", "resident_video", "stage"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 520, "end_line": 657},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/H3-source/FL2VA/video_vae/parallel.py", "start_line": 54, "end_line": 88},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/H3-source/FL2VA/video_vae/klvae.py", "start_line": 252, "end_line": 273},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/H3-source/FL2VA/video_vae/klvae.py", "start_line": 394, "end_line": 429}
+      ]
+    },
+    {
+      "id": "V125-06",
+      "name": "原始FP32 pinned master的split residency/预加载与异步调度",
+      "category": "residency_scheduling",
+      "currently_enabled_in_R124": true,
+      "state_evidence": "R124 enable_layerwise_offload=True，adapter已有encoder/decoder part proxies；PinnedModuleStager现有load已经copy后wait_event，不是新prefetch API。当前helper具体实装以R124源调用合同为准。",
+      "equivalence": "immutable FP32 CPU master字节copy并storage-rebind，保留alias/stride/offset；不做dtype转换或D2H重新舍入。提前发生同一copy在严格依赖满足时只变调度。",
+      "rounding_or_safety_risk": "decoder约9GB原始FP32 storage与DiT/encoder峰值共存可能OOM。提前load的耗时不能从stage计时凭空消失；copy_stream不能全局互换成不安全private stream，compute必须wait_event，offload须等待所有使用该storage的stream。master创建后不可改Parameter dtype，否则binding会把原dtype恢复。",
+      "recommendation": "保留既有split residency，不称其被R124禁用。先量化stage搬运/峰值；可测试同stage提前预取或减少重复绑定，但维持FP32 masters，失败恢复与group共同推进，不能按R118 derived468s推断每tile搬运。",
+      "required_gates": ["parameter_gate", "video_gate", "joint_av_gate", "concurrency_and_cleanup_gate"],
+      "measurement": ["stage", "end_to_end"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 283, "end_line": 323},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 384, "end_line": 475},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round64/source/module_residency.py", "start_line": 90, "end_line": 123},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round64/source/module_residency.py", "start_line": 130, "end_line": 268},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_pipeline_before124.py", "start_line": 1519, "end_line": 1563}
+      ]
+    },
+    {
+      "id": "V125-07",
+      "name": "autocast生命周期/只读execution cast cache",
+      "category": "execution_cache_not_parameter_rewrite",
+      "currently_enabled_in_R124": null,
+      "state_evidence": "pipeline.decode已有一个正常Half autocast scope包围完整video decode；没存当前cache hit/inference-tensor行为，因此不宣称已有效缓存所有权重。",
+      "equivalence": "保持原始FP32 Parameter，重用完全相同autocast生成的执行cast，理论上区别于直接Half参数重写；但需严格绑定原权重版本与上下文。",
+      "rounding_or_safety_risk": "不得将x_embedder/proj_out/post_quant/FP32 norm和residual precision exceptions改到Half。autocast cache遇inference tensor或storage rebinding可能无效；data_ptr/对象身份未变但master已换时不能返回旧cast。缓存额外显存可能抵消stage收益。",
+      "recommendation": "先只检查/测既有scope与cache可用性。任何新shadow执行cast必须保持master原始位，按Parameter/version/device/autocast dtype/backend/inference状态失效，不把cache命中假设当已测速度；不私自延长跨stage上下文。",
+      "required_gates": ["parameter_gate", "operator_gate", "video_gate", "concurrency_and_cleanup_gate"],
+      "measurement": ["tile", "resident_video", "stage"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_pipeline_before124.py", "start_line": 2111, "end_line": 2120},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/vae_vit.py", "start_line": 19, "end_line": 25},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/vae_vit.py", "start_line": 304, "end_line": 305},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/vae_vit.py", "start_line": 356, "end_line": 357},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/tile_replay.py", "start_line": 35, "end_line": 53}
+      ]
+    },
+    {
+      "id": "V125-08",
+      "name": "纯pack/unpack、contiguous/format转换与scratch复用",
+      "category": "layout_only",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "未见R124使用R63 PackedFA；native仍有原始permute/reshape和interleaved V view。R51 reflection-pad base-format是另一个既有兼容修复。",
+      "equivalence": "纯permutation/copy可以完整保留元素原始位；R63 pack/unpack曾对该fixture逐位相同。但不同输入stride/physical format改变后，后续GEMM选择与舍入未必相同。",
+      "rounding_or_safety_risk": "Q/K BSND dense而V stride可能是(6144,192,1)，且nonzero storage_offset；不能假定同dense布局或忽略physical NZ/base格式。不要把FP16 scale/Q乘法混入layout-only声明。共享scratch需输出独立且stream-safe。",
+      "recommendation": "仅提取独立纯layout转换试验，不启用FA。先证明全位pack/unpack及所接native算子输出相同；线上所需pack/format conversion全含计时。历史pack wrapper约10.33ms未比原FA约10.32ms快，不宣传既有收益。",
+      "required_gates": ["operator_gate", "video_gate", "concurrency_and_cleanup_gate"],
+      "measurement": ["operator", "tile", "resident_video"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/packed_fa63.py", "start_line": 1, "end_line": 80},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/attention_probe02.py", "start_line": 84, "end_line": 102},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/summary.json", "start_line": 271, "end_line": 279},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/vae_vit.py", "start_line": 55, "end_line": 93}
+      ]
+    },
+    {
+      "id": "V125-09",
+      "name": "instance-local eager query chunk/head partition/padding",
+      "category": "same_rounding_boundaries_different_gemm_geometry",
+      "currently_enabled_in_R124": null,
+      "state_evidence": "R124未存VAE query chunk与head partition实装回执；不能把R63 c256或R64 opt-in配置默认当R124当前已启用。",
+      "equivalence": "保留FP16 QK结果、FP16 scaled/clamped scores、FP32 softmax、FP16 probabilities、FP16 PV边界，不分割key reduction，数学相同；GEMM geometry与softmax reduction布局变化仍需全输出验证。",
+      "rounding_or_safety_risk": "padding key用有限负数不是任意输入完全屏蔽保证；异常值/低score、padding后softmax/reduction形状可能改变结果。global ATTN_CHUNK env会影响DiT/Qwen，故候选应instance-local且不改全局基线。",
+      "recommendation": "未改key set的query chunk先试；pad/head partition后试。R63 c128/256/512在一个half-initialized fixture逐位同、完整resident c256约19.98s仅该范围，不是原始FP32 R124放行证据。",
+      "required_gates": ["operator_gate", "video_gate", "integration_gate"],
+      "measurement": ["operator", "tile", "resident_video", "stage"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/attention_probe02.py", "start_line": 60, "end_line": 81},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/vae_attention_candidates63.py", "start_line": 15, "end_line": 42},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/design/patches/h3_910a_vae.py", "start_line": 68, "end_line": 106},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/summary.json", "start_line": 79, "end_line": 169}
+      ]
+    },
+    {
+      "id": "V125-10",
+      "name": "Q/K FP32 RMSNorm + Half cast + Half RoPE融合",
+      "category": "fusion_with_explicit_rounding_requirement",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "整个VAE installer bypass，native Attention.forward仍先norm_q/k到FP32再cast回Q/K dtype，随后单独RoPE。",
+      "equivalence": "只实现相同formula不足；必须保存完整FP32归约/rsqrt、Half norm-output舍入，然后RoPE两次Half乘法与Half add各自边界，并保留pass-through dim16。",
+      "rounding_or_safety_risk": "fused norm直接把FP32 norm结果送RoPE、FMA contraction、不同归约树/rsqrt近似都会改变词；VAE half-split rotate不同于DiT interleaved/M-RoPE，不能替用generic DiT内核。",
+      "recommendation": "需新NPU-specific strict-rounding路径及完整真实输出验证，不恢复原始installer。捕获dispatch仅allowlist CUDA SM90/100/103；本地未找到该VAE专用qk_norm_rope.py内核，源码完整性也是开测前条件。",
+      "required_gates": ["parameter_gate", "operator_gate", "video_gate", "integration_gate"],
+      "measurement": ["operator", "tile", "resident_video"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/attention.py", "start_line": 136, "end_line": 161},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/func.py", "start_line": 77, "end_line": 103},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_optimizations124.py", "start_line": 56, "end_line": 86},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/source/vae_ops_resolve.py", "start_line": 15, "end_line": 16},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/source/vae_ops_resolve.py", "start_line": 42, "end_line": 93}
+      ]
+    },
+    {
+      "id": "V125-11",
+      "name": "block FP32 RMSNorm/LayerNorm strict融合",
+      "category": "reduction_fusion_rounding_risk",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "native block norm1/norm2使用_vit_norm_input Float，再cast到hidden dtype；norm_out另为nn.LayerNorm。VAE installer并没有替换norm1/norm2实现，只把它们接进fast block。",
+      "equivalence": "需完整保留FP32 variance/mean/epsilon/rsqrt/affine运算顺序与输出cast；RMSNorm与LayerNorm不可混称。",
+      "rounding_or_safety_risk": "不同sum tree、sqrt/rsqrt、epsilon位置、gamma乘法顺序或低精度输出会有可测差异；Newton refinement是新数值算法，不是无损快路径。通用npu_add_rms_norm/InplaceAddRmsNorm历史910A不支持，异步错误不能靠即时try/except兜底。",
+      "recommendation": "暂列高风险新候选；没有910A VAE专用完整无损证据。保留原FP32 norm/gamma，单算子任何delta先停问用户。",
+      "required_gates": ["operator_gate", "video_gate", "integration_gate"],
+      "measurement": ["operator", "tile", "resident_video"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/base_module.py", "start_line": 262, "end_line": 280},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/vae_vit.py", "start_line": 280, "end_line": 282},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/design/patches/patch_910a_norm_fallback.py", "start_line": 1, "end_line": 16},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round94/norm_probe94.py", "start_line": 40, "end_line": 57}
+      ]
+    },
+    {
+      "id": "V125-12",
+      "name": "SwiGLU/SiLU-and-mul strict融合",
+      "category": "activation_fusion_rounding_risk",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "VAE installer bypass；native FF._forward_impl在w1之后chunk，再SiLU(gate)*up，再w2。旧installer的SiluAndMul仅在is_cuda分支调用，NPU分支仍eager。",
+      "equivalence": "Half w1输出下native SiLU先舍入到Half，再Half乘up；fused保持FP32 SiLU临时量直接乘up不等于该边界。",
+      "rounding_or_safety_risk": "SiLU近似/exp/div差异、省略中间Half cast、误把packed gate/up次序反转、尾部/alignment与overflow/NaN分类都会改变结果。历史npu_swiglu在910A SoC未配置，数学式相同不等于已支持或bit-exact。",
+      "recommendation": "只考虑不改w1/w2 Parameters的NPU-specific融合，显式保存native中间cast；不通过NO_FUSED_ACT=0恢复unsupported aclnn。",
+      "required_gates": ["operator_gate", "video_gate", "integration_gate"],
+      "measurement": ["operator", "tile", "resident_video"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/base_module.py", "start_line": 95, "end_line": 105},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_optimizations124.py", "start_line": 43, "end_line": 53},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/design/patches/patch_910a_h3_swiglu.py", "start_line": 2, "end_line": 40}
+      ]
+    },
+    {
+      "id": "V125-13",
+      "name": "FP32 scaled residual严格mul-round再add融合",
+      "category": "pointwise_fusion_rounding_risk",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "installer bypass；native是hidden + branch*scale，hidden与scale保持FP32，branch由正常Half矩阵路径产生。",
+      "equivalence": "branch准确升FP32，先mul.rn.f32，再独立FP32 add；输出/scale精度、符号零与overflow语义不变时可等价。",
+      "rounding_or_safety_risk": "FMA把两次舍入合成一次，或用Half scale/乘法会改输出。历史实现为CUDA/PTX inline asm mul.rn.f32，不是Ascend可直接运行/已验证的TBE实现。",
+      "recommendation": "可列NPU strict pointwise候选，但必须独立保留舍入屏障且不改任何FP32 scale/Parameter；捕获FP32 hidden×Half branch×FP32 scale完整真实数据后零delta门。",
+      "required_gates": ["parameter_gate", "operator_gate", "video_gate", "integration_gate"],
+      "measurement": ["operator", "tile", "resident_video"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/base_module.py", "start_line": 268, "end_line": 280},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_optimizations124.py", "start_line": 89, "end_line": 115},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/source/vae_scaled_residual.py", "start_line": 12, "end_line": 50},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/source/vae_scaled_residual.py", "start_line": 53, "end_line": 80}
+      ]
+    },
+    {
+      "id": "V125-14",
+      "name": "temporal streaming uint8 accumulation与in-place revert",
+      "category": "existing_memory_optimization_not_disabled_by_installer",
+      "currently_enabled_in_R124": null,
+      "state_evidence": "R124 adapter仍调用install_temporal_stream_patches，未被FP32 bypass拦截；该patch按env/remote合同有条件启用，R124没保存绑定方法回执，不能声称精确实装。",
+      "equivalence": "原始temporal分片/head/tail/overlap顺序不变，在每段最终blend后做原dtype sub/div/clamp，然后Float乘255/round/copy Uint8，避免全视频Float中间缓冲。",
+      "rounding_or_safety_risk": "量化若在Half直接乘/round、提前量化尚需blend的overlap、in-place改写仍被引用clip view、变化pad/drop/tail计划都会改变像素；新融合不可省去Float量化边界。",
+      "recommendation": "先确认是否已保留，不重复恢复。仅做输出缓冲/常量cache的无算术变化，保持输出frame计划和native完整float比较；不调整blend/输出提交次序。",
+      "required_gates": ["operator_gate", "video_gate", "repeat_gate", "joint_av_gate", "concurrency_and_cleanup_gate"],
+      "measurement": ["resident_video", "stage", "end_to_end"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 353, "end_line": 371},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 959, "end_line": 970},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/source/vae_temporal.py", "start_line": 115, "end_line": 239},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/source/vae_temporal.py", "start_line": 249, "end_line": 268}
+      ]
+    },
+    {
+      "id": "V125-15",
+      "name": "keyframe/视频encode的base-format padding与tail-pad准备",
+      "category": "existing_layout_memory_path",
+      "currently_enabled_in_R124": null,
+      "state_evidence": "adapter仍有_stream_prepare_video_tensor和encode_temporal patch调用，非被禁用decoder installer的一部分；R51 base-format reflection pad有真实FP32 encode证据，但不证明R124动态module必为该副本。",
+      "equivalence": "原字节uint8上传后在FP32按div255/sub/div原顺序；仅在NPU reflect pad前base NCDHW格式copy，保持FP32 Conv3D、采样RNG与原frame padding。",
+      "rounding_or_safety_risk": "更换CNN卷积算法/TF32-HF32、norm_silu融合、提前Half化encoder或改变随机采样/帧对齐会改condition latent并放大全生成差异；不能以decoder速度优化理由代换keyframe推理。",
+      "recommendation": "保留原FP32 encoder参数/运算和RNG合同。可缓存纯pad几何、减少重复搬运；独立完整keyframe latent/normalized rows门与全49-step输出门。",
+      "required_gates": ["parameter_gate", "operator_gate", "integration_gate"],
+      "measurement": ["stage", "end_to_end"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round51/candidate_vae_cnn.py", "start_line": 27, "end_line": 37},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round51/vae_encode_summary.json", "start_line": 1, "end_line": 47},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 731, "end_line": 782},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 784, "end_line": 867},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/source/vae_temporal.py", "start_line": 43, "end_line": 112}
+      ]
+    },
+    {
+      "id": "V125-16",
+      "name": "R63/64 TBE finite-select sanitizer",
+      "category": "known_exception_semantics_delta",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "R124 adapter无R64/76 finite-select install call；R124 NanToNum兼容是另一条IEEE整数分类实现，成功decode调用次数0，不是finite-select加速证据。",
+      "equivalence": "历史TBE所有finite Half词保留；NaN/Inf全部选+0。只能说有限被测fixture逐位相同，不是当时native NPU任意Half词等价。",
+      "rounding_or_safety_risk": "历史65536词测试有2048个NaN/Inf词与native不同；不能用torch.isfinite失效时的identity行为或finite输出hash掩盖非有限策略变化，也不能把native nan_to_num的+/-max改成0。",
+      "recommendation": "已知可测语义差异，按用户规则不自动恢复；先报告/询问精度合同。若设计同语义新实现，必须匹配当前R124完整exception策略，不称R63已无损。",
+      "required_gates": ["permission", "operator_gate", "video_gate", "joint_av_gate", "integration_gate"],
+      "measurement": ["operator", "resident_video", "stage"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/design/patches/h3_910a_vae.py", "start_line": 1, "end_line": 7},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/design/patches/h3_910a_vae_kernel.py", "start_line": 1, "end_line": 5},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/summary.json", "start_line": 280, "end_line": 285},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/npu_half_nan_compat124.py", "start_line": 17, "end_line": 69},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_full_run_audit/worker_alignment_pid2055031124.jsonl", "start_line": 109, "end_line": 109}
+      ]
+    },
+    {
+      "id": "V125-17",
+      "name": "custom FlashAttention、FP32 oracle或torch.compile替换native attention",
+      "category": "known_or_potential_rounding_delta",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "没有R124 VAE customFA实例替换证据；native FF/RoPE compile flags默认0，R124 enforce_eager=True。不等于已验证所有编译后端不可用。",
+      "equivalence": "FA online softmax、提前Half scale Q、不同exp/reduction、FP32 oracle省去Half score/probability边界均不是legacy逐操作合同。编译backend还可能contract/reassociate。",
+      "rounding_or_safety_risk": "R63 customFA对一个真实1797x32x64 QKV有293102个Half词不同，max_abs0.00390625；接近FP32 oracle不构成R124零delta。裸kernel1ms排除pack/repack和全decode，不能当完整收益。",
+      "recommendation": "已知FA/FP32 oracle差异先停用并问用户，不自动恢复。compile仅在参数不改、完整中间舍入审计与同输入零delta前提才可新试，失败不能偷偷换精度或mask。",
+      "required_gates": ["permission", "operator_gate", "video_gate", "integration_gate"],
+      "measurement": ["operator", "tile", "resident_video", "stage"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/vae_attention_candidates63.py", "start_line": 45, "end_line": 63},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/summary.json", "start_line": 46, "end_line": 74},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/base_module.py", "start_line": 87, "end_line": 154},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_native_VAE_source/func.py", "start_line": 105, "end_line": 163},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/generate_full_NPU124g.py", "start_line": 72, "end_line": 81}
+      ]
+    },
+    {
+      "id": "V125-18",
+      "name": "decode_to_mp4/异步消费、stage/audio顺序、tile batching",
+      "category": "scheduling_and_output_order_change",
+      "currently_enabled_in_R124": false,
+      "state_evidence": "成功R124 sampling output_type=np/return_frames=True，pipeline.decode视频先、audio后；现有decode_to_mp4则audio先、video temporal chunks后，是不同路径。native stack_tiling能力存在但R124未存开关。",
+      "equivalence": "仅改变交付调度可不改视频数据，但必须证明同crop/量化/帧与audio timestamps、所有collective次序。tile batching改变GEMM batch geometry，不是纯内存操作。",
+      "rounding_or_safety_risk": "提前量化、改变overlap提交/头尾裁剪、不同audio执行序或其非确定性、多个tensor在consumer中被异步覆盖、batch GEMM算法变更均可能有可测差异；stage计时前移不能冒充E2E更快。",
+      "recommendation": "放在数值纯cache之后；先保留完整decode顺序，再考虑有界queue/event ownership。完整raw frames和native waveform作A/B，不靠MP4容器SHA或视觉抽样代替。",
+      "required_gates": ["video_gate", "joint_av_gate", "repeat_gate", "concurrency_and_cleanup_gate", "integration_gate"],
+      "measurement": ["stage", "end_to_end"],
+      "source_refs": [
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_pipeline_before124.py", "start_line": 2021, "end_line": 2077},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_pipeline_before124.py", "start_line": 2099, "end_line": 2125},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/NPU_vae_before124.py", "start_line": 993, "end_line": 1021},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/H3-source/FL2VA/video_vae/klvae.py", "start_line": 278, "end_line": 295},
+        {"path": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round124/generate_full_NPU124g.py", "start_line": 79, "end_line": 94}
+      ]
+    }
+  ],
+  "historical_evidence_limits": [
+    {"round": 51, "qualification": "FP32真实权重reflection-pad兼容与encode有限输出/小shape repeat；冷调用不是steady decode性能，也不是VAE融合等价证明。", "source": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round51/vae_encode_summary.json", "lines": [1, 47]},
+    {"round": 63, "qualification": "half构造再FP32 storage的单实际latent，36层tile和8rank完整视频可逐位同；不证明原始FP32 R124参数可Half化，不证明任意输入/BF16。", "source": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round63/summary.json", "lines": [3, 169]},
+    {"round": 64, "qualification": "same-input服务完整video 72项通过，whole-A/V identity因native audio自身不repeat失败；13.81s仅历史一interval配置，不能免除当前完整audio/FP32基线门。", "source": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round64/summary.json", "lines": [77, 200]},
+    {"round": 76, "qualification": "warm decode reporter13.52-13.62s与cold122.06-128.27s是旧FP16/外部encoder-conditioning管线；两部49step视频画质被拒绝，不能作为R124正确性或优化上线证据。", "source": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round76/README.md", "lines": [19, 84]},
+    {"round": 91, "qualification": "geometry缓存是vision tower的设计/历史实现，不是VAE缓存已启用；可借鉴值/版本键与fail-closed原则，不能把vision SHA移作VAE证明。", "source": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round91/cache/geometry_cache91.py", "lines": [2, 49]},
+    {"round": 118, "qualification": "468.24s decode是用post-loop residual减去假定不变prep项的推导，实测上界为decode+其他post-loop472.1s；不能据此认定逐tile权重swap或恢复resident13.62s已证实。", "source": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round118/summary118.json", "lines": [35, 64]},
+    {"round": 121, "qualification": "双live-encoder请求脚本是旧native-fp16实验合同，未收齐独立完整decode原始FP32验收；不复用其模型/参数状态作为R125基线。", "source": "/Users/lvyufeng/Projects/h3-910a/artifacts/diagnostics/round121/two_requests_timing121.py", "lines": [1, 14]}
+  ],
+  "recommended_order": ["V125-02", "V125-03", "V125-04", "V125-05", "V125-06", "V125-08", "V125-09", "V125-07", "V125-13", "V125-10", "V125-11", "V125-12", "V125-18"],
+  "not_automatic_restore": ["V125-01直接Half参数重写", "V125-16历史nonfinite策略改变", "V125-17已知FA/FP32 oracle舍入差异"],
+  "uncertainties": [
+    "未连接远端，当前正在部署/运行的实际模块与env不在本次观察范围；currently_enabled字段仅据R124成功版本地源码与worker回执。",
+    "R124未捕获VAE-specific dispatch/qk_norm_rope实现、temporal patch绑定与query chunk、stager implementation hash；历史快路径可用性不能冒充当前硬件已无损。",
+    "R124完整原始latent/media大文件的字节复核或任何同输入模型A/B不在此静态任务内；未来验收须在用户授权独立运行中产生完整baseline与candidate证据。"
+  ]
+}

@@ -1,0 +1,283 @@
+{
+  "schema_version": 1,
+  "round": 125,
+  "task_id": "task-68",
+  "author": "encoder-review70-fresh",
+  "scope": "Source/receipt inventory only. No local or remote model execution, resource claim, kernel build, weight download, deployment or new performance result.",
+  "precision_baseline": {
+    "commit": "f3f1328",
+    "meaning": "R124 successful own-NPU FP16 encoder/generation implementation is the reference for restoring accelerations. R124's historical GPU comparison threshold is not permission for any new optimization-induced difference.",
+    "executed_encoder_path": "artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py",
+    "executed_encoder_sha256": "0959895b778fc0900d785250b71279055d3940d975f3523909856072960f5026",
+    "execution_manifest_path": "artifacts/diagnostics/round124/executed_source_manifest124g.json",
+    "manifest_entry": "NPU_encoder_FP16_124.py",
+    "local_source_matches_execution_manifest": true,
+    "integration_paths": [
+      "artifacts/diagnostics/round124/alignment_hooks124.py",
+      "artifacts/diagnostics/round124/generate_full_NPU124g.py"
+    ],
+    "source_checkpoint": "/home/mseco/models/MiniMax-H3/FL2VA",
+    "preserve": [
+      "Own live NPU encoder, FP16 storage and activations, original checkpoint conversion, actual processor/token transport, all 27 vision blocks/three DeepStack features and all 50 text layers.",
+      "Text TP8 is already present; vision is replicated. Preserve returned HCCL tensors, rank ordering and current local-partial rounding.",
+      "Separate Q/K/V and separate gate/up F.linear calls, expanded-K/V causal SDPA, FP16 pointwise text RoPE, original vision Conv3d/Linear/GELU and interpolation arithmetic.",
+      "R124 worker sets matmul.allow_hf32=False and conv.allow_hf32=False. Preserve these and all precision guards; do not import earlier runs' conv.allow_hf32=True policy.",
+      "TEXT_HF_MATH=1 only selects the special encoder Norm/direct-frequency path for BF16 in the executed source. It does not turn R124 FP16 into the R79 HF-two-round Norm/direct-frequency graph. Pin the actual shared Norm dispatch before fusion."
+    ],
+    "new_candidate_acceptance": {
+      "allowed_same_input_numeric_error": 0,
+      "require_raw_output_bits_equal": true,
+      "max_abs_error": 0,
+      "relative_rms": 0,
+      "one_percent_auto_acceptance": false,
+      "on_any_measurable_difference": "Disable the candidate, preserve full counterexample and ask the user before proceeding with that non-lossless path, even if relative error is below 1% or below one ULP on most elements.",
+      "baseline_repeat_gate": "Establish complete R124 repeat identity on the actual request before accepting a cached/fused candidate. If the native baseline itself varies, report that boundary and stop for a decision; do not choose a favorable repeat/hash or hide it behind tolerance."
+    }
+  },
+  "R124_enabled_inventory": {
+    "already_enabled": [
+      "Text vocabulary/column/row tensor parallelism with text_encoder_tp_size=8.",
+      "Row GEMM result is converted to FP32 for all-reduce after the native local FP16 projection, then returns to output dtype.",
+      "Masked-fill embedding/placeholder operations and complete fused-source-shard loader checks.",
+      "Layerwise/offload-capable encoder hooks, PinnedModuleStager for non-block modules, BoundedAllocatorCache entry points; the successful driver uses enable_layerwise_offload=True."
+    ],
+    "not_enabled_by_executed_encoder_or_R124_install_hooks": [
+      "R91 vision geometry cache and R95 CPU text-RoPE cache.",
+      "R81 K/V zero-padding and explicit blocked-Half weight prepacking kernels.",
+      "R107 true vision TP8 or R99/R101 streaming vision attention.",
+      "R67/R68 custom Norm prefix/tail, R60 text RoPE, R72 vision RoPE tail or R58 custom SwiGLU.",
+      "R65/R71 FP32 weight shadows, shared BF16 activation expansion and experimental FP32 text-GEMM stack."
+    ],
+    "static_R79_to_R124_AST_comparison": {
+      "vision_rot_pos_emb_same": true,
+      "vision_fast_pos_embed_interpolate_same": false,
+      "text_RMSNorm_forward_npu_same": false,
+      "text_rotary_forward_same": false,
+      "embedding_all_reduce_same": false,
+      "pointwise_text_apply_rotary_same": true,
+      "vision_SDPA_helper_same": true,
+      "text_MLP_forward_same": true,
+      "consequence": "Do not point old adapters at a renamed R124 file or reuse old cached tensors. R91 pins the full R79 source and its interpolation function; only the cache pattern is transferable. R124 FP16 interpolation uses Half weights/products and left-associated four-add, while R79 uses its FP32 interpolation branch."
+    }
+  },
+  "required_complete_output_gate": {
+    "reference": "Frozen R124 NPU code/runtime flags/converted parameter bytes and exact current request tensors. No old CPU/BF16 oracle regeneration and no old modal-hidden cache substitution.",
+    "all_ranks": 8,
+    "compare": [
+      "All actual input IDs/pixel tensors/image-video grids/tags and parameter bits before/after.",
+      "Embedding, freshly computed complete vision merged output and all three DeepStack outputs; no sampled/head-only replacement for complete tensors.",
+      "Actual text positions, RoPE coefficients, mask, text inputs and all 50 text boundaries at a consistently named pre/post-DeepStack boundary.",
+      "Complete layer-50 encode_ids output, its CPU transfer and the FP16 conditioning consumed by the unchanged pipeline; same dtype, shape, stride/format, raw bits and zero numeric error.",
+      "Native-before/candidate/native-restored complete forwards and repeated calls on every rank. New pixel/prompt/grid values must still execute live model work and either recompute metadata or fail closed.",
+      "At integration, unchanged downstream conditioning and same-input full video/audio predictions at the R124 representative sigma positions. A good-looking video or old 1% DiT gate cannot waive changed encoder bits."
+    ],
+    "lifecycle": [
+      "Explicit cache invalidation/re-prime on load_weights/.data writes, dtype/device changes, offload/reload and config changes; version counters alone do not cover .data mutation.",
+      "Storage offsets/strides/aliasing and current NPU device must be preserved; geometry keys compare values rather than recycled pointers, especially for unversioned inference tensors.",
+      "Memory budgets include packed/shadow weights, cache buffers and transient load/activation peaks with the real DiT/VAE present, not just an isolated encoder allocation snapshot."
+    ],
+    "timing": {
+      "complete_encode_ids": "Barrier and initial device drain outside; real embedding/fresh vision/positions/DeepStack/text50 plus encode_ids hidden.cpu() and ending drain inside. Proof copies/hashes and compile/prime work are excluded and separately reported.",
+      "complete_live_encode_prompt": "Separately time upstream processor/presentation, input distribution, actual load/offload, encoder and final FP16 H2D/broadcast in the R124 pipeline. Do not call resident encode_ids the whole service stage.",
+      "aggregation": "Same-call maximum across all eight ranks, then median of repeated calls; clean/probe intervals and cold/warm states remain separate.",
+      "reference_R124_observation": "artifacts/diagnostics/round124/STATE.json records 65.10764939012006s live encoder stage including integration/transfer. This audited/offloaded correctness run is not a clean kernel baseline or a new speedup denominator."
+    }
+  },
+  "candidates": [
+    {
+      "id": "vision_geometry_cache",
+      "name": "原生 vision 位置插值/rotary 几何缓存",
+      "priority": "P0_lowest_arithmetic_risk_first",
+      "old_implementation_paths": ["artifacts/diagnostics/round91/cache/geometry_cache91.py"],
+      "historical_evidence_paths": ["artifacts/diagnostics/round91/summary91.json", "artifacts/diagnostics/round91/README.md"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:770-895"],
+      "semantics": "Prime R124's original rot_pos_emb and fast_pos_embed_interpolate on the exact grid and immutable parameters, verify deterministic bits twice and return their original cached tensors. This is geometry, not image conditioning; pixels/patches/27 vision blocks/DeepStack/text50 still execute each call.",
+      "risk": "Old implementation hard-pins R79 full source/method hashes and a single grid. Its interpolation method differs from R124, so old tensors and pins are not valid. Re-prime using R124 arithmetic; do not switch Half interpolation to FP32. Cover .data updates/offload/reload, immutable-return lifetime and noncached new grids.",
+      "historical_measurement_scope": "R91 native complete private encode_ids cache-off/on, both real vision/text included; 2.277611→2.207390s (~3.1%), 19,740,672B/rank. Not an R124 deployment measurement and not a projected 65s-stage saving.",
+      "required_new_comparisons": ["Full cached geometry tensors including dtype/layout, then all 27 vision outputs/three DeepStack/full encoder bits on every rank.", "R124 source/config/position-weight/inv_freq/grid-value mutation and offload/reload invalidation; different images with same geometry must still recompute vision."],
+      "decision": "Adaptation is safe to implement first under fail-closed guards; activation still requires the full R124 zero-difference gate."
+    },
+    {
+      "id": "native_text_rotary_metadata_cache",
+      "name": "R124 原生 text RoPE 表/索引缓存（不使用 CPU 替代表）",
+      "priority": "P1_low_arithmetic_risk_proposed_adaptation",
+      "old_implementation_paths": ["artifacts/diagnostics/round95/cache/cpu_text_rope_cache95.py", "artifacts/diagnostics/round91/cache/geometry_cache91.py"],
+      "historical_evidence_paths": ["artifacts/diagnostics/round95/README.md"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:476-518", "artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:1475-1488"],
+      "semantics": "Reuse only R124's own deterministic native coefficient/index outputs for exact position values, config, dtype/device and precision flags. Cache no hidden values, embedding, pixels or DeepStack.",
+      "risk": "The existing R95 implementation intentionally substitutes CPU-HF cos/sin and changes native bits; it is not eligible for automatic restoration. R124 FP16 rotary follows its original batched FP32-matmul path, unlike the R79 direct-multiply branch. A native-cache version is new work, not an already measured implementation. Position values must be keyed, not only sequence length.",
+      "historical_measurement_scope": "R95 provides value/config guard patterns and a failed non-native-bit table substitution, not a proven R124 native-cache speed gain.",
+      "required_new_comparisons": ["Complete native cos/sin and all actual positions for current and changed prompts/grids, then 100 text Q/K RoPE outputs and complete encoder.", "No regenerated CPU teacher, no direct-multiply algorithm replacement, native-before/native-cached/native-restored identity."],
+      "decision": "Only the native-computation memoization pattern is eligible; keep the original CPU-table variant disabled and ask the user if considering its known rounding change."
+    },
+    {
+      "id": "immutable_Half_weight_layout_prepack",
+      "name": "原始 Half 权重只做静态布局预打包",
+      "priority": "P1_memory_only_preparation_with_backend_gate",
+      "old_implementation_paths": ["artifacts/diagnostics/round87/vision_adapter87.py", "artifacts/diagnostics/round107/vision_gemm_backend107.py", "artifacts/diagnostics/round83/blocked/blocked_fp32_gemm83.py"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:344-359", "artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:944-1018"],
+      "semantics": "Prepare bijective Half storage-layout copies of immutable weights once, verify inverse-layout raw-bit identity, and invalidate on reload/offload. Activation packing stays fresh for each call. Weight prepacking alone is not GEMM reassociation or a conditioning cache.",
+      "risk": "Existing R87/R107 backends also zero-pad geometry, use custom FP32 accumulators/outputs and move bias before final Half. Their packed weight bits being exact does NOT make their arithmetic equal to R124 native F.linear. R124 has no current consumer for a blocked packed weight, so replacing the backend needs a separate same-input zero-error gate. Do not combine QKV or gate/up GEMMs merely because the checkpoint storage is packed.",
+      "historical_measurement_scope": "R87/R107 prime packing outside resident vision clocks; their live clocks include fresh A packs, Cube kernels/layout/HCCL. R87 full vision was not faster than its native control; R107 TP speed belongs to the non-native-bit combined graph, not prepacking alone.",
+      "required_new_comparisons": ["Raw Half weights including signed zeros, all inverse-layout slices/zero tails, no parameter mutation and per-device bounded cache.", "Every complete same-input local F.linear output and row partial, native FP16-partial→FP32 HCCL ordering/bias/output dtype, all fresh vision/text/full outputs."],
+      "decision": "Preparation/pinning infrastructure can be reused. Do not turn on old GEMM/bias/TP backends without a fresh R124 arithmetic gate; any difference triggers stop-and-ask."
+    },
+    {
+      "id": "staging_residency_allocator",
+      "name": "权重驻留/不可变 CPU master staging 与有界 allocator 缓存",
+      "priority": "P0_low_arithmetic_risk_lifecycle_first",
+      "old_implementation_paths": ["artifacts/diagnostics/round64/source/module_residency.py", "artifacts/diagnostics/round116/encoder_live_timing116.py", "artifacts/diagnostics/round119/dit_resident_timing119.py", "artifacts/diagnostics/round121/two_requests_timing121.py"],
+      "historical_evidence_paths": ["artifacts/diagnostics/round119/summary119.json", "artifacts/diagnostics/round120/summary120.json"],
+      "R124_enabled": "Existing staging/hook entry points and layerwise offload are already present; retaining encoder weights between calls or changing component scheduling is not proven enabled/fast by those entry points.",
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:1369-1426", "artifacts/diagnostics/round124/generate_full_NPU124g.py:72-75"],
+      "semantics": "Keep the exact immutable Half parameters available, or stage them from the same pinned CPU masters without a needless device-to-host copy. Preserve tensor bindings/aliases/strides and current-stream copy completion. Retain only bounded free allocator blocks; never cache model outputs.",
+      "risk": "R117/R119 loading attempts show OOM before full execution; R120 corrected overbroad residency attribution in those earlier summaries. Do not infer all-resident fit or pure encoder cost from file sizes, old DiT ratios or isolated memory snapshots. Newly retained packed/shadow weights can monopolize HBM and break DiT/VAE. R124 uses different range-safe FP32 islands, so historical budgets are not its current peak.",
+      "historical_measurement_scope": "R116/R121 are live-pipeline driver patterns; R119 is a failed load-time OOM result, not a successful residency benchmark. Source-only inspection must not present an uncollected R121 second request as evidence.",
+      "required_new_comparisons": ["Exact CPU master/device parameter bits and storage aliases across load/offload/reload, all full encoder outputs before/after, copies completed on the right stream.", "Same actual R124 full-pipeline warm requests including encode_prompt/load/offload; record per-stage transfer costs, HBM load/activation peaks, no OOM and actual DiT/VAE progression."],
+      "decision": "Highest-value scheduling work after byte/lifecycle gates. First audit what R124 already stages; no unsupported all-resident claim and no hidden-state cache shortcut."
+    },
+    {
+      "id": "serial_compile_prime_and_dispatch_reuse",
+      "name": "保持原 kernel 的串行预编译/handle 预热",
+      "priority": "P1_setup_only_safe_pattern",
+      "old_implementation_paths": ["artifacts/diagnostics/round108/prebuild108.py", "artifacts/diagnostics/round83/runtime5gm83.py"],
+      "R124_enabled": "Torch/CANN may cache native operators, but no old custom prebuild/launcher is installed by the R124 encoder source or integration hooks.",
+      "semantics": "Build/register the exact already-approved function/config/geometry once before workers and reuse its validated object/stream handle. Keep compile/registration/prime time separate from warm inference and do not swap to a different kernel just to gain a hit.",
+      "risk": "Old prebuild108 primes the historical custom graph, not R124 native operators. Object source/hash/ABI/SoC/core-count/device guards must match the actual candidate; no fake A2 profile. This mostly removes cold setup, not 65s-stage mathematical compute.",
+      "historical_measurement_scope": "R108 prebuilt 18 old objects before real warm clocks; this is an execution pattern, not an independently isolated prebuild speedup.",
+      "required_new_comparisons": ["Exact source/object fingerprints and identical full outputs before/after handle reuse; separately record compile/registration and steady-state time."],
+      "decision": "Reusable safe setup pattern only for a kernel that has already passed the strict R124 numerical gate."
+    },
+    {
+      "id": "RMSNorm_AddRMSNorm_fusion",
+      "name": "RMSNorm/AddRMSNorm 前尾融合",
+      "priority": "P2_requires_new_FP16_contract_not_drop_in",
+      "old_implementation_paths": ["artifacts/diagnostics/round67/norm_tail_guard67.py", "artifacts/diagnostics/round68/norm_prefix68.py", "artifacts/diagnostics/round70/complete_encode_tp8.py"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:408-428", "artifacts/diagnostics/round111/source/norm.py:136-175"],
+      "semantics": "Reuse the old separation principle: preserve the actual native reduction tree/epsilon/rsqrt, fuse only pointwise conversion/square/residual/tail while retaining the R124 FP16 cast points.",
+      "risk": "R67/R68 are BF16 uint16 codecs with explicit two-round Qwen contracts and finite-only exceptional restrictions, not FP16 kernels. R124 FP16 bypasses that BF16 special forward and normally inherits shared native Norm: Half residual add, FP32 square/pow reduction, FP32 normalization and gamma multiply, then final Half. Inserting an extra normalized-Half round, changing pow/reduce tree or Newton rsqrt is an unapproved math change. The R111 shared Norm snapshot is a read-only dispatch reference; re-pin the actual installed R124 dependency before execution.",
+      "historical_measurement_scope": "R70 proves fused BF16 kernels against a fixed experimental full-encoder graph. That identity and resident timing are not R124 FP16 acceptance or an estimated R124 saving.",
+      "required_new_comparisons": ["Same actual x/residual/gamma on all 200 per-forward text Norm calls, including 50 residual updates and widths128/5120, complete output/residual bits.", "Preserve native variance/inverse and finite/subnormal/signed-zero behavior; all text layers and complete encode_ids across eight ranks; no shared DiT Norm monkeypatch."],
+      "decision": "Do not restore the old implementation. A new instance-local FP16 exact-contract implementation is required; stop-and-ask on any measured mismatch."
+    },
+    {
+      "id": "text_pointwise_RoPE_fusion",
+      "name": "text Q/K RoPE 点算子融合",
+      "priority": "P2_requires_FP16_dtype_rounding_port",
+      "old_implementation_paths": ["artifacts/diagnostics/round60/rope_vector60.py", "artifacts/diagnostics/round70/complete_encode_tp8.py"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:431-444", "artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:967-975"],
+      "semantics": "Fuse rotate-half and the two products/add while consuming exactly R124-produced coefficients and retaining their native caller layout and output dtype.",
+      "risk": "Old helper asserts BF16 and uses BF16 codec/RNE, with native/HF intermediate-round modes. R124 FP16 expression rounds each native Half product before the Half add; one FP32 FMA/final-only cast is not the same. R124 coefficient construction also differs from R79/R70. No coefficient-table substitution, fused QKV GEMM, Newton or signed-zero repair is authorized.",
+      "historical_measurement_scope": "Old full text/encoder bit checks apply only to their declared BF16 experimental reference; no direct R124 speed or identity evidence.",
+      "required_new_comparisons": ["Complete Q/K results for all 50 actual layers (100 tensors/rank), original input/coefficient bits, stride/format/current device and no mutation.", "Independent product/cast/add boundary proof then whole text/full encoder; retain native coefficients unchanged."],
+      "decision": "Potential new exact FP16 kernel after leaf/full gates; cannot relabel existing BF16 binary as FP16."
+    },
+    {
+      "id": "vision_pointwise_RoPE_tail",
+      "name": "vision Q/K RoPE 保序尾融合",
+      "priority": "P2_requires_FP16_output_port",
+      "old_implementation_paths": ["artifacts/diagnostics/round72/vision_rope_tail72.py", "artifacts/diagnostics/round72/vision_rope72.py"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:651-662", "artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:701"],
+      "semantics": "Keep R124 q/k.float(), Float cos/sin and original rotate_half; fuse only separate FP32 multiply/multiply/add and cast once back to actual FP16 input dtype.",
+      "risk": "Measured old tail casts to BF16 and cannot be enabled unchanged. Width72/half36 packed pitches require real layout/alignment guards; old full vgather prototype failed on 910A and is not a usable optimization. No FMA, reassociation, head padding or coefficient approximation.",
+      "historical_measurement_scope": "R72 partial-tail bit identity and complete resident encode_ids A/B were against its experimental graph; no R124 identity evidence.",
+      "required_new_comparisons": ["All 27 actual full packed Q/K pairs, coefficient buffers and V-neighbor storage unchanged; full merged/three DeepStack/all encoder outputs on every rank.", "Actual FP16 final-round ties/subnormals/signs plus nonaligned layout rejection; failed full-gather path stays disabled."],
+      "decision": "Only a new exact FP16-output tail is eligible for evaluation; old BF16 tail/full-gather are not restored."
+    },
+    {
+      "id": "SwiGLU_pointwise_fusion_only",
+      "name": "保持 split GEMM 的 FP16 SiLU×up 融合",
+      "priority": "P2_requires_native_SiLU_contract",
+      "old_implementation_paths": ["artifacts/diagnostics/round58/native_bf16_vector58.py", "artifacts/diagnostics/round70/complete_encode_tp8.py", "artifacts/diagnostics/round86/leaf/late_leaf86.py"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:1010-1018"],
+      "semantics": "Keep the two actual R124 F.linear gate/up calls and exact native Half SiLU result, then fuse its multiplication by up at the same Half round boundary. Pointwise fusion must be independent of projection merge.",
+      "risk": "R58 uses BF16 integer codec, exp/reciprocal refinements and BF16 rounding; the R70 wrapper also changes gate/up into a merged GEMM. Neither is a drop-in for R124 separate projections. Algebraically equivalent sigmoid/exp formulas, reciprocal approximations or GEMM merge can change bits. npu_swiglu is not assumed available on original910A.",
+      "historical_measurement_scope": "Earlier exact SiLU/pointwise checks certify their own inputs/math; no R124 fused FP16 helper or full-stage gain has been measured.",
+      "required_new_comparisons": ["Same gate/up operands on all 50 layers, native SiLU intermediate plus product full raw bits, no projector change or dtype promotion outside original boundary.", "Actual full MLP/encoder outputs and signed-zero/subnormal/large finite counterexamples; unapproved differences require user decision."],
+      "decision": "New pointwise-only FP16 candidate may be designed; do not revive old exp/BF16/merged-GEMM stack as lossless."
+    },
+    {
+      "id": "KV_zero_output_padding",
+      "name": "K/V N128→N256 零行稳定性重排",
+      "priority": "P3_geometry_changes_need_strict_gate",
+      "old_implementation_paths": ["artifacts/diagnostics/round81/kv/kv_padding81.py", "artifacts/diagnostics/round81/encode_fp16_padded_kv_fixed81.py"],
+      "historical_evidence_paths": ["artifacts/diagnostics/round81/summary81.json"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:959-966"],
+      "semantics": "Original Half K/V weight prefix, extra zero output rows, discard tail; caches weights only, not K/V activations.",
+      "risk": "Changes GEMM geometry/tiling/rounding despite an identical real-arithmetic function. Old evidence fixes repeat stability in the R79/R80 graph, not exact equality to R124 native outputs. It is not just prepacking or a proven speed gain. Old source pin and loader/offload cache semantics also require update.",
+      "historical_measurement_scope": "R81 complete private encode_ids includes fresh vision/text/D2H, but is a stability-path comparison rather than R124 zero-difference gate.",
+      "required_new_comparisons": ["First establish native R124 K/V repeat stability; compare all 100 actual retained projection outputs to unchanged native R124, not just weight prefixes/zero tails.", "Complete text/encoder raw bits plus exact weight-view-offset and .data/offload invalidation."],
+      "decision": "Do not enable by mathematical-neutral-padding argument. Stop-and-ask if any retained output differs or if native nonrepeatability prevents a strict reference."
+    },
+    {
+      "id": "vision_TP8_and_streaming_FA",
+      "name": "真正 vision TP8＋本地 streaming attention",
+      "priority": "P3_known_non_native_bit_combination_user_decision_required",
+      "old_implementation_paths": ["artifacts/diagnostics/round107/tp_vision/vision_tp_adapter107.py", "artifacts/diagnostics/round107/vision_gemm_backend107.py", "artifacts/diagnostics/round101/flash_engine101.py", "artifacts/diagnostics/round101/flash_vision_mask_fixed101.py", "artifacts/diagnostics/round108/full_encoder108.py"],
+      "historical_evidence_paths": ["artifacts/diagnostics/round107/summary107.json", "artifacts/diagnostics/round108/summary108.json"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:675-718", "artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:878-895"],
+      "semantics": "Old TP8 shards Q/K/V by two heads/rank and MLP by 538 channels; FP32 row partials and HCCL before bias/one Half output; streaming attention changes online reduction blocks.",
+      "risk": "Already documented not native-bit equal: new row collective, Half partial rounding/bias placement, padding and online QK/softmax/PV ordering. Old R108 1.3212s complete encoder is this altered graph, not unchanged R124 precision. More accurate old teacher errors or repeat-stable outputs do not waive new zero-error gate.",
+      "historical_measurement_scope": "R108 true live resident encode_ids (fresh pixels/27vision/50text/HCCL/D2H) demonstrated <2s for its own opt-in graph; it did not prove R124 equivalence or full-pipeline co-residency.",
+      "required_new_comparisons": ["Separate TP, bias/GEMM, attention factors; complete same-input native R124 QKV/rows/attention/block/merged/DeepStack outputs on every rank and whole encoder.", "FP16 local partial vs FP32 row partial must not be silently exchanged; actual masks/scales/phantom keys and full HCCL order preserved or deviations escalated."],
+      "decision": "Keep disabled under the new contract. Ask the user before pursuing any known non-lossless restoration; do not auto-release for <1% measured error."
+    },
+    {
+      "id": "vision_bias_patch_activation_corrections",
+      "name": "旧 vision 单次 bias/patch Linear/true-erf 修补组合",
+      "priority": "P3_known_rounding_change_not_safe_restore",
+      "old_implementation_paths": ["artifacts/diagnostics/round87/vision_adapter87.py", "artifacts/diagnostics/round87/vision/vision_bias87.py", "artifacts/diagnostics/round99/vision_probe99.py"],
+      "R124_enabled": false,
+      "R124_source_locations": ["artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:526-542", "artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py:601-648"],
+      "semantics": "Old correction paths move bias into FP32 pre-cast epilogue or change patch/merger pointwise implementation, seeking a different reference's precision.",
+      "risk": "R124 native biased Half Linear may round local GEMM before Half bias; the old kernel intentionally removes that rounding. Conv3d→Linear and alternate erf/polynomial activation also change native arithmetic/dispatch. Leaf improvements versus another teacher are not exact R124 restoration.",
+      "historical_measurement_scope": "Old same-input leaf/whole vision controls and combined probe clocks; no clean proof of R124 whole-output zero difference or automatic speed advantage.",
+      "required_new_comparisons": ["All patch/116 biased Linear/31 GELU outputs from the same actual R124 operands, then full vision/DeepStack/encoder, factor-by-factor.", "No new FP32 parameter shadow or removal of native rounds hidden as a compatibility fix."],
+      "decision": "Keep disabled; any intentional math/rounding deviation requires user approval, independent of whether another oracle error improves."
+    },
+    {
+      "id": "experimental_FP32_shadow_BF16_cast_stack",
+      "name": "旧 BF16 codec＋FP32 shadow text/vision 子栈",
+      "priority": "excluded_from_R124_lossless_restoration",
+      "old_implementation_paths": ["artifacts/diagnostics/round65/shadow_cache65.py", "artifacts/diagnostics/round71/vision_linear71.py", "artifacts/diagnostics/round69/activation_cast69.py", "artifacts/diagnostics/round70/complete_encode_tp8.py"],
+      "R124_enabled": false,
+      "semantics": "Old exact conversions/caches preserve a BF16-I/O FP32-mathematics experimental graph, not current native FP16 linears/norm/attention.",
+      "risk": "Blindly restoring changes storage/compute dtype, GEMM geometry, activation round points and per-rank HBM by many GiB. The old BF16 full-output hash is not the R124 precision reference. Reuse only generic cache lifecycle/descriptors if implementing a separate current-dtype layout cache.",
+      "historical_measurement_scope": "Old R70/R71 resident encode_ids controls, not current full-service precision/timing; numerical history is intentionally not re-opened or relabelled here.",
+      "required_new_comparisons": ["No execution proposed for this stack under strict R124 acceptance. Any alternative dtype/math requires explicit user choice first."],
+      "decision": "Excluded. Do not claim old 1.83s resident text or old experimental whole-encoder identity as current R124 performance/precision evidence."
+    }
+  ],
+  "recommended_order": [
+    "Freeze the successful R124 encoder and actual imported Norm/SDPA/runtime flags; establish same-input complete repeat identity without rerunning old CPU/BF16 gold.",
+    "Implement fail-closed R124-native geometry memoization and audit existing pinned-master/staging lifecycle first; preserve full live model computation.",
+    "Separate immutable Half layout/prebuild infrastructure from any GEMM/backend arithmetic replacement; validate zero difference before activation and measure same-run complete live stage.",
+    "Design new instance-local FP16 Norm/RoPE/SwiGLU pointwise-only candidates that retain R124 exact rounds, not old BF16/HF substitutions.",
+    "Keep TP-vision/custom FA/bias/padding/alternative-table/dtype paths disabled if they differ; present counterexamples and ask the user rather than use the obsolete 1% automatic threshold."
+  ],
+  "explicit_exclusions": [
+    "No hidden/modal conditioning, image/patch embeddings, DeepStack, K/V activations or full encoder-output caches masquerading as live encoder acceleration.",
+    "No CPU/GPU model execution, no old CPU/BF16 baseline regeneration, no fleet/resource action, no weight download or remote connection in this inventory task.",
+    "No historical timing composition, benchmark extrapolation, cross-round subtraction or combined-kernel speed claimed for R124.",
+    "No claim that an exact packed-weight roundtrip implies an exact GEMM/collective/output, or that good sampled video quality implies optimization losslessness."
+  ],
+  "execution_status": {
+    "inventory_complete": true,
+    "code_only_static_R124_manifest_and_AST_check": true,
+    "local_or_remote_model_executed": false,
+    "remote_connection_or_resource_claim": false,
+    "weights_read_or_downloaded": false,
+    "candidate_implemented_or_enabled": false,
+    "production_modified": false,
+    "only_expected_written_path": "artifacts/diagnostics/round125/encoder_inventory125.json"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "scope": "R125 candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": false,
+  "mode": "static_cache",
+  "rank": 0,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    0,
+    10,
+    25,
+    40,
+    48
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [],
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float16": 16539411712,
+    "torch.float32": 22377664
+  },
+  "whole_model_resident_move_s": 2.4725124202668667,
+  "per_block_cpu_offload_used": false,
+  "resident_parameter_bytes": 33168334080,
+  "static_device_tensor_cache": true,
+  "cached_static_keys": [
+    "audio_pos_info",
+    "img_pos_for_infer_output_info",
+    "img_pos_info",
+    "img_position_ids",
+    "packed_seq_params",
+    "prompt_embeds",
+    "refiner_packed_seq_params",
+    "skip_mask_out_condition",
+    "text_pos_info",
+    "token_tags",
+    "update_mask"
+  ],
+  "cached_static_bytes": 22296976,
+  "failure": {
+    "type": "OutOfMemoryError",
+    "message": "NPU out of memory. Tried to allocate 404.00 MiB (NPU 0; 32.00 GiB total capacity; 31.06 GiB already allocated; 31.06 GiB current active; 3.42 MiB free; 31.31 GiB reserved in total by PyTorch).If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation."
+  }
+}
