@@ -1,0 +1,38 @@
+{
+  "scope": "User-approved candidate: keep the 50-block residual stream in FP16 instead of FP32, measured on top of the accepted FA kernel with the identical R124 inputs.",
+  "completed": true,
+  "variant_scope": "Replaces the module-level _modulate_gate used by all 50 main DiT blocks. The two-layer token refiner keeps its FP32 accumulation because that path lives in a class method, so this is a lower bound on a full FP16-stream rewrite.",
+  "timing": {
+    "half_residual_warm_step_median_s": 25.92552120005712,
+    "FA_only_warm_step_median_s": 18.410165359731764,
+    "R124_baseline_warm_step_median_s": 40.466285259928554,
+    "verdict": "slower than the FA base by about 40 percent"
+  },
+  "numerics": {
+    "video_relative_RMS_by_step": [
+      0.0012106924205463284,
+      0.0006481922059430352,
+      0.0002676898801005374,
+      0.0003243386852387647,
+      0.0005285199553267936
+    ],
+    "FA_only_video_relative_RMS_by_step": [
+      0.0011571761640974407,
+      0.0005575570286975751,
+      0.0002658359430098,
+      0.0003255380708531588,
+      0.0005177232077103393
+    ],
+    "audio_relative_RMS_by_step": [
+      0.0018752596473086127,
+      0.0007667200832749918,
+      0.00045076967078662097,
+      0.0005820230152292871,
+      0.001379150246662905
+    ],
+    "finite_all_steps": true,
+    "verdict": "numerically indistinguishable from the FA base, i.e. the FP32 residual stream was not buying accuracy here - but it also was not costing speed"
+  },
+  "conclusion": "Reject this candidate on performance grounds: it is slower than the FA base while changing almost nothing numerically. The FP32 residual accumulation is therefore not a speed cost in this graph; the remaining step time is dominated by per-block weight staging, not by residual precision.",
+  "evidence": "artifacts/diagnostics/round125/half_res_fa_rank0.json"
+}

@@ -7,7 +7,7 @@
     "policy_from_user": "This version is the precision baseline. Restore every previously removed acceleration; keep it when lossless, stop and ask the user when measurably lossy - an error inside the earlier 1% GPU-comparison tolerance is NOT auto-approved."
   },
   "completed": true,
-  "status": "round125_FA_kernel_restored_full_49step_generation_completed_and_media_verified",
+  "status": "round125_all_five_approved_candidates_measured_one_kept_three_rejected_one_unavailable",
   "overall_speed_goal_complete": false,
   "lossy_candidates_enabled_without_user_approval": false,
   "resources_released": true,
@@ -169,7 +169,7 @@
     "The 15 s/step, 2 s encoder and 20 s VAE targets remain unmet; no A2/A3 comparison was produced.",
     "No new universal picture or audio quality claim is made."
   ],
-  "next_work": "Measure the three remaining approved candidates on top of the FA base; then a full 49-step run for whichever set the user accepts.",
+  "next_work": "Raise the remaining step/decoder cost: the DiT step is now staging-bound at this precision configuration and the VAE decode is not parameter-precision bound, so both need a different lever than the approximations tried here. Encoder and A2/A3 comparison still outstanding.",
   "evidence_root": "artifacts/diagnostics/round125",
   "user_decision": {
     "approved_lossy_candidates": [
@@ -187,9 +187,8 @@
     "consequence": "DiT fully replicated per rank; only sequence parallelism splits activations; residency cannot fit and raising TP does not reduce per-rank weights"
   },
   "pending_candidates_not_yet_measured": [
-    "VAE Half parameters + fused decoder fast path",
-    "DiT FP16 residual stream (variant written, not yet run)",
-    "fused FP16 pointwise kernels"
+    "AdaLN/QK-norm+RoPE fusion specifically (the highest-volume pointwise fusion, SwiGLU, was measured and gained nothing; the profile shows the remaining step time is per-block weight staging)",
+    "encoder acceleration (still about 65 s against a 2 s target)"
   ],
   "FA_full_generation": {
     "completed": true,
@@ -238,5 +237,29 @@
   },
   "lossy_candidates_enabled_with_user_approval": [
     "custom 910A TBE flash attention"
-  ]
+  ],
+  "candidates_measured_summary_file": "artifacts/diagnostics/round125/candidates_measured125.json",
+  "user_approval": {
+    "approved": [
+      "custom 910A TBE flash attention",
+      "VAE Half parameters + fused decoder fast path",
+      "DiT FP16 residual stream",
+      "raised TP/USP sharding for residency",
+      "fused FP16 pointwise kernels"
+    ],
+    "acceptance": "report error and timing per item; the user decides"
+  },
+  "decisions_measured": {
+    "kept_and_accepted_by_user": [
+      "custom 910A TBE flash attention"
+    ],
+    "rejected_on_performance": [
+      "VAE Half parameters + fused decoder fast path (decode 132.4 s vs 138.6 s baseline, within variance, wall unchanged)",
+      "DiT FP16 residual stream (25.93 s vs 18.41 s, about 40 percent slower)",
+      "fused FP16 pointwise via SwiGLU/SiluAndMul (18.83 s vs 18.41 s, no gain, and video drift to 0.22 percent / audio to 1.64 percent by step 48)"
+    ],
+    "unavailable": [
+      "raised TP/USP to make the DiT resident: TP does not shard the DiT weights, residency OOMs, and USP8 is slower than USP4"
+    ]
+  }
 }

@@ -1,0 +1,120 @@
+{
+  "scope": "R125 candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "profile",
+  "rank": 0,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    0,
+    10,
+    25,
+    40,
+    48
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "step_index": 25,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "elapsed_s_warm_after_first_step": 83.58710006996989,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.6487650871276855
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889164924621582
+      },
+      "video_vs_R124_baseline": {
+        "shape": [
+          37296,
+          96
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 3579886,
+        "total_elements": 3580416,
+        "relative_RMS_vs_R124_NPU_baseline": 0.00026402625739540414,
+        "max_abs_difference": 0.014984846115112305,
+        "finite": true
+      },
+      "audio_vs_R124_baseline": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 13246,
+        "total_elements": 13248,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0004077478155339187,
+        "max_abs_difference": 0.004996724426746368,
+        "finite": true
+      },
+      "bit_identical_to_R124_baseline": false,
+      "candidate_prediction_sha256": "0a2cef31bc2826f625ca388d990c0c861c3b94e7836ef52121bd7702dcdd6ebd",
+      "region_seconds": {
+        "attn[mid]": 12.309,
+        "token_refiner": 10.464,
+        "attn[0]": 9.164,
+        "adaln[mid]": 6.962,
+        "time_embedder": 6.913,
+        "final_layer": 5.966,
+        "video_patch_proj": 5.399,
+        "audio_patch_proj": 2.854,
+        "mlp[mid]": 2.731,
+        "mlp[0]": 2.667,
+        "norm1[0]": 1.406,
+        "adaln[0]": 1.1,
+        "adaln[49]": 0.232,
+        "attn[49]": 0.219,
+        "norm1[mid]": 0.086,
+        "norm2[mid]": 0.085,
+        "mlp[49]": 0.057,
+        "norm2[0]": 0.002,
+        "norm1[49]": 0.002,
+        "norm2[49]": 0.002
+      }
+    }
+  ],
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float16": 16539411712,
+    "torch.float32": 22377664
+  },
+  "per_block_cpu_offload_used": true,
+  "all_steps_bit_identical_to_R124_baseline": false,
+  "warm_step_median_s": null,
+  "failure": {
+    "type": "ValueError",
+    "message": "min() iterable argument is empty"
+  }
+}

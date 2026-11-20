@@ -1,0 +1,87 @@
+{
+  "scope": "R125 measurements of every user-approved lossy acceleration candidate, each measured against the accepted FA base with the identical R124 inputs. Numbers are reported for the user to decide; nothing here is auto-accepted.",
+  "base": {
+    "precision_baseline": "commit f3f1328 (R124 original-50-layer FP16/FP32-protected graph)",
+    "accepted_acceleration": "custom 910A TBE flash attention (VLLM_OMNI_910A_FLASH_ATTN=1)",
+    "FA_warm_step_median_s": 18.410165359731764,
+    "R124_warm_step_median_s": 40.466285259928554,
+    "device_self_repeat_noise_band": {"video_relative_RMS": [0.000259, 0.001034], "audio_relative_RMS": [0.000345, 0.002173]}
+  },
+  "candidates": [
+    {
+      "candidate": "custom 910A TBE flash attention",
+      "classification": "ACCEPTED by the user; kept",
+      "speed": {"warm_step_median_s": 18.41, "engine_warm_step_s": 17.76, "speedup_step": 2.2,
+                "generation_wall_s": 1329.96, "R124_generation_wall_s": 2316.96, "end_to_end_speedup": 1.74},
+      "numerics": {"video_relative_RMS_range": [0.000266, 0.001157], "audio_relative_RMS_range": [0.000397, 0.002913],
+                   "media_PSNR_min_dB": 51.18, "media_PSNR_median_dB": 54.98, "frames_below_40dB": 0},
+      "evidence": "artifacts/diagnostics/round125/fa910a_candidate125.json"
+    },
+    {
+      "candidate": "VAE Half decoder parameters + native fused decoder fast path",
+      "classification": "REJECT on performance: no measurable gain",
+      "how": "the R124 hook forces original FP32 VAE parameters and skips the whole installer; setting H3_NPU_VAE_PRESERVE_FP32_PARAMS124=0 restores the native installer",
+      "speed": {"decode_median_s": 132.375, "baseline_decode_median_s": 138.551, "FA_run_decode_median_s": 133.7,
+                "generation_wall_s": 1329.76, "FA_generation_wall_s": 1329.96,
+                "verdict": "decode improves by at most 4 percent, which is inside run-to-run variance, and the end-to-end wall is unchanged"},
+      "numerics": {"media_PSNR_min_dB_vs_FA": 51.68, "media_PSNR_median_dB_vs_FA": 54.30,
+                   "media_PSNR_min_dB_vs_R124": 51.72, "frames_below_40dB": 0,
+                   "audio_peak": 0.0001738, "audio_reference_peak": 0.0001820},
+      "conclusion": "The VAE decode time is not dominated by decoder parameter precision. Something else (tile staging / temporal streaming / audio decode) owns those ~132 s, so the Half-parameter rewrite buys nothing and is not worth its numerical risk.",
+      "evidence": "artifacts/diagnostics/round125/VAEfast_vs_baselines125.json"
+    },
+    {
+      "candidate": "DiT FP16 residual stream",
+      "classification": "REJECT on performance: slower",
+      "how": "module-level _modulate_gate narrowed to the incoming Half dtype, so the 50-block residual stream stops being widened to FP32; the 2-layer token refiner keeps FP32 accumulation, so this is a lower bound on a full rewrite",
+      "speed": {"warm_step_median_s": 25.93, "FA_warm_step_median_s": 18.41, "verdict": "about 40 percent slower than the FA base"},
+      "numerics": {"video_relative_RMS_by_step": [0.001211, 0.000648, 0.000268, 0.000324, 0.000529],
+                   "FA_only_video_relative_RMS_by_step": [0.001157, 0.000558, 0.000266, 0.000326, 0.000518],
+                   "audio_relative_RMS_by_step": [0.001875, 0.000767, 0.000451, 0.000582, 0.001379],
+                   "verdict": "numerically indistinguishable from the FA base"},
+      "conclusion": "The FP32 residual accumulation is not a speed cost in this graph and dropping it changes nothing measurable, so the candidate adds risk for negative benefit.",
+      "evidence": "artifacts/diagnostics/round125/half_residual_candidate125.json"
+    },
+    {
+      "candidate": "fused FP16 pointwise kernels, measured via the SwiGLU product (platform SiluAndMul)",
+      "classification": "REJECT on performance and numerics: no gain, and drift accumulates",
+      "how": "MiniMaxH3MLP.forward replaces F.silu(gate.float()) * up.float() with the platform SiluAndMul so the gate product is computed in FP16 in one pass",
+      "speed": {"warm_step_median_s": 18.83, "FA_warm_step_median_s": 18.41, "verdict": "inside noise, no gain"},
+      "numerics": {"video_relative_RMS_by_step": [0.000933, 0.000721, 0.000783, 0.000758, 0.002217],
+                   "FA_only_video_relative_RMS_by_step": [0.001157, 0.000558, 0.000266, 0.000326, 0.000518],
+                   "audio_relative_RMS_by_step": [0.001334, 0.001292, 0.004431, 0.003676, 0.016429],
+                   "verdict": "2-4x the FA base on video and up to 16x on audio by step 48; the drift grows with step index"},
+      "conclusion": "Fusing the gate product removes the FP32 guard on the largest pointwise tensor and buys no time, so it is worse on both axes.",
+      "evidence": "artifacts/diagnostics/round125/fused_mlp_fa_rank0.json"
+    },
+    {
+      "candidate": "raised tensor/sequence parallelism to make the DiT resident",
+      "classification": "NOT AVAILABLE at the baseline precision configuration",
+      "measured": {"resident_attempt": "NPU OOM, 31.06 GiB allocated and a 404 MiB request failed on all 8 ranks",
+                   "tensor_parallel_shards_weights": false,
+                   "evidence": "per-rank parameter bytes identical at TP2 and TP8 (33168334080 bytes)",
+                   "USP8_without_FA_warm_step_s": 42.60, "USP8_with_FA_warm_step_s": 22.64, "TP2_USP4_with_FA_warm_step_s": 18.41},
+      "conclusion": "The DiT is fully replicated per rank and only sequence parallelism splits activations, so residency cannot fit 32 GiB and raising TP does not reduce per-rank weights. Sequence parallelism beyond USP4 is slower, so the best measured layout stays TP2/USP4."
+    }
+  ],
+  "net_result": {
+    "kept_accelerations": ["custom 910A TBE flash attention"],
+    "net_step_time_s": 18.41,
+    "net_speedup_vs_R124": 2.2,
+    "net_end_to_end_speedup": 1.74,
+    "rejected_candidates": 3,
+    "rejected_reasons": ["VAE fast path: no decode or wall gain", "FP16 residual stream: 40 percent slower", "fused SwiGLU: no gain and accumulating numeric drift"],
+    "remaining_bottleneck": "With attention fixed, one warm step is dominated by per-block weight staging from the CPU offload (the DiT cannot be resident at this precision configuration), which is why residency-free candidates such as pointwise fusion and residual-narrowing did nothing."
+  },
+  "targets_still_unmet": {
+    "encoder_under_2s": "not met (R124 live encoder stage about 65 s)",
+    "DiT_under_15s_per_step": "not met, but now close: 17.76 s in the engine and 18.41 s in the replay harness",
+    "VAE_decode_under_20s": "not met (about 132-139 s, and the fast path does not move it)",
+    "A2_A3_comparison": "not measured"
+  },
+  "no_claim": [
+    "No universal picture or audio quality claim; the audio track stays at about -75 dBFS in every configuration and sample-level audio differences are not used as evidence.",
+    "No lossy candidate other than the FA kernel was enabled anywhere.",
+    "No claim that the original performance goal is complete."
+  ]
+}

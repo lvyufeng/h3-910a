@@ -1,0 +1,311 @@
+{
+  "scope": "R125 candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "half_res",
+  "rank": 0,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    0,
+    10,
+    25,
+    40,
+    48
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "step_index": 0,
+      "sigma_video": 1.0,
+      "sigma_audio": 1.0,
+      "elapsed_s_warm_after_first_step": 82.20921033015475,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 11.848712921142578
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.8234734535217285
+      },
+      "video_vs_R124_baseline": {
+        "shape": [
+          37296,
+          96
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 3580252,
+        "total_elements": 3580416,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0012106924205463284,
+        "max_abs_difference": 0.21059679985046387,
+        "finite": true
+      },
+      "audio_vs_R124_baseline": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 13247,
+        "total_elements": 13248,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0018752596473086127,
+        "max_abs_difference": 0.01922440528869629,
+        "finite": true
+      },
+      "bit_identical_to_R124_baseline": false,
+      "candidate_prediction_sha256": "cb48def237d1de9bc18d1dbe5019945939a03c45894ee13b757a138576dbc116"
+    },
+    {
+      "step_index": 10,
+      "sigma_video": 0.9790794253349304,
+      "sigma_audio": 0.9212597608566284,
+      "elapsed_s_warm_after_first_step": 34.80049535026774,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.711259365081787
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 5.120196342468262
+      },
+      "video_vs_R124_baseline": {
+        "shape": [
+          37296,
+          96
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 3579992,
+        "total_elements": 3580416,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0006481922059430352,
+        "max_abs_difference": 0.056575775146484375,
+        "finite": true
+      },
+      "audio_vs_R124_baseline": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 13248,
+        "total_elements": 13248,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0007667200832749918,
+        "max_abs_difference": 0.01032412052154541,
+        "finite": true
+      },
+      "bit_identical_to_R124_baseline": false,
+      "candidate_prediction_sha256": "14d197a1985a0fc2c56c7ee6e7dcad5ad704c078149e527b1d377b5a9f3f91f5"
+    },
+    {
+      "step_index": 25,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "elapsed_s_warm_after_first_step": 25.92552120005712,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.6487908363342285
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889121055603027
+      },
+      "video_vs_R124_baseline": {
+        "shape": [
+          37296,
+          96
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 3579869,
+        "total_elements": 3580416,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0002676898801005374,
+        "max_abs_difference": 0.015460491180419922,
+        "finite": true
+      },
+      "audio_vs_R124_baseline": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 13245,
+        "total_elements": 13248,
+        "relative_RMS_vs_R124_NPU_baseline": 0.00045076967078662097,
+        "max_abs_difference": 0.007284373044967651,
+        "finite": true
+      },
+      "bit_identical_to_R124_baseline": false,
+      "candidate_prediction_sha256": "4362bbfd62a2400c0ff0766a522706558bdc4311f92041a3e755e5acf27d4d38"
+    },
+    {
+      "step_index": 40,
+      "sigma_video": 0.7297297120094299,
+      "sigma_audio": 0.4029850363731384,
+      "elapsed_s_warm_after_first_step": 22.790362489875406,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.652425765991211
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.918138027191162
+      },
+      "video_vs_R124_baseline": {
+        "shape": [
+          37296,
+          96
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 3579906,
+        "total_elements": 3580416,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0003243386852387647,
+        "max_abs_difference": 0.023817777633666992,
+        "finite": true
+      },
+      "audio_vs_R124_baseline": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 13246,
+        "total_elements": 13248,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0005820230152292871,
+        "max_abs_difference": 0.020106911659240723,
+        "finite": true
+      },
+      "bit_identical_to_R124_baseline": false,
+      "candidate_prediction_sha256": "922263cffa0f667c7b2e0cf0b0a83a33c8e0a01428ef6e3bcd617654dbe40f52"
+    },
+    {
+      "step_index": 48,
+      "sigma_video": 0.20000000298023224,
+      "sigma_audio": 0.05882352963089943,
+      "elapsed_s_warm_after_first_step": 23.230269350111485,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.522100925445557
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.867825031280518
+      },
+      "video_vs_R124_baseline": {
+        "shape": [
+          37296,
+          96
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 3580143,
+        "total_elements": 3580416,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0005285199553267936,
+        "max_abs_difference": 0.0525205135345459,
+        "finite": true
+      },
+      "audio_vs_R124_baseline": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 13248,
+        "total_elements": 13248,
+        "relative_RMS_vs_R124_NPU_baseline": 0.001379150246662905,
+        "max_abs_difference": 0.009660065174102783,
+        "finite": true
+      },
+      "bit_identical_to_R124_baseline": false,
+      "candidate_prediction_sha256": "ac028c96d09a726ef8d65e53867110cb0af58c45cd1bf733178029daeec9174e"
+    }
+  ],
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float32": 22377664,
+    "torch.float16": 16539411712
+  },
+  "half_residual_variant": {
+    "replaced_module_function": "_modulate_gate",
+    "original_widened_to": "float32",
+    "variant_keeps": "incoming dtype (float16)",
+    "uncovered_path": "MiniMaxH3TokenRefinerBlock.forward still accumulates in FP32",
+    "original_is_restorable": true
+  },
+  "per_block_cpu_offload_used": true,
+  "all_steps_bit_identical_to_R124_baseline": false,
+  "warm_step_median_s": 25.92552120005712,
+  "warm_step_min_s": 22.790362489875406,
+  "warm_step_max_s": 34.80049535026774
+}
