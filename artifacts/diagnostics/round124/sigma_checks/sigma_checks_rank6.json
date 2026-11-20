@@ -1,0 +1,66 @@
+{
+  "scope": "Same-input NPU H3 checks at five real GPU-trajectory sigma positions.\n\nExplicitly teacher-forced diagnostic input snapshots, not a production conditioning\ncache. Uses the original full50-layer transformer and the R123 verified FP16 matrix /\nFP32 range contract with patch/time residual guards. All actual model compute is on\nowned 910A. Full video/audio prediction tensors are compared, not sampled errors.\nEngineering acceptance: relativeRMS <=1% per modality, target0.5%; no zero-error demand.\n",
+  "completed": true,
+  "rank": 6,
+  "selected_steps": [
+    0,
+    10,
+    25,
+    40,
+    48
+  ],
+  "same_input_gate_limit_relative_RMS": 0.01,
+  "target_relative_RMS": 0.005,
+  "zero_error_required": false,
+  "CPU_model_inference": false,
+  "same_input_diagnostic_not_full_generation": true,
+  "actual_GPU_pipeline_context_and_timestep_bits_used": true,
+  "live_GPU_encoder_and_tiled_VAE_context_teacher_forced_for_this_diagnostic_only": true,
+  "full_prediction_tensors_compared_on_rank0": true,
+  "full_transformer_layers": 50,
+  "checks": [
+    {
+      "step_index": 0,
+      "sigma_video": 1.0,
+      "sigma_audio": 1.0,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 102.01735818013549
+    },
+    {
+      "step_index": 10,
+      "sigma_video": 0.9790794253349304,
+      "sigma_audio": 0.9212597608566284,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 133.13624314963818
+    },
+    {
+      "step_index": 25,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 37.89415151998401
+    },
+    {
+      "step_index": 40,
+      "sigma_video": 0.7297297120094299,
+      "sigma_audio": 0.4029850363731384,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 37.16352702025324
+    },
+    {
+      "step_index": 48,
+      "sigma_video": 0.20000000298023224,
+      "sigma_audio": 0.05882352963089943,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 37.08245259989053
+    }
+  ],
+  "sigma_and_layout_reference_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "all_selected_sigma_gates_accepted": true
+}

@@ -1,0 +1,31 @@
+{
+  "scope": "Build an original-metadata NPU checkpoint view without copying any weights.\n\nThe resident NPU model_index adds a4-interval base_schedule that is absent from\nour Git-blob-verified official GPU metadata at the pinned revision. Preserve the\nresident file unchanged, use the exact official metadata in an experiment-only\nview, and symlink all component entries to the already verified original NPU\ncheckpoint. This restores the legacy49-evaluation GPU comparison contract via\nthe existing uniform-schedule API, not a student/LoRA or hidden weight conversion.\n",
+  "completed": true,
+  "view_checkpoint": "/tmp/h3_align12401/original_metadata124f/FL2VA",
+  "original_NPU_checkpoint": "/home/mseco/models/MiniMax-H3/FL2VA",
+  "model_weights_copied_or_downloaded": false,
+  "original_NPU_metadata_modified": false,
+  "canonical_model_index_bytes": 719,
+  "canonical_official_git_blob": "ed4dfb751d8417e5ab8cf58a6915214bda6ba676",
+  "resident_model_index_git_blob": "dac871ba202888dd3c5e83e5d22e668adfcaa072",
+  "only_semantic_metadata_difference": "Resident NPU metadata adds base_schedule [1,.7,.4,.15,0]; official pinned metadata does not.",
+  "removed_only_in_private_view_not_original": {
+    "base_schedule": [
+      1.0,
+      0.7,
+      0.4,
+      0.15,
+      0.0
+    ]
+  },
+  "symlinked_original_entries": {
+    "transformer": "/home/mseco/models/MiniMax-H3/FL2VA/transformer",
+    "text_encoder": "/home/mseco/models/MiniMax-H3/FL2VA/text_encoder",
+    "video_vae": "/home/mseco/models/MiniMax-H3/FL2VA/video_vae",
+    "processor": "/home/mseco/models/MiniMax-H3/FL2VA/processor",
+    "tokenizer": "/home/mseco/models/MiniMax-H3/FL2VA/tokenizer",
+    "audio_vae": "/home/mseco/models/MiniMax-H3/FL2VA/audio_vae"
+  },
+  "original13_transformer_shards_previously_verified_against_GPU": true,
+  "same49_evaluation_uniform_sigma_contract_as_actual_GPU_reference": true
+}

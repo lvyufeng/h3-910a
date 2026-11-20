@@ -1,0 +1,236 @@
+{
+  "scope": "Same-input NPU H3 checks at five real GPU-trajectory sigma positions.\n\nExplicitly teacher-forced diagnostic input snapshots, not a production conditioning\ncache. Uses the original full50-layer transformer and the R123 verified FP16 matrix /\nFP32 range contract with patch/time residual guards. All actual model compute is on\nowned 910A. Full video/audio prediction tensors are compared, not sampled errors.\nEngineering acceptance: relativeRMS <=1% per modality, target0.5%; no zero-error demand.\n",
+  "completed": true,
+  "rank": 0,
+  "selected_steps": [
+    0,
+    10,
+    25,
+    40,
+    48
+  ],
+  "same_input_gate_limit_relative_RMS": 0.01,
+  "target_relative_RMS": 0.005,
+  "zero_error_required": false,
+  "CPU_model_inference": false,
+  "same_input_diagnostic_not_full_generation": true,
+  "actual_GPU_pipeline_context_and_timestep_bits_used": true,
+  "live_GPU_encoder_and_tiled_VAE_context_teacher_forced_for_this_diagnostic_only": true,
+  "full_prediction_tensors_compared_on_rank0": true,
+  "full_transformer_layers": 50,
+  "checks": [
+    {
+      "step_index": 0,
+      "sigma_video": 1.0,
+      "sigma_audio": 1.0,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 101.37622822960839,
+      "video_target_velocity": {
+        "relative_RMS": 0.0010231049052990009,
+        "RMSE": 0.002118297924072901,
+        "GPU_RMS": 2.0704601386441714,
+        "max_abs_error": 0.19179987907409668,
+        "p99_abs_error": 0.008129449188709295,
+        "max_abs_error_over_GPU_RMS": 0.09263635435149971,
+        "cosine_similarity": 0.9999994864229382,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          37296,
+          96
+        ]
+      },
+      "audio_velocity": {
+        "relative_RMS": 0.002597872025286982,
+        "RMSE": 0.00294039212791356,
+        "GPU_RMS": 1.1318464109442574,
+        "max_abs_error": 0.012921512126922607,
+        "p99_abs_error": 0.006939497590065005,
+        "max_abs_error_over_GPU_RMS": 0.011416312321159078,
+        "cosine_similarity": 0.9999968100618404,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          414,
+          32
+        ]
+      },
+      "snapshot_sha256": "50ffea38a02c060b5658c76b89743373b0daf22747ba3c9dc731ed49b8857bc3",
+      "accepted_under_1percent_gate": true
+    },
+    {
+      "step_index": 10,
+      "sigma_video": 0.9790794253349304,
+      "sigma_audio": 0.9212597608566284,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 133.00004986999556,
+      "video_target_velocity": {
+        "relative_RMS": 0.0006227370818054888,
+        "RMSE": 0.0010244944443312891,
+        "GPU_RMS": 1.6451476461960381,
+        "max_abs_error": 0.0438542366027832,
+        "p99_abs_error": 0.003914594650268555,
+        "max_abs_error_over_GPU_RMS": 0.026656717835742184,
+        "cosine_similarity": 0.9999998069470697,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          37296,
+          96
+        ]
+      },
+      "audio_velocity": {
+        "relative_RMS": 0.0008794804195212803,
+        "RMSE": 0.0010657576900765828,
+        "GPU_RMS": 1.211803772341739,
+        "max_abs_error": 0.01175832748413086,
+        "p99_abs_error": 0.004030313491821322,
+        "max_abs_error_over_GPU_RMS": 0.009703161314152858,
+        "cosine_similarity": 0.9999996254488006,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          414,
+          32
+        ]
+      },
+      "snapshot_sha256": "d7a40d070b386aa755b3847e63426b20a9397cc4cbc19dfb641c3a3a727e632c",
+      "accepted_under_1percent_gate": true
+    },
+    {
+      "step_index": 25,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 37.893871009815484,
+      "video_target_velocity": {
+        "relative_RMS": 0.00035755736105323114,
+        "RMSE": 0.0005915177345794667,
+        "GPU_RMS": 1.6543296237478515,
+        "max_abs_error": 0.01771700382232666,
+        "p99_abs_error": 0.001706242561340332,
+        "max_abs_error_over_GPU_RMS": 0.010709476254308457,
+        "cosine_similarity": 0.9999999378336174,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          37296,
+          96
+        ]
+      },
+      "audio_velocity": {
+        "relative_RMS": 0.0005629365573593552,
+        "RMSE": 0.0006412785963392856,
+        "GPU_RMS": 1.1391667283919529,
+        "max_abs_error": 0.006849467754364014,
+        "p99_abs_error": 0.0022767034173011864,
+        "max_abs_error_over_GPU_RMS": 0.006012699970646719,
+        "cosine_similarity": 0.9999998465067833,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          414,
+          32
+        ]
+      },
+      "snapshot_sha256": "15cc5e686c84270844972ec1c49b4f08c54d34ee4f6004aeb155d81046fdbfea",
+      "accepted_under_1percent_gate": true
+    },
+    {
+      "step_index": 40,
+      "sigma_video": 0.7297297120094299,
+      "sigma_audio": 0.4029850363731384,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 37.163779760245234,
+      "video_target_velocity": {
+        "relative_RMS": 0.00044925590395489897,
+        "RMSE": 0.0007424480859877326,
+        "GPU_RMS": 1.6526173155473265,
+        "max_abs_error": 0.018062353134155273,
+        "p99_abs_error": 0.0022656917572021484,
+        "max_abs_error_over_GPU_RMS": 0.010929543678521392,
+        "cosine_similarity": 0.9999999010438074,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          37296,
+          96
+        ]
+      },
+      "audio_velocity": {
+        "relative_RMS": 0.0006522271317068875,
+        "RMSE": 0.0007424724347784127,
+        "GPU_RMS": 1.1383648405354618,
+        "max_abs_error": 0.007428765296936035,
+        "p99_abs_error": 0.002758214473724368,
+        "max_abs_error_over_GPU_RMS": 0.006525821100941335,
+        "cosine_similarity": 0.9999997873201288,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          414,
+          32
+        ]
+      },
+      "snapshot_sha256": "22368513e8abaedfed4eb36e5ab7e67f79cae0524cff2e1b881aae40f3eaa834",
+      "accepted_under_1percent_gate": true
+    },
+    {
+      "step_index": 48,
+      "sigma_video": 0.20000000298023224,
+      "sigma_audio": 0.05882352963089943,
+      "model_outputs_finite": true,
+      "elapsed_s_includes_CPU_offload_not_benchmark": 37.084377239923924,
+      "video_target_velocity": {
+        "relative_RMS": 0.0006534473566626878,
+        "RMSE": 0.0010142053753010197,
+        "GPU_RMS": 1.552084287984283,
+        "max_abs_error": 0.04997849464416504,
+        "p99_abs_error": 0.00298154354095459,
+        "max_abs_error_over_GPU_RMS": 0.03220088949490811,
+        "cosine_similarity": 0.9999997865617196,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          37296,
+          96
+        ]
+      },
+      "audio_velocity": {
+        "relative_RMS": 0.0019723312253239105,
+        "RMSE": 0.002249003473046365,
+        "GPU_RMS": 1.1402767669902996,
+        "max_abs_error": 0.028774917125701904,
+        "p99_abs_error": 0.006008409261703493,
+        "max_abs_error_over_GPU_RMS": 0.025235028862029506,
+        "cosine_similarity": 0.9999980640264946,
+        "finite": true,
+        "accepted_under_1percent_gate": true,
+        "meets_0point5percent_target": true,
+        "shape": [
+          414,
+          32
+        ]
+      },
+      "snapshot_sha256": "a5b8de0f21eb5c05b0d3c3e5e341bebda46329aef4529c68cfa848e6a8d78868",
+      "accepted_under_1percent_gate": true
+    }
+  ],
+  "sigma_and_layout_reference_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "all_selected_sigma_gates_accepted": true
+}
