@@ -7,7 +7,7 @@
     "policy_from_user": "This version is the precision baseline. Restore every previously removed acceleration; keep it when lossless, stop and ask the user when measurably lossy - an error inside the earlier 1% GPU-comparison tolerance is NOT auto-approved."
   },
   "completed": true,
-  "status": "round125_acceleration_candidates_measured_fa_kernel_restored_and_reported",
+  "status": "round125_FA_kernel_restored_full_49step_generation_completed_and_media_verified",
   "overall_speed_goal_complete": false,
   "lossy_candidates_enabled_without_user_approval": false,
   "resources_released": true,
@@ -169,7 +169,7 @@
     "The 15 s/step, 2 s encoder and 20 s VAE targets remain unmet; no A2/A3 comparison was produced.",
     "No new universal picture or audio quality claim is made."
   ],
-  "next_work": "Measure the three pending user-approved candidates the same way (same-input deviation plus warm timing), then run a full 49-step generation with whichever set the user accepts and compare media.",
+  "next_work": "Measure the three remaining approved candidates on top of the FA base; then a full 49-step run for whichever set the user accepts.",
   "evidence_root": "artifacts/diagnostics/round125",
   "user_decision": {
     "approved_lossy_candidates": [
@@ -187,8 +187,56 @@
     "consequence": "DiT fully replicated per rank; only sequence parallelism splits activations; residency cannot fit and raising TP does not reduce per-rank weights"
   },
   "pending_candidates_not_yet_measured": [
-    "VAE Half parameters + fused decoder fast path (decode was 138.55 s of the 2316.96 s wall)",
-    "DiT FP16 residual stream (replace residual = x.float() and the FP32 gate accumulation in the verified replay module)",
-    "fused FP16 pointwise kernels (QK-norm+RoPE, RMSNorm+AdaLN scale/shift, SiLU-and-mul)"
+    "VAE Half parameters + fused decoder fast path",
+    "DiT FP16 residual stream (variant written, not yet run)",
+    "fused FP16 pointwise kernels"
+  ],
+  "FA_full_generation": {
+    "completed": true,
+    "actual_video_generated": true,
+    "eight_workers_each_49_real_evaluations": true,
+    "generation_wall_s": 1329.960543639958,
+    "R124_generation_wall_s": 2316.95521853026,
+    "end_to_end_speedup": 1.742,
+    "engine_initialization_s": 291.41714676003903,
+    "R124_engine_initialization_s": 232.20943147037178,
+    "video_sha256": "9b0d419d99a8dd36696b1e04b46f4041cfdead3a5ce861c9b0f07c53c8a3db6c",
+    "video_bytes": 511225,
+    "audio_sha256": "0a7b667c18beb41168fcdfb0b56eccc39afc67aad0908053dc844122b1f76431",
+    "audio_bytes": 1324888,
+    "media_verification": {
+      "width": 1344,
+      "height": 768,
+      "fps": "24/1",
+      "video_codec": "h264",
+      "audio_codec": "aac",
+      "sample_rate": 32000,
+      "audio_channels": 2,
+      "decoded_video_frames": 124,
+      "decoded_audio_samples": 165600
+    },
+    "native_audio_peak": 0.00018590770196169615,
+    "native_audio_RMS": 1.153301392610705e-05,
+    "R124_native_audio_peak": 0.00017513817874714732,
+    "quality_accepted": false,
+    "speed_targets_accepted": false,
+    "media_paths": {
+      "video": "artifacts/diagnostics/round125/NPU_generated_FA/h3_910a_vllm_omni_fp16.mp4",
+      "audio": "artifacts/diagnostics/round125/NPU_generated_FA/h3_910a_vllm_omni_audio.wav",
+      "contact_sheet": "artifacts/diagnostics/round125/NPU_generated_FA/contact_sheet.png"
+    }
+  },
+  "R124_vs_FA_media_comparison": {
+    "frames": 124,
+    "psnr_min_dB": 51.18206024169922,
+    "psnr_median_dB": 54.976932525634766,
+    "frames_below_40dB": 0,
+    "mean_abs_diff_rgb_0_255": 0.10427127778530121,
+    "audio_relative_RMS_diff": 1.0732034879005683,
+    "audio_correlation": 0.4195153914299727,
+    "interpretation": "The 49-step trajectory does not diverge: every frame stays at or above 51 dB PSNR against the R124 baseline, i.e. mean absolute pixel difference around 0.04 of one 8-bit level. The audio tracks are both inaudible noise near -75 dBFS, so their sample-level correlation is not a perceptual-quality measurement and is not claimed as one."
+  },
+  "lossy_candidates_enabled_with_user_approval": [
+    "custom 910A TBE flash attention"
   ]
 }

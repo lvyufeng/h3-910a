@@ -68,3 +68,45 @@ performance baselines.
 
 No speed target was met; no full generation was produced this round; no A2/A3 comparison
 was measured; no universal picture or audio quality claim is made.
+
+## Restored acceleration: custom 910A flash attention (user-approved)
+
+The R124 install already routes `TORCH_SDPA` to the chunked matmul+softmax backend;
+the fused TBE kernel sits behind `VLLM_OMNI_910A_FLASH_ATTN=1` and, for this shape,
+reuses `b1_h7_n43776_d128_br128_bc304_c30_k41769_v3`. Engagement is proven by the
+`[FA910A] plan ... B=1 H=7 N=43776 D=128 Br=128 Bc=304 core_budget=30` line.
+
+| measurement | R124 baseline | with FA |
+|---|---:|---:|
+| engine warm step (H3PERF) | 38.33 s | **17.76 s** (first 169.16 s) |
+| replay harness warm step | 40.47 s | **18.41 s** |
+| 49-step generation wall | 2316.96 s | **1329.96 s** |
+| end-to-end | 1.00x | **1.74x** |
+
+Same-input deviations stayed at or near the device's own run-to-run noise band
+(video 0.027%-0.116%, audio 0.040%-0.291%). Over the full trajectory the generated
+media does not drift away from the baseline:
+
+- 124/124 frames at **PSNR >= 51.18 dB** (median 54.98 dB), mean absolute pixel
+  difference 0.104 of one 8-bit level; no frame below 40 dB.
+- Both audio tracks remain inaudible noise near **-75 dBFS** (peak 1.86e-4 vs
+  1.75e-4), so sample-level audio correlation is not used as a quality claim.
+
+Artifacts: [video](<artifacts/diagnostics/round125/NPU_generated_FA/h3_910a_vllm_omni_fp16.mp4>),
+[audio](<artifacts/diagnostics/round125/NPU_generated_FA/h3_910a_vllm_omni_audio.wav>),
+[contact sheet](<artifacts/diagnostics/round125/NPU_generated_FA/contact_sheet.png>),
+[comparison](<artifacts/diagnostics/round125/R124_vs_FA_media125.json>),
+[kernel evidence](<artifacts/diagnostics/round125/fa910a_candidate125.json>).
+
+Two harness failures were preserved rather than reinterpreted: attempt 124h died in
+my media-capture path assertion after a complete 49-step DiT and VAE decode, and
+attempt 124i died because the private IPC key lived outside `/tmp/h3_align12401`, so
+`configure_python_startup`'s assertion was swallowed at interpreter startup and the
+worker audit hook never installed. Both were harness errors, not model failures.
+
+## Still outstanding
+
+The three remaining approved candidates are unmeasured: VAE Half parameters + fused
+decoder, the DiT FP16 residual stream (variant written, not yet run), and fused FP16
+pointwise kernels. The encoder (65.11 s), VAE decode (138.55 s) and 15 s/step targets
+are still unmet, and no A2/A3 comparison has been produced.

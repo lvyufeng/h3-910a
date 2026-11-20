@@ -27,7 +27,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--checkpoint', required=True)
     parser.add_argument('--mode', required=True,
-                        choices=['baseline', 'resident', 'static_cache', 'profile', 'naive'])
+                        choices=['baseline', 'resident', 'static_cache', 'profile', 'naive', 'half_res'])
     parser.add_argument('--label', required=True)
     parser.add_argument('--tp', type=int, default=2)
     parser.add_argument('--usp', type=int, default=4)
@@ -167,6 +167,10 @@ def main():
             module.to('cpu')
             return output
 
+        if args.mode == 'half_res':
+            import h3_replay123.transformer as replay_transformer
+            from r125_half_residual import install_half_residual
+            report['half_residual_variant'] = install_half_residual(replay_transformer)
         if args.mode == 'naive':
             from r125_naive import install_naive
             report['naive_replaced_guards'] = install_naive(model)

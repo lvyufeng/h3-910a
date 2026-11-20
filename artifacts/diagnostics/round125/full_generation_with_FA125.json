@@ -1,0 +1,52 @@
+{
+  "scope": "R125 full 49-step generation with the user-accepted custom 910A flash-attention kernel enabled. All three attempts use the identical R124 driver, sources, checkpoint view and request; only VLLM_OMNI_910A_FLASH_ATTN=1 is added. Failures are preserved, not reinterpreted.",
+  "baseline_for_comparison": {
+    "round": 124,
+    "commit": "f3f1328",
+    "warm_DiT_step_median_s": 38.328544250223786,
+    "generation_wall_s": 2316.95521853026,
+    "video_sha256": "63f894d4f6d2aaebd4b70b938c602e09b91e0075d4f45349ce0e22f558954e15",
+    "audio_sha256": "005ff3a01796a04bbc7a01b9ee06c4d15b21d4ce47a728fb528abff8a0a0c2d7"
+  },
+  "engine_side_step_timing_with_FA": {
+    "source": "[H3PERF] denoise_complete line in attempt 1",
+    "line": "denoise_complete steps=49 first=169.158134s after_first_avg=17.764047s observed_total=1021.832403s last=17.419660s",
+    "first_evaluation_s": 169.16,
+    "warm_average_step_s": 17.76,
+    "last_step_s": 17.42,
+    "denoise_total_s": 1021.83,
+    "speedup_vs_R124_warm_step": 2.16,
+    "note": "This is the real engine path, not the replay harness, and it agrees with the replay measurement (40.47 s -> 18.41 s, 2.2x)."
+  },
+  "attempts": [
+    {
+      "label": "NPU_full_generation124h",
+      "model_outcome": "complete success on the model side: 50/50 DiT evaluations and the full VAE decode finished",
+      "failure": "my own media-capture hook asserted that the raw output directory must live under /tmp/h3_align12401; I had put it under /tmp/h3_accel12501",
+      "classification": "harness path error, not a numerical or model failure",
+      "evidence": "/tmp/h3_accel12501/full_generation_fa125.log"
+    },
+    {
+      "label": "NPU_full_generation124i",
+      "model_outcome": "50/50 DiT evaluations completed again",
+      "failure": "driver assert len(counts)==8 and set(counts.values())=={49} failed with {} because no worker audit file was written",
+      "root_cause": "sitecustomize calls configure_python_startup(), which asserts the private IPC key's parent is /tmp/h3_align12401; the key was under /tmp/h3_accel12501, so the exception was swallowed at interpreter startup and the alignment hook never installed in the workers",
+      "classification": "harness environment error, not a numerical or model failure",
+      "evidence": "/tmp/h3_accel12501/full_generation_fa125b.log"
+    },
+    {
+      "label": "NPU_full_generation124j",
+      "fixes": ["IPC key moved under /tmp/h3_align12401", "raw output directory placed under /tmp/h3_align12401 with the required name prefix"],
+      "preflight": "bootstrap_preflight125j.json reports configure_python_startup() succeeded with BOOTSTRAP_OK",
+      "status": "running"
+    }
+  ],
+  "conclusions_available_already": [
+    "The flash-attention kernel carries the full 49-step trajectory without any numerical failure: two independent attempts completed every DiT evaluation and the VAE decode.",
+    "Engine-side warm step time falls from 38.33 s to 17.76 s (2.16x)."
+  ],
+  "not_yet_claimed": [
+    "No finished video/audio for the FA configuration yet, so no media comparison against the R124 baseline.",
+    "Whether the per-step deviations accumulate over 49 steps into a visible change is still unmeasured."
+  ]
+}
