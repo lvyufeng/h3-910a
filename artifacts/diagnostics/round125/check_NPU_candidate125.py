@@ -29,6 +29,9 @@ def main():
     parser.add_argument('--mode', required=True,
                         choices=['baseline', 'resident', 'static_cache', 'profile', 'naive'])
     parser.add_argument('--label', required=True)
+    parser.add_argument('--tp', type=int, default=2)
+    parser.add_argument('--usp', type=int, default=4)
+    parser.add_argument('--resident', action='store_true')
     args = parser.parse_args()
     rank = int(os.environ['RANK'])
     local_rank = int(os.environ['LOCAL_RANK'])
@@ -116,14 +119,17 @@ def main():
         bundle = torch.load(bundle_path, map_location='cpu', weights_only=True)
         report['sigma_layout_bundle_sha256'] = bundle_manifest['payload_sha256']
 
+        tp, usp = args.tp, args.usp
+        assert tp * usp == 8 and tp >= 1 and usp >= 1, (tp, usp)
+        report['parallel_config'] = {'tensor_parallel_size': tp, 'ulysses_degree': usp, 'ring_degree': 1}
         init_distributed_environment(world_size=8, rank=rank, local_rank=local_rank,
                                     distributed_init_method='env://', backend='hccl')
         torch.distributed.barrier()
         assert out.is_dir()
-        initialize_model_parallel(tensor_parallel_size=2, sequence_parallel_size=4,
-                                  ulysses_degree=4, ring_degree=1, backend='hccl')
-        pc = DiffusionParallelConfig(tensor_parallel_size=2, sequence_parallel_size=4,
-                                     ulysses_degree=4, ring_degree=1)
+        initialize_model_parallel(tensor_parallel_size=tp, sequence_parallel_size=usp,
+                                  ulysses_degree=usp, ring_degree=1, backend='hccl')
+        pc = DiffusionParallelConfig(tensor_parallel_size=tp, sequence_parallel_size=usp,
+                                     ulysses_degree=usp, ring_degree=1)
         arch = json.loads((Path(args.checkpoint) / 'config.json').read_text())
         assert arch['num_layers'] == 50
         od = OmniDiffusionConfig(model=str(Path(args.checkpoint).parent),
@@ -165,7 +171,7 @@ def main():
             from r125_naive import install_naive
             report['naive_replaced_guards'] = install_naive(model)
             report['candidate_is_reference_only_not_accepted'] = True
-        if args.mode in ('baseline', 'static_cache', 'profile', 'naive'):
+        if not args.resident:
             for name, module in model.named_children():
                 if name != 'blocks':
                     module.to(device)
@@ -199,9 +205,12 @@ def main():
             static_device_cache = {}
             report['static_device_tensor_cache'] = True
         with set_current_diffusion_config(od), set_forward_context(omni_diffusion_config=od), torch.inference_mode():
-            apply_sequence_parallel(model, SequenceParallelConfig(ulysses_degree=4, ring_degree=1),
-                                    get_sp_plan_from_model(model))
-            get_forward_context().sp_plan_hooks_applied = True
+            if usp > 1:
+                apply_sequence_parallel(model, SequenceParallelConfig(ulysses_degree=usp, ring_degree=1),
+                                        get_sp_plan_from_model(model))
+                get_forward_context().sp_plan_hooks_applied = True
+            else:
+                report['sequence_parallel_hooks'] = 'skipped because ulysses_degree=1'
             profile = args.mode == 'profile'
             steps_to_run = [25] if profile else STEPS
             region_totals = {}

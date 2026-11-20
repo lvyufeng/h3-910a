@@ -1,0 +1,57 @@
+{
+  "scope": "User-approved restoration of the custom 910A TBE flash-attention kernel on the R124 precision baseline. Same-input single evaluations only; numbers are reported for the user to judge, not auto-approved.",
+  "baseline": {
+    "commit": "f3f1328",
+    "graph": "R124 verified transformer + FP32 patch/time guards, per-block CPU staging",
+    "warm_step_median_s": 40.47,
+    "warm_step_medians_repeat_s": [40.47, 43.84],
+    "self_repeat_video_relative_RMS_max": 0.001034,
+    "self_repeat_audio_relative_RMS_max": 0.002173
+  },
+  "kernel_engaged": {
+    "confirmed": true,
+    "how": "VLLM_OMNI_910A_PERF=1 emits the plan line from fa910a.py",
+    "log_excerpt": "[FA910A] plan input_N=41792 kernel_N=43776 key_limit=41769 original_pad=23 ; core_budget=30 blockDim=30 B=1 H=7 N=43776 D=128 Br=128 Bc=304",
+    "compiled_kernel_dir": "/tmp/fa910a_kernels/b1_h7_n43776_d128_br128_bc304_c30_k41769_v3",
+    "note": "the kernel was already compiled in an earlier round for this exact head count and sequence, so no rebuild was needed"
+  },
+  "measurements": [
+    {
+      "config": "TP2 / USP4 + FA (same layout as R124)",
+      "label": "usp4_fa125",
+      "warm_step_median_s": 18.41,
+      "step0_s": 74.99,
+      "speedup_vs_baseline": 2.2,
+      "video_relative_RMS_by_step": [0.001157, 0.000558, 0.000266, 0.000326, 0.000518],
+      "audio_relative_RMS_by_step": [0.002913, 0.000674, 0.000397, 0.000466, 0.001634],
+      "inside_self_repeat_band": "video steps 10-48 inside; step 0 marginally above (0.001157 vs 0.001034). Audio step 0 marginally above (0.002913 vs 0.002173), other steps inside"
+    },
+    {
+      "config": "TP1 / USP8 + FA",
+      "label": "usp8_fa125 (repeat usp8_fa_perf125)",
+      "warm_step_median_s": 22.64,
+      "step0_s": 83.99,
+      "video_relative_RMS_by_step": [0.001257, 0.000571, 0.000270, 0.000325, 0.000536],
+      "audio_relative_RMS_by_step": [0.001938, 0.000737, 0.000425, 0.000461, 0.002651],
+      "note": "worse than the TP2/USP4 layout, so raising sequence parallelism is not needed"
+    },
+    {
+      "config": "TP1 / USP8 without FA",
+      "label": "usp8_125",
+      "warm_step_median_s": 42.60,
+      "video_relative_RMS_by_step": [0.001013, 0.000647, 0.000266, 0.000323, 0.000534],
+      "note": "control: changing sequence parallelism alone does not speed the step up"
+    }
+  ],
+  "parallelism_finding": {
+    "tensor_parallel_does_not_shard_the_dit": true,
+    "evidence": "per-rank parameter bytes are identical at TP2 and TP8 (33168334080 bytes; 16539411712 FP16 elements + 22377664 FP32 elements)",
+    "consequence": "the DiT is fully replicated on every rank and only sequence parallelism splits activations, so residency can never fit 32 GiB (measured OOM at 404 MiB) and raising TP does not reduce per-rank weights"
+  },
+  "conclusion": "The custom flash-attention kernel is the one restored acceleration that matters: 40.47 s -> 18.41 s per warm step (2.2x) at the original parallel layout, with video deviation at or marginally above the device's own run-to-run noise. It is the only candidate measured so far that is both large and numerically quiet.",
+  "not_claimed": [
+    "Not an accepted change: the user decides, and step-0 video/audio deviations are marginally above the self-repeat band.",
+    "No full 49-step generation was run with FA in this round.",
+    "No claim that the speed goal or the A2/A3 comparison is met."
+  ]
+}
