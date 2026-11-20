@@ -1,0 +1,81 @@
+{
+  "scope": "910A capability-only check for GPU-matching FP16-input FP32-output GEMM.\n\nNo CPU inference baseline, no BF16 execution, no weight download, no shared-runtime\nchange. Compare only a small exact known product on the owned 910A. A native Half\noutput cast is intentionally shown separately; it is not an FP32 accumulator.\n",
+  "completed": true,
+  "torch": "2.10.0+cpu",
+  "torch_npu": "2.10.0.post7",
+  "expected_exact_output": 128000.0,
+  "input_dtypes": [
+    "torch.float16",
+    "torch.float16"
+  ],
+  "native_functions": {
+    "npu_mm": null,
+    "npu_matmul": null,
+    "npu_bmmV2": {
+      "": "npu::npu_bmmV2(Tensor input, Tensor mat2, int[] output_sizes) -> Tensor"
+    },
+    "npu_grouped_matmul": {
+      "": "npu::npu_grouped_matmul(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None, Tensor[]? offset=None, Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None, Tensor[]? per_token_scale=None, Tensor? group_list=None, Tensor[]? activation_input=None, Tensor[]? activation_quant_scale=None, Tensor[]? activation_quant_offset=None, int? split_item=0, int? group_type=None, int? group_list_type=0, int? act_type=0, int[]? tuning_config=None, int? output_dtype=None, int? x_dtype=None, int? weight_dtype=None, int? scale_dtype=None, int? per_token_scale_dtype=None) -> Tensor[]",
+      "List": "npu::npu_grouped_matmul.List(Tensor[] x, Tensor[] weight, *, Tensor[]? bias=None, Tensor[]? scale=None, Tensor[]? offset=None, Tensor[]? antiquant_scale=None, Tensor[]? antiquant_offset=None, Tensor[]? per_token_scale=None, int[]? group_list=None, Tensor[]? activation_input=None, Tensor[]? activation_quant_scale=None, Tensor[]? activation_quant_offset=None, int? split_item=0, int? group_type=None, int? group_list_type=0, int? act_type=0, ScalarType? output_dtype=None) -> Tensor[]"
+    },
+    "npu_linear": {
+      "": "npu::npu_linear(Tensor input, Tensor weight, Tensor? bias=None) -> Tensor"
+    },
+    "npu_transpose_batchmatmul": {
+      "": "npu::npu_transpose_batchmatmul(Tensor input, Tensor weight, *, Tensor? bias=None, Tensor? scale=None, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor"
+    }
+  },
+  "cases": {
+    "torch_mm_native_Half_output": {
+      "supported": true,
+      "output": {
+        "shape": [
+          16,
+          32
+        ],
+        "dtype": "torch.float16",
+        "device": "npu:0",
+        "finite": true,
+        "peak": 65504.0,
+        "all_equal_exact_128000": false
+      },
+      "elapsed_s": 4.864409650210291
+    },
+    "torch_mm_out_dtype_FP32": {
+      "supported": true,
+      "output": {
+        "shape": [
+          16,
+          32
+        ],
+        "dtype": "torch.float32",
+        "device": "npu:0",
+        "finite": true,
+        "peak": 128000.0,
+        "all_equal_exact_128000": true
+      },
+      "elapsed_s": 0.21409857040271163
+    },
+    "torch_mm_FP32_output_buffer": {
+      "supported": true,
+      "output": {
+        "shape": [
+          16,
+          32
+        ],
+        "dtype": "torch.float32",
+        "device": "npu:0",
+        "finite": true,
+        "peak": 128000.0,
+        "all_equal_exact_128000": true
+      },
+      "elapsed_s": 2.2364341896027327
+    },
+    "npu_grouped_matmul_FP32_output": {
+      "supported": false,
+      "error_type": "RuntimeError",
+      "message": "npu_grouped_matmul:../third_party/op-plugin/op_plugin/ops/opapi/GroupedMatmulKernelNpuOpApi.cpp:349 NPU function error: call aclnnGroupedMatmulV5 failed, error code is 161002\n[ERROR] 2026-11-20-01:14:43 (PID:3719904, Device:0, RankID:-1) ERR00100 PTA call acl api failed.\n[PID: 3719904] 2026-11-20-01:14:43.931.838 AclNN_Parameter_Error(EZ1001): Tensor tensor expected dtype is DT_FLOAT16 but found DT_FLOAT.\nTraceBack (most recent call last):\n        In op [grouped_matmul], when non-quant, the data type of [y] is not supported. Constraint:[y dtype should be FLOAT16].\n        In op [grouped_matmul], when non-quant, data type check failed.\n"
+    }
+  },
+  "native_GPU_matching_wide_GEMM_supported": true
+}

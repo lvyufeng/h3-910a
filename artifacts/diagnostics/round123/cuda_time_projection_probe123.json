@@ -1,0 +1,40 @@
+{
+  "scope": "Actual first-step time-embedding FP32 projection probe with exact TP2 math.\n\nRuns only on GPU/NPU; no CPU model reference. Preserves original FP32 time weights,\nsin/cos FP32 input, original SiLU, and TP2 split/gather/sum order. The NPU candidate\nuses the same four Half-operand FP32-output residual guard tested on patch inputs.\nThis is a two-timestep leaf diagnostic, not an end-to-end speed/quality acceptance.\n",
+  "completed": true,
+  "backend": "cuda",
+  "original_FP32_parameter_identities": {
+    "time_embedder.proj_in.weight": {
+      "shape": [
+        5376,
+        256
+      ],
+      "original_value_FP32_sha256": "4c50eabe3c434dc05422e6501cdf7baa5cecbb1a7706ae9599c7a5b0e34e2913"
+    },
+    "time_embedder.proj_in.bias": {
+      "shape": [
+        5376
+      ],
+      "original_value_FP32_sha256": "64763a5e39cb078eb0d8c5be5d56ad36cac3dec37be93a87e106d82ea6c071b7"
+    },
+    "time_embedder.proj_out.weight": {
+      "shape": [
+        2688,
+        5376
+      ],
+      "original_value_FP32_sha256": "697819dd9413e0fec3a50987a964f1fd5db568ca545267414238f452294a8154"
+    },
+    "time_embedder.proj_out.bias": {
+      "shape": [
+        2688
+      ],
+      "original_value_FP32_sha256": "096a3c7539f0248698cc65376c8da260e7365bf4ccef847c09bb9a36782a743c"
+    }
+  },
+  "TP2_local_projection_width": 2688,
+  "numeric_tolerance": null,
+  "full_model_or_speed_accepted": false,
+  "CPU_model_inference_executed": false,
+  "native_output_finite": true,
+  "reference_path": "/home/mseco/h3_align12301/GPU_time_projection_reference123.pt",
+  "reference_sha256": "492e2dd2b7886d36afba6d2fe1062e97955671e9f3eebc5865124a84fb87ccba"
+}

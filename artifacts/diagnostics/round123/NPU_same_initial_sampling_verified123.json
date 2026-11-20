@@ -1,0 +1,71 @@
+{
+  "scope": "910A check that exact GPU noise/sigma tensor bits survive export and local reconstruction.\n\nCPU RNG and scalar schedule construction are setup, NOT a CPU model baseline. The\nactual shared GPU-initial-sampling bundle is authoritative for later replay, so a\nsame-seed implementation mismatch is a recorded failure, not silently tolerated.\n",
+  "completed": true,
+  "torch": "2.10.0+cpu",
+  "checks": {
+    "video_latent_noise": {
+      "raw_bits_identical": false,
+      "sha256_local_reconstructed": "cddd82e4eb7c23fa30c55b8369be69550ec3b40c32296fbbb323870079766643",
+      "sha256_GPU_exported": "e4af1f2d997e9346ada1e7c3b5833cc9e420aceb7abeb7552e965c623bbee494",
+      "shape": [
+        1,
+        24,
+        37,
+        48,
+        84
+      ],
+      "dtype": "torch.float32",
+      "relative_RMS_of_independent_reconstruction": 1.8106667583108943e-07,
+      "max_abs_reconstruction_error": 2.4139881134033203e-06
+    },
+    "initial_audio_rows": {
+      "raw_bits_identical": false,
+      "sha256_local_reconstructed": "5bcf3e7fb18c514fb90ccfd2f6d292daf8eccb9f40a4f1d6505b2f478161730b",
+      "sha256_GPU_exported": "427dcb9f20b73f0065a0a5b6e20965b8701f0543e21094bffa5c95348c71da97",
+      "shape": [
+        414,
+        32
+      ],
+      "dtype": "torch.float32",
+      "relative_RMS_of_independent_reconstruction": 1.7692528395434763e-07,
+      "max_abs_reconstruction_error": 1.8030405044555664e-06
+    },
+    "sigmas_video": {
+      "raw_bits_identical": true,
+      "sha256_local_reconstructed": "a7deafcaa754cc05ce37faa57806a60052bd22ed63c6a7a14319720e55ef74fb",
+      "sha256_GPU_exported": "a7deafcaa754cc05ce37faa57806a60052bd22ed63c6a7a14319720e55ef74fb",
+      "shape": [
+        50
+      ],
+      "dtype": "torch.float32",
+      "relative_RMS_of_independent_reconstruction": 0.0,
+      "max_abs_reconstruction_error": 0.0
+    },
+    "sigmas_audio": {
+      "raw_bits_identical": true,
+      "sha256_local_reconstructed": "2e303820aa08a609f56eaa6af1bb53a5b2bed5dc32f13459a78247f2dc36ff29",
+      "sha256_GPU_exported": "2e303820aa08a609f56eaa6af1bb53a5b2bed5dc32f13459a78247f2dc36ff29",
+      "shape": [
+        50
+      ],
+      "dtype": "torch.float32",
+      "relative_RMS_of_independent_reconstruction": 0.0,
+      "max_abs_reconstruction_error": 0.0
+    }
+  },
+  "payload_bytes": 68914782,
+  "payload_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "initial_sampling_authoritative_bundle_used": true,
+  "model_inference_executed": false,
+  "all_shared_bundle_tensor_digests_verified": true,
+  "same_seed_reconstruction_is_not_authoritative": true,
+  "explicit_GPU_bundle_prevents_torch_version_or_CPU_arch_RNG_difference": true,
+  "sigma_points": 50,
+  "DiT_evaluations": 49,
+  "checkpoint_keyframe_indices": [
+    0,
+    -1
+  ],
+  "packed_rows": 41792,
+  "valid_rows": 41769
+}

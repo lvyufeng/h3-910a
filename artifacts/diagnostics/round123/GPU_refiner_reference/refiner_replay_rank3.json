@@ -1,0 +1,135 @@
+{
+  "scope": "Matched TP2 conditioning/refiner-only replay of the exact successful GPU input.\n\nThis is an explicitly teacher-forced diagnostic, not a generation/performance pass:\nmain-DiT blocks are not constructed, and the saved live GPU encoder output is the\nsame input for both devices. Actual successful H3 source, original checkpoint values,\nFP32 range-safe conditioning/residuals and FP16 matrix contracts are retained.\n",
+  "completed": true,
+  "backend": "cuda",
+  "rank": 3,
+  "actual_Generation_executed": false,
+  "diagnostic_only_no_backbone_blocks": true,
+  "same_GPU_teacher_conditioning_input": true,
+  "shared_runtime_modified": false,
+  "numeric_tolerance": null,
+  "precision_accepted": false,
+  "captures": {
+    "condition_proj": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 92795.5859375,
+      "sha256_raw_tensor_bytes": "487b2f6a93a20019a51915b0e929f39f8c29c0e3350f5fe10bb43d78e008ec58"
+    },
+    "refiner_0_qkv": {
+      "shape": [
+        2043,
+        10752
+      ],
+      "dtype": "torch.float16",
+      "finite": true,
+      "max_abs": 96.75,
+      "sha256_raw_tensor_bytes": "5d2aeac810f0dd4fcbe3520ab3c49e8bc9156241db795fe0497cbe54059c8955"
+    },
+    "refiner_0_attention": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 4817.21240234375,
+      "sha256_raw_tensor_bytes": "02fc82eefedf62005d912d83b7905fd9da8a7070e1390e3795ea90b32a3e5675"
+    },
+    "refiner_0_MLP": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 3199.25927734375,
+      "sha256_raw_tensor_bytes": "0ac7e523bb421f773a4e5b38ff46062609f35d3e7f28ee5a00025aeba70e920e"
+    },
+    "refiner_0_residual": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 95686.578125,
+      "sha256_raw_tensor_bytes": "0d3caec2f023dbaf4066e65c798070b77e4b758ab6bef4cc0f839b1bc0d0ca32"
+    },
+    "refiner_1_qkv": {
+      "shape": [
+        2043,
+        10752
+      ],
+      "dtype": "torch.float16",
+      "finite": true,
+      "max_abs": 90.5625,
+      "sha256_raw_tensor_bytes": "335411ae8fc0774f92f2122006f4922daf704d5aa3867ba1a12f5ee2e073cd9a"
+    },
+    "refiner_1_attention": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 874.1263427734375,
+      "sha256_raw_tensor_bytes": "5283afb161b336bc6e561458ccc9aaadbd1078701e6e6b3b3ffe30e5658e4c2b"
+    },
+    "refiner_1_MLP": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 22286.08203125,
+      "sha256_raw_tensor_bytes": "e681f9b45531d0e3be6ecc4854955e6c7d575656c51119b099a2967e48ffb23f"
+    },
+    "refiner_1_residual": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 91816.3984375,
+      "sha256_raw_tensor_bytes": "dee29a2f68a8366c670ab00eabf19970998736029d2973968a20dbad9e0b9db9"
+    },
+    "refiner_final": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float16",
+      "finite": true,
+      "max_abs": 94.75,
+      "sha256_raw_tensor_bytes": "4bacc8132a95ed5de95d90280c2b005eceda3005f409fb9cd271ba8694e9ff21"
+    }
+  },
+  "source_contract": {
+    "scope": "Prepare an isolated, source-pinned H3 transformer for matched GPU/NPU replay.\n\nCopy the exact successful GPU transformer source plus the pure sampler/branch\nhelpers. On NPU, the only transformer edit permits the already verified native\nNPU FP16-input FP32-output torch.mm instead of rejecting non-CUDA devices. Shared\ninstalled vLLM-Omni and model files are untouched. No BF16 execution or weight relay.\n",
+    "completed": true,
+    "backend": "cuda",
+    "original_successful_GPU_source_sha256": "7cf0c53e6d9199b7944d9026c2bdc1120b1e32084cffe266c434d2d6449b8029",
+    "replay_transformer_sha256": "7cf0c53e6d9199b7944d9026c2bdc1120b1e32084cffe266c434d2d6449b8029",
+    "changes": [],
+    "helpers_sha256": {
+      "denoise_loop": "c0156b9c977770ed0c0bb4b7e2a721737c547c3d758892f7e3247ef7d2582246",
+      "scheduling_minimax_h3_euler_ancestral": "e075d34a5415b0e72e91cbf25cf90cddeb037ec9397a2f560387661f2f3b192e"
+    },
+    "shared_vllm_omni_source_modified": false,
+    "model_weights_modified": false
+  },
+  "sampling_payload_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "actual_input_sha256": "795c4dbee41f97c15ac6f9fad4ae0c89f75762ad6256b4b31be668c392ee4909",
+  "text_tag_counts": {
+    "0": 2020,
+    "1": 23
+  },
+  "replay_elapsed_s_with_capture_io_not_performance": 14.865266148932278
+}

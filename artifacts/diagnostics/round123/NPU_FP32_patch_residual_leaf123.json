@@ -1,0 +1,83 @@
+{
+  "scope": "910A same-input FP32 patch-projection leaf check against actual GPU output.\n\nRetain original FP32 projection weights. Compare native FP32 F.linear with a\nfour-GEMM residual decomposition: both operands of every GEMM are FP16, outputs\nand sums are FP32. Residual halves use an exact 2^12 scale to avoid small Half\nunderflow. This is a bounded 64-row actual-input leaf test, not full inference,\nnot a CPU baseline, and not a claim of bit-exact FP32 or BF16 parity.\n",
+  "completed": true,
+  "no_local_model_weights": true,
+  "CPU_inference_executed": false,
+  "HF32_enabled": false,
+  "numeric_tolerance": null,
+  "full_model_or_speed_accepted": false,
+  "cases": {
+    "video_patch_proj": {
+      "shape": [
+        64,
+        96,
+        5376
+      ],
+      "input_raw_sha256": "b83ecb1411a8385f9993d1717bdebd205292ab358929c8c7eeb59182e6fc0763",
+      "weight_original_FP32_sha256": "26ff2714f21c25539a4f80040735274cc72e3c4a9da82769925df6a1102a301d",
+      "GPU_reference_sample_file_sha256": "2e3e671e9a63074d8cb9cb9b42468fbbefa32aa690922cc65ebac60ac79542a9",
+      "methods": {
+        "native_FP32_projection": {
+          "relative_RMS": 0.00027631363491468933,
+          "max_abs_error": 0.008946418762207031,
+          "finite": true,
+          "GPU_max_abs": 68.25830841064453,
+          "NPU_max_abs": 68.25799560546875,
+          "leaf_elapsed_s_not_benchmark": 7.401561459992081
+        },
+        "three_Half_GEMMs_FP32_output": {
+          "relative_RMS": 1.9564238811713058e-07,
+          "max_abs_error": 1.9073486328125e-05,
+          "finite": true,
+          "GPU_max_abs": 68.25830841064453,
+          "NPU_max_abs": 68.25831604003906,
+          "leaf_elapsed_s_not_benchmark": 5.314685400109738
+        },
+        "four_Half_GEMMs_FP32_output": {
+          "relative_RMS": 1.9265989027635e-07,
+          "max_abs_error": 1.9073486328125e-05,
+          "finite": true,
+          "GPU_max_abs": 68.25830841064453,
+          "NPU_max_abs": 68.25831604003906,
+          "final_extra_term_elapsed_s_not_benchmark": 0.0031868000514805317
+        }
+      }
+    },
+    "audio_patch_proj": {
+      "shape": [
+        64,
+        32,
+        5376
+      ],
+      "input_raw_sha256": "7b096a1eba374e3957bee2a7d52a6c85af6abb4785634f2305c40d7bc1713785",
+      "weight_original_FP32_sha256": "902248bff928268be54c81aa1550cdb74af2f8a6ee49de1981dad9648d3acec3",
+      "GPU_reference_sample_file_sha256": "28c3458993fc689bd354879b8e066adf4df982b77a71fc091c8e1af9d9b3d127",
+      "methods": {
+        "native_FP32_projection": {
+          "relative_RMS": 0.00029106449505798273,
+          "max_abs_error": 0.008375167846679688,
+          "finite": true,
+          "GPU_max_abs": 29.23969841003418,
+          "NPU_max_abs": 29.243404388427734,
+          "leaf_elapsed_s_not_benchmark": 1.6641441001556814
+        },
+        "three_Half_GEMMs_FP32_output": {
+          "relative_RMS": 1.3232607897218533e-07,
+          "max_abs_error": 7.62939453125e-06,
+          "finite": true,
+          "GPU_max_abs": 29.23969841003418,
+          "NPU_max_abs": 29.239696502685547,
+          "leaf_elapsed_s_not_benchmark": 4.527484130114317
+        },
+        "four_Half_GEMMs_FP32_output": {
+          "relative_RMS": 1.272364643604787e-07,
+          "max_abs_error": 7.62939453125e-06,
+          "finite": true,
+          "GPU_max_abs": 29.23969841003418,
+          "NPU_max_abs": 29.239696502685547,
+          "final_extra_term_elapsed_s_not_benchmark": 0.0029211598448455334
+        }
+      }
+    }
+  }
+}

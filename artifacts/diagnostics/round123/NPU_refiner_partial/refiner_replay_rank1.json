@@ -1,0 +1,151 @@
+{
+  "scope": "Matched TP2 conditioning/refiner-only replay of the exact successful GPU input.\n\nThis is an explicitly teacher-forced diagnostic, not a generation/performance pass:\nmain-DiT blocks are not constructed, and the saved live GPU encoder output is the\nsame input for both devices. Actual successful H3 source, original checkpoint values,\nFP32 range-safe conditioning/residuals and FP16 matrix contracts are retained.\n",
+  "completed": true,
+  "backend": "npu",
+  "rank": 1,
+  "actual_Generation_executed": false,
+  "diagnostic_only_no_backbone_blocks": true,
+  "same_GPU_teacher_conditioning_input": true,
+  "shared_runtime_modified": false,
+  "numeric_tolerance": null,
+  "precision_accepted": false,
+  "captures": {
+    "condition_proj": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 92795.5546875,
+      "sha256_raw_tensor_bytes": "83d2cf48df0d74c825b953b27b96a7c3ad33de68d8cdb26cd6e52c8b0002bd9e",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/condition_proj_rank1.pt"
+    },
+    "refiner_0_qkv": {
+      "shape": [
+        2043,
+        10752
+      ],
+      "dtype": "torch.float16",
+      "finite": true,
+      "max_abs": 96.8125,
+      "sha256_raw_tensor_bytes": "18912e387ea8733222f2ce32c494be392b1eddd8120ff3d05747934ea1529ee8",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/refiner_0_qkv_rank1.pt"
+    },
+    "refiner_0_attention": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 4817.3515625,
+      "sha256_raw_tensor_bytes": "c72ae7d895407bd73d3c9ff306afd7496303d8ca741fe49caddf485f85240c25",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/refiner_0_attention_rank1.pt"
+    },
+    "refiner_0_MLP": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 3199.28515625,
+      "sha256_raw_tensor_bytes": "1e2d3078b878bbd391e43fd32a8e762baca61a03fc551cd68b114dfb192b5ec1",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/refiner_0_MLP_rank1.pt"
+    },
+    "refiner_0_residual": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 95686.578125,
+      "sha256_raw_tensor_bytes": "3b9a1980decc44a5aa2a8674d24b48c0d0e09973455d5a8e7af0c76f535b1ef7",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/refiner_0_residual_rank1.pt"
+    },
+    "refiner_1_qkv": {
+      "shape": [
+        2043,
+        10752
+      ],
+      "dtype": "torch.float16",
+      "finite": true,
+      "max_abs": 90.5625,
+      "sha256_raw_tensor_bytes": "8bf8ea591f875b9b4a6a631193034c4ae4e1e35f3ff6f3c18bdd0f2f1f6c9171",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/refiner_1_qkv_rank1.pt"
+    },
+    "refiner_1_attention": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 874.1414794921875,
+      "sha256_raw_tensor_bytes": "b68333dca090ab338506ed9c8c0801693a3dc946ce64e69012f1a578f457ae01",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/refiner_1_attention_rank1.pt"
+    },
+    "refiner_1_MLP": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 22286.1328125,
+      "sha256_raw_tensor_bytes": "2f6456eed72f77f230e744667d039734057564cfb6a6da9a542527006e7ebc9e",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/refiner_1_MLP_rank1.pt"
+    },
+    "refiner_1_residual": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float32",
+      "finite": true,
+      "max_abs": 91816.4453125,
+      "sha256_raw_tensor_bytes": "5e7ef6659b48ef65f4a73fd9f55840cb9ad88d77b6617b9aeb132c6b56f0298e",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/refiner_1_residual_rank1.pt"
+    },
+    "refiner_final": {
+      "shape": [
+        2043,
+        5376
+      ],
+      "dtype": "torch.float16",
+      "finite": true,
+      "max_abs": 94.75,
+      "sha256_raw_tensor_bytes": "87f723e19e411ce5c71510111433fdda0064ebddb369f551a0ec7f8f46507ecb",
+      "path": "/tmp/h3_align12301/NPU_refiner123c/refiner_final_rank1.pt"
+    }
+  },
+  "source_contract": {
+    "scope": "Prepare an isolated, source-pinned H3 transformer for matched GPU/NPU replay.\n\nCopy the exact successful GPU transformer source plus the pure sampler/branch\nhelpers. On NPU, the only transformer edit permits the already verified native\nNPU FP16-input FP32-output torch.mm instead of rejecting non-CUDA devices. Shared\ninstalled vLLM-Omni and model files are untouched. No BF16 execution or weight relay.\n",
+    "completed": true,
+    "backend": "npu",
+    "original_successful_GPU_source_sha256": "7cf0c53e6d9199b7944d9026c2bdc1120b1e32084cffe266c434d2d6449b8029",
+    "replay_transformer_sha256": "9fbba0fd86d435deb47044f3695289240a2e41625094d2969abe53ae2965405c",
+    "changes": [
+      "Permit the verified NPU FP16-input/weight FP32-output torch.mm; no arithmetic edit."
+    ],
+    "helpers_sha256": {
+      "denoise_loop": "c0156b9c977770ed0c0bb4b7e2a721737c547c3d758892f7e3247ef7d2582246",
+      "scheduling_minimax_h3_euler_ancestral": "e075d34a5415b0e72e91cbf25cf90cddeb037ec9397a2f560387661f2f3b192e"
+    },
+    "shared_vllm_omni_source_modified": false,
+    "model_weights_modified": false
+  },
+  "sampling_payload_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "actual_input_sha256": "795c4dbee41f97c15ac6f9fad4ae0c89f75762ad6256b4b31be668c392ee4909",
+  "text_tag_counts": {
+    "0": 2020,
+    "1": 23
+  },
+  "actual_attention_backends": [
+    "H3_910A",
+    "H3_910A"
+  ],
+  "replay_elapsed_s_with_capture_io_not_performance": 43.64603818021715
+}
