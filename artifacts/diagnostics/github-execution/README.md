@@ -9,7 +9,9 @@ not a second task board. Do not rerun initialization to reset later execution st
 ## Execution order
 
 - Completed reference: [baseline #2](https://github.com/lvyufeng/h3-910a/issues/2).
-- First: [formal engine cold/warm/reload #3](https://github.com/lvyufeng/h3-910a/issues/3), then
+- Completed observation: [formal engine cold/warm/reload #3](https://github.com/lvyufeng/h3-910a/issues/3).
+  [R127 findings](../round127/RESULTS.md) verify three same-worker requests and182,280checks;
+  **not** a performance/precision promotion. Next is
   [safe asynchronous H2D/lifecycle #4](https://github.com/lvyufeng/h3-910a/issues/4).
 - Main kernels: [FA #5](https://github.com/lvyufeng/h3-910a/issues/5),
   [GEMM #6](https://github.com/lvyufeng/h3-910a/issues/6).
@@ -20,6 +22,8 @@ not a second task board. Do not rerun initialization to reset later execution st
 - Default not executable: [numerical/approximation decision #11](https://github.com/lvyufeng/h3-910a/issues/11).
 - Final: [49-step integration #12](https://github.com/lvyufeng/h3-910a/issues/12),
   [honest A2/A3 hardware comparison #13](https://github.com/lvyufeng/h3-910a/issues/13).
+- Follow-up reliability risk: [native CPU Half packing SIGSEGV #14](https://github.com/lvyufeng/h3-910a/issues/14).
+  R127c succeeded, but the earlier native initialization−11 root cause remainsUnknown.
 
 Each child has native GitHub sub-issue and blocked-by relationships, plus objective,
 measurement scope, work list, acceptance gate, source links and rollback requirements.
