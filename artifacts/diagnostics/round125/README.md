@@ -38,16 +38,22 @@ implementation error; they are not evidence of operator-level bitwise agreement.
 | drop the FP32 patch/time projection guards | lossy → asked | video relRMS **2.29%**, ~22× the noise band |
 | region cost attribution (one warm step) | measurement | attention **58.1%** of the step; 0.694 s/block vs 0.057 s/block MLP |
 
-Residency is blocked by arithmetic, not by tuning: TP2 leaves 16 539 411 712 FP16
-parameter elements (30.8 GiB) per rank, which cannot share a 32 GiB card with
-activations. Making it resident needs TP8/USP8 — a reduction-order change, therefore lossy.
+Residency is blocked by arithmetic, not by tuning: every rank holds the full
+16 539 411 712 FP16 parameter elements (30.8 GiB), which cannot share a 32 GiB card with
+activations. Raising tensor parallelism does **not** help, because this DiT is not actually
+TP-sharded: per-rank parameter bytes are identical at TP2 and TP8, so the weights are
+replicated on all eight ranks and only sequence parallelism splits activations. That also
+explains the low compute utilisation early in the round.
 
 ## Why the remaining lossless set is small
 
-The step is not transfer- or elementwise-bound, it is attention-bound (12× the MLP per
-block). Residency, tensor caching, geometry memoization and pointwise fusion therefore
-cannot move 40 s/step toward the 15 s/step target. The lossless items the reviewers did
-identify are real but marginal:
+Before the flash-attention kernel the step was attention-bound: attention took 58% of it
+and cost 12x the MLP per block, which is why residency, tensor caching, geometry
+memoization and pointwise fusion could not move 40 s/step. After the kernel that ranking
+inverts: attention falls by about 2.7x, and the remaining cost is per-block weight staging
+through the CPU offload plus one-off pieces (token refiner, time embedder, final layer),
+which is why the pointwise and residual candidates measured later gained nothing. The
+lossless items the reviewers did identify are real but marginal either way:
 
 - R124-native vision positional-interpolation / rotary geometry memoization
 - R124-native text RoPE table memoization with fail-closed keys
@@ -56,18 +62,23 @@ identify are real but marginal:
 - fixed-shape tile gather workspace removing the `all_gather_var_shape` shape-to-list sync
 - static Half layout pre-packing of the original parameters (layout only, identical values)
 
-## What needs a decision
+## Decision record
 
-See `STATE125.json` → `lossy_candidates_waiting_for_user_decision`: custom 910A TBE flash
-attention (round63 measured 293 102 differing FP16 words), the VAE Half-parameter + fused
-decoder fast path, an FP16 residual stream, raised sharding, and fused pointwise kernels.
-Round 63/64/76/108/118 failure receipts are preserved and are not reused as correctness or
-performance baselines.
+The user approved measuring all five lossy candidates, with the explicit rule that every
+item reports its own deviation and timing and the user decides — an error inside the
+earlier 1% GPU-comparison tolerance is not auto-approved. Only the flash-attention kernel
+was then kept. Round 63/64/76/108/118 failure receipts are preserved and are not reused as
+correctness or performance baselines.
 
 ## Not claimed
 
-No speed target was met; no full generation was produced this round; no A2/A3 comparison
-was measured; no universal picture or audio quality claim is made.
+No speed target was met (18.41 s/step against a 15 s target). The encoder target was not
+worked on at all (about 65 s against 2 s), and the VAE decode target is still about 132 s
+against 20 s — that was measured, including a Half-parameter fast path that did not help,
+but never brought near the target. No A2/A3 comparison was measured. No universal picture or audio
+quality claim is made: the audio track stays at about -75 dBFS in every configuration, so
+sample-level audio differences are never used as a quality signal. All three rejected
+candidates were measured only; none of them is enabled anywhere.
 
 ## Restored acceleration: custom 910A flash attention (user-approved)
 
@@ -157,3 +168,28 @@ pointwise fusion, SwiGLU, was measured and gained nothing), and encoder accelera
   two read-only reviewers.
 - `NPU_generated_FA/` — the accepted FA generation and its contact sheet.
 - `NPU_generated_VAEfast/` — the VAE fast-path generation used for the comparison.
+
+## Reproducing the accepted configuration
+
+The accepted configuration is the pinned R124 driver plus one environment variable:
+
+```bash
+VLLM_OMNI_910A_FLASH_ATTN=1
+```
+
+Everything else is the R124 reproduction recipe (see
+[round124 README](<artifacts/diagnostics/round124/README.md>)): `PYTHONPATH=/tmp/h3_align12401`,
+`H3_NPU_ALIGNMENT124_SELECTIVE_BOOTSTRAP=1`, a fresh 32-byte `0600` private IPC key **inside
+`/tmp/h3_align12401`** (the bootstrap asserts that parent), a fresh `ASCEND_WORK_PATH`, a
+fresh `H3_NPU_RAW_OUTPUT_DIR124` whose parent is `/tmp/h3_align12401` and whose name starts
+with `NPU_full_generation124`, and a new `--output-label` (the driver refuses to overwrite).
+
+Two failure modes cost real time here and are worth knowing:
+
+- The IPC key must live under `/tmp/h3_align12401`. If it does not, the assertion inside
+  `configure_python_startup` is swallowed at interpreter startup, no worker audit file is
+  written, and the driver fails later on its `49`-evaluations-per-worker assertion.
+- The raw output directory must satisfy the capture hook's path assertion, otherwise the
+  run dies *after* a complete 49-step DiT and VAE decode.
+
+`launch_candidate125.py` wraps exactly this for candidate full generations.

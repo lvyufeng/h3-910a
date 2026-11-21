@@ -1,16 +1,27 @@
 {
   "round": 125,
-  "task": "Restore previously removed acceleration candidates on top of the committed R124 precision baseline and classify each as lossless or lossy",
+  "task": "Restore previously removed acceleration candidates on top of the committed R124 precision baseline and classify each by measured effect",
+  "status": "round125_complete_all_five_approved_candidates_measured_one_kept",
+  "completed": true,
+  "overall_original_performance_and_A2_A3_goal_complete": false,
   "precision_baseline": {
     "commit": "f3f1328",
     "what_it_is": "R124 real 49-step original-50-layer 910A generation with its own FP16 encoder, original FP32 VAE/branch parameters and the verified FP16 range protections",
-    "policy_from_user": "This version is the precision baseline. Restore every previously removed acceleration; keep it when lossless, stop and ask the user when measurably lossy - an error inside the earlier 1% GPU-comparison tolerance is NOT auto-approved."
+    "policy_from_user": "This version is the precision baseline. Restore every previously removed acceleration; keep it when lossless, stop and ask the user when measurably lossy. An error inside the earlier 1% GPU-comparison tolerance is NOT auto-approved."
   },
-  "completed": true,
-  "status": "round125_all_five_approved_candidates_measured_one_kept_three_rejected_one_unavailable",
-  "overall_speed_goal_complete": false,
-  "lossy_candidates_enabled_without_user_approval": false,
-  "resources_released": true,
+  "user_approval": {
+    "approved_for_measurement": [
+      "custom 910A TBE flash attention",
+      "VAE Half parameters + fused decoder fast path",
+      "DiT FP16 residual stream",
+      "raised TP/USP sharding for residency",
+      "fused FP16 pointwise kernels"
+    ],
+    "acceptance": "report deviation and timing per item; the user decides - no preset threshold",
+    "then_kept": [
+      "custom 910A TBE flash attention"
+    ]
+  },
   "key_finding_baseline_is_not_bit_reproducible": {
     "measured": true,
     "bit_identical_across_identical_runs": false,
@@ -23,243 +34,129 @@
       0.002173
     ],
     "evidence": "artifacts/diagnostics/round125/noise_floor125.json",
-    "consequence": "Bit identity cannot gate any optimization on this device. A candidate is only called lossless when its deviation stays inside this measured self-repeat band; anything above it is reported as lossy.",
+    "consequence": "Bit identity cannot gate an optimization on this device. A candidate is only called lossless when its deviation stays inside this measured self-repeat band.",
     "implication_for_round124": "The five R124 GPU-comparison gates (0.036%-0.26% video, 0.056%-0.26% audio) sit inside this self-repeat band, so they demonstrate absence of gross implementation error, not operator-level bitwise agreement."
   },
-  "candidates_measured": [
-    {
-      "candidate": "whole DiT resident (remove per-block CPU staging)",
-      "classification": "unavailable at the baseline precision configuration",
-      "measured": "NPU out of memory: 31.06 GiB already allocated, 404 MiB allocation failed on all 8 ranks",
-      "why": "TP2 leaves 16539411712 FP16 parameter elements (30.8 GiB) per rank, which cannot coexist with activations in 32 GiB",
-      "evidence": "artifacts/diagnostics/round125/resident_oom_rank0.json",
-      "note": "Becoming resident requires raising sharding (TP8/USP8), which changes reduction order and is therefore a lossy change that needs approval."
-    },
-    {
-      "candidate": "static device tensor cache (upload invariant branch/context tensors once)",
-      "classification": "lossless but no measurable gain",
-      "measured": {
-        "warm_step_median_s": 41.99,
-        "baseline_warm_step_medians_s": [
-          40.47,
-          43.84
-        ],
-        "deviation_inside_noise_band": true,
-        "cached_keys": 11,
-        "cached_bytes": 22335616
-      },
-      "evidence": "artifacts/diagnostics/round125/static_cache_rank0_b.json"
-    },
-    {
-      "candidate": "remove the FP32 patch/time projection guards (plain Half projections)",
-      "classification": "lossy - stopped for user decision",
-      "measured": {
-        "video_relative_RMS_vs_baseline": 0.022871,
-        "noise_floor_video_relative_RMS_max": 0.001034,
-        "exceeds_noise_band_by": "about 22x",
-        "replaced_modules": [
-          "audio_patch_proj",
-          "time_embedder.proj_in",
-          "time_embedder.proj_out",
-          "video_patch_proj"
-        ],
-        "predictions_finite_at_step0": true
-      },
-      "evidence": "artifacts/diagnostics/round125/naive_rank0.json",
-      "conclusion": "The FP32 residual protection in these four projections is numerically load-bearing, not conservative padding."
-    },
-    {
-      "candidate": "region cost attribution of one warm evaluation",
-      "classification": "measurement, not an optimization",
-      "measured": {
-        "attention_share_of_step": 0.5807,
-        "per_block_attention_avg_s": 0.6941,
-        "per_block_mlp_avg_s": 0.0568,
-        "attention_over_mlp_ratio": 12.21
-      },
-      "evidence": "artifacts/diagnostics/round125/cost_attribution125.json",
-      "caveat": "Per-module synchronize inflates absolute seconds; only relative shares are meaningful."
-    },
-    {
-      "candidate": "custom 910A TBE flash attention (VLLM_OMNI_910A_FLASH_ATTN=1)",
-      "classification": "restorable, large gain, numerically quiet - reported for user decision",
-      "measured": {
-        "warm_step_median_s_at_TP2_USP4": 18.41,
-        "baseline_warm_step_median_s": 40.47,
-        "speedup": 2.2,
-        "step0_s": 74.99,
-        "kernel_engaged": "[FA910A] plan B=1 H=7 N=43776 D=128 Br=128 Bc=304 core_budget=30",
-        "video_relRMS_by_step": [
-          0.001157,
-          0.000558,
-          0.000266,
-          0.000326,
-          0.000518
-        ],
-        "audio_relRMS_by_step": [
-          0.002913,
-          0.000674,
-          0.000397,
-          0.000466,
-          0.001634
-        ]
-      },
-      "evidence": "artifacts/diagnostics/round125/fa910a_candidate125.json"
-    },
-    {
-      "candidate": "raised sequence parallelism (TP1/USP8) without FA",
-      "classification": "measured control, no gain",
-      "measured": {
-        "warm_step_median_s": 42.6,
-        "note": "sequence parallelism alone does not speed the step up"
-      },
-      "evidence": "artifacts/diagnostics/round125/usp8_rank0.json"
-    },
-    {
-      "candidate": "raised sequence parallelism (TP1/USP8) with FA",
-      "classification": "measured, slower than TP2/USP4 with FA",
-      "measured": {
-        "warm_step_median_s": 22.64
-      },
-      "evidence": "artifacts/diagnostics/round125/usp8_fa_rank0.json"
-    }
-  ],
-  "lossless_accelerations_available_but_small": [
-    "R124-native vision positional-interpolation / rotary geometry memoization (recompute is small relative to the encoder's attention cost)",
-    "R124-native text RoPE table memoization under fail-closed keys",
-    "VAE geometry-only caches: token ids, tabulated RoPE cos/sin, split_tiles / temporal frame plan",
-    "VAE mean/std and blend weight caching where the original tensors are reused unchanged",
-    "Fixed-shape tile gather workspace removing the all_gather_var_shape shape-to-list synchronization",
-    "Static Half layout pre-packing of original parameters (layout only, same values)"
-  ],
-  "lossy_candidates_waiting_for_user_decision": [
-    {
-      "candidate": "custom 910A TBE flash attention (fa910a.py + h3_910a_attn.py, VLLM_OMNI_910A_FLASH_ATTN=1)",
-      "known_numerics": "round63 measured 293102 differing FP16 words versus the native path",
-      "why_it_matters": "attention is ~58% of the DiT step and runs far below peak, so this is the only lever that can plausibly approach 15 s/step",
-      "risk": "different softmax accumulation and no 1/sqrt(d) inside the kernel; changes every prediction"
-    },
-    {
-      "candidate": "VAE fast path: Half decoder parameters plus fused qk_norm_rope / attention / SwiGLU instances",
-      "known_numerics": "R124 deliberately kept the original FP32 VAE parameters and skipped the whole installer; half-initialised-then-widened round63 evidence does not license rewriting the original FP32 tensors",
-      "why_it_matters": "decode is 138.55 s of the 2316.96 s wall",
-      "risk": "parameter rounding plus changed pointwise rounding in every VAE block"
-    },
-    {
-      "candidate": "FP16 (rather than FP32) residual stream and RMSNorm path in the DiT blocks",
-      "known_numerics": "not yet measured on R124 inputs",
-      "why_it_matters": "removes FP32 elementwise traffic and conversions in all 50 blocks",
-      "risk": "each block re-rounds the residual; error compounds over 49 steps"
-    },
-    {
-      "candidate": "raised sharding (TP4/TP8) to make residency possible or to cut per-rank work",
-      "known_numerics": "not yet measured on R124 inputs",
-      "why_it_matters": "only way to fit the DiT resident; also reduces per-rank attention work",
-      "risk": "different reduction order in every parallel linear"
-    },
-    {
-      "candidate": "fused FP16 QK-norm+RoPE, fused RMSNorm+AdaLN scale/shift, fused SiLU-and-mul",
-      "known_numerics": "prior fused helpers were BF16 and are not drop-in for the R124 FP16 contract",
-      "risk": "removes intermediate Half casts and changes rounding points"
-    }
-  ],
-  "what_was_not_done": [
-    "No lossy candidate was enabled in any generation.",
-    "No full 49-step generation was run in this round; only same-input single evaluations.",
-    "The 15 s/step, 2 s encoder and 20 s VAE targets remain unmet; no A2/A3 comparison was produced.",
-    "No new universal picture or audio quality claim is made."
-  ],
-  "next_work": "Raise the remaining step/decoder cost: the DiT step is now staging-bound at this precision configuration and the VAE decode is not parameter-precision bound, so both need a different lever than the approximations tried here. Encoder and A2/A3 comparison still outstanding.",
-  "evidence_root": "artifacts/diagnostics/round125",
-  "user_decision": {
-    "approved_lossy_candidates": [
-      "custom 910A TBE flash attention",
-      "VAE Half parameters + fused decoder fast path",
-      "DiT FP16 residual stream",
-      "raised TP/USP sharding for residency",
-      "fused FP16 pointwise kernels"
-    ],
-    "acceptance": "report error and timing per item; the user decides - no preset threshold"
-  },
-  "parallelism_finding": {
-    "tensor_parallel_does_not_shard_the_dit": true,
-    "evidence": "per-rank parameter bytes identical at TP2 and TP8 (33168334080 bytes)",
-    "consequence": "DiT fully replicated per rank; only sequence parallelism splits activations; residency cannot fit and raising TP does not reduce per-rank weights"
-  },
-  "pending_candidates_not_yet_measured": [
-    "AdaLN/QK-norm+RoPE fusion specifically (the highest-volume pointwise fusion, SwiGLU, was measured and gained nothing; the profile shows the remaining step time is per-block weight staging)",
-    "encoder acceleration (still about 65 s against a 2 s target)"
-  ],
-  "FA_full_generation": {
-    "completed": true,
-    "actual_video_generated": true,
-    "eight_workers_each_49_real_evaluations": true,
+  "accepted_acceleration": {
+    "candidate": "custom 910A TBE flash attention (VLLM_OMNI_910A_FLASH_ATTN=1)",
+    "kernel_engaged": "[FA910A] plan input_N=41792 kernel_N=43776 B=1 H=7 N=43776 D=128 Br=128 Bc=304 core_budget=30",
+    "engine_warm_step_s": 17.764047,
+    "engine_warm_step_baseline_s": 38.328544250223786,
+    "replay_warm_step_s": 18.410165359731764,
+    "replay_warm_step_baseline_s": 40.466285259928554,
     "generation_wall_s": 1329.960543639958,
     "R124_generation_wall_s": 2316.95521853026,
-    "end_to_end_speedup": 1.742,
-    "engine_initialization_s": 291.41714676003903,
-    "R124_engine_initialization_s": 232.20943147037178,
-    "video_sha256": "9b0d419d99a8dd36696b1e04b46f4041cfdead3a5ce861c9b0f07c53c8a3db6c",
-    "video_bytes": 511225,
-    "audio_sha256": "0a7b667c18beb41168fcdfb0b56eccc39afc67aad0908053dc844122b1f76431",
-    "audio_bytes": 1324888,
-    "media_verification": {
-      "width": 1344,
-      "height": 768,
-      "fps": "24/1",
-      "video_codec": "h264",
-      "audio_codec": "aac",
-      "sample_rate": 32000,
-      "audio_channels": 2,
-      "decoded_video_frames": 124,
-      "decoded_audio_samples": 165600
-    },
-    "native_audio_peak": 0.00018590770196169615,
-    "native_audio_RMS": 1.153301392610705e-05,
-    "R124_native_audio_peak": 0.00017513817874714732,
-    "quality_accepted": false,
-    "speed_targets_accepted": false,
+    "end_to_end_speedup": 1.7421232754687628,
+    "eight_workers_each_49_real_evaluations": true,
+    "media_psnr_min_dB_vs_R124": 51.18206024169922,
+    "media_psnr_median_dB_vs_R124": 54.976932525634766,
+    "frames_below_40dB": 0,
     "media_paths": {
       "video": "artifacts/diagnostics/round125/NPU_generated_FA/h3_910a_vllm_omni_fp16.mp4",
       "audio": "artifacts/diagnostics/round125/NPU_generated_FA/h3_910a_vllm_omni_audio.wav",
       "contact_sheet": "artifacts/diagnostics/round125/NPU_generated_FA/contact_sheet.png"
-    }
-  },
-  "R124_vs_FA_media_comparison": {
-    "frames": 124,
-    "psnr_min_dB": 51.18206024169922,
-    "psnr_median_dB": 54.976932525634766,
-    "frames_below_40dB": 0,
-    "mean_abs_diff_rgb_0_255": 0.10427127778530121,
-    "audio_relative_RMS_diff": 1.0732034879005683,
-    "audio_correlation": 0.4195153914299727,
-    "interpretation": "The 49-step trajectory does not diverge: every frame stays at or above 51 dB PSNR against the R124 baseline, i.e. mean absolute pixel difference around 0.04 of one 8-bit level. The audio tracks are both inaudible noise near -75 dBFS, so their sample-level correlation is not a perceptual-quality measurement and is not claimed as one."
-  },
-  "lossy_candidates_enabled_with_user_approval": [
-    "custom 910A TBE flash attention"
-  ],
-  "candidates_measured_summary_file": "artifacts/diagnostics/round125/candidates_measured125.json",
-  "user_approval": {
-    "approved": [
-      "custom 910A TBE flash attention",
-      "VAE Half parameters + fused decoder fast path",
-      "DiT FP16 residual stream",
-      "raised TP/USP sharding for residency",
-      "fused FP16 pointwise kernels"
-    ],
-    "acceptance": "report error and timing per item; the user decides"
-  },
-  "decisions_measured": {
-    "kept_and_accepted_by_user": [
-      "custom 910A TBE flash attention"
-    ],
-    "rejected_on_performance": [
-      "VAE Half parameters + fused decoder fast path (decode 132.4 s vs 138.6 s baseline, within variance, wall unchanged)",
-      "DiT FP16 residual stream (25.93 s vs 18.41 s, about 40 percent slower)",
-      "fused FP16 pointwise via SwiGLU/SiluAndMul (18.83 s vs 18.41 s, no gain, and video drift to 0.22 percent / audio to 1.64 percent by step 48)"
-    ],
-    "unavailable": [
-      "raised TP/USP to make the DiT resident: TP does not shard the DiT weights, residency OOMs, and USP8 is slower than USP4"
+    },
+    "evidence": [
+      "artifacts/diagnostics/round125/fa910a_candidate125.json",
+      "artifacts/diagnostics/round125/full_generation_with_FA125.json",
+      "artifacts/diagnostics/round125/R124_vs_FA_media125.json"
     ]
-  }
+  },
+  "rejected_candidates": [
+    {
+      "candidate": "VAE Half decoder parameters + native fused decoder fast path",
+      "measured": {
+        "decode_median_s": 132.375,
+        "baseline_decode_median_s": 138.551,
+        "generation_wall_s": 1329.76,
+        "FA_generation_wall_s": 1329.96,
+        "media_psnr_min_dB_vs_FA": 51.680015563964844
+      },
+      "reason": "decode moves by at most 4 percent, inside run-to-run variance, and the end-to-end wall is unchanged, so the VAE decode time is not parameter-precision bound"
+    },
+    {
+      "candidate": "DiT FP16 residual stream",
+      "measured": {
+        "warm_step_median_s": 25.92552120005712,
+        "FA_warm_step_median_s": 18.410165359731764,
+        "video_relative_RMS_by_step": [
+          0.0012106924205463284,
+          0.0006481922059430352,
+          0.0002676898801005374,
+          0.0003243386852387647,
+          0.0005285199553267936
+        ],
+        "audio_relative_RMS_by_step": [
+          0.0018752596473086127,
+          0.0007667200832749918,
+          0.00045076967078662097,
+          0.0005820230152292871,
+          0.001379150246662905
+        ]
+      },
+      "reason": "about 40 percent slower than the FA base while numerically indistinguishable from it, so FP32 residual accumulation costs no speed in this graph"
+    },
+    {
+      "candidate": "fused FP16 pointwise via SwiGLU / SiluAndMul",
+      "measured": {
+        "warm_step_median_s": 18.83050166023895,
+        "FA_warm_step_median_s": 18.410165359731764,
+        "video_relative_RMS_by_step": [
+          0.0009333947789555579,
+          0.0007207813691373413,
+          0.0007828719224326282,
+          0.0007580176259802193,
+          0.002216976743738553
+        ],
+        "audio_relative_RMS_by_step": [
+          0.0013336614217929936,
+          0.0012921798295299207,
+          0.004431337674169713,
+          0.003675702821323292,
+          0.016428832101413635
+        ]
+      },
+      "reason": "no time gained while the video drift reaches 0.22 percent and the audio drift 1.64 percent by step 48, growing with step index"
+    }
+  ],
+  "unavailable_candidates": [
+    {
+      "candidate": "raised TP/USP sharding to make the DiT resident",
+      "measured": {
+        "resident_attempt": "NPU OOM, 31.06 GiB allocated and a 404 MiB request failed on all 8 ranks",
+        "per_rank_parameter_bytes": 33168334080,
+        "identical_at_TP2_and_TP8": true,
+        "USP8_without_FA_warm_step_s": 42.6,
+        "USP8_with_FA_warm_step_s": 22.64,
+        "TP2_USP4_with_FA_warm_step_s": 18.410165359731764
+      },
+      "reason": "tensor parallelism does not shard this DiT, so raising TP does not reduce per-rank weights; residency cannot fit 32 GiB; sequence parallelism beyond USP4 is slower, so TP2/USP4 stays the best layout"
+    }
+  ],
+  "still_available_lossless_items": [
+    "R124-native vision positional-interpolation / rotary geometry memoization",
+    "R124-native text RoPE table memoization with fail-closed keys",
+    "VAE geometry-only caches (token ids, tabulated RoPE cos/sin, tile and temporal-frame plans)",
+    "VAE mean/std and blend-weight caching where the original tensors are reused unchanged",
+    "fixed-shape tile gather workspace removing the all_gather_var_shape shape-to-list sync",
+    "static Half layout pre-packing of the original parameters (layout only, identical values)"
+  ],
+  "what_was_not_done": [
+    "The AdaLN and QK-norm+RoPE fusions specifically were not measured; the highest-volume pointwise fusion (SwiGLU) was measured and gained nothing, and the post-FA profile shows the step is staging-bound rather than pointwise-bound.",
+    "Encoder acceleration was not worked on; the live encoder stage stays at about 65 s against a 2 s target.",
+    "The VAE decode was measured but not brought near its 20 s target (about 132 s).",
+    "No A2/A3 comparison was produced.",
+    "No universal picture or audio quality claim is made; the audio track stays near -75 dBFS in every configuration, so sample-level audio differences are never used as a quality signal."
+  ],
+  "remaining_bottleneck": "With attention fixed, one warm step is dominated by per-block weight staging through the CPU offload, because the 30.8 GiB DiT is replicated on every rank and cannot be resident in 32 GiB. Closing the remaining step-time gap needs a different mechanism (weight pre-packing or a different staging strategy, quantized transfer, or a larger-memory part), not another precision approximation.",
+  "cleanup": {
+    "lossy_candidates_enabled_without_user_approval": false,
+    "rejected_candidates_enabled_anywhere": false,
+    "resources_released": true,
+    "temporary_keys_removed": true,
+    "device_processes_remaining": 0
+  },
+  "evidence_root": "artifacts/diagnostics/round125",
+  "candidates_measured_summary_file": "artifacts/diagnostics/round125/candidates_measured125.json",
+  "next_work": "Either attack the weight-staging mechanism (the only untried lever for step time, since precision approximations are now measured out), or accept 18.41 s/step and spend the next round on encoder latency and the A2/A3 comparison."
 }
