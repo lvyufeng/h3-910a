@@ -36,8 +36,8 @@ class Tests(unittest.TestCase):
 
     def test_exact_context_import_and_session_guards(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root=Path(temporary).resolve();session=root/'engine_repeat129a';session.mkdir()
-            source=(ROOT/'runtime_context127.py').read_text().replace("ROOT=Path('/tmp/h3_repeat12901')",f'ROOT=Path({str(root)!r})')
+            root=Path(temporary).resolve();session=root/'engine_repeat129b';session.mkdir()
+            source=(ROOT/'runtime_context127.py').read_text().replace("ROOT=Path('/tmp/h3_repeat12902')",f'ROOT=Path({str(root)!r})')
             with patch.dict(os.environ,{'H3_R127_SESSION_OUT':str(session)}):
                 data={'__name__':'test_context129'};exec(compile(source,'runtime_context127.py','exec'),data)
                 self.assertEqual(data['SESSION'],session)
@@ -78,13 +78,27 @@ class Tests(unittest.TestCase):
         for mutation in ('_SCRATCH.clear','_PAD_BUFFERS.clear','allow_hf32=True','install_device_range','ImmutableWeightPool126'):
             self.assertNotIn(mutation,source)
 
+    def test_device_metadata_fingerprints_supported(self):
+        source=(ROOT/'fingerprints129.py').read_text();unit=(ROOT/'test_fingerprints129.py').read_text()
+        self.assertIn('isinstance(value,(torch.device,torch.dtype))',source)
+        self.assertIn("fingerprint(torch.device('cpu'),torch)",unit)
+        self.assertIn('fingerprint(torch.float32,torch)',unit)
+
+    def test_private_cleanup_includes_detached_workers(self):
+        source=(ROOT/'private_abort129.py').read_text();monitor=(ROOT/'cohort128.py').read_text()
+        self.assertIn('private_rows129()',source)
+        self.assertIn("'start_ticks'",source)
+        self.assertIn('stat().st_uid==os.getuid()',source)
+        self.assertIn('abort_private129()',monitor)
+        self.assertNotIn('os.killpg(process.pid,signal.SIGTERM)',monitor)
+
     def test_launcher_strict_auth_and_root(self):
         launch=(ROOT/'launch_diagnostics129.py').read_text();boot=(ROOT/'full_bootstrap127.py').read_text()
         self.assertIn('os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600',launch)
         self.assertIn('not SESSION.exists() and not receipt.exists()',launch)
         self.assertIn("self.name.startswith('DiffusionWorker-')",boot)
         for name in ('launch_diagnostics129.py','generate_diagnostics129.py','full_bootstrap127.py','runtime_context127.py','cohort128.py'):
-            text=(ROOT/name).read_text();self.assertIn('/tmp/h3_repeat12901',text);self.assertNotIn('/tmp/h3_runtime12701',text)
+            text=(ROOT/name).read_text();self.assertIn('/tmp/h3_repeat12902',text);self.assertNotIn('/tmp/h3_runtime12701',text)
 
 
 if __name__=='__main__':unittest.main()

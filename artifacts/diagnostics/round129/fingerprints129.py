@@ -24,6 +24,8 @@ def fingerprint(value,torch,*,include_pointers=False):
         if include_pointers:row.update({'data_pointer':value.data_ptr(),'storage_base_pointer':value.untyped_storage().data_ptr(),
             'storage_bytes':value.untyped_storage().nbytes(),'storage_identity':value.untyped_storage()._cdata})
         return row
+    if isinstance(value,(torch.device,torch.dtype)):
+        return {'kind':'torch_metadata','value':str(value)}
     if isinstance(value,dict):return {str(k):fingerprint(v,torch,include_pointers=include_pointers) for k,v in value.items()}
     if isinstance(value,(tuple,list)):return [fingerprint(v,torch,include_pointers=include_pointers) for v in value]
     assert value is None or isinstance(value,(str,int,float,bool)),('Unsupported diagnostic value',type(value))

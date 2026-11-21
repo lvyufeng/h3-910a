@@ -16,13 +16,13 @@ import signal
 import struct
 import threading
 
-ROOT=Path('/tmp/h3_repeat12901')
+ROOT=Path('/tmp/h3_repeat12902')
 FAILURE=ROOT/'cohort_failure128.json'
 
 
 def publish_fatal128(row):
     # No NPU access: usable even when a rank failed before a TCP Store capability exists.
-    target=FAILURE;assert target.resolve()==Path('/tmp/h3_repeat12901/cohort_failure128.json')
+    target=FAILURE;assert target.resolve()==Path('/tmp/h3_repeat12902/cohort_failure128.json')
     temporary=ROOT/f'cohort_failure_pid{os.getpid()}_{__import__("time").monotonic_ns()}.json'
     assert not temporary.exists();temporary.write_text(json.dumps(row,indent=2)+'\n')
     try:os.link(temporary,target)
@@ -94,11 +94,12 @@ def monitor_private_failure(process,stop_event,fd):
                 proc=Path('/proc',str(process.pid))
                 if not proc.exists():return
                 environment=(proc/'environ').read_bytes();command=(proc/'cmdline').read_bytes()
-                assert b'H3_R127_SESSION_OUT=/tmp/h3_repeat12901/engine_repeat129a\0' in environment
+                assert b'H3_R127_SESSION_OUT=/tmp/h3_repeat12902/engine_repeat129b\0' in environment
                 assert b'generate_diagnostics129.py' in command
                 assert os.getpgid(process.pid)==process.pid
                 print(json.dumps({'private_cohort_aborted':process.pid,'failure':row,'no_shared_processes_signalled':True}),flush=True)
-                os.killpg(process.pid,signal.SIGTERM)
+                from private_abort129 import abort_private129
+                abort_private129()
                 return
             readable,_,_=select.select([fd,wake_read],[],[],7200)
             if wake_read in readable:return

@@ -13,8 +13,8 @@ Text/video/audio positions have no duplicates or cross-modality intersections.
 Thus duplicate-position Half `index_add_` is not supported by these inputs; other
 input/state/operation changes remainUnknown.
 
-[Small tensor-hash unit](fingerprint_unit129.json) verifies scalar,empty,transpose
-and inference-mode tensors; [portable tests](test_contracts129.py) cover the private
+[Small tensor-hash unit](fingerprint_unit129b.json) verifies scalar,empty,transpose,
+torch.device/dtype and inference-mode tensors; [portable tests](test_contracts129.py) cover the private
 RPC/no-generate contract, exact session/root, original155checks and trace returns.
 A first CPU-onlyprobe missed sourcing existing CANN env and failed `libhccl.so`
 import; corrected shell succeeded without SDK/install change. A gitlsremote SSL
@@ -41,7 +41,23 @@ connection timed out, while GitHubAPI verified published51db4b4 andlive#15claim.
 
 ## Current execution
 
-Private session `engine_repeat129a`, PID3771945, initializedfromon-host originalcheckpoint.
+Private session `engine_repeat129a`, PID3771945, completed its three original control
+forwards on every rank: input pre/post values/layouts and native CPU masters plus
+resident parameters/buffers stayed stable. ActualFAlaunch count50/pass and noerrors.
+SHAtrace then hit unsupported `torch.device` metadata; the privatecohort was aborted.
+Its [actual control facts](control_summary129a.json),
+[original lifecycle receipt](executed_diagnostics129a/engine_repeat129a/diagnostic_lifecycle129.json)
+and [exact launched source](executed_sources129a/fingerprints129.py) remainpreserved.
+[Cleanup](cleanup129a.json) records that parent-group termination initially left
+detachedworkers and that driver teardown exceeded30s before a laterlivecheck found
+no remaining privateprocesses. No device reset/shared process signal was used.
+
+Corrected `engine_repeat129b`, PID3997336, now runs in new private root12902 after
+strict oldprocess/IPC cleanup. [New metadata unit](fingerprint_unit129b.json) includes
+torch.device/dtype;13portabletests pass. [Updatedpins](launch_source_pins129b.json)
+include exactenvironment/UID/starttick detached-child cleanup instead of relying
+only on the parent group. The firstworker exit is not called a model precisionfailure.
+
 Three diagnostics: sameallocation/freshclone nativecontrol, coarsefirst-change SHAtrace,
 then detailed blocktrace. No nativecopy candidate installed, no model49generationforlogs.
 Source snapshots are onlytext; all weights/inputs/activationstayon-host.

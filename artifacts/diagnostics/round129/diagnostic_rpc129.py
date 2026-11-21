@@ -12,7 +12,7 @@ import threading
 import time
 from fingerprints129 import fingerprint,normalized_fingerprint,digest,cpu_tensor_sha,compare_outputs
 
-ROOT=Path('/tmp/h3_repeat12901')
+ROOT=Path('/tmp/h3_repeat12902')
 OLD=Path('/tmp/h3_overlap12801')
 
 

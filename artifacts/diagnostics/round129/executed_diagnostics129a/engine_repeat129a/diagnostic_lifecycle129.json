@@ -1,0 +1,48 @@
+{
+  "scope": "Initialize one formal8-worker engine and send read-only repeat/trace RPCs.\n\nNo generate call, sampler step, candidate stream/cache or weights download.\nDiagnostic forwards are original50 blocks/155checks on native worker threads.\n",
+  "completed": false,
+  "kwargs": {
+    "trust_remote_code": true,
+    "task_type": "fl2va",
+    "num_gpus": 8,
+    "tensor_parallel_size": 2,
+    "text_encoder_tp_size": 8,
+    "ulysses_degree": 4,
+    "ring_degree": 1,
+    "dtype": "half",
+    "enforce_eager": true,
+    "enable_layerwise_offload": true,
+    "vae_use_tiling": true,
+    "vae_parallel_mode": "tile",
+    "vae_patch_parallel_size": 8,
+    "diffusion_attention_backend": "TORCH_SDPA",
+    "stage_init_timeout": 2400,
+    "init_timeout": 2400
+  },
+  "RPCs": [
+    {
+      "mode": "repeat",
+      "host_wall_s": 216.92393598007038,
+      "reply": [
+        [
+          {
+            "rank": 0,
+            "completed": true,
+            "report": "/tmp/h3_repeat12901/repeat_rank0129.json",
+            "original50forward_count": 3,
+            "checks": 465,
+            "first_trace_change": null
+          }
+        ]
+      ],
+      "executed8rank_receipts": true,
+      "forwards_each_rank": 3,
+      "original_strict_checks_allranks": 3720,
+      "first_trace_changes": []
+    }
+  ],
+  "no_sampling_or_generate": true,
+  "no_copy_stream_candidate_enabled": true,
+  "own_live_prior_NPU_fixture_used": true,
+  "engine_initialization_s": 259.50093998992816
+}
