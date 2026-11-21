@@ -2,12 +2,24 @@
 
 > **Execution tracking:** [GitHub Project](https://github.com/users/lvyufeng/projects/10)
 > and [roadmap issue #1](https://github.com/lvyufeng/h3-910a/issues/1) are the live task
-> source. Start with [runtime cold/warm/reload #3](https://github.com/lvyufeng/h3-910a/issues/3).
+> source. [Runtime cold/warm/reload #3](https://github.com/lvyufeng/h3-910a/issues/3)
+> has verified three same-worker requests; next is
+> [safe worker-local overlap #4](https://github.com/lvyufeng/h3-910a/issues/4).
 > Follow [the agent contract](<AGENTS.md>) and
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
 
-> **Current state (round126):** the accepted baseline remains the real R124
+> **R127 formal-service observation:** the same8 workers completed three original
+> 49-step requests with **182,280 strict checks**. Generation wall is
+> **1339.22 / 1009.41 / 1008.57s**, but whole-forward warm medians remain about
+> **19.90s**. Native VAE stage is **142.27 / 23.17 / 23.13s**. All later requests
+> still reload component weights, and actual copy streams are shared with compute.
+> This is a cold/warm lifecycle finding, **not a new optimization/precision promotion**.
+> [R127 complete findings](<artifacts/diagnostics/round127/RESULTS.md>) include the
+> asynchronous cold audio cost, unchanged-output limitations and unresolved
+> [native CPU packing crash #14](https://github.com/lvyufeng/h3-910a/issues/14).
+>
+> **Precision reference / R126 context:** the accepted baseline remains the real R124
 > 49-step original-checkpoint generation, with its own FP16 encoder, original
 > FP32 VAE parameters and the user-accepted 910A FA kernel. R125 measured warm
 > DiT **40.47 s -> 18.41 s** and full generation **2316.96 s -> 1329.96 s**.

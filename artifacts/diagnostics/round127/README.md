@@ -94,7 +94,7 @@ failed. See [native init failure](failed_lifecycle127b_summary.json) and
 [its exact source](executed_sources127b/launch_lifecycle127.py).
 Its [private IPC cleanup](cleanup_failed127b.json) preserves model/source evidence.
 
-A bounded diagnostic `engine_lifecycle127c`, PID1947359, is now being followed.
+A bounded diagnostic `engine_lifecycle127c`, PID1947359, has completed.
 It adds [CPU packing metadata and faulthandler](init_diagnostics127.py) while
 still calling the original native `copy_` path. The
 [synthetic native-copy unit](init_packing_unit127.json) proves six small
@@ -104,6 +104,19 @@ consistent and all14 portable tests pass. [Pinned127c sources](launch_source_pin
 include those guards; the process receipt is now atomically published with its
 launcher PID to avoid collector receipt races.
 
-No three-request result is declared yet. Final evidence, precise observed limits
-and cleanup must be posted to Issue#3 before changing its state or proceeding to
-its dependent Issue#4.
+The three-request observation has now **completed**, with the same8 workers and
+model objects, **182,280 strict Half checks**, and124frames for every request.
+Driver generation wall is **1339.217 / 1009.406 / 1008.572s**, while whole-forward
+warm medians remain about **19.90s**. Full VAE stage is **142.268 / 23.170 / 23.135s**;
+all requests still perform native stage reloads and every observedcopy stream is
+shared with the consumer stream. See [complete findings and next-step contract](RESULTS.md),
+[actual lifecycle summary](lifecycle_summary127c.json) and
+[unchanged native-repeat media differences](native_repeat_media127.json).
+This is not a precision promotion or attainment of latency targets.
+
+[Successful cleanup](cleanup127c.json) verifies all private processes exited,
+private IPC removed and accepted source/noise fingerprints unchanged. The owned
+machine lease is released. The nativeCPU packing failure remains unresolved in
+[Issue#14](https://github.com/lvyufeng/h3-910a/issues/14), not hidden by the later
+successfulrun. Follow [Issue#3](https://github.com/lvyufeng/h3-910a/issues/3) for live
+closure and [Issue#4](https://github.com/lvyufeng/h3-910a/issues/4) for next development.

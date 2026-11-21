@@ -72,12 +72,24 @@ def summarize(root:Path):
         for row in records:
             if row['event']=='stage_end':stage[row['stage']].append(row['host_elapsed_s'])
         stage_max={name:max(values) for name,values in stage.items()}
+        device_stages=defaultdict(list);device_transitions=defaultdict(list)
+        for request_end in end:
+            for measured in request_end['stage_device_events']:
+                if 'stage' in measured:device_stages[measured['stage']].append(measured['current_stream_elapsed_ms']/1000)
+                elif 'method' in measured:device_transitions[measured['label']+':'+measured['method']].append(measured['current_stream_elapsed_ms']/1000)
+        device_stage_max={name:max(values) for name,values in device_stages.items()}
+        device_transition_max={name:max(values) for name,values in device_transitions.items()}
         native_decodes=[r for r in records if r['event']=='native_NPU_VAE_decode_end'];assert len(native_decodes)==8
         assert all(not r['operand_cache_enabled'] for r in native_decodes)
         prefetch=[v for row in end for v in row['prefetch']]
         assert prefetch and all(v['calls']>0 for v in prefetch)
         copies_shared=Counter('shared' if v['streams']['copy_is_current'] else 'independent' for v in prefetch)
-        per_rank_loads={str(pid):Counter(r['label'] for r in loads if r['pid']==pid) for pid in pids}
+        label_by_pid_object={(r['pid'],s['object_id']):s['label'] for r in begin+end for s in r['state']['stagers']}
+        def actual_label(row):
+            return label_by_pid_object.get((row['pid'],row['after']['object_id']),row['label'])
+        per_rank_loads={str(pid):Counter(actual_label(r) for r in loads if r['pid']==pid) for pid in pids}
+        required_VAE_stagers={'video_vae_encoder_stager','video_vae_decoder_stager','audio_vae_stager'}
+        all_rank_VAE_reload=all(required_VAE_stagers.issubset(counts) for counts in per_rank_loads.values())
         pins=[s for row in begin+end for s in row['state']['stagers']]
         case={'index':index,'label':label,'generation_wall_s':result['requests'][index-1]['generation_wall_s'],
               'native_worker_request_rank_max_s':max(r['host_elapsed_s'] for r in end),
@@ -85,9 +97,14 @@ def summarize(root:Path):
               'same_scope_as_R124_prediction_D2H_safety_hook_not_pure_NPU_compute':True,
               'original_strict_Half_checks_passed':60760,'actual_steps_each_rank':49,'worker_pids':sorted(pids),
               'host_stage_rank_max_s':stage_max,
+              'consumer_stream_stage_rank_max_s':device_stage_max,
+              'consumer_stream_transition_rank_max_s':device_transition_max,
+              'host_submit_time_is_not_async_audio_completion_time':True,
               'cold_or_warm_native_VAE_combined_rank_max_s':max(r['elapsed_s'] for r in native_decodes),
               'actual_stager_load_once_count':len(loads),'actual_stager_offload_count':len(offloads),
               'actual_loads_by_rank_and_component':per_rank_loads,
+              'all_8_ranks_native_video_encoder_decoder_and_audio_reload_confirmed':all_rank_VAE_reload,
+              'stager_label_recovered_by_object_id_if_created_during_request':True,
               'layerwise_prefetch_copy_stream_roles':dict(copies_shared),
               'actual_layerwise_prefetch_calls_total':sum(v['calls'] for v in prefetch),
               'pinned_master_metadata_stayed_stable_across_each_transition':True,
@@ -101,7 +118,8 @@ def summarize(root:Path):
               'peak_reserved_rank_max_bytes':max((r['state']['memory']['peak_reserved_bytes'] for r in end),default=None)
                   if all('peak_reserved_bytes' in r['state']['memory'] for r in end) else None,
               'new_precision_policy_accepted':False}
-        if index>1:assert loads,'Warm compiler-cache request must still prove native weight reload'
+        if index>1:
+            assert loads and all_rank_VAE_reload,'Warm compiler-cache request must prove all8 native weight reloads'
         cases.append(case)
     assert sum(c['original_strict_Half_checks_passed'] for c in cases)==182280
     return {'scope':__doc__,'completed':True,'same_worker_and_model_objects_all_three_requests':True,

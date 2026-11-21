@@ -1,0 +1,546 @@
+{
+  "scope": "Summarize completed R127 same-worker lifecycle from actual audit rows only.\n\nNo model execution, tensor reads, or automatic performance/precision acceptance.\nThe observer's current-stream event intervals are inclusive and not additive.\n",
+  "completed": true,
+  "same_worker_and_model_objects_all_three_requests": true,
+  "engine_initialization_s": 347.5140642100014,
+  "actual_full_requests": 3,
+  "total_strict_Half_checks": 182280,
+  "cases": [
+    {
+      "index": 1,
+      "label": "r01_cold",
+      "generation_wall_s": 1339.216553539969,
+      "native_worker_request_rank_max_s": 1339.7470184802078,
+      "whole_forward_hook": {
+        "first_step_s": 93.94528036983684,
+        "warm_steps_1_to_48_median_s": 19.897325625177473,
+        "warm_steps_min_s": 19.87581356987357,
+        "warm_steps_max_s": 35.22991445986554,
+        "every_step_rank_max_s": [
+          93.94528036983684,
+          35.22991445986554,
+          19.913455680012703,
+          19.908718049991876,
+          19.902926979586482,
+          19.89341604989022,
+          19.914820829872042,
+          19.910064850002527,
+          19.901555970311165,
+          19.90418322989717,
+          19.897366310004145,
+          19.8970347000286,
+          19.897349960170686,
+          19.891317510046065,
+          19.89131414005533,
+          19.93010409967974,
+          19.93465828988701,
+          19.887397800106555,
+          19.89095896994695,
+          19.88245937973261,
+          19.901715300045907,
+          19.892476479988545,
+          19.882712820079178,
+          19.892734280321747,
+          19.922132960055023,
+          19.890281210187823,
+          19.91407227003947,
+          19.893629069905728,
+          19.89210852002725,
+          19.934460250195116,
+          19.932853170204908,
+          19.89068511966616,
+          19.912440390326083,
+          19.89730129018426,
+          19.87581356987357,
+          19.8844873001799,
+          19.925732659641653,
+          19.892600290011615,
+          19.89663393003866,
+          19.899287610314786,
+          19.9187090001069,
+          19.903468729928136,
+          19.89154057018459,
+          19.89050765009597,
+          19.893268660176545,
+          19.89752950007096,
+          19.917255090083927,
+          19.895024609752,
+          19.894054470118135
+        ]
+      },
+      "same_scope_as_R124_prediction_D2H_safety_hook_not_pure_NPU_compute": true,
+      "original_strict_Half_checks_passed": 60760,
+      "actual_steps_each_rank": 49,
+      "worker_pids": [
+        1947666,
+        1947667,
+        1947668,
+        1947669,
+        1947670,
+        1947671,
+        1947672,
+        1947673
+      ],
+      "host_stage_rank_max_s": {
+        "pipeline.encode_prompt": 64.09204390039667,
+        "pipeline._prepare_request_inputs": 122.24298080988228,
+        "pipeline.diffuse": 1074.7027999600396,
+        "video_vae.decode_latent": 75.88638273999095,
+        "audio_vae.decode_latent": 0.49142598034814,
+        "pipeline.decode": 142.483747609891
+      },
+      "consumer_stream_stage_rank_max_s": {
+        "pipeline.encode_prompt": 64.09410546875,
+        "pipeline._prepare_request_inputs": 122.243796875,
+        "pipeline.diffuse": 1074.91725,
+        "video_vae.decode_latent": 76.768234375,
+        "audio_vae.decode_latent": 63.43427734375,
+        "pipeline.decode": 142.31946875
+      },
+      "consumer_stream_transition_rank_max_s": {
+        "unmapped:_load_once": 0.03433700180053711,
+        "unmapped:load": 0.03470600128173828,
+        "unmapped:offload": 0.2918529968261719,
+        "video_vae_encoder_stager:_load_once": 0.04903400039672851,
+        "video_vae_encoder_stager:load": 0.04985499954223633,
+        "video_vae_decoder_stager:_load_once": 0.8509290161132812,
+        "video_vae_decoder_stager:load": 0.8537659912109375,
+        "video_vae_encoder_stager:offload": 0.05160499954223633,
+        "video_vae_decoder_stager:offload": 0.9042369995117188,
+        "audio_vae_stager:_load_once": 0.07741699981689452,
+        "audio_vae_stager:load": 0.08282599639892578,
+        "audio_vae_stager:offload": 0.02356999969482422
+      },
+      "host_submit_time_is_not_async_audio_completion_time": true,
+      "cold_or_warm_native_VAE_combined_rank_max_s": 142.26793255005032,
+      "actual_stager_load_once_count": 40,
+      "actual_stager_offload_count": 40,
+      "actual_loads_by_rank_and_component": {
+        "1947666": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947667": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947668": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947669": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947670": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947671": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947672": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947673": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        }
+      },
+      "all_8_ranks_native_video_encoder_decoder_and_audio_reload_confirmed": true,
+      "stager_label_recovered_by_object_id_if_created_during_request": true,
+      "layerwise_prefetch_copy_stream_roles": {
+        "shared": 1016
+      },
+      "actual_layerwise_prefetch_calls_total": 20232,
+      "pinned_master_metadata_stayed_stable_across_each_transition": true,
+      "pinned_master_full_byte_comparison_per_transition_performed": false,
+      "all_stager_masters_pinned": true,
+      "thread_affinity_counts": [
+        192
+      ],
+      "stage_event_scope": "current consumer stream inclusive elapsed, includes waits/host gaps; not summed or called pure copy",
+      "NUMA_scope": "whole VMA node statistics for sampled pinned pointers; exact per-tensor pages remain unknown",
+      "peak_allocated_rank_max_bytes": 19695448064,
+      "peak_reserved_rank_max_bytes": 20818427904,
+      "new_precision_policy_accepted": false
+    },
+    {
+      "index": 2,
+      "label": "r02_warm",
+      "generation_wall_s": 1009.4055291297846,
+      "native_worker_request_rank_max_s": 1007.9531026999466,
+      "whole_forward_hook": {
+        "first_step_s": 19.935774879995733,
+        "warm_steps_1_to_48_median_s": 19.911378944991156,
+        "warm_steps_min_s": 19.87502619996667,
+        "warm_steps_max_s": 19.94073622021824,
+        "every_step_rank_max_s": [
+          19.935774879995733,
+          19.916130379773676,
+          19.932186420075595,
+          19.919682670384645,
+          19.919544029980898,
+          19.93488284992054,
+          19.91054792003706,
+          19.93074897956103,
+          19.913761290255934,
+          19.91815552022308,
+          19.910369290038943,
+          19.910446759779006,
+          19.90474927984178,
+          19.92557310964912,
+          19.90766745992005,
+          19.919394969940186,
+          19.915448590181768,
+          19.90863574994728,
+          19.911514679901302,
+          19.9057036601007,
+          19.903517169877887,
+          19.914374810177833,
+          19.918740060180426,
+          19.900626430287957,
+          19.91124321008101,
+          19.919951549731195,
+          19.906222670339048,
+          19.94073622021824,
+          19.924487420357764,
+          19.90805489011109,
+          19.900781139731407,
+          19.907595709897578,
+          19.87502619996667,
+          19.925674399826676,
+          19.91197281004861,
+          19.902839090209454,
+          19.91007816977799,
+          19.91709411982447,
+          19.909113939851522,
+          19.896922620013356,
+          19.912107559852302,
+          19.901444000191987,
+          19.909360089804977,
+          19.90139829972759,
+          19.91822518967092,
+          19.915322280023247,
+          19.90080915996805,
+          19.919571459759027,
+          19.90294176992029
+        ]
+      },
+      "same_scope_as_R124_prediction_D2H_safety_hook_not_pure_NPU_compute": true,
+      "original_strict_Half_checks_passed": 60760,
+      "actual_steps_each_rank": 49,
+      "worker_pids": [
+        1947666,
+        1947667,
+        1947668,
+        1947669,
+        1947670,
+        1947671,
+        1947672,
+        1947673
+      ],
+      "host_stage_rank_max_s": {
+        "pipeline.encode_prompt": 3.1908686798997223,
+        "pipeline._prepare_request_inputs": 5.0826289798133075,
+        "pipeline.diffuse": 979.5262385602109,
+        "video_vae.decode_latent": 21.349702749866992,
+        "audio_vae.decode_latent": 0.20475085033103824,
+        "pipeline.decode": 23.194854199886322
+      },
+      "consumer_stream_stage_rank_max_s": {
+        "pipeline.encode_prompt": 3.19175,
+        "pipeline._prepare_request_inputs": 5.08269384765625,
+        "pipeline.diffuse": 979.5375625,
+        "video_vae.decode_latent": 20.884619140625,
+        "audio_vae.decode_latent": 0.25164500427246095,
+        "pipeline.decode": 23.195251953125
+      },
+      "consumer_stream_transition_rank_max_s": {
+        "text_encoder_omni_non_block_stager:_load_once": 0.03315000152587891,
+        "text_encoder_omni_non_block_stager:load": 0.03355799865722656,
+        "text_encoder_omni_non_block_stager:offload": 0.19052999877929688,
+        "video_vae_encoder_stager:_load_once": 0.0626870002746582,
+        "video_vae_encoder_stager:load": 0.06364500045776367,
+        "video_vae_decoder_stager:_load_once": 0.7847080078125,
+        "video_vae_decoder_stager:load": 0.7869439697265626,
+        "video_vae_encoder_stager:offload": 0.021509000778198242,
+        "video_vae_decoder_stager:offload": 0.871364013671875,
+        "audio_vae_stager:_load_once": 0.07677400207519532,
+        "audio_vae_stager:load": 0.08314399719238282,
+        "audio_vae_stager:offload": 0.014079999923706055
+      },
+      "host_submit_time_is_not_async_audio_completion_time": true,
+      "cold_or_warm_native_VAE_combined_rank_max_s": 23.169522190000862,
+      "actual_stager_load_once_count": 40,
+      "actual_stager_offload_count": 40,
+      "actual_loads_by_rank_and_component": {
+        "1947666": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947667": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947668": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947669": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947670": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947671": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947672": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947673": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        }
+      },
+      "all_8_ranks_native_video_encoder_decoder_and_audio_reload_confirmed": true,
+      "stager_label_recovered_by_object_id_if_created_during_request": true,
+      "layerwise_prefetch_copy_stream_roles": {
+        "shared": 1016
+      },
+      "actual_layerwise_prefetch_calls_total": 20232,
+      "pinned_master_metadata_stayed_stable_across_each_transition": true,
+      "pinned_master_full_byte_comparison_per_transition_performed": false,
+      "all_stager_masters_pinned": true,
+      "thread_affinity_counts": [
+        192
+      ],
+      "stage_event_scope": "current consumer stream inclusive elapsed, includes waits/host gaps; not summed or called pure copy",
+      "NUMA_scope": "whole VMA node statistics for sampled pinned pointers; exact per-tensor pages remain unknown",
+      "peak_allocated_rank_max_bytes": 19694335488,
+      "peak_reserved_rank_max_bytes": 20879245312,
+      "new_precision_policy_accepted": false
+    },
+    {
+      "index": 3,
+      "label": "r03_native_reload",
+      "generation_wall_s": 1008.5715986299329,
+      "native_worker_request_rank_max_s": 1007.1463434998877,
+      "whole_forward_hook": {
+        "first_step_s": 19.917557989712805,
+        "warm_steps_1_to_48_median_s": 19.901302420068532,
+        "warm_steps_min_s": 19.85318931983784,
+        "warm_steps_max_s": 19.932720969896764,
+        "every_step_rank_max_s": [
+          19.917557989712805,
+          19.88739957008511,
+          19.8784336396493,
+          19.887499960139394,
+          19.889391110278666,
+          19.910964619833976,
+          19.88647023960948,
+          19.90222758008167,
+          19.8655959200114,
+          19.902937070000917,
+          19.893511860165745,
+          19.929653249680996,
+          19.886196509934962,
+          19.897477200254798,
+          19.895034689921886,
+          19.922239470295608,
+          19.8684308398515,
+          19.900377260055393,
+          19.85318931983784,
+          19.91825467022136,
+          19.92707461025566,
+          19.915078800171614,
+          19.897177120205015,
+          19.884343380108476,
+          19.889587659854442,
+          19.906849610153586,
+          19.88965186988935,
+          19.90491638984531,
+          19.904393809847534,
+          19.906298900023103,
+          19.884777669794858,
+          19.9031942198053,
+          19.906546290032566,
+          19.90629496006295,
+          19.903966929763556,
+          19.88925021002069,
+          19.898411040194333,
+          19.912507799919695,
+          19.907312309835106,
+          19.88575021037832,
+          19.91193833993748,
+          19.896285419818014,
+          19.921957690268755,
+          19.90269376989454,
+          19.910270790103823,
+          19.918640329968184,
+          19.869508770294487,
+          19.895932500250638,
+          19.932720969896764
+        ]
+      },
+      "same_scope_as_R124_prediction_D2H_safety_hook_not_pure_NPU_compute": true,
+      "original_strict_Half_checks_passed": 60760,
+      "actual_steps_each_rank": 49,
+      "worker_pids": [
+        1947666,
+        1947667,
+        1947668,
+        1947669,
+        1947670,
+        1947671,
+        1947672,
+        1947673
+      ],
+      "host_stage_rank_max_s": {
+        "pipeline.encode_prompt": 3.1461640801280737,
+        "pipeline._prepare_request_inputs": 4.998778259847313,
+        "pipeline.diffuse": 978.8331412198022,
+        "video_vae.decode_latent": 21.36546796001494,
+        "audio_vae.decode_latent": 0.21962187020108104,
+        "pipeline.decode": 23.159494660329074
+      },
+      "consumer_stream_stage_rank_max_s": {
+        "pipeline.encode_prompt": 3.1468349609375,
+        "pipeline._prepare_request_inputs": 4.99887109375,
+        "pipeline.diffuse": 978.844375,
+        "video_vae.decode_latent": 20.866171875,
+        "audio_vae.decode_latent": 0.2194669952392578,
+        "pipeline.decode": 23.159869140625
+      },
+      "consumer_stream_transition_rank_max_s": {
+        "text_encoder_omni_non_block_stager:_load_once": 0.033076000213623044,
+        "text_encoder_omni_non_block_stager:load": 0.03347700119018555,
+        "text_encoder_omni_non_block_stager:offload": 0.19536599731445312,
+        "video_vae_encoder_stager:_load_once": 0.06250099945068359,
+        "video_vae_encoder_stager:load": 0.0635,
+        "video_vae_decoder_stager:_load_once": 0.7704409790039063,
+        "video_vae_decoder_stager:load": 0.7727059936523437,
+        "video_vae_encoder_stager:offload": 0.021860000610351562,
+        "video_vae_decoder_stager:offload": 0.8778720092773438,
+        "audio_vae_stager:_load_once": 0.0775989990234375,
+        "audio_vae_stager:load": 0.08450900268554687,
+        "audio_vae_stager:offload": 0.014609000205993653
+      },
+      "host_submit_time_is_not_async_audio_completion_time": true,
+      "cold_or_warm_native_VAE_combined_rank_max_s": 23.13470275979489,
+      "actual_stager_load_once_count": 40,
+      "actual_stager_offload_count": 40,
+      "actual_loads_by_rank_and_component": {
+        "1947666": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947667": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947668": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947669": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947670": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947671": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947672": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        },
+        "1947673": {
+          "text_encoder_omni_non_block_stager": 1,
+          "video_vae_encoder_stager": 1,
+          "video_vae_decoder_stager": 2,
+          "audio_vae_stager": 1
+        }
+      },
+      "all_8_ranks_native_video_encoder_decoder_and_audio_reload_confirmed": true,
+      "stager_label_recovered_by_object_id_if_created_during_request": true,
+      "layerwise_prefetch_copy_stream_roles": {
+        "shared": 1016
+      },
+      "actual_layerwise_prefetch_calls_total": 20232,
+      "pinned_master_metadata_stayed_stable_across_each_transition": true,
+      "pinned_master_full_byte_comparison_per_transition_performed": false,
+      "all_stager_masters_pinned": true,
+      "thread_affinity_counts": [
+        192
+      ],
+      "stage_event_scope": "current consumer stream inclusive elapsed, includes waits/host gaps; not summed or called pure copy",
+      "NUMA_scope": "whole VMA node statistics for sampled pinned pointers; exact per-tensor pages remain unknown",
+      "peak_allocated_rank_max_bytes": 19694457856,
+      "peak_reserved_rank_max_bytes": 20881342464,
+      "new_precision_policy_accepted": false
+    }
+  ],
+  "warm_requests_have_native_stage_reload_not_full_model_residency": true,
+  "third_request_keeps_existing_compiler_cache": true,
+  "no_new_runtime_or_precision_optimization_applied": true,
+  "full_performance_goal_complete": false,
+  "numeric_candidate_automatically_accepted": false
+}

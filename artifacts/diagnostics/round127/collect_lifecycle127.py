@@ -45,7 +45,7 @@ assert sum(p.stat().st_size for p in paths)<=20*1024**2
 with tarfile.open(fileobj=sys.stdout.buffer,mode='w|') as archive:
     for path in paths:archive.add(path,arcname=str(path.relative_to(root)),recursive=False)
 '''
-    cmd=['ssh','-o','BatchMode=yes','-o','ConnectTimeout=60','-o','ServerAliveInterval=30',
+    cmd=['ssh','-C','-o','BatchMode=yes','-o','ConnectTimeout=60','-o','ServerAliveInterval=30',
          '-o','ServerAliveCountMax=20','-o','ControlMaster=no','-o','ControlPath=none','ts-217',
          '/usr/bin/python3 - '+str(args.pid)]
     result=subprocess.run(cmd,input=remote.encode(),capture_output=True)
