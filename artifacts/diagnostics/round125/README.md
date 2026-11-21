@@ -104,9 +104,56 @@ attempt 124i died because the private IPC key lived outside `/tmp/h3_align12401`
 `configure_python_startup`'s assertion was swallowed at interpreter startup and the
 worker audit hook never installed. Both were harness errors, not model failures.
 
+## Candidate verdicts (all five approved candidates measured)
+
+Every candidate was measured against the accepted FA base with identical inputs;
+the user judges the numbers, nothing is auto-accepted. Full detail in
+[candidates_measured125.json](<artifacts/diagnostics/round125/candidates_measured125.json>).
+
+| candidate | speed | numerics | verdict |
+|---|---|---|---|
+| custom 910A TBE flash attention | step 40.47 -> **18.41 s**, wall 2316.96 -> **1329.96 s** | media PSNR >= 51.18 dB | **kept** (user-approved) |
+| VAE Half params + native fused decoder | decode 138.6 -> **132.4 s**, wall unchanged | media PSNR >= 51.68 dB | rejected: no real gain |
+| DiT FP16 residual stream | 18.41 -> **25.93 s** | same as FA base | rejected: 40% slower |
+| fused FP16 pointwise (SwiGLU / SiluAndMul) | 18.41 -> **18.83 s** | video 0.08-0.22%, audio to 1.64% at step 48, growing with step | rejected: no gain and drifting |
+| raised TP/USP for DiT residency | residency OOMs; USP8 slower (22.64 s) | — | unavailable: TP does not shard this DiT |
+
+Two negative results are worth keeping in mind:
+
+- The VAE decode is **not** parameter-precision bound. Rewriting the original FP32
+  decoder parameters to Half and enabling every fused decoder path moved ~132 s by
+  at most 4%, so that cost lives in tile staging / temporal streaming / audio.
+- The FP32 residual stream costs **no** speed. Narrowing it to FP16 was slower, so the
+  R124 numerical protection is not a performance liability.
+
 ## Still outstanding
 
-The three remaining approved candidates are unmeasured: VAE Half parameters + fused
-decoder, the DiT FP16 residual stream (variant written, not yet run), and fused FP16
-pointwise kernels. The encoder (65.11 s), VAE decode (138.55 s) and 15 s/step targets
-are still unmet, and no A2/A3 comparison has been produced.
+Encoder (~65 s against a 2 s target), VAE decode (~132 s against 20 s) and the A2/A3
+comparison remain open. The DiT step is now dominated by per-block weight staging: with
+attention fixed, pointwise fusion and residual narrowing both did nothing, because the
+cost is streaming 50 blocks of weights through a CPU offload that cannot be dropped
+(the DiT does not fit 32 GiB and tensor parallelism does not shard it). Closing the
+remaining gap therefore needs a different mechanism — weight pre-packing or a different
+staging strategy, quantized transfer, or a larger-memory part — not another precision
+approximation.
+
+Also unmeasured: the AdaLN / QK-norm+RoPE fusions specifically (the highest-volume
+pointwise fusion, SwiGLU, was measured and gained nothing), and encoder acceleration.
+
+## Files in this directory
+
+- `check_NPU_candidate125.py`, `r125_*.py` — the same-input candidate harness and the
+  variant patches (`half_residual`, `fused_mlp`, `naive`).
+- `launch_candidate125.py` — spawns the pinned R124 driver with a fresh private IPC key,
+  work directory and output label for candidate full generations.
+- `noise_floor125.json`, `baseline_rank0*.json` — the device self-repeat band.
+- `resident_oom_rank0.json`, `cost_attribution125.json` — residency limit and the
+  attention-dominance profile.
+- `fa910a_candidate125.json`, `full_generation_with_FA125.json`,
+  `R124_vs_FA_media125.json` — the accepted acceleration, end to end.
+- `half_residual_candidate125.json`, `VAEfast_vs_baselines125.json`,
+  `fused_mlp_fa_rank0.json`, `candidates_measured125.json` — the rejected candidates.
+- `encoder_inventory125.json`, `vae_inventory125.json` — source inventories produced by
+  two read-only reviewers.
+- `NPU_generated_FA/` — the accepted FA generation and its contact sheet.
+- `NPU_generated_VAEfast/` — the VAE fast-path generation used for the comparison.
