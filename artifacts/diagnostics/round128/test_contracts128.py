@@ -225,6 +225,14 @@ class Tests(unittest.TestCase):
         self.assertIn('start_new_session=True',launcher)
         self.assertNotIn('sleep(',monitor)
 
+    def test_native_state_restoration_is_not_output_repeatability(self):
+        helper=(ROOT/'formal_replay128.py').read_text();driver=(ROOT/'generate_lifecycle127.py').read_text()
+        self.assertIn("report['native_hook_state_verified']=True",helper)
+        self.assertIn("report['restored_output_bits_equal']=restored",helper)
+        self.assertIn("r['completed'] and r['native_hook_state_verified']",driver)
+        self.assertNotIn("r['completed'] and r['restored']",driver)
+        self.assertIn('Blocked: unchanged native baseline is not bit-repeatable',helper)
+
     def test_synthetic_gates_are_not_real_model_claims(self):
         source=(ROOT/'test_worker_stream128.py').read_text()+(ROOT/'test_native_hooks128.py').read_text()
         self.assertIn('not_model_performance_evidence',source)

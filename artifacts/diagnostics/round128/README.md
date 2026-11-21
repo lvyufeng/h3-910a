@@ -2,7 +2,10 @@
 
 Live task: [Issue #4](https://github.com/lvyufeng/h3-910a/issues/4) ·
 [Project #10](https://github.com/users/lvyufeng/projects/10).
-See [initial contract](issue4_start.md); the task is In Progress, **not accepted**.
+See [initial contract](issue4_start.md). The task is now **Blocked** by
+[Issue #15](https://github.com/lvyufeng/h3-910a/issues/15): unchanged native same-input
+replay was not bit-repeatable **before any copy-stream adapter was enabled**.
+See [actual outcome and next gate](RESULTS.md); there is no acceleration/precision promotion.
 
 ## Implemented, not globally enabled
 
@@ -42,7 +45,7 @@ The adapter's `copy_stream` in serial rehearsal facts names the **warmed but unu
 private capability; [formal profiler](formal_replay128.py) additionally reports the
 actual selected hook stream. Do not confuse capability existence with its use.
 
-[23 portable tests](test_contracts128.py) cover ownership, no global switch, recorded
+[24 portable tests](test_contracts128.py) cover ownership, no global switch, recorded
 fences, bounded backpressure, non-trajectory accounting, live-input provenance,
 exact session import and conditional candidate generation. Hardware/model/precision
 gates are separate. [Eight-rank TCP status smoke](cohort_unit_rank0128.json)
@@ -59,6 +62,15 @@ The [first small-test sources](executed_synthetic128a/native_copy_adapter128.py)
 preserved with SHA matching their earlier executed receipt.
 
 ## Still required
+
+[The native-only formal attempt](formal_summary128a.json) completed original8×49
+and60,760checks plus3,720 separately counted replay checks, but no serial/async
+model adapter was activated. The same-input native video/audio prediction drift
+is0.0262%/0.0411% relRMS; it is **not a permitted candidate tolerance**.
+The exact launched sources and failed driver receipt stay archived; only later
+code fixes distinguish physical restoration from output bit equality. No repeat
+inference was launched to conceal that exit1. Own process/IPC cleanup and lease
+release are complete; queued NUMA probing was canceled, not executed.
 
 Actual formal-worker same-input bitproof, real TP2 parameter layout/source pins,
 clean rank-max median, memory, copy/consumer waits and full cold/reload scopes.

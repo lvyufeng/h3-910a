@@ -1,0 +1,127 @@
+{
+  "completed": true,
+  "rank": 3,
+  "pid": 2865028,
+  "scope": "Non-trajectory same-input replay on the actual formal worker thread.\n\nInputs come from this request's live NPU encoder/DiT invocation, never GPU/teacher\nfeatures. No replay output is fed into sampling. Original 155-check hooks remain\nactive in a separately counted benchmark scope. Only DiT50 native hooks change.\n",
+  "input_source": "this formal request live NPU pipeline step25",
+  "input_sha256": "4332763dd471144f57b9d701a3663aa6e114573a19687cf3e80be061631fd60b",
+  "source_inputs_saved_only_on_NPU_host": true,
+  "teacher_hidden_or_replay_outputs_used_by_sampler": false,
+  "cases": [
+    {
+      "mode": "native_warmup",
+      "clean": false,
+      "local_wall_includes_original_prediction_D2H_safety_s": 19.84488132968545,
+      "rank_max_wall_s": 19.84950065612793,
+      "strict_Half_checks": 155,
+      "full_output_leaves": [
+        {
+          "shape": [
+            39312,
+            96
+          ],
+          "dtype": "torch.float32",
+          "all_raw_words_equal": true,
+          "max_abs_difference": 0.0,
+          "relative_RMS_error": 0.0
+        },
+        {
+          "shape": [
+            414,
+            32
+          ],
+          "dtype": "torch.float32",
+          "all_raw_words_equal": true,
+          "max_abs_difference": 0.0,
+          "relative_RMS_error": 0.0
+        }
+      ],
+      "all8ranks_all_output_words_equal_to_same_input_native": true
+    },
+    {
+      "mode": "native",
+      "clean": true,
+      "local_wall_includes_original_prediction_D2H_safety_s": 19.844444040209055,
+      "rank_max_wall_s": 19.855575561523438,
+      "strict_Half_checks": 155,
+      "full_output_leaves": [
+        {
+          "shape": [
+            39312,
+            96
+          ],
+          "dtype": "torch.float32",
+          "all_raw_words_equal": false,
+          "max_abs_difference": 0.016859591007232666,
+          "relative_RMS_error": 0.00026195291885748844
+        },
+        {
+          "shape": [
+            414,
+            32
+          ],
+          "dtype": "torch.float32",
+          "all_raw_words_equal": false,
+          "max_abs_difference": 0.008653759956359863,
+          "relative_RMS_error": 0.0004110161870429336
+        }
+      ],
+      "all8ranks_all_output_words_equal_to_same_input_native": false
+    },
+    {
+      "mode": "restored_final_gate",
+      "clean": false,
+      "local_wall_includes_original_prediction_D2H_safety_s": 19.84426381997764,
+      "rank_max_wall_s": 19.85565185546875,
+      "strict_Half_checks": 155,
+      "full_output_leaves": [
+        {
+          "shape": [
+            39312,
+            96
+          ],
+          "dtype": "torch.float32",
+          "all_raw_words_equal": false,
+          "max_abs_difference": 0.025354444980621338,
+          "relative_RMS_error": 0.0002631998775336685
+        },
+        {
+          "shape": [
+            414,
+            32
+          ],
+          "dtype": "torch.float32",
+          "all_raw_words_equal": false,
+          "max_abs_difference": 0.004774570465087891,
+          "relative_RMS_error": 0.00035766416175378555
+        }
+      ],
+      "all8ranks_all_output_words_equal_to_same_input_native": false
+    }
+  ],
+  "leaf_proof": [],
+  "byte_proof": [],
+  "profiles": [],
+  "restored": false,
+  "actual_model_parameter_dtypes": [
+    "torch.float16",
+    "torch.float32"
+  ],
+  "actual_TP2_runtime": {
+    "size": 2,
+    "physical_rank_group": [
+      2,
+      3
+    ],
+    "local_heads_before_USP4": 28
+  },
+  "original50blocks_TP2_USP4": true,
+  "all_cpu_master_SHA_unchanged": true,
+  "warm_rank_max_medians_s": {
+    "native": 19.855575561523438
+  },
+  "candidate_gain_vs_restored_fraction": null,
+  "all8ranks_bit_gates_passed": false,
+  "candidate_formal_generation_allowed": false,
+  "result": "Awaiting approval"
+}

@@ -211,6 +211,9 @@ def benchmark_in_worker(model,kwargs,raw_forward,torch,event):
             assert all(h.copy_stream==torch.npu.current_stream() for h in hooks)
         cohort.run('all_master_dtype_and_native_streams_restored',validate_restored)
         report['all_cpu_master_SHA_unchanged']=True;report['restored']=restored
+        report['native_hook_state_verified']=True
+        report['restored_output_bits_equal']=restored
+        report['native_baseline_repeat_failed_before_adapter']=not all_equal and not report.get('active_serial') and not report.get('active_async')
         report['warm_rank_max_medians_s']={m:statistics.median(r['rank_max_wall_s'] for r in report['cases'] if r['mode']==m and r['clean'])
             for m in ('native','serial','async','restored') if any(r['mode']==m and r['clean'] for r in report['cases'])}
         medians=report['warm_rank_max_medians_s'];baseline=medians.get('restored',medians['native']);candidate=medians.get('async')
@@ -218,7 +221,7 @@ def benchmark_in_worker(model,kwargs,raw_forward,torch,event):
         report['candidate_gain_vs_restored_fraction']=gain
         report['all8ranks_bit_gates_passed']=all_equal
         report['candidate_formal_generation_allowed']=all_equal and gain is not None and gain>=0.01
-        report['result']='Awaiting approval' if not all_equal else ('Keep for full validation' if report['candidate_formal_generation_allowed'] else 'Reject: no clear >=1% same-scope gain')
+        report['result']=('Blocked: unchanged native baseline is not bit-repeatable' if report['native_baseline_repeat_failed_before_adapter'] else 'Awaiting approval') if not all_equal else ('Keep for full validation' if report['candidate_formal_generation_allowed'] else 'Reject: no clear >=1% same-scope gain')
         report['completed']=True;cohort.run('persist_completed_gate_before_return_to_sampler',publish)
         event('R128_replay_gate_complete',**{k:v for k,v in report.items() if k not in ('cases','profiles','leaf_proof','byte_proof')})
         return report

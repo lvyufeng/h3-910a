@@ -3,12 +3,20 @@
 > **Execution tracking:** [GitHub Project](https://github.com/users/lvyufeng/projects/10)
 > and [roadmap issue #1](https://github.com/lvyufeng/h3-910a/issues/1) are the live task
 > source. [Runtime cold/warm/reload #3](https://github.com/lvyufeng/h3-910a/issues/3)
-> has verified three same-worker requests; next is
-> [safe worker-local overlap #4](https://github.com/lvyufeng/h3-910a/issues/4).
+> has verified three same-worker requests. [Safe worker-local overlap #4](https://github.com/lvyufeng/h3-910a/issues/4)
+> is now blocked by [native repeatability #15](https://github.com/lvyufeng/h3-910a/issues/15);
+> its copy-stream candidate was not enabled on the model.
 > Follow [the agent contract](<AGENTS.md>) and
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
 
+> **R128 exact-input gate:** private owner-stream and native50-hook safety tests pass,
+> but the unchanged formal-worker same-input native replay differed by about
+> **0.0262% video / 0.0411% audio relRMS before any copy-stream candidate**.
+> One original8×49 request still completed60,760checks and124frames, plus3,720 separately
+> counted replay checks. No numeric tolerance is granted; [R128 actual findings](<artifacts/diagnostics/round128/RESULTS.md>)
+> retain the failed driver receipt and next baseline/state-isolation work in#15.
+>
 > **R127 formal-service observation:** the same8 workers completed three original
 > 49-step requests with **182,280 strict checks**. Generation wall is
 > **1339.22 / 1009.41 / 1008.57s**, but whole-forward warm medians remain about

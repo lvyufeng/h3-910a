@@ -107,7 +107,7 @@ def main():
             if index==1:
                 gate_files=list(ROOT.glob('formal_replay_rank*128.json'));assert len(gate_files)==8
                 gates=[json.loads(path.read_text()) for path in gate_files]
-                assert sorted(r['rank'] for r in gates)==list(range(8)) and all(r['completed'] and r['restored'] for r in gates)
+                assert sorted(r['rank'] for r in gates)==list(range(8)) and all(r['completed'] and r['native_hook_state_verified'] for r in gates)
                 report['formal_replay_gate_results']=[{'rank':r['rank'],'result':r['result'],'allowed':r['candidate_formal_generation_allowed'],
                     'all_bit_gates':r['all8ranks_bit_gates_passed'],'gain_fraction':r['candidate_gain_vs_restored_fraction']} for r in gates]
                 publish()
