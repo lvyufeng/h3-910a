@@ -90,7 +90,8 @@ No quality policy changed and no alternative model/cache was adopted.
   driver read rank audits before all flushed. Fixed only audit completion with atomic
   markers after JSONLclose and event-driven inotify waiting outside generation timing.
 - [127b](failed_lifecycle127b_summary.json): nativeCPU Halfpacking SIGSEGV before requests,
-  rank5−11. [Issue#14](https://github.com/lvyufeng/h3-910a/issues/14) preserves this unresolved
+  rank5−11; [fingerprinted native failure excerpt](engine_lifecycle127b_failure_excerpt.txt)
+  retains the original stack/line numbers. [Issue#14](https://github.com/lvyufeng/h3-910a/issues/14) preserves this unresolved
   reliability risk. The successful127c diagnostic run does **not** prove its root cause fixed.
 - [Cleanup](cleanup127c.json): all private processes exited, auth key removed, original
   source/noise/private launched sourceSHA matches; own ts217lease released.
