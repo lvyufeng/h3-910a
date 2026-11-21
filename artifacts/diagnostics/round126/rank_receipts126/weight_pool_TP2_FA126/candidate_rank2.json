@@ -1,0 +1,878 @@
+{
+  "scope": "R126 warm, rank-max candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "baseline",
+  "rank": 2,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    25
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "case_index": 0,
+      "audit_mode": "native",
+      "step_index": 25,
+      "repeat_index": 0,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.90325868036598,
+      "rank_max_elapsed_s": 18.025550842285156,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7661108736,
+      "elapsed_s_after_explicit_warmup": 17.90325868036598,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.6488542556762695
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.888931751251221
+      }
+    },
+    {
+      "case_index": 0,
+      "audit_mode": "native",
+      "step_index": 25,
+      "repeat_index": 1,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.899505210109055,
+      "rank_max_elapsed_s": 18.012462615966797,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7676784128,
+      "elapsed_s_after_explicit_warmup": 17.899505210109055,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648603439331055
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.887202262878418
+      }
+    },
+    {
+      "case_index": 0,
+      "audit_mode": "native",
+      "step_index": 25,
+      "repeat_index": 2,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.899509929586202,
+      "rank_max_elapsed_s": 18.010000228881836,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7676784128,
+      "elapsed_s_after_explicit_warmup": 17.899509929586202,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648662090301514
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889081001281738
+      }
+    },
+    {
+      "case_index": 1,
+      "audit_mode": "pool_serial",
+      "step_index": 25,
+      "repeat_index": 0,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 19.774196660146117,
+      "rank_max_elapsed_s": 19.774473190307617,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 8322756608,
+      "elapsed_s_after_explicit_warmup": 19.774196660146117,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.64865255355835
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889256954193115
+      },
+      "weight_pool": {
+        "resident_blocks": 0,
+        "asynchronous": false,
+        "device_pool_bytes": 1291165696,
+        "H2D_layer_copy_calls": 101,
+        "H2D_bytes": 65203867648,
+        "resident_prefetch_skips": 0,
+        "slot_reuse_waits_for_compute_event": true,
+        "original_immutable_pinned_masters_reused": true,
+        "D2H_weight_copies": false,
+        "model_arithmetic_modified": false
+      }
+    },
+    {
+      "case_index": 1,
+      "audit_mode": "pool_serial",
+      "step_index": 25,
+      "repeat_index": 1,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 19.778168519958854,
+      "rank_max_elapsed_s": 19.778945922851562,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 8322756608,
+      "elapsed_s_after_explicit_warmup": 19.778168519958854,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648804187774658
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889476299285889
+      },
+      "weight_pool": {
+        "resident_blocks": 0,
+        "asynchronous": false,
+        "device_pool_bytes": 1291165696,
+        "H2D_layer_copy_calls": 151,
+        "H2D_bytes": 97483010048,
+        "resident_prefetch_skips": 0,
+        "slot_reuse_waits_for_compute_event": true,
+        "original_immutable_pinned_masters_reused": true,
+        "D2H_weight_copies": false,
+        "model_arithmetic_modified": false
+      }
+    },
+    {
+      "case_index": 1,
+      "audit_mode": "pool_serial",
+      "step_index": 25,
+      "repeat_index": 2,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 19.777236910071224,
+      "rank_max_elapsed_s": 19.77783966064453,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 8322756608,
+      "elapsed_s_after_explicit_warmup": 19.777236910071224,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648580074310303
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889797687530518
+      },
+      "weight_pool": {
+        "resident_blocks": 0,
+        "asynchronous": false,
+        "device_pool_bytes": 1291165696,
+        "H2D_layer_copy_calls": 201,
+        "H2D_bytes": 129762152448,
+        "resident_prefetch_skips": 0,
+        "slot_reuse_waits_for_compute_event": true,
+        "original_immutable_pinned_masters_reused": true,
+        "D2H_weight_copies": false,
+        "model_arithmetic_modified": false
+      }
+    },
+    {
+      "case_index": 2,
+      "audit_mode": "pool_async",
+      "step_index": 25,
+      "repeat_index": 0,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.917168280109763,
+      "rank_max_elapsed_s": 18.06105613708496,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 8322756608,
+      "elapsed_s_after_explicit_warmup": 17.917168280109763,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648622512817383
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889378070831299
+      },
+      "weight_pool": {
+        "resident_blocks": 0,
+        "asynchronous": true,
+        "device_pool_bytes": 1291165696,
+        "H2D_layer_copy_calls": 101,
+        "H2D_bytes": 65203867648,
+        "resident_prefetch_skips": 0,
+        "slot_reuse_waits_for_compute_event": true,
+        "original_immutable_pinned_masters_reused": true,
+        "D2H_weight_copies": false,
+        "model_arithmetic_modified": false
+      }
+    },
+    {
+      "case_index": 2,
+      "audit_mode": "pool_async",
+      "step_index": 25,
+      "repeat_index": 1,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.906487150117755,
+      "rank_max_elapsed_s": 18.025732040405273,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 8322756608,
+      "elapsed_s_after_explicit_warmup": 17.906487150117755,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.64893102645874
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889802932739258
+      },
+      "weight_pool": {
+        "resident_blocks": 0,
+        "asynchronous": true,
+        "device_pool_bytes": 1291165696,
+        "H2D_layer_copy_calls": 151,
+        "H2D_bytes": 97483010048,
+        "resident_prefetch_skips": 0,
+        "slot_reuse_waits_for_compute_event": true,
+        "original_immutable_pinned_masters_reused": true,
+        "D2H_weight_copies": false,
+        "model_arithmetic_modified": false
+      }
+    },
+    {
+      "case_index": 2,
+      "audit_mode": "pool_async",
+      "step_index": 25,
+      "repeat_index": 2,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.898119839839637,
+      "rank_max_elapsed_s": 18.017131805419922,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 8322756608,
+      "elapsed_s_after_explicit_warmup": 17.898119839839637,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648576259613037
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889215469360352
+      },
+      "weight_pool": {
+        "resident_blocks": 0,
+        "asynchronous": true,
+        "device_pool_bytes": 1291165696,
+        "H2D_layer_copy_calls": 201,
+        "H2D_bytes": 129762152448,
+        "resident_prefetch_skips": 0,
+        "slot_reuse_waits_for_compute_event": true,
+        "original_immutable_pinned_masters_reused": true,
+        "D2H_weight_copies": false,
+        "model_arithmetic_modified": false
+      }
+    },
+    {
+      "case_index": 3,
+      "audit_mode": "pool_resident8",
+      "step_index": 25,
+      "repeat_index": 0,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.853743409737945,
+      "rank_max_elapsed_s": 17.962139129638672,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 13488441856,
+      "elapsed_s_after_explicit_warmup": 17.853743409737945,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.649069309234619
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.888879776000977
+      },
+      "weight_pool": {
+        "resident_blocks": 8,
+        "asynchronous": true,
+        "device_pool_bytes": 6455828480,
+        "H2D_layer_copy_calls": 92,
+        "H2D_bytes": 59393622016,
+        "resident_prefetch_skips": 17,
+        "slot_reuse_waits_for_compute_event": true,
+        "original_immutable_pinned_masters_reused": true,
+        "D2H_weight_copies": false,
+        "model_arithmetic_modified": false
+      }
+    },
+    {
+      "case_index": 3,
+      "audit_mode": "pool_resident8",
+      "step_index": 25,
+      "repeat_index": 1,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.852282389998436,
+      "rank_max_elapsed_s": 17.94444465637207,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 13488441856,
+      "elapsed_s_after_explicit_warmup": 17.852282389998436,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.649019718170166
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889166831970215
+      },
+      "weight_pool": {
+        "resident_blocks": 8,
+        "asynchronous": true,
+        "device_pool_bytes": 6455828480,
+        "H2D_layer_copy_calls": 134,
+        "H2D_bytes": 86508101632,
+        "resident_prefetch_skips": 25,
+        "slot_reuse_waits_for_compute_event": true,
+        "original_immutable_pinned_masters_reused": true,
+        "D2H_weight_copies": false,
+        "model_arithmetic_modified": false
+      }
+    },
+    {
+      "case_index": 3,
+      "audit_mode": "pool_resident8",
+      "step_index": 25,
+      "repeat_index": 2,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.852812899742275,
+      "rank_max_elapsed_s": 17.955495834350586,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 13488441856,
+      "elapsed_s_after_explicit_warmup": 17.852812899742275,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648764133453369
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889061450958252
+      },
+      "weight_pool": {
+        "resident_blocks": 8,
+        "asynchronous": true,
+        "device_pool_bytes": 6455828480,
+        "H2D_layer_copy_calls": 176,
+        "H2D_bytes": 113622581248,
+        "resident_prefetch_skips": 33,
+        "slot_reuse_waits_for_compute_event": true,
+        "original_immutable_pinned_masters_reused": true,
+        "D2H_weight_copies": false,
+        "model_arithmetic_modified": false
+      }
+    },
+    {
+      "case_index": 4,
+      "audit_mode": "native",
+      "step_index": 25,
+      "repeat_index": 0,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.91601378004998,
+      "rank_max_elapsed_s": 18.028257369995117,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 13488441856,
+      "elapsed_s_after_explicit_warmup": 17.91601378004998,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648581027984619
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889044761657715
+      }
+    },
+    {
+      "case_index": 4,
+      "audit_mode": "native",
+      "step_index": 25,
+      "repeat_index": 1,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.928413029760122,
+      "rank_max_elapsed_s": 18.035282135009766,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 13488441856,
+      "elapsed_s_after_explicit_warmup": 17.928413029760122,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648646354675293
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889312267303467
+      }
+    },
+    {
+      "case_index": 4,
+      "audit_mode": "native",
+      "step_index": 25,
+      "repeat_index": 2,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.900213450193405,
+      "rank_max_elapsed_s": 18.01764678955078,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 13488441856,
+      "elapsed_s_after_explicit_warmup": 17.900213450193405,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.649072647094727
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.8890604972839355
+      }
+    }
+  ],
+  "candidate_hypothesis": "Baseline determinism check: repeated identical execution must reproduce itself bit for bit.",
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "tp_actual": 2,
+  "tp_group_ranks": [
+    2,
+    3
+  ],
+  "local_heads": 28,
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float32": 22377664,
+    "torch.float16": 16539411712
+  },
+  "offload_kind": "native immutable pinned masters, flattened dtype copies, asynchronous next-block prefetch",
+  "host_weight_bytes": 32279142400,
+  "D2H_weight_copies_after_each_layer": false,
+  "per_block_cpu_offload_used": true,
+  "safety_mode": "strict",
+  "warmup_each_selected_step": 1,
+  "clean_repeats_each_selected_step": 3,
+  "numerical_changes_are_not_automatically_accepted": true,
+  "weight_pool_case_1": {
+    "pool": {
+      "resident_blocks": 0,
+      "asynchronous": false,
+      "device_pool_bytes": 1291165696,
+      "H2D_layer_copy_calls": 201,
+      "H2D_bytes": 129762152448,
+      "resident_prefetch_skips": 0,
+      "slot_reuse_waits_for_compute_event": true,
+      "original_immutable_pinned_masters_reused": true,
+      "D2H_weight_copies": false,
+      "model_arithmetic_modified": false
+    },
+    "byte_proof": {
+      "held_buffers": [
+        {
+          "target_block": 0,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 49,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        }
+      ],
+      "metadata_sha256_unchanged": true,
+      "profile_instrumented_not_clean": true,
+      "all_held_storage_bytes_equal": true,
+      "comparison_is_not_CPU_model_inference": true
+    }
+  },
+  "weight_pool_case_2": {
+    "pool": {
+      "resident_blocks": 0,
+      "asynchronous": true,
+      "device_pool_bytes": 1291165696,
+      "H2D_layer_copy_calls": 201,
+      "H2D_bytes": 129762152448,
+      "resident_prefetch_skips": 0,
+      "slot_reuse_waits_for_compute_event": true,
+      "original_immutable_pinned_masters_reused": true,
+      "D2H_weight_copies": false,
+      "model_arithmetic_modified": false
+    },
+    "byte_proof": {
+      "held_buffers": [
+        {
+          "target_block": 0,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 49,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        }
+      ],
+      "metadata_sha256_unchanged": true,
+      "profile_instrumented_not_clean": true,
+      "all_held_storage_bytes_equal": true,
+      "comparison_is_not_CPU_model_inference": true
+    }
+  },
+  "weight_pool_case_3": {
+    "pool": {
+      "resident_blocks": 8,
+      "asynchronous": true,
+      "device_pool_bytes": 6455828480,
+      "H2D_layer_copy_calls": 176,
+      "H2D_bytes": 113622581248,
+      "resident_prefetch_skips": 33,
+      "slot_reuse_waits_for_compute_event": true,
+      "original_immutable_pinned_masters_reused": true,
+      "D2H_weight_copies": false,
+      "model_arithmetic_modified": false
+    },
+    "byte_proof": {
+      "held_buffers": [
+        {
+          "target_block": 0,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 1,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 2,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 3,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 4,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 5,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 6,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 7,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 48,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        },
+        {
+          "target_block": 49,
+          "dtype": "torch.float16",
+          "bytes": 645582848,
+          "whole_storage_bytes_equal": true
+        }
+      ],
+      "metadata_sha256_unchanged": true,
+      "profile_instrumented_not_clean": true,
+      "all_held_storage_bytes_equal": true,
+      "comparison_is_not_CPU_model_inference": true
+    }
+  }
+}

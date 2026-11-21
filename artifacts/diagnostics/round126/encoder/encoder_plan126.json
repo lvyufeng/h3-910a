@@ -1,0 +1,92 @@
+{
+  "round": 126,
+  "task_id": "task-71",
+  "status": "source_only_candidate_and_lead_execution_plan",
+  "owner_for_actual_NPU_execution": "lead",
+  "baseline": {
+    "commit": "f3f1328",
+    "source": "artifacts/diagnostics/round124/NPU_encoder_FP16_executed124.py",
+    "sha256": "0959895b778fc0900d785250b71279055d3940d975f3523909856072960f5026",
+    "precision": "Own live original FP16 encoder, unmodified R124 interpolation/rotary/vision/text functions and runtime flags. No BF16, CPU trig substitution, TP-vision, GEMM/bias replacement or hidden-conditioning reuse.",
+    "acceptance": "All complete same-input raw bits equal and numeric max_abs/relative_RMS exactly zero. Any measurable candidate difference, even below1%, is disabled and escalated to the user; no automatic numerical tolerance.",
+    "historical_receipt_caveat": "R125 profile/profile_fa observations have nonzero differences versus saved R124 predictions and are not a hot resident-encoder baseline. Their warm field names do not prove residency/steady-state. R124's65s encoder stage includes integration and transfer; neither record proves that all time is weight offload."
+  },
+  "deliverables": {
+    "candidate": "artifacts/diagnostics/round126/encoder/native_geometry_memo126.py",
+    "callback_stage_helper": "artifacts/diagnostics/round126/encoder/stage_profile126.py",
+    "stdlib_mock_contracts": "artifacts/diagnostics/round126/encoder/test_encoder126_contracts.py",
+    "this_plan": "artifacts/diagnostics/round126/encoder/encoder_plan126.json"
+  },
+  "cache_scope": {
+    "replaced_methods": ["vision.fast_pos_embed_interpolate", "vision.rot_pos_emb"],
+    "parent_wrapper": "vision.forward creates one metadata-key scope but delegates the EXACT captured original forward. The original forward still computes native cos/sin, fresh patches/all27 vision blocks/three DeepStack/merger every call.",
+    "miss": "Call the exact original R124 function on the caller's actual grid. Return its genuine output to the first caller; retain a detached independent clone as a private geometry master. No algebraic transcription or dtype change.",
+    "hit": "Clone the private geometry master into new caller-owned storage, preserving native logical dtype/shape/stride. Never return a shared mutable scratch buffer. Root must check actual physical-format identity as well.",
+    "not_cached": ["pixels", "patch embedding", "vision hidden states", "DeepStack", "Q/K/V", "text embeddings or hidden states", "encoder outputs", "sin/cos tables"],
+    "key": ["R124 source digest", "actual grid values and rows", "derived true token length", "grid dtype/device/shape", "position-weight storage/offset/shape/stride/dtype/device/version", "config and module geometry", "original CPU inverse-frequency signature and72-byte raw SHA", "default dtype/device", "autocast state/dtype", "HF32 matmul/conv state", "current stream ID", "lifecycle invalidation epoch"],
+    "why_default_dtype_in_key": "Original R124 interpolation calls torch.linspace without an explicit dtype. The default dtype cannot be ignored even though output storage is FP16.",
+    "why_stream_in_key": "Do not clone a master on another compute stream without a producer dependency. This prototype invalidates/recomputes when the lead's current-stream token changes, rather than assuming cross-stream readiness.",
+    "grid_reads": "Exactly one grid.tolist value read at EACH complete vision entry. No per-block/attention-layer CPU reads and no pointer-only fast path for unversioned inference grids. First misses retain the original methods' own metadata reads. The extra stage-level validation must be included in candidate clocks.",
+    "metadata_hashing": "Only original plain CPU FP32 inverse-frequency metadata is hashed in hot validation. No NPU learned weight, cached geometry master or hidden tensor is copied to CPU per hit.",
+    "budgets": {"max_bytes_per_rank": 33554432, "max_entries": 4, "fixture_original_geometry_bytes": 19740672, "policy": "LRU eviction; oversize outputs return genuine originals without caching. No padding or shortened geometry."},
+    "costs_not_free": "Private clone on misses, fresh clone on every hit, metadata validation and extra master lifetime count in time/HBM. Ownership safety deliberately avoids claiming the cached output can be shared immutably by arbitrary callers."
+  },
+  "lifecycle_and_ownership": {
+    "installation": "Lead imports the candidate (stdlib only), passes the live encoder and exact staged R124 source file. File SHA and actual bound method source/class ownership are checked. Installer refuses existing unknown instance overrides; never patch module-global Torch functions or shared classes.",
+    "initial_state": "Disabled by default. set_enabled(True) starts empty; the first actual fresh vision call invokes native methods and primes misses. There is no implicit model/kernel execution on import or construction of this source module.",
+    "hooks": ["encoder.load_weights", "encoder.load_to_device", "encoder.offload_to_cpu", "encoder._apply", "vision._apply"],
+    "conservative_invalidation": "These hooks clear all private device masters before delegating the original method, including no-op load/to calls. This covers loaders using .data that do not advance a version counter. If actual pipeline staging invalidates before every request, cache hits may be zero and no service speed gain is proven.",
+    "external_updates": "Lead must call cache.invalidate(reason) before direct .data writes or PinnedModuleStager/storage rebinding that bypasses the wrapped methods. Position weights must be immutable through a vision call. Arbitrary unreported unversioned writes cannot be detected without expensive weight reads; they are outside the permitted ownership contract.",
+    "changes": "Grid value changes recompute by value key. Weight versions/config/runtime/stream changes clear and recompute or reject unsupported architecture/dtype/device. BF16 position dtype and cross-device grids fail closed, never enter an alternate graph.",
+    "during_forward": "Reject reentrant execution or load/offload/parameter mutation while a vision scope is active. No asynchronous transfer policy is changed by the helper.",
+    "uninstall": "All wrapper ownership is checked before any attribute is restored. A third-party wrapper causes refusal, not blind clobber. Remove outer probe wrappers first, then uninstall cache and verify private bytes0. Snapshot returns no tensor/master reference.",
+    "no_unconditional_hot_claim": "Loaded flag or pos-weight device alone does not prove all77 encoder blocks are resident. Record active layerwise hooks, parameter residence and actual transfers; do not describe staged compute as hot resident compute."
+  },
+  "lead_runtime_callback": {
+    "required_scalar_fields": ["default_dtype", "default_device", "autocast_enabled", "autocast_dtype", "matmul_allow_hf32", "conv_allow_hf32", "stream_id"],
+    "source": "Read the already-imported R124 runtime's current dtype/device/autocast/precision flags and current NPU stream at call time. Candidate imports no Torch and makes no parameter/trig substitutions. Callback must not create model tensors, transfer weights or change flags.",
+    "guard": "The helper rejects missing/unknown keys and non-scalar metadata. Keep the entire callback content in the executed source manifest; preserve R124 allow_hf32=False controls."
+  },
+  "lead_only_actual_fixture_tests_before_performance": [
+    "Verify baseline code/parameter conversion/input grid/processor bytes and actual shared Norm/SDPA/runtime dispatch. Reproduce complete native R124 outputs repeatedly without cache first. If baseline itself varies, preserve and ask the user; do not choose a favorable native hash or use R125 profile output as gold.",
+    "Check the first enabled live call still executes both exact original geometry methods and all27 vision/all50 text layers. Compare raw first geometry outputs to cache private clones outside timers; dtype/shape/stride/NPU physical format must match.",
+    "Native-before/cache-enabled/native-restored same-input complete pairs on all8 ranks: all fresh vision block boundaries, merged+3 DeepStack, embedding, positions/masks, all50 text boundaries and final encode_ids/consumed FP16 conditioning equal bit-for-bit.",
+    "Mutate a returned hit output in an excluded diagnostic and confirm the next return/native reference is unchanged. Verify every hit output storage differs from private masters and all previous caller outputs. Full cached-master hashes before/after excluded proof confirm integrity even if inference tensors lack versions.",
+    "Different images at the same grid must rerun the entire live vision path. New grid values on the same unversioned object and a new object with identical values test value keys, miss/recompute and valid hit separately.",
+    "Change dtype/device/config/weight version; simulate a loader .data update without version advancement and direct stager invalidate. Confirm no stale master reuse, correct recomputation or explicit rejection, and zero bytes after offload/uninstall.",
+    "Verify precision flags/default dtype/stream changes reject/recompute correctly. Do not test unsupported BF16 as a new model mode or reuse another stream's master without dependency.",
+    "Oversize geometry and small entry budgets must preserve the genuine original function output via bypass/eviction, not truncate grids or add padding.",
+    "Recheck strict whole encoder identity on the current R124 request plus downstream same-input video/audio predictions at representative positions. A sampled good video or small RMS is not enough to permit changed encoder bits."
+  ],
+  "stage_measurement_plan": {
+    "clean_protocol": "Use the SAME resident/staged policy and full R124 arithmetic for native/candidate/restored. Start barrier+drain precede the complete clock; the original entry and ending drain are inside. Native hidden.cpu remains inside encode_ids; extra proof copies/hashes are after clock stop. No per-layer sync/event/capture reference double-compute in clean calls.",
+    "separate_experiments": [
+      {"label": "actual_staged_encode_prompt", "entry": "Original R124 pipeline encode_prompt", "includes": ["processor/presentation/tokenization on rank0", "TP input distribution", "real component load/ready waits", "live encoder", "final hidden/tag H2D/broadcast", "original offload"], "claim": "Whole live stage; not isolated GEMM/vision/text or resident compute."},
+      {"label": "loaded_resident_encode_ids", "entry": "Original R124 encoder.encode_ids with actual inputs after measured loading", "preconditions": ["Verify ALL vision/text blocks are actually resident", "Report layerwise hooks and active staging; no silent removal", "If it does not fit or remains staged, record that instead of inventing a resident result"], "includes": ["embedding", "input device conversion", "fresh full vision", "placeholder/position/DeepStack", "text50", "native hidden.cpu", "ending drain"], "excludes": ["outer processor/presentation", "TP input/final output broadcast", "separately reported load/offload"], "claim": "Only this verified case can label loaded resident compute."}
+    ],
+    "probe_subintervals": [
+      {"name": "processor_and_presentation", "site": "Rank0 processor and build_minimax_h3_presentation call sites", "meaning": "CPU dispatch/build work, not encoder neural compute."},
+      {"name": "TP_input_distribution", "site": "pipeline._distribute_encode_inputs", "meaning": "Input wire casts/H2D/collectives; preserve actual FP16 transport rounding and returned tensors."},
+      {"name": "component_load_or_ready_wait", "site": "pipeline component context and actual load_to_device/PinnedModuleStager.load call sites", "meaning": "Native H2D enqueue/copy-ready waits may overlap. Host wall is not automatically pure PCIe transfer."},
+      {"name": "encoder_encode_ids_inclusive", "site": "Original encoder.encode_ids call site", "meaning": "Inclusive real encoder+native D2H; never add this parent to its vision/text children."},
+      {"name": "fresh_vision", "site": "Loaded vision.forward call site", "meaning": "Native patch/geometry/27 blocks/DeepStack/merger. Cache variant includes metadata reads and return clones."},
+      {"name": "text50", "site": "text_model.forward call site", "meaning": "Native positions/Norm/RoPE/attention/MLP/TP collectives; not just local GEMM."},
+      {"name": "final_output_wire", "site": "Actual hidden/tag FP16 H2D/broadcast call sites", "meaning": "Distinct from encode_ids native hidden.cpu; retain wire precision."},
+      {"name": "component_offload", "site": "Original component exit/offload_to_cpu/stager offload call sites", "meaning": "Metadata rebinding, device work and release/allocator waits, not inferred from remaining time."}
+    ],
+    "H2D_D2H_attribution": "Use actual copy-stream/event or native profiler copy-boundary evidence for H2D/D2H, not encode_prompt-minus-forward subtraction. A diagnostic explicit copy transcription must first match the original public encode_ids including its cuDNN-SDP context/preconditions; do not use it as clean public-entry performance. Missing copy boundaries remain unassigned.",
+    "helper_modes": "stage_profile126.py has disabled clean delegation, host_dispatch probes and synchronized_probe callbacks. Synchronized probes intentionally insert drains and change overlap; compare clean-before/probe/clean-after in a separate control run, never present probe intervals as uninstrumented speed.",
+    "aggregation": "Each repeat gathers all8 complete wall times; report same-call rank maximum then median. A representative stage vector must come from that same call's slowest COMPLETE rank. Never sum independent rank/component maxima, inclusive parents/children or host/device durations.",
+    "required_receipts": ["first/cold vs repeated warm separation", "actual resident/staged counts and active hooks", "input and parameter bytes/precision flags", "native/candidate/restored full raw-bit gates", "cache original calls/hits/clones/bytes/invalidation reasons", "copy/ready/offload boundaries or unassigned gaps", "allocated/reserved/load/transient HBM", "source manifests including callbacks and native dependencies"],
+    "no_extrapolation": "A zero-hit staged policy can still be correct but offer no service cache acceleration. Report measured clone/validation cost, cold miss/prime costs and true live stage. Do not subtract an old1.3s/1.83s resident benchmark from R12465s or attribute every long interval to weights."
+  },
+  "author_validation": {
+    "stdlib_mock_tests_passed": 26,
+    "Torch_imported_or_model_executed": false,
+    "remote_or_resource_action": false,
+    "weights_read_downloaded_or_transferred": false,
+    "new_NPU_numerical_result": false,
+    "new_performance_result": false,
+    "scope": "Python syntax, source-pinning, value-key/ownership/invalidation/budget mocks and timer bookkeeping only. Lead must execute all actual NPU tensor/format/full-output gates."
+  }
+}

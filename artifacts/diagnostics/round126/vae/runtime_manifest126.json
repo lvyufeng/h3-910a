@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "approved_executor": "lead",
+  "approved_root": "/tmp/h3_perf12601",
+  "world_size": 8,
+  "checkpoint": "/home/mseco/models/MiniMax-H3/FL2VA",
+  "latents": "/tmp/h3_align12401/final_NPU_latents_pid2331981124.pt",
+  "latents_sha256": "5ccba4c9293651bcc57756a0fb2acb39f4e5bd04439c5df6470901bc4c6759b3",
+  "latents_bytes": 14376549,
+  "video_latent_shape": [
+    1,
+    24,
+    37,
+    48,
+    84
+  ],
+  "audio_latent_shape": [
+    2,
+    32,
+    207
+  ],
+  "latent_dtype": "torch.float32",
+  "parameter_dtype": "torch.float32",
+  "video_autocast_dtype": "torch.float16",
+  "hf32": false,
+  "nan_compat_dir": "/tmp/h3_align12401",
+  "torch_version": "2.10.0+cpu",
+  "torch_npu_version": "2.10.0.post7",
+  "video_config_sha256": "3edd2cdd1ebc823c868be55ef917e1b3b8a398fde4d3150dae44a3bf05d9f627",
+  "audio_config_sha256": "d8f3bcc62e23c7e9806970fa63cca6139c06faa3797cf9c94034f60db8512771",
+  "video_source_config_sha256": "66c68f541e6578ce613ce7a0fc985eb59097038829e49f7535e6d08e6d95ab12",
+  "modules": {
+    "adapter": {
+      "import": "vllm_omni.diffusion.models.minimax_h3.vae",
+      "path": "/home/mseco/vllm-omni/vllm_omni/diffusion/models/minimax_h3/vae.py",
+      "sha256": "4d5bbe4ff0f4b5d00757682b76465a16356aff5cc28b40f3caeb53e858731827"
+    },
+    "optimizations": {
+      "import": "vllm_omni.diffusion.models.minimax_h3.ops.vae",
+      "path": "/home/mseco/vllm-omni/vllm_omni/diffusion/models/minimax_h3/ops/vae/__init__.py",
+      "sha256": "fca400f152118cbd890ac5a8d4c2fbc8db1fcc8840bb6b004f1ead48ecd1db44"
+    },
+    "dispatch": {
+      "import": "vllm_omni.diffusion.models.minimax_h3.ops.vae.dispatch",
+      "path": "/home/mseco/vllm-omni/vllm_omni/diffusion/models/minimax_h3/ops/vae/dispatch.py",
+      "sha256": "7c7df96a99d6e3bb63fdfe902c142bd78c9dbcb614d4b9b05601ce296a535f83"
+    },
+    "sdpa_shim": {
+      "import": "vllm_omni.h3_910a_sdpa_shim",
+      "path": "/home/mseco/vllm-omni/vllm_omni/h3_910a_sdpa_shim.py",
+      "sha256": "06a8a6ff176eb55ef1d912eccf19abb3cfd6a15ff8151717a4d07325419318e0"
+    },
+    "nan_compat": {
+      "import": "npu_half_nan_compat124",
+      "path": "/tmp/h3_align12401/npu_half_nan_compat124.py",
+      "sha256": "425b31ed105dc490a2d9817a3769fa6a1c9f337bb21c63656cfc6c39eb0c4252"
+    },
+    "activation": {
+      "import": "vllm_omni.diffusion.layers.activation",
+      "path": "/home/mseco/vllm-omni/vllm_omni/diffusion/layers/activation.py",
+      "sha256": "03ab0a5e98820edb54f0846c96aef669cb43c672f9e0bd65d539b80e274e38cb"
+    },
+    "module_residency": {
+      "import": "vllm_omni.diffusion.offloader.module_residency",
+      "path": "/home/mseco/vllm-omni/vllm_omni/diffusion/offloader/module_residency.py",
+      "sha256": "a14078b882321b1bac6299a80a8eec2b2511c766b8b84bc0f1a994ceb2f134e4"
+    },
+    "native_temporal": {
+      "import": "vllm_omni.diffusion.models.minimax_h3.vae_temporal",
+      "path": "/home/mseco/vllm-omni/vllm_omni/diffusion/models/minimax_h3/vae_temporal.py",
+      "sha256": "dcb7efe06564277da83450f106848179dd7a3ce07ba1644282cd7f8f3bbca518"
+    },
+    "fa_backend": {
+      "import": "vllm_omni.diffusion.attention.backends.fa910a",
+      "path": "/home/mseco/vllm-omni/vllm_omni/diffusion/attention/backends/fa910a.py",
+      "sha256": "937671efa50e20ce57c94477946d89e69b6c5e82d905ba41e5d5a203508853f1"
+    }
+  },
+  "native_source_sha256": {
+    "native_video": "d05a22b4918ad303f147d6b0d0ae9038bd1af1f810a5553b04f3542ab9bcff96",
+    "native_decoder": "a372c28441b56ec2dbc6041dbd6ce2766c64c0e61b2c69a16594a97a11da3f58",
+    "native_attention": "c9db8465c57f0bfb40c0194227be6e34b2c1ff7c5b5d63abca9964eed6283767",
+    "native_blocks": "0e7ddf5086179a306298693ac461ffcbc27ccb28dbc786b1a05060de7a3357c0",
+    "native_func": "0612c26a65f095699cc7acd51937cd153584fa5a0476956e46a4679aa575c22d",
+    "native_flash": "b2dde079a260f675010c7b8778671f55f6ee736cf4ca5980f295dbbaba5dfa32",
+    "native_parallel": "7193522beafd65bc3dbe40b9843e360ab8da3a0bb211e9bfb67bb0d5d0e66919",
+    "native_audio": "63bc0dab6def69480cfd77ea820f9a9a84fc4bd6e56868e4f45ec1e1e200578f"
+  },
+  "component_source_sha256": {
+    "video_vae": {
+      "vae_processor.py": "32870580a1802d9163104a4d68170e35a4772106867181e1bd343dff11f87d2e",
+      "vae_cnn.py": "af2487c3b8364b5e8dd2c30817138487efea71bcba93a67ce97fb81fe96692ce",
+      "flash.py": "b2dde079a260f675010c7b8778671f55f6ee736cf4ca5980f295dbbaba5dfa32",
+      "base_module.py": "0e7ddf5086179a306298693ac461ffcbc27ccb28dbc786b1a05060de7a3357c0",
+      "conv.py": "e9c1adf7e1df492863796f0229fd8cbb3ac817d6a697fcbef99c76d6391b3c0d",
+      "minimax_h3_video_vae.py": "77fdea69a48485b5434f65d08096657b5d78b78b7cdf24e1241038f237720138",
+      "func.py": "0612c26a65f095699cc7acd51937cd153584fa5a0476956e46a4679aa575c22d",
+      "klvae.py": "d05a22b4918ad303f147d6b0d0ae9038bd1af1f810a5553b04f3542ab9bcff96",
+      "vae_vit.py": "a372c28441b56ec2dbc6041dbd6ce2766c64c0e61b2c69a16594a97a11da3f58",
+      "attention.py": "c9db8465c57f0bfb40c0194227be6e34b2c1ff7c5b5d63abca9964eed6283767",
+      "normalize.py": "8db651acb9eb551c906a2850bbca8e9d851f00d07b30ccf66ceb6057da687a13",
+      "parallel.py": "7193522beafd65bc3dbe40b9843e360ab8da3a0bb211e9bfb67bb0d5d0e66919",
+      "norm.py": "258b120ca8d9a16366d7b811fe93eebf98fe1564db0995e8b7747229c651919a",
+      "vae_module.py": "9558fb302e10a619f198e12e04701c68988e897d0b627f958f33d27fd2a30d94",
+      "utils.py": "309e45e9d9e33cd5516a10eac2d207eb9f940079a6d9bbe0ee80aaaf7eb42dcd"
+    },
+    "audio_vae": {
+      "dac_alias_free_resample.py": "fe35055893833c563e42adc5e5882cbe7628c82d48d33c300fcf0a9576997910",
+      "dac_activations.py": "74ca8bb9e8039f1ff362ca4219eee5240a7df9502f3dbdc3161d4e86fbd6dc04",
+      "minimax_h3_audio_vae.py": "63bc0dab6def69480cfd77ea820f9a9a84fc4bd6e56868e4f45ec1e1e200578f",
+      "dac_bigvgan.py": "f5df4e6f633e74da479549ef7a6d2684964e4b65ac42c6765be42f9c7fcb7bd2",
+      "dac_alias_free_filter.py": "a369523cd7f14f4f299d8e2e47f3c473da76ed1910e6e9134fd7a9fce02537e8",
+      "dac_attn_proj.py": "0e04556fa5fd38d4a71e62fcf4d3242fd9a2464fd72ed62baef2ec0980d910c6",
+      "dac_audio_vae.py": "ec04939602d4710d039e83f558a7572547669652f7fa967e3de0a3b6c48cfd48",
+      "dac_alias_free_act.py": "db8761e66c0eaf9fce2dcccb59162d52b22ca0de9f699cf7d21ec7cd507e86fd",
+      "dac_utils.py": "74ef0ba2c2a11ca35a7c0cc166fe88e564de01230000a0bcc8429103312ad9f0"
+    }
+  },
+  "environment": {
+    "VLLM_OMNI_910A_FLASH_ATTN": "1",
+    "VLLM_OMNI_910A_NO_FUSED_ACT": "1",
+    "VLLM_OMNI_910A_NO_FUSED_NORM": "1",
+    "H3_NPU_ALIGNMENT124_BOOTSTRAP": "0",
+    "H3_NPU_SAVE_FINAL_LATENTS124": "0",
+    "H3_NPU_CAPTURE_NATIVE_MEDIA124": "0",
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1"
+  },
+  "preserve_inherited_CANN_PYTHONPATH": true,
+  "IPC_key_environment_inherited_not_read_or_printed": "H3_R126_IPC_KEY_FILE",
+  "video_output_shape": [
+    1,
+    3,
+    124,
+    768,
+    1344
+  ],
+  "video_output_dtype": "torch.uint8",
+  "video_output_schema_is_expected_fail_closed_not_previously_executed126": true,
+  "audio_output_shape": [
+    1,
+    2,
+    165600
+  ],
+  "audio_output_dtype": "torch.float32",
+  "output_limit_bytes": 1073741824,
+  "profile_slots_per_region": 512,
+  "max_decoder_tiles_per_rank": 128,
+  "tile_capture_device_limit_bytes": 1073741824,
+  "initialization_model_scope": "video_audio_vae_only_no_DiT_no_encoder_forward"
+}

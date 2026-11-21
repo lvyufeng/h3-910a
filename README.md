@@ -1,21 +1,41 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
-> **Current state (round125):** the 910A stack now produces a real 49-step
-> original-checkpoint video with its own FP16 encoder and the original FP32 VAE,
-> and the fused 910A flash-attention kernel is the one acceleration that survived
-> measurement. Warm DiT step went **40.47 s -> 18.41 s** (engine: 38.33 s ->
-> 17.76 s), the full 49-step generation wall went **2316.96 s -> 1329.96 s**
-> (1.74x), and all 124 frames stay at **PSNR >= 51.18 dB** against the previous
-> generation. Three other approved candidates were measured and rejected: the VAE
-> Half-parameter fast path moved decode only 138.6 s -> 132.4 s with no wall gain,
-> an FP16 residual stream was 40% *slower*, and fusing the SwiGLU product bought no
-> time while drifting to 0.22% video / 1.64% audio by step 48. Encoder (~65 s vs a
-> 2 s target), VAE decode (~132 s vs 20 s) and the A2/A3 comparison remain open; the
-> per-step cost is now dominated by per-block weight staging, because tensor
-> parallelism does not shard this DiT and residency does not fit 32 GiB.
-> See the [Round125 acceleration measurements](<artifacts/diagnostics/round125/README.md>),
-> the [Round124 same-input gates and first real 49-step generation](<artifacts/diagnostics/round124/README.md>),
-> and the [round125 machine summary](<artifacts/diagnostics/round125/STATE125.json>).
+> **Current state (round126):** the accepted baseline remains the real R124
+> 49-step original-checkpoint generation, with its own FP16 encoder, original
+> FP32 VAE parameters and the user-accepted 910A FA kernel. R125 measured warm
+> DiT **40.47 s -> 18.41 s** and full generation **2316.96 s -> 1329.96 s**.
+> Encoded-video PSNR is not a proof of tensor or audio equivalence.
+>
+> **R126 corrects the earlier acceleration attribution.** True TP2/4/8 groups
+> shard parameters to **30.89 / 15.45 / 7.72 GiB per rank**, but measured TP4/8
+> residency is slower than TP2/USP4. The old VAE “fast” installer actually
+> returns False on NPU; the old residual patch did not force Half; the old
+> SwiGLU experiment used an eager fallback, not a fused NPU kernel. A cold
+> per-module-sync profile did not establish weight-staging dominance.
+>
+> **TP stays enabled: DiT TP2+USP4, encoder TP8, all eight devices.** The
+> [physical topology](<artifacts/diagnostics/round126/topology_query126.json>) is two
+> four-card HCCS islands (0–3, 4–7), with PHB/SYS CPU paths between them; it is
+> not a single eight-card full mesh. TP/USP placement must respect those islands.
+>
+> Actual warm measurements are about **18 s isolated same-input DiT**,
+> **2.34 s live FP16 encoder**,
+> and **20.7 s video + 0.21 s audio resident decode**, with loading/cold calls
+> reported separately. The actual full-generation whole-step hook is a different
+> scope (accepted FA baseline **19.73s**); do not substitute the isolated timer.
+> Immutable pooling and exact check/scale candidates have
+> small measured gains; a VAE operand-copy cache preserves every tested Linear
+> and prequantized tile word but saves only about **0.20 s**, at **4.50 GiB**
+> extra memory. A real combined49 regression now passes all **60,760 strict
+> checks**, keeps DiT TP2+USP4 / encoder TP8, and produces **124 frames**:
+> generation wall **1329.96s→1314.58s**, same whole-step hook **19.73s→19.37s**.
+> This is a small gain. Full cold VAE stage still costs **142.14s**; the warm
+> resident timer is not a substitute. Native audio differs and no new precision
+> policy is automatically accepted. The latency targets and actual A2/A3
+> comparison remain open.
+> See [R126 execution evidence and corrections](<artifacts/diagnostics/round126/README.md>),
+> [R124 original generation](<artifacts/diagnostics/round124/README.md>) and
+> [R125 historical measurements](<artifacts/diagnostics/round125/README.md>).
 >
 > **Earlier native/lossless optimization work:** see the
 > [Round108 true Vision TP8 + text TP8: genuine full encoder1.321s, all5<2s; CPU FP16 gap4.40% still not accepted](<artifacts/diagnostics/round108/README.md>),
@@ -63,6 +83,12 @@
 > and [native49-step baseline](<artifacts/diagnostics/round53/README.md>).
 > The older four-step/low-step latency tables below use an additional FlashGen
 > LoRA; they are **not** official-lossless native-H3 benchmark results.
+
+## Historical low-step deployment notes (not the current accepted baseline)
+
+The timings, distillation metadata and quick-start commands below describe older
+low-step/LoRA experiments. Do not use them to reproduce the current original
+49-step precision baseline; use the R124/R126 evidence above.
 
 Running [MiniMax-H3](https://github.com/MiniMax-AI/MiniMax-H3) video generation on
 Ascend **910A**-generation NPUs (`910B` without a suffix), 8×32 GiB, CANN 9.2.0,

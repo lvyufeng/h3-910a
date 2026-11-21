@@ -1,0 +1,69 @@
+{
+  "round": 126,
+  "baseline": "User-accepted R124 original checkpoint + VLLM_OMNI_910A_FLASH_ATTN=1",
+  "accepted_precision_changed": false,
+  "tensor_parallelism_disabled": false,
+  "accepted_parallel_configuration": {"DiT_TP": 2, "USP": 4, "encoder_TP": 8, "participating_devices": 8},
+  "shared_model_or_SDK_sources_changed": false,
+  "local_model_weights_downloaded": false,
+  "individual_experiments_completed": true,
+  "full_generation_regression": "fresh corrected NPU_full_generation126b completed and independently verified: live encoder, 8x49 original 50-block DiT forwards, 60760 strict checks, actual VAE operand cache hits, 124 frames; first failed attempt preserved",
+  "full_generation_evidence": {
+    "generation_wall_s": 1314.5813719499856,
+    "baseline_FA_generation_wall_s": 1329.960543639958,
+    "same_whole_forward_hook_warm_rank_max_s": 19.37174004991539,
+    "baseline_same_whole_forward_hook_warm_rank_max_s": 19.73218485992402,
+    "cold_combined_VAE_stage_rank_max_s": 142.1426977198571,
+    "actual_strict_Half_checks": 60760,
+    "decoded_frames": 124,
+    "video_PSNR_min_encoded_dB": 51.519448198150855,
+    "audio_relative_RMS_difference": 1.057388320448825,
+    "audio_absolute_RMS_difference": 0.000012194874225039244,
+    "quality_automatically_accepted": false
+  },
+  "physical_interconnect": {
+    "confirmed_HCCS_islands": [[0, 1, 2, 3], [4, 5, 6, 7]],
+    "cross_island_PHB_pairs": [[0, 4], [1, 5], [2, 6], [3, 7]],
+    "other_cross_island_links": "SYS: PCIe, NUMA and SMP CPU path",
+    "evidence": "topology_query126.json",
+    "single_eight_card_full_mesh": false
+  },
+  "true_TP_GiB": [
+    30.89041829109192,
+    15.445757269859314,
+    7.7234267592430115
+  ],
+  "measured_warm_DiT_s": {
+    "TP2_native": 17.966567993164062,
+    "TP4_resident": 18.97830581665039,
+    "TP8_resident": 21.016786575317383,
+    "equivalent_strict_safety": 17.556251525878906
+  },
+  "measured_warm_decode_s": {
+    "video_native": 20.74172499962151,
+    "audio_native": 0.2104654796421528,
+    "video_operand_cache": 20.56478500366211
+  },
+  "measured_encoder_geometry_s": {
+    "native": 2.3401265144348145,
+    "candidate": 2.33874249458313
+  },
+  "strict_Half_checks_per_step": 155,
+  "every_Half_word_exhaustively_verified": 65536,
+  "VAE_Linear_leaf_pairs_bit_identical": 1152,
+  "complete_prequantized_tile_pairs_bit_identical": 196,
+  "candidates_not_selected": [
+    "TP4/TP8 residency slower",
+    "geometry cache has no useful gain",
+    "two-slot pooling removes allocation churn but has no clear gain",
+    "encoder TP4 within HCCS islands: 2.341/2.297s, deterministic repeats but 2.783% difference versus fresh TP8 hidden; not precision-promoted"
+  ],
+  "proven_candidates_only_in_private_combined_trial": [
+    "equivalent read-only Half safety predicates",
+    "original-FP32 VAE Half-operand copies"
+  ],
+  "self_repeat_noise_is_not_an_acceptance_threshold": true,
+  "latency_targets_complete": false,
+  "A2_A3_hardware_comparison_measured": false,
+  "verifier": "verify_round126_evidence.py"
+}

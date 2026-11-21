@@ -1,0 +1,89 @@
+{
+  "scope": "R126 source-only staging; no weight copies/transfers; on-host activations stay remote",
+  "completed": true,
+  "root": "/tmp/h3_perf12601",
+  "reference_root": "/tmp/h3_align12401",
+  "source_hashes": {
+    "alignment_hooks124.py": "2c0ecbc7cd98724e9122b43bce13f1559013f5597f732958bc8e1ac716775640",
+    "h3_replay123/transformer.py": "5d94ba09216e3f4dce121cebbf50c960b9ddf47882fb325baffbab4c47a4fe0b",
+    "NPU_encoder_FP16_124.py": "0959895b778fc0900d785250b71279055d3940d975f3523909856072960f5026"
+  },
+  "fixtures": {
+    "/tmp/h3_align12401/final_NPU_latents_pid2331981124.pt": {
+      "bytes": 14376549,
+      "sha256": "5ccba4c9293651bcc57756a0fb2acb39f4e5bd04439c5df6470901bc4c6759b3"
+    },
+    "/tmp/h3_align12401/live_NPU_encoder_hidden_pid2331981124.pt": {
+      "bytes": 20921897,
+      "sha256": "89b7f979a74632ee567d0ae2ac1ea3ff2fb6035db7c65aa070e2a48d88ebb104"
+    },
+    "/tmp/h3_align12401/GPU_corrected_pipeline_context124.pt": {
+      "bytes": 22949445,
+      "sha256": "a71ee4c5a301dbe9693dfeefa66a116cdb3306ead29d2df9503c517d8dc3b539"
+    },
+    "/tmp/h3_align12301/same_initial_sampling123.pt": {
+      "bytes": 68914782,
+      "sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9"
+    },
+    "/tmp/h3_align12401/GPU_corrected_pipeline_snapshot_step00.pt": {
+      "bytes": 30635085,
+      "sha256": "50ffea38a02c060b5658c76b89743373b0daf22747ba3c9dc731ed49b8857bc3"
+    },
+    "/tmp/h3_align12401/GPU_corrected_pipeline_snapshot_step10.pt": {
+      "bytes": 30635085,
+      "sha256": "d7a40d070b386aa755b3847e63426b20a9397cc4cbc19dfb641c3a3a727e632c"
+    },
+    "/tmp/h3_align12401/GPU_corrected_pipeline_snapshot_step25.pt": {
+      "bytes": 30635085,
+      "sha256": "15cc5e686c84270844972ec1c49b4f08c54d34ee4f6004aeb155d81046fdbfea"
+    },
+    "/tmp/h3_align12401/GPU_corrected_pipeline_snapshot_step40.pt": {
+      "bytes": 30635085,
+      "sha256": "22368513e8abaedfed4eb36e5ab7e67f79cae0524cff2e1b881aae40f3eaa834"
+    },
+    "/tmp/h3_align12401/GPU_corrected_pipeline_snapshot_step48.pt": {
+      "bytes": 30635085,
+      "sha256": "a5b8de0f21eb5c05b0d3c3e5e341bebda46329aef4529c68cfa848e6a8d78868"
+    }
+  },
+  "checkpoint_component_names": [
+    "audio_vae",
+    "model_index.json",
+    "processor",
+    "text_encoder",
+    "tokenizer",
+    "transformer",
+    "video_vae"
+  ],
+  "transformer_config": {
+    "_class_name": "MiniMaxH3DiTModel",
+    "_diffusers_version": "0.32.2",
+    "hidden_size": 5376,
+    "num_layers": 50,
+    "token_refiner_num_layers": 2,
+    "num_attention_heads": 56,
+    "attention_head_dim": 128,
+    "ffn_hidden_size": 14336,
+    "latents_dim": 24,
+    "audio_latents_dim": 32,
+    "patch_size": [
+      1,
+      2,
+      2
+    ],
+    "text_dim": 5120,
+    "timestep_input_dim": 256,
+    "time_embed_hidden_size": 5376,
+    "time_embed_dim": 2688,
+    "adaln_out_features": 96768,
+    "final_adaln_out_features": 10752,
+    "rope_inv_freq_len": 16,
+    "norm_eps": 1e-05,
+    "qk_norm_eps": 1e-05,
+    "final_norm_eps": 1e-05
+  },
+  "gpu_weights_downloaded_locally": false,
+  "shared_source_modified": false,
+  "private_key_permissions": "0o600",
+  "usage_stdout": "+------------------------------------------------------------------------------------------------+\n| npu-smi 25.5.2                   Version: 25.5.2                                               |\n+---------------------------+---------------+----------------------------------------------------+\n| NPU   Name                | Health        | Power(W)    Temp(C)           Hugepages-Usage(page)|\n| Chip                      | Bus-Id        | AICore(%)   Memory-Usage(MB)  HBM-Usage(MB)        |\n+===========================+===============+====================================================+\n| 0     910B                | OK            | 70.9        44                0    / 0             |\n| 0                         | 0000:C1:00.0  | 0           1272 / 13552      0    / 32768         |\n+===========================+===============+====================================================+\n| 1     910B                | OK            | 65.3        38                0    / 0             |\n| 0                         | 0000:81:00.0  | 0           1545 / 15665      0    / 32768         |\n+===========================+===============+====================================================+\n| 2     910B                | OK            | 67.4        36                0    / 0             |\n| 0                         | 0000:41:00.0  | 0           3613 / 15665      0    / 32741         |\n+===========================+===============+====================================================+\n| 3     910B                | OK            | 66.6        43                0    / 0             |\n| 0                         | 0000:01:00.0  | 0           2197 / 15589      0    / 32768         |\n+===========================+===============+====================================================+\n| 4     910B                | OK            | 69.8        41                0    / 0             |\n| 0                         | 0000:C2:00.0  | 0           1004 / 13552      0    / 32768         |\n+===========================+===============+====================================================+\n| 5     910B                | OK            | 66.1        36                0    / 0             |\n| 0                         | 0000:82:00.0  | 0           1483 / 15665      0    / 32768         |\n+===========================+===============+====================================================+\n| 6     910B                | OK            | 68.8        39                0    / 0             |\n| 0                         | 0000:42:00.0  | 0           2094 / 15665      0    / 32741         |\n+===========================+===============+====================================================+\n| 7     910B                | OK            | 67.6        44                0    / 0             |\n| 0                         | 0000:02:00.0  | 0           4012 / 15589      0    / 32768         |\n+===========================+===============+====================================================+\n+---------------------------+---------------+----------------------------------------------------+\n| NPU     Chip              | Process id    | Process name             | Process memory(MB)      |\n+===========================+===============+====================================================+\n| No running processes found in NPU 0                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 1                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 2                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 3                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 4                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 5                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 6                                                            |\n+===========================+===============+====================================================+\n| No running processes found in NPU 7                                                            |\n+===========================+===============+====================================================+\n"
+}

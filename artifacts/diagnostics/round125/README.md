@@ -1,5 +1,11 @@
 # Round 125 — restoring acceleration on top of the R124 precision baseline
 
+> **R126 correction:** raw R125 measurements are preserved as history, but the
+> earlier TP-replication, VAE-fusion, Half-residual and staging-dominance
+> attributions were not execution-verified. Do not use a self-repeat noise band
+> as automatic precision acceptance. The corrected live group/kernel/dtype and
+> warm timing evidence is in [R126](<../round126/README.md>).
+
 Baseline: commit `f3f1328`, the R124 real 49-step original-50-layer 910A generation
 (own FP16 encoder, original FP32 VAE/branch parameters, verified FP16 range protections).
 The user's instruction for this round: this version is the precision baseline, restore
@@ -7,8 +13,9 @@ every previously removed acceleration, keep what is lossless, stop and ask for a
 measurably lossy. A deviation inside the earlier 1% GPU-comparison tolerance is **not**
 auto-approved.
 
-Everything here is a same-input single-evaluation comparison plus wall-clock timing. No
-lossy candidate was enabled in a generation, and no full 49-step run was made in this round.
+The first experiments here are same-input single-evaluation comparisons. Later
+user-accepted FA generations are documented below; their existence does not
+validate the other candidate names or the old performance attribution.
 
 ## The bar had to be re-derived: this device is not bit-reproducible
 
@@ -22,8 +29,10 @@ Re-running the *identical* R124 graph twice gives different bytes:
 | 40 | 0.032% | 0.032% | 0.055% | 0.057% |
 | 48 | 0.053% | 0.054% | 0.166% | 0.134% |
 
-`noise_floor125.json`. Consequence: bit identity cannot gate an optimization here, so a
-candidate is called lossless only when it stays inside this measured self-repeat band.
+[Self-repeat measurements](<noise_floor125.json>) are observations, not an
+acceptance tolerance. A candidate inside that band is **not automatically
+lossless or approved**. R126 adds same-input operator/tile word proofs and keeps
+full-trajectory acceptance separate.
 
 This also reframes R124 honestly: its five same-input GPU gates (0.036%–0.26% video,
 0.056%–0.26% audio) sit **inside** this band. They demonstrate the absence of a gross
@@ -38,22 +47,20 @@ implementation error; they are not evidence of operator-level bitwise agreement.
 | drop the FP32 patch/time projection guards | lossy → asked | video relRMS **2.29%**, ~22× the noise band |
 | region cost attribution (one warm step) | measurement | attention **58.1%** of the step; 0.694 s/block vs 0.057 s/block MLP |
 
-Residency is blocked by arithmetic, not by tuning: every rank holds the full
-16 539 411 712 FP16 parameter elements (30.8 GiB), which cannot share a 32 GiB card with
-activations. Raising tensor parallelism does **not** help, because this DiT is not actually
-TP-sharded: per-rank parameter bytes are identical at TP2 and TP8, so the weights are
-replicated on all eight ranks and only sequence parallelism splits activations. That also
-explains the low compute utilisation early in the round.
+The TP2 whole-resident attempt does not fit its roughly 30.89 GiB of parameters
+plus activations in 32 GiB. The old TP8 attempt failed before constructing and
+verifying a true TP8 group, so its byte counter was **not evidence of
+replication**. R126 verifies actual TP2/4/8 groups and 30.89/15.45/7.72 GiB shards;
+TP4/8 residency works, but its real forward timings are slower than TP2/USP4.
 
 ## Why the remaining lossless set is small
 
-Before the flash-attention kernel the step was attention-bound: attention took 58% of it
-and cost 12x the MLP per block, which is why residency, tensor caching, geometry
-memoization and pointwise fusion could not move 40 s/step. After the kernel that ranking
-inverts: attention falls by about 2.7x, and the remaining cost is per-block weight staging
-through the CPU offload plus one-off pieces (token refiner, time embedder, final layer),
-which is why the pointwise and residual candidates measured later gained nothing. The
-lossless items the reviewers did identify are real but marginal either way:
+The old region attribution was cold and synchronized modules individually, so it
+cannot establish the warm ranking or weight-staging dominance. The later R126
+profile measures actual FA launches and separates clean timing from event-only
+instrumentation. It finds about 7.5s of FA kernel time and about 4.42s of MLP
+span per representative warm step. The items below were **candidate ideas**, not
+hardware-certified losslessness or an explanation of every rejected timing:
 
 - R124-native vision positional-interpolation / rotary geometry memoization
 - R124-native text RoPE table memoization with fail-closed keys
@@ -72,13 +79,14 @@ correctness or performance baselines.
 
 ## Not claimed
 
-No speed target was met (18.41 s/step against a 15 s target). The encoder target was not
-worked on at all (about 65 s against 2 s), and the VAE decode target is still about 132 s
-against 20 s — that was measured, including a Half-parameter fast path that did not help,
-but never brought near the target. No A2/A3 comparison was measured. No universal picture or audio
-quality claim is made: the audio track stays at about -75 dBFS in every configuration, so
-sample-level audio differences are never used as a quality signal. All three rejected
-candidates were measured only; none of them is enabled anywhere.
+The historical full-stage latency targets were not met. The approximately 65s
+encoder and 132s VAE stage figures include cold/loading work and are not the
+resident warm scopes measured in R126. The old VAE candidate did not engage the
+native installer, the residual patch did not force Half, and the SwiGLU trial
+used an eager fallback. No actual A2/A3 comparison was measured. Low audio
+amplitude does not authorize discarding sample-level differences or declaring
+quality equivalence. Only FA was user-accepted; the other labels do not establish
+validated acceleration paths.
 
 ## Restored acceleration: custom 910A flash attention (user-approved)
 

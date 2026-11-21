@@ -1,0 +1,12 @@
+{
+  "scope": "Read-only physical interconnect topology query; no device reset, model work or settings change",
+  "command": [
+    "/usr/local/sbin/npu-smi",
+    "info",
+    "-t",
+    "topo"
+  ],
+  "exit_code": 0,
+  "stdout": "\t   NPU0       NPU1       NPU2       NPU3       NPU4       NPU5       NPU6       NPU7       CPU Affinity\nNPU0       X          HCCS       HCCS       HCCS       PHB        SYS        SYS        SYS        144-167\nNPU1       HCCS       X          HCCS       HCCS       SYS        PHB        SYS        SYS        96-119\nNPU2       HCCS       HCCS       X          HCCS       SYS        SYS        PHB        SYS        48-71\nNPU3       HCCS       HCCS       HCCS       X          SYS        SYS        SYS        PHB        0-23\nNPU4       PHB        SYS        SYS        SYS        X          HCCS       HCCS       HCCS       144-167\nNPU5       SYS        PHB        SYS        SYS        HCCS       X          HCCS       HCCS       96-119\nNPU6       SYS        SYS        PHB        SYS        HCCS       HCCS       X          HCCS       48-71\nNPU7       SYS        SYS        SYS        PHB        HCCS       HCCS       HCCS       X          0-23\n\nLegend:\n\n  X    = Self\n  SYS  = Path traversing PCIe and NUMA nodes. Nodes are connected through SMP, such as QPI, UPI.\n  PHB  = Path traversing PCIe and the PCIe host bridge of a CPU.\n  HCCS = Connection traversing HCCS.\n  NA   = Unknown relationship.\n",
+  "stderr": ""
+}

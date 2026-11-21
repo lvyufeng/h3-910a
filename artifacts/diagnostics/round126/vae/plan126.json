@@ -1,0 +1,85 @@
+{
+  "round": 126,
+  "task_id": "task-70",
+  "status": "source_and_live_manifest_ready_runtime_execution_owned_by_lead",
+  "scope": "Same accepted-FA final latent only: native complete video/audio VAE decode, no DiT or encoder forward. No Torch/model/remote execution by replay-review. Files restricted to artifacts/diagnostics/round126/vae.",
+  "executor": "lead on its ts-217 lease",
+  "source_drivers": ["decode_only126.py", "contracts126.py", "make_manifest126.py", "summarize_vae126.py", "test_contracts126.py"],
+  "live_manifest": "runtime_manifest126.json",
+  "manifest_source_facts": ["../runtime_preflight126.json", "../runtime_extensions126.json", "../shim_paths126.json", "../config_sources126.json"],
+  "baseline": {
+    "checkpoint": "/home/mseco/models/MiniMax-H3/FL2VA",
+    "components": ["video_vae", "audio_vae"],
+    "metadata_reference": "/tmp/h3_align12401/original_metadata124f/FL2VA",
+    "latents": "/tmp/h3_align12401/final_NPU_latents_pid2331981124.pt",
+    "latents_sha256": "5ccba4c9293651bcc57756a0fb2acb39f4e5bd04439c5df6470901bc4c6759b3",
+    "latents_bytes": 14376549,
+    "video_latent_shape": [1, 24, 37, 48, 84],
+    "audio_latent_shape": [2, 32, 207],
+    "input_storage_dtype": "torch.float32",
+    "parameter_contract": "Original FP32 video/audio parameters, construct under FP32 default. No direct Half parameter rewrite, no widen-to-pretend-restored fallback.",
+    "video_compute_context": "NPU standard FP16 autocast, HF32 matmul/conv false; approved FA environment retained",
+    "audio_compute_context": "Native FP32 no autocast",
+    "parallel": "single node 8 HCCL ranks, RANK=LOCAL_RANK=device, set_parallel_size(8, mode='tile', process_group=WORLD), native decoder spatial_parallel false",
+    "parallel_API_evidence": "Actual native_sources/vae.py overrides set_parallel_size:477-511 and is_distributed_enabled:728-729; constructor never calls init_distributed. Explicit WORLD bypasses get_world_group fallback. No generic DistributedVaeExecutor instantiation or Omni/DiT distributed initialization is needed on this pinned path.",
+    "compat": "R124 IEEE integer half_nan_scope only, preinstall outside timed call. Do not install alignment_hooks124, DiT save-latent hooks, or legacy audit/capture hooks.",
+    "runtime_versions": {"torch": "2.10.0+cpu", "torch_npu": "2.10.0.post7"}
+  },
+  "corrected_installer_facts": {
+    "actual_module": "vllm_omni.diffusion.models.minimax_h3.ops.vae",
+    "actual_dispatch_module": "vllm_omni.diffusion.models.minimax_h3.ops.vae.dispatch",
+    "actual_dispatch_source_sha256": "7c7df96a99d6e3bb63fdfe902c142bd78c9dbcb614d4b9b05601ce296a535f83",
+    "lead_preflight_NPU_dispatch_returns_operators": false,
+    "source_dispatch_reason": "allowlist only CUDA SM90/100/103; NPU path returns None",
+    "default_installer_mode": "observe-native",
+    "meaning": "Actually call installer once during video VAE construction. Record before/after dtype and native_return; real False is an observed no-op baseline, not a fusion performance result.",
+    "optional_preserve_fp32_mode": "Explicit R124 bypass records native_called=false/native_return=null, never mislabels that as observed False.",
+    "unexpected_true_or_rewrite": "If actual native call narrows any FP32 Parameter, save failure+dtypes and stop before forward, no restoration cast. An active fast installation preserving FP32 still needs a completed external raw baseline before decode.",
+    "hit_receipts": "Record installed marker, every 36 block forward/function identity, actual optimized forward entries, qk/residual non-None returns, SiluAndMul forward/cached-dispatch entries and input dtype/is_cuda. Clean timing has no counters.",
+    "activation_guard": "Native _optimized_feed_forward's SiluAndMul branch is CUDA-only. SiluAndMul.forward_npu with NO_FUSED_ACT=1 routes eager; never default-switch to 0/EZ1009. Entry count is not proof of fused kernel execution.",
+    "do_not_inherit": "R125 VAE-fusion-no-gain conclusion was not an engaged-fusion benchmark: old audit was all FP32 without actual installer/hit receipt. This driver establishes actual engagement instead."
+  },
+  "execution_cases": [
+    {"name": "cpu_construct", "measure": "FP32 VAE-only CPU construction/load with native installer observation; no weight artifacts or downloads."},
+    {"name": "video_load", "measure": "decoder_component.load_to_device then case-boundary NPU drain, separate wall/current-stream events. Parameter dtype recheck before decode."},
+    {"name": "video_clean", "measure": "Cold call plus 3 warmed complete decode_latent calls on resident decoder/post_quant; one prewarmed/reused event pair and host perf_counter; includes native tiles, gather/blend, temporal/revert/quantizer and NPU drain. D2H/hash/full CPU compare outside timer. No per-module hooks/counters/clones."},
+    {"name": "video_engagement_profile", "measure": "Separate nonclean complete call. Preallocated event pool regions: decoder tiles, post_quant, native tile gather helper, blend, denormalize/revert, temporal streaming. Host/event regions inclusive, not additive. No callback .cpu or synchronize; only call boundaries synchronize."},
+    {"name": "video_tile_capture", "measure": "Separate nonclean full call. Clone every complete 36-layer local decoder Float output before gather/blend/quantization; retain <=1GiB GPU scratch, compute per-tile SHA and shape/dtype/count on CPU after entire call. No per-tile .cpu/sync. Does not claim full globally blended Float video equality; marks this limitation."},
+    {"name": "video_offload_audio_load", "measure": "Explicit stages outside resident timers. Drop video device weights before audio load to avoid extra co-residency."},
+    {"name": "audio_clean", "measure": "Native FP32 full stereo waveform, cold plus same repeat count; independent load, root events/wall, D2H and complete CPU comparison."},
+    {"name": "audio_engagement_profile", "measure": "Separate instrumented audio.remote.decode region with preallocated events, no module synchronize."},
+    {"name": "audio_offload_and_cleanup", "measure": "Restore immutable master bindings; cleanup on success or failure; receipt saving failure must not skip group destruction or mask the original exception."}
+  ],
+  "comparison": {
+    "full_outputs": "All uint8 [1,3,124,768,1344] video pixels and FP32 [1,2,165600] waveform elements; raw-byte SHA plus chunked full CPU mismatch/max/mean/relative RMS diagnostics. CPU finite checks preserve raw transfer bits.",
+    "baseline_repeat": "Report complete same-graph repeat differences, do not automatically approve a tolerance or label lossless. User discussion required if interpreting stochastic/nondeterministic deltas.",
+    "active_candidate": "External baseline directory must be completed, sources/config/latent unchanged, preserve-fp32 or observed-native-False/no-fast, full .pt CPU output files verify receipt SHA. Any full output/prequant tile byte delta stops all ranks before next call using all_reduce decision; ask user.",
+    "prequant_limit": "Per-local-tile fingerprints include complete tensor; not a proof of every globally blended/reverted Float frame. Producing full 1.53GiB Float video requires separate explicit 2GiB cap and scope; current default is uint8 output plus prequantized tile evidence.",
+    "input_guard": "Exact bundle SHA/size plus shape/dtype/finite metadata; source latent bytes checked again after decode, no in-place input rewrite.",
+    "acceptance": "accepted_lossless is always false in timing summary; engagement/timing/repeat receipts are not numerical acceptance."
+  },
+  "output_and_concurrency": {
+    "root": "/tmp/h3_perf12601",
+    "run_directory": "root / new lowercase label, rank0 exclusive mkdir 0700; never reuse a label",
+    "receipt_publish": "unique same-directory temp file open(x), fsync, verified-path os.replace; only own per-rank JSON target",
+    "disk_cap": "1GiB run-wide raw reference data default: video saved once rank0, waveform per rank; bounded serialization overhead checked, no weights. No local .pt/.npz activation download.",
+    "events": "512 preallocated/prewarmed slots per region, overflow completes native work then marks/raises at case boundary rather than stranding collective peers mid-call.",
+    "resource_policy": "lead alone executes and manages lease. Subagent neither shells remote nor starts background model jobs. No shared runtime/model/checkpoint edits."
+  },
+  "portable_verification": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest discover -s artifacts/diagnostics/round126/vae -p test_contracts126.py -v",
+    "result": "14 stdlib tests passed before completion; no Torch imports",
+    "coverage": ["strict shape/dtype/SHA/config/module manifest", "correct dispatch import path", "no unsupported fused actuator/DiT hooks", "actual installer no-op vs bypass distinction", "no Half rewrite/widen restoration", "instance-only journal rollback", "no synchronize in region callbacks", "profile pool overflow fail-closed", "atomic receipt publication and symlink rejection", "per-call rank maximum before warm median", "no hidden generate/encode calls"]
+  },
+  "remaining_runtime_facts_needed": [
+    "Live sdpa_shim and nan_compat pins are supplied by shim_paths126.json and included in runtime_manifest126.json; complete source/config/SHA checks run before Torch import.",
+    "Actual decode-only output_dtype expected uint8 from temporal patch must pass fail-closed execution check; if unexpectedly Float, stop and explicitly decide 2GiB scope/cap, do not downcast silently.",
+    "Runtime dyn module class native_video/audio source-file identities are checked after VAE-only load, before forward; source list pins come from extensions component source_files."
+  ],
+  "lead_launch_notes": [
+    "Source CANN set_env first, prepend /tmp/h3_perf12601 to inherited PYTHONPATH rather than overwrite (preserve tbe). Set only R126 auth bootstrap H3_R126_IPC_KEY_FILE private key; no R124 alignment bootstrap.",
+    "Build manifest with make_manifest126.py --facts runtime_preflight126.json --facts runtime_extensions126.json --facts shim_paths126.json --facts config_sources126.json --output <new-manifest.json>. Included runtime_manifest126.json is already validated and pins video/source/config.json SHA66c68f541e6578ce613ce7a0fc985eb59097038829e49f7535e6d08e6d95ab12. Driver --plan-only and --validate-only do not import Torch.",
+    "Launch with existing vllm910a Python/torchrun, nproc_per_node=8, --checkpoint original FL2VA root --latents exact final bundle --root approved root --label newname --runtime-manifest path --execute --installer-mode observe-native. Never call standalone naive python without rank environment.",
+    "Collect JSON only once all ranks exit; summarize_vae126.py prints stdlib aggregation and does not write or read weights/activation payloads."
+  ]
+}
