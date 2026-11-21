@@ -62,6 +62,20 @@ Three diagnostics: sameallocation/freshclone nativecontrol, coarsefirst-change S
 then detailed blocktrace. No nativecopy candidate installed, no model49generationforlogs.
 Source snapshots are onlytext; all weights/inputs/activationstayon-host.
 
-Wait for completed receipts to claim anyfirst-changing region. Individual numericnoise
-is not a candidate tolerance. Any laterfix requirescausalpairing and explicitquality
-policy if arithmetic changes; #4 cannotadvancejustbecause thisdiagnostic codeexists.
+## Actual findings
+
+[Verified R129 results](RESULTS.md): bothformaltrace roundsfirstdiffer at
+`time_embedder` output onall8ranks. The successfulbdiagnosticexecutes7original50-layer
+forwards/rank, **8,680 strict checks**,no generationorcopycandidate. Allinputs/CPUmasters/
+residentparambuffers remainfingerprint-stable,50actualFAlaunch/0errors eachforward.
+
+[Small time-component isolation](time_component_summary129.json) narrows the first
+change tolocal`proj_out` output **before TP reduce**,withsameinput/FP32weights.
+Frequency/proj_in/gather remainstable; finaltimeoutputmaxdelta1.1920929e-7.
+ThefourinternalGEMMs/FP32scaledadds havenotyetbeenindividuallypaired, so rootcause
+isnotclosed andnocandidate toleranceisaccepted.
+
+SuccessfulbRPC andcomponentprocesses exited,privateIPCremoved andownedlease released.
+[Cleanup](cleanup129b.json) and [exact successfulsources](executed_sources129b/diagnostic_rpc129.py)
+arepreserved. #15staysInProgress and#4Blocked; nextstrictstepistheinnerguardpairing,
+notcalling thisfirstregionfind a numericalfix orperformancewin.

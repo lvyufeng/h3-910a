@@ -10,6 +10,15 @@
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
 
+> **R129 native repeatability isolation:** seven original50-layer diagnostic
+> forwards/rank passed **8,680 strict checks**. Input/weight/buffer fingerprints stayed
+> stable and everyforward launched50FA kernels withoutfallbackerrors. The first
+> changing fullgraph region is timeembedding; a small originalTP2 component probe
+> narrows it to **local time `proj_out` before TP reduce**, max timeoutputdelta
+> **1.1920929e-7**. [R129 evidence](<artifacts/diagnostics/round129/RESULTS.md>) doesnot yet
+> isolate which ofthefour guardGEMMs/FP32scaledadds changes, so#15 remainsInProgress
+> and#4blocked. No samplersteps, copycandidate or precisiontolerance were promoted.
+>
 > **R128 exact-input gate:** private owner-stream and native50-hook safety tests pass,
 > but the unchanged formal-worker same-input native replay differed by about
 > **0.0262% video / 0.0411% audio relRMS before any copy-stream candidate**.

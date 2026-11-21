@@ -1,0 +1,1214 @@
+{
+  "scope": "Isolate the original time embedder with true TP2/USP4 and original FP32 guards.\n\nSmall component diagnostics only: not model generation, sampler or new arithmetic.\nAll checkpoint weights and actual timesteps stay on the owned host.\n",
+  "rank": 7,
+  "completed": true,
+  "TP_actual": 2,
+  "TP_group": [
+    6,
+    7
+  ],
+  "source_timesteps": "R128 ownlive NPU input, no teacher features",
+  "original_arithmetic_changed": false,
+  "passes": [
+    {
+      "repeat": 0,
+      "all_regions": [
+        {
+          "region": "frequency_construction",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 12,
+            "device": "npu:7",
+            "sha256_logical_words": "b44348d5ba84455d5348cf9d38d94dabab2a7d722ac786ceb8f20c5482885c1e",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              256
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              256,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 3072,
+            "device": "npu:7",
+            "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+            "tensor_version": 0
+          }
+        },
+        {
+          "region": "time_embedder.proj_in:local_projection",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              256
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              256,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 3072,
+            "device": "npu:7",
+            "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "b911199e1403ba7a233d89f576034e91bab4e9f0bbb5175e6f1a9ce0e74d409d",
+            "tensor_version": 4
+          },
+          "bias": {
+            "kind": "tensor",
+            "shape": [
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 10752,
+            "device": "npu:7",
+            "sha256_logical_words": "8143ae7722b85aab34b807788fcd32606fe5e2fa56ba8eb18bb4eb2816740a44",
+            "tensor_version": 0
+          }
+        },
+        {
+          "region": "time_embedder.proj_in:post_TP",
+          "input": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                256
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                256,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 3072,
+              "device": "npu:7",
+              "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+              "tensor_version": 0
+            }
+          ],
+          "output": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                5376
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                5376,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 64512,
+              "device": "npu:7",
+              "sha256_logical_words": "a3b73fac9c41c01beefb59e2ce8a26ab751af29fbaf3d9d76bfb3345cb16f03a",
+              "tensor_version": 0
+            },
+            null
+          ]
+        },
+        {
+          "region": "time_embedder.proj_out:local_projection",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "a53aa516c27b175e946c365916662eb545eefcd282ff2fdd8a9185eb3e72293c",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "5b708a450f553e34f9794eaa7f4cd431337c79d13d46f56339f728e184cebe43",
+            "tensor_version": 3
+          },
+          "bias": null
+        },
+        {
+          "region": "time_embedder.proj_out:post_TP",
+          "input": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                5376
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                5376,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 64512,
+              "device": "npu:7",
+              "sha256_logical_words": "3b6aaa83b9ba56a0518f05e961de7345446380a72a7a12f84505f43fb84c7666",
+              "tensor_version": 0
+            }
+          ],
+          "output": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                2688
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                2688,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 32256,
+              "device": "npu:7",
+              "sha256_logical_words": "29df72a345e3a7f328958c4dcc16255796a26c675f077dc62f1650135942be0f",
+              "tensor_version": 3
+            },
+            null
+          ]
+        },
+        {
+          "region": "time_embedder_output",
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "29df72a345e3a7f328958c4dcc16255796a26c675f077dc62f1650135942be0f",
+            "tensor_version": 3
+          }
+        }
+      ],
+      "compare_to_first": [
+        {
+          "region": "frequency_construction",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_in:local_projection",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_in:post_TP",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_out:local_projection",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_out:post_TP",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder_output",
+          "all_record_logical_SHA_equal": true
+        }
+      ],
+      "output_different_FP32_words": 0,
+      "max_abs_difference": 0.0,
+      "relative_RMS_error": 0.0
+    },
+    {
+      "repeat": 1,
+      "all_regions": [
+        {
+          "region": "frequency_construction",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 12,
+            "device": "npu:7",
+            "sha256_logical_words": "b44348d5ba84455d5348cf9d38d94dabab2a7d722ac786ceb8f20c5482885c1e",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              256
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              256,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 3072,
+            "device": "npu:7",
+            "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+            "tensor_version": 0
+          }
+        },
+        {
+          "region": "time_embedder.proj_in:local_projection",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              256
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              256,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 3072,
+            "device": "npu:7",
+            "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "b911199e1403ba7a233d89f576034e91bab4e9f0bbb5175e6f1a9ce0e74d409d",
+            "tensor_version": 4
+          },
+          "bias": {
+            "kind": "tensor",
+            "shape": [
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 10752,
+            "device": "npu:7",
+            "sha256_logical_words": "8143ae7722b85aab34b807788fcd32606fe5e2fa56ba8eb18bb4eb2816740a44",
+            "tensor_version": 0
+          }
+        },
+        {
+          "region": "time_embedder.proj_in:post_TP",
+          "input": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                256
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                256,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 3072,
+              "device": "npu:7",
+              "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+              "tensor_version": 0
+            }
+          ],
+          "output": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                5376
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                5376,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 64512,
+              "device": "npu:7",
+              "sha256_logical_words": "a3b73fac9c41c01beefb59e2ce8a26ab751af29fbaf3d9d76bfb3345cb16f03a",
+              "tensor_version": 0
+            },
+            null
+          ]
+        },
+        {
+          "region": "time_embedder.proj_out:local_projection",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "a53aa516c27b175e946c365916662eb545eefcd282ff2fdd8a9185eb3e72293c",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "2a874c06de863d609c9dbcc70f989e7067191303996b83b6dc61c153fd582075",
+            "tensor_version": 3
+          },
+          "bias": null
+        },
+        {
+          "region": "time_embedder.proj_out:post_TP",
+          "input": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                5376
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                5376,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 64512,
+              "device": "npu:7",
+              "sha256_logical_words": "3b6aaa83b9ba56a0518f05e961de7345446380a72a7a12f84505f43fb84c7666",
+              "tensor_version": 0
+            }
+          ],
+          "output": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                2688
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                2688,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 32256,
+              "device": "npu:7",
+              "sha256_logical_words": "68c35e8a0915cb3a5ba29c9a4f9363f3072b833b62f79965b4d5f614e3c45315",
+              "tensor_version": 3
+            },
+            null
+          ]
+        },
+        {
+          "region": "time_embedder_output",
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "68c35e8a0915cb3a5ba29c9a4f9363f3072b833b62f79965b4d5f614e3c45315",
+            "tensor_version": 3
+          }
+        }
+      ],
+      "compare_to_first": [
+        {
+          "region": "frequency_construction",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_in:local_projection",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_in:post_TP",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_out:local_projection",
+          "all_record_logical_SHA_equal": false
+        },
+        {
+          "region": "time_embedder.proj_out:post_TP",
+          "all_record_logical_SHA_equal": false
+        },
+        {
+          "region": "time_embedder_output",
+          "all_record_logical_SHA_equal": false
+        }
+      ],
+      "output_different_FP32_words": 531,
+      "max_abs_difference": 1.1920928955078125e-07,
+      "relative_RMS_error": 7.002768058257337e-08
+    },
+    {
+      "repeat": 2,
+      "all_regions": [
+        {
+          "region": "frequency_construction",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 12,
+            "device": "npu:7",
+            "sha256_logical_words": "b44348d5ba84455d5348cf9d38d94dabab2a7d722ac786ceb8f20c5482885c1e",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              256
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              256,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 3072,
+            "device": "npu:7",
+            "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+            "tensor_version": 0
+          }
+        },
+        {
+          "region": "time_embedder.proj_in:local_projection",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              256
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              256,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 3072,
+            "device": "npu:7",
+            "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "b911199e1403ba7a233d89f576034e91bab4e9f0bbb5175e6f1a9ce0e74d409d",
+            "tensor_version": 4
+          },
+          "bias": {
+            "kind": "tensor",
+            "shape": [
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 10752,
+            "device": "npu:7",
+            "sha256_logical_words": "8143ae7722b85aab34b807788fcd32606fe5e2fa56ba8eb18bb4eb2816740a44",
+            "tensor_version": 0
+          }
+        },
+        {
+          "region": "time_embedder.proj_in:post_TP",
+          "input": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                256
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                256,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 3072,
+              "device": "npu:7",
+              "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+              "tensor_version": 0
+            }
+          ],
+          "output": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                5376
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                5376,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 64512,
+              "device": "npu:7",
+              "sha256_logical_words": "a3b73fac9c41c01beefb59e2ce8a26ab751af29fbaf3d9d76bfb3345cb16f03a",
+              "tensor_version": 0
+            },
+            null
+          ]
+        },
+        {
+          "region": "time_embedder.proj_out:local_projection",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "a53aa516c27b175e946c365916662eb545eefcd282ff2fdd8a9185eb3e72293c",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "c527bb46be90d2db990e921dc9eb1ae938729eaaa5962d3482b8e3c261fe8c40",
+            "tensor_version": 3
+          },
+          "bias": null
+        },
+        {
+          "region": "time_embedder.proj_out:post_TP",
+          "input": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                5376
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                5376,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 64512,
+              "device": "npu:7",
+              "sha256_logical_words": "3b6aaa83b9ba56a0518f05e961de7345446380a72a7a12f84505f43fb84c7666",
+              "tensor_version": 0
+            }
+          ],
+          "output": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                2688
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                2688,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 32256,
+              "device": "npu:7",
+              "sha256_logical_words": "8915bd2ea4c070d1c3d6b4fc3c883a813a18767d01c51ef23417a305ea99413d",
+              "tensor_version": 3
+            },
+            null
+          ]
+        },
+        {
+          "region": "time_embedder_output",
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "8915bd2ea4c070d1c3d6b4fc3c883a813a18767d01c51ef23417a305ea99413d",
+            "tensor_version": 3
+          }
+        }
+      ],
+      "compare_to_first": [
+        {
+          "region": "frequency_construction",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_in:local_projection",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_in:post_TP",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_out:local_projection",
+          "all_record_logical_SHA_equal": false
+        },
+        {
+          "region": "time_embedder.proj_out:post_TP",
+          "all_record_logical_SHA_equal": false
+        },
+        {
+          "region": "time_embedder_output",
+          "all_record_logical_SHA_equal": false
+        }
+      ],
+      "output_different_FP32_words": 888,
+      "max_abs_difference": 2.9802322387695312e-08,
+      "relative_RMS_error": 3.817277777376459e-08
+    },
+    {
+      "repeat": 3,
+      "all_regions": [
+        {
+          "region": "frequency_construction",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 12,
+            "device": "npu:7",
+            "sha256_logical_words": "b44348d5ba84455d5348cf9d38d94dabab2a7d722ac786ceb8f20c5482885c1e",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              256
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              256,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 3072,
+            "device": "npu:7",
+            "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+            "tensor_version": 0
+          }
+        },
+        {
+          "region": "time_embedder.proj_in:local_projection",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              256
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              256,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 3072,
+            "device": "npu:7",
+            "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "b911199e1403ba7a233d89f576034e91bab4e9f0bbb5175e6f1a9ce0e74d409d",
+            "tensor_version": 4
+          },
+          "bias": {
+            "kind": "tensor",
+            "shape": [
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 10752,
+            "device": "npu:7",
+            "sha256_logical_words": "8143ae7722b85aab34b807788fcd32606fe5e2fa56ba8eb18bb4eb2816740a44",
+            "tensor_version": 0
+          }
+        },
+        {
+          "region": "time_embedder.proj_in:post_TP",
+          "input": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                256
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                256,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 3072,
+              "device": "npu:7",
+              "sha256_logical_words": "6fb12bb89b6dde479b9c020d6d1777b15406272d5bf53863ae2168c0b0192145",
+              "tensor_version": 0
+            }
+          ],
+          "output": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                5376
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                5376,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 64512,
+              "device": "npu:7",
+              "sha256_logical_words": "a3b73fac9c41c01beefb59e2ce8a26ab751af29fbaf3d9d76bfb3345cb16f03a",
+              "tensor_version": 0
+            },
+            null
+          ]
+        },
+        {
+          "region": "time_embedder.proj_out:local_projection",
+          "input": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "a53aa516c27b175e946c365916662eb545eefcd282ff2fdd8a9185eb3e72293c",
+            "tensor_version": 0
+          },
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "532b0fb9d8303c043d86c3f295d1a6af4125ad559ae4c857f2e48689d5738977",
+            "tensor_version": 3
+          },
+          "bias": null
+        },
+        {
+          "region": "time_embedder.proj_out:post_TP",
+          "input": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                5376
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                5376,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 64512,
+              "device": "npu:7",
+              "sha256_logical_words": "3b6aaa83b9ba56a0518f05e961de7345446380a72a7a12f84505f43fb84c7666",
+              "tensor_version": 0
+            }
+          ],
+          "output": [
+            {
+              "kind": "tensor",
+              "shape": [
+                3,
+                2688
+              ],
+              "dtype": "torch.float32",
+              "stride": [
+                2688,
+                1
+              ],
+              "storage_offset": 0,
+              "logical_bytes": 32256,
+              "device": "npu:7",
+              "sha256_logical_words": "dd1889c627ba64bb7f41e65398a3fd1fbbbb871b9f1a2cb7ef14ba947478c2e8",
+              "tensor_version": 3
+            },
+            null
+          ]
+        },
+        {
+          "region": "time_embedder_output",
+          "output": {
+            "kind": "tensor",
+            "shape": [
+              3,
+              2688
+            ],
+            "dtype": "torch.float32",
+            "stride": [
+              2688,
+              1
+            ],
+            "storage_offset": 0,
+            "logical_bytes": 32256,
+            "device": "npu:7",
+            "sha256_logical_words": "dd1889c627ba64bb7f41e65398a3fd1fbbbb871b9f1a2cb7ef14ba947478c2e8",
+            "tensor_version": 3
+          }
+        }
+      ],
+      "compare_to_first": [
+        {
+          "region": "frequency_construction",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_in:local_projection",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_in:post_TP",
+          "all_record_logical_SHA_equal": true
+        },
+        {
+          "region": "time_embedder.proj_out:local_projection",
+          "all_record_logical_SHA_equal": false
+        },
+        {
+          "region": "time_embedder.proj_out:post_TP",
+          "all_record_logical_SHA_equal": false
+        },
+        {
+          "region": "time_embedder_output",
+          "all_record_logical_SHA_equal": false
+        }
+      ],
+      "output_different_FP32_words": 1344,
+      "max_abs_difference": 1.1920928955078125e-07,
+      "relative_RMS_error": 8.04849390567206e-08
+    }
+  ],
+  "actual_timestep_input": {
+    "kind": "tensor",
+    "shape": [
+      3
+    ],
+    "dtype": "torch.float32",
+    "stride": [
+      1
+    ],
+    "storage_offset": 0,
+    "logical_bytes": 12,
+    "device": "npu:7",
+    "sha256_logical_words": "b44348d5ba84455d5348cf9d38d94dabab2a7d722ac786ceb8f20c5482885c1e",
+    "tensor_version": 0
+  },
+  "parameters_before": {
+    "time_embedder.proj_in.weight": {
+      "kind": "tensor",
+      "shape": [
+        2688,
+        256
+      ],
+      "dtype": "torch.float32",
+      "stride": [
+        256,
+        1
+      ],
+      "storage_offset": 0,
+      "logical_bytes": 2752512,
+      "device": "npu:7",
+      "sha256_logical_words": "444ed8221a61098236c8b277456e619f4c7bd01b6aa6a6a905517ddd6f690b3c",
+      "tensor_version": 0
+    },
+    "time_embedder.proj_in.bias": {
+      "kind": "tensor",
+      "shape": [
+        2688
+      ],
+      "dtype": "torch.float32",
+      "stride": [
+        1
+      ],
+      "storage_offset": 0,
+      "logical_bytes": 10752,
+      "device": "npu:7",
+      "sha256_logical_words": "8143ae7722b85aab34b807788fcd32606fe5e2fa56ba8eb18bb4eb2816740a44",
+      "tensor_version": 0
+    },
+    "time_embedder.proj_out.weight": {
+      "kind": "tensor",
+      "shape": [
+        2688,
+        2688
+      ],
+      "dtype": "torch.float32",
+      "stride": [
+        2688,
+        1
+      ],
+      "storage_offset": 0,
+      "logical_bytes": 28901376,
+      "device": "npu:7",
+      "sha256_logical_words": "cc492f66c4312b35b39786a349d0350a659e25bbe23fe26ad3d4be3fca7688c7",
+      "tensor_version": 0
+    },
+    "time_embedder.proj_out.bias": {
+      "kind": "tensor",
+      "shape": [
+        2688
+      ],
+      "dtype": "torch.float32",
+      "stride": [
+        1
+      ],
+      "storage_offset": 0,
+      "logical_bytes": 10752,
+      "device": "npu:7",
+      "sha256_logical_words": "096a3c7539f0248698cc65376c8da260e7365bf4ccef847c09bb9a36782a743c",
+      "tensor_version": 0
+    }
+  },
+  "parameters_after": {
+    "time_embedder.proj_in.weight": {
+      "kind": "tensor",
+      "shape": [
+        2688,
+        256
+      ],
+      "dtype": "torch.float32",
+      "stride": [
+        256,
+        1
+      ],
+      "storage_offset": 0,
+      "logical_bytes": 2752512,
+      "device": "npu:7",
+      "sha256_logical_words": "444ed8221a61098236c8b277456e619f4c7bd01b6aa6a6a905517ddd6f690b3c",
+      "tensor_version": 0
+    },
+    "time_embedder.proj_in.bias": {
+      "kind": "tensor",
+      "shape": [
+        2688
+      ],
+      "dtype": "torch.float32",
+      "stride": [
+        1
+      ],
+      "storage_offset": 0,
+      "logical_bytes": 10752,
+      "device": "npu:7",
+      "sha256_logical_words": "8143ae7722b85aab34b807788fcd32606fe5e2fa56ba8eb18bb4eb2816740a44",
+      "tensor_version": 0
+    },
+    "time_embedder.proj_out.weight": {
+      "kind": "tensor",
+      "shape": [
+        2688,
+        2688
+      ],
+      "dtype": "torch.float32",
+      "stride": [
+        2688,
+        1
+      ],
+      "storage_offset": 0,
+      "logical_bytes": 28901376,
+      "device": "npu:7",
+      "sha256_logical_words": "cc492f66c4312b35b39786a349d0350a659e25bbe23fe26ad3d4be3fca7688c7",
+      "tensor_version": 0
+    },
+    "time_embedder.proj_out.bias": {
+      "kind": "tensor",
+      "shape": [
+        2688
+      ],
+      "dtype": "torch.float32",
+      "stride": [
+        1
+      ],
+      "storage_offset": 0,
+      "logical_bytes": 10752,
+      "device": "npu:7",
+      "sha256_logical_words": "096a3c7539f0248698cc65376c8da260e7365bf4ccef847c09bb9a36782a743c",
+      "tensor_version": 0
+    }
+  },
+  "FP32_parameters_unchanged": true
+}
