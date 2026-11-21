@@ -1,5 +1,12 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
+> **Execution tracking:** [GitHub Project](https://github.com/users/lvyufeng/projects/10)
+> and [roadmap issue #1](https://github.com/lvyufeng/h3-910a/issues/1) are the live task
+> source. Start with [runtime cold/warm/reload #3](https://github.com/lvyufeng/h3-910a/issues/3).
+> Follow [the agent contract](<AGENTS.md>) and
+> [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
+> numerical changes require an explicit user decision, and **TP stays enabled**.
+
 > **Current state (round126):** the accepted baseline remains the real R124
 > 49-step original-checkpoint generation, with its own FP16 encoder, original
 > FP32 VAE parameters and the user-accepted 910A FA kernel. R125 measured warm

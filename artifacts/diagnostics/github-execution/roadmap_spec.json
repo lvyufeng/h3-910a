@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "repo": "lvyufeng/h3-910a",
+  "owner": "lvyufeng",
+  "project_title": "MiniMax-H3 910A 原模型优化",
+  "roadmap_key": "h3-910a-original-optimization-20261121",
+  "baseline_commit": "4384e89",
+  "labels": [
+    {"name":"h3-roadmap","color":"1D76DB","description":"Original MiniMax-H3 on 910A: persistent execution roadmap"},
+    {"name":"optimization","color":"0366D6","description":"Measured inference optimization; not an automatic precision acceptance"},
+    {"name":"priority:P0","color":"B60205","description":"First execution stage or indispensable correctness contract"},
+    {"name":"priority:P1","color":"D93F0B","description":"Main performance target and component optimization"},
+    {"name":"priority:P2","color":"FBCA04","description":"Follow-up capability research or external comparison"},
+    {"name":"baseline-evidence","color":"0E8A16","description":"Verified reference and immutable evidence, not a new precision baseline"},
+    {"name":"precision-gate","color":"5319E7","description":"Stop on attributable numeric change; ask user before promotion"},
+    {"name":"awaiting-user-decision","color":"D4C5F9","description":"Optional numerical or algorithmic change is not authorized"}
+  ],
+  "issues": [
+    {
+      "key":"roadmap","title":"[路线图] MiniMax-H3／910A 原模型优化：按证据执行，TP始终开启",
+      "priority":"P0","component":"Roadmap","phase":"Tracking","precision":"既定基线","status":"In Progress","dependencies":[],
+      "labels":["h3-roadmap","documentation","precision-gate"],
+      "objective":"把2026-11-21的业界优化分析与R126执行事实永久固化为GitHub Project＋Issues，后续按依赖推进而非只依靠聊天记忆。原模型／原步数／TP持续开启；任何可测数值变化先停用报告。",
+      "work":["先正式engine的cold／warm／reload状态和stream／NUMA，再真正的异步搬运与生命周期。","热态主线为实际形状FA与GEMM，不把已存在的packed QKV或offload再算一次优化。","VAE做同形状tile microbatch／时间chunk调度，窗口／overlap／blend保持基线。","小区域编译／NPUGraph和拓扑感知TP＋USP在能力证据后进行。","近似cache、量化、稀疏、少步数与蒸馏默认关闭，只有用户明确批准才另开分支。","每个实验单独baseline→candidate→restored，记录源码／输入／配置SHA、actual kernel和rank-max；最后组合8×49原模型回归。"],
+      "acceptance":["Project和Issue链接可读，子Issue、真实依赖、优先级、组件、精度门禁完整。","每个执行Issue有可复现证据与Keep／Reject／Awaiting approval结论；无收益实验可完成，但不得晋升。","encoder<2s、video VAE<20s、DiT<15s／step及A2／A3比较未实测达标，不关闭总体目标。","本Issue仅在必需验收完成或用户明确改目标后关闭，不因看板创建完成而关闭。"],
+      "sources":["artifacts/diagnostics/round126/README.md","artifacts/diagnostics/round126/STATE126.json","artifacts/diagnostics/github-execution/PLAN.md"]
+    },
+    {
+      "key":"baseline","title":"[基线] 封存R124＋FA合同与R126真实执行证据、纠正旧归因",
+      "priority":"P0","component":"Validation","phase":"Baseline","precision":"既定基线","status":"Done","dependencies":[],
+      "labels":["h3-roadmap","baseline-evidence","documentation"],
+      "objective":"已完成的R126证据入口，阻止后续把17.556s replay当全步、把native False当VAE融合或把更大TP当必然更快。",
+      "work":["保留R124＋FA为共享已接受精度；R126 private combined仅为已执行实验。","核验真实TP2／4／8参数30.890／15.446／7.723GiB／rank与全rank形状。","核验原50主块、8×49前向、60760 strict Half checks、live encoder、124帧与media SHA。","核验两个4卡HCCS岛与PHB／SYS跨组路径、源SHA、清理与lease释放。"],
+      "acceptance":["R126 verifier --require-final --require-combined通过，全部实际source／media fingerprints可复核。","同whole-forward hook19.732→19.372s；生成1329.961→1314.581s，初始化286.238s；未宣称目标完成。","冷VAE142.143s与warm video20.565s／audio0.210s分开；audio relRMS1.057不自动接受。","在Issue关闭评论附证据和commit4384e89，仅关闭证据整理，不关闭性能目标。"],
+      "sources":["artifacts/diagnostics/round126/verified_round126_final.json","artifacts/diagnostics/round126/full_generation_summary126.json","artifacts/diagnostics/round126/cleanup126.json","artifacts/diagnostics/round126/topology_query126.json"]
+    },
+    {
+      "key":"runtime-facts","title":"[P0／Runtime] 正式engine cold→warm→reload：编译、驻留、stream和NUMA分项",
+      "priority":"P0","component":"Runtime","phase":"Runtime","precision":"逐位门禁","status":"Todo","dependencies":["baseline"],
+      "labels":["h3-roadmap","optimization","priority:P0","precision-gate"],
+      "objective":"先解释正式生成的286.238s初始化、87.51s首DiT step与142.143s冷VAE，不用独立20.565s热态decode掩盖完整service生命周期。",
+      "work":["在同一常驻worker测first request、second request、offload→reload request，输出状态转移表。","固定实际1344×768／124帧／49前向和原tile形状；编译／format cast／权重加载／buffer与cache失效分开。","核验每个runtime线程的current stream、allocator约束、明确copy stream是否独立；不全局关闭共享流。","记录CPU affinity、NUMA节点、pinned buffer物理分配与对应卡；先观察，不预设NUMA为主瓶颈。","正式engine用低干扰events，clean计时不插逐module sync；cold、warm、reload各有rank-max与峰值显存。"],
+      "acceptance":["三类请求的真实执行／状态／计时证据齐全，明确warm-start改善与steady-state改善。","保持DiT TP2＋USP4／encoderTP8、原计算和全部155 checks；不使用teacher／hidden输出复用。","若因内存无法常驻，给出budget与保留／释放策略，不能假装暖服务已实现。","结论写回Issue，给runtime-overlap可执行设计；凡测量暂缺明确标Unknown。"],
+      "sources":["artifacts/diagnostics/round126/full_generation_summary126.json","artifacts/diagnostics/round126/native_sources/sdpa_shim.py","artifacts/diagnostics/round126/native_sources/layerwise_backend.py","artifacts/diagnostics/round126/native_sources/module_residency.py"]
+    },
+    {
+      "key":"runtime-overlap","title":"[P0／Runtime] 正式worker独立copy stream、不可变权重与安全prefetch生命周期",
+      "priority":"P0","component":"Runtime","phase":"Runtime","precision":"逐位门禁","status":"Blocked","dependencies":["runtime-facts"],
+      "labels":["h3-roadmap","optimization","priority:P0","precision-gate"],
+      "objective":"把单测已证明的异步机制带入正式worker，仅在实际consumer／allocator线程合同成立后使用独立H2D；不是全局改变platform Stream。",
+      "work":["worker-local explicit copy stream；pinned masters只读，保留dtype／shape／stride／format／storage语义。","ready fence与每slot consumer-complete fence分离；完整50块顺序、offload／reload和异常回滚均可验证。","prepared集合随prefetch／offload正确更新，不因miss退回隐蔽同步；用serial控制证明overlap=0。","测试NUMA本地pinned allocation／线程绑定，各项独立A/B，不将包含式block spans当全部device busy。","同正式engine边界测copy时间、HCCL争用、consumer等待与真实整步收益；收益不清晰即Reject。"],
+      "acceptance":["actual copy stream distinct、50 block调用、fence／cache命中与完整byteproof，不只记录开关。","baseline→candidate→restored、同输入全部叶子逐位比较；原权重SHA／参数dtype不变、155checks不减。","无allocator跨线程错误、slot覆盖、OOM、等待死锁；缺少独立流支持时fail closed。","给出正式warm-step与cold／reload两个口径及额外显存，未实测不声明加速。"],
+      "sources":["artifacts/diagnostics/round126/immutable_weight_pool126.py","artifacts/diagnostics/round126/benchmark_weight_pool_profile126.py","artifacts/diagnostics/round126/weight_pool_TP2_FA126_rank0.json"]
+    },
+    {
+      "key":"fa","title":"[P1／FA] 910A真实长序列FlashAttention：IO、tiling、30核工作分配与流水",
+      "priority":"P1","component":"Attention","phase":"Kernels","precision":"逐位门禁","status":"Todo","dependencies":["baseline"],
+      "labels":["h3-roadmap","optimization","priority:P1","precision-gate"],
+      "objective":"热态主线：对真实[1,7,41792,128]→43776、validkeys41769、Br128／Bc304／30core FA调优，不只优化调用包装层。",
+      "work":["核验50 actual ACL FA launches／forward及原binary SHA，建立真实shape微测和硬件瓶颈证据。","分别测Br／Bc、核任务分配、Cube／Vector／HBM占用与K／V加载-计算重叠，决定双缓冲与流水深度。","测Q scale／layout／padding访问合并，保持valid-key boundary和FP32累积／归一化／range保护。","FlashAttention-3／4为设计参考，不安装CUDA／Hopper／Blackwell实现冒充910A支持。","同输入0／25／48步和全部rank逐位门禁；任何可测差异关闭候选并请用户决定。"],
+      "acceptance":["实际kernel时间、wrapper时间与端到端whole-step均分开；嵌套span不相加。","报告kernel符号／binary SHA／launch count、mask／padding边界测试与恢复基线。","同输入完整attention输出逐位比，NaN／Inf／Half saturation fail closed。","仅在真实收益与精度合同都满足后给Keep，否则Reject／Awaiting approval；不许稀疏化冒充无损。"],
+      "sources":["artifacts/diagnostics/round126/actual_FA_profile126_rank0.json","artifacts/diagnostics/round126/actual_attention_profile126.py","artifacts/diagnostics/round126/native_sources/fa910a.py","https://github.com/Dao-AILab/flash-attention"]
+    },
+    {
+      "key":"gemm","title":"[P1／GEMM] 真实QKV／MLP／out projection形状的静态布局、预排布与后处理",
+      "priority":"P1","component":"GEMM","phase":"Kernels","precision":"逐位门禁","status":"Todo","dependencies":["baseline"],
+      "labels":["h3-roadmap","optimization","priority:P1","precision-gate"],
+      "objective":"对当前真正的TP2矩阵优化ND／NZ与dtype／format转换，不再次把已有packed QKV和gate／up当新融合收益。",
+      "work":["采集真实QKV、fc1／fc2、out projection shape／stride／format和实际CANN kernel。","比较静态immutable prepack与native，转换放在prepare／load边界，保留原FP16 operand与FP32 wide输出。","测试tiling与必要后处理fusion，遵循原range保护、rounding点和FP32 norm／residual。","拆分format cast、GEMM和epilogue；不启用HF32／TF32、BF16／INT8／FP8或截断范围。","测试reuse／offload／reload／version失效，防止缓存旧权重；额外显存与ready fence明确。"],
+      "acceptance":["native、candidate、restored clean timings和实际kernel证据，每个收益能归因。","全部104 wide-GEMM叶子与完整DiT输出同输入逐位比较；155strict checks保留。","原checkpoint／parameter dtype／SHA不改，没有Half后再widen伪装FP32。","显存与分片budget满足32GiB卡，OOM／cache失效安全，Keep／Reject／Awaiting approval明确。"],
+      "sources":["artifacts/diagnostics/round126/native_sources/linear.py","artifacts/diagnostics/round126/device_range126.py","artifacts/diagnostics/round126/true_TP_meta_summary126.json","https://github.com/huggingface/diffusers/blob/main/docs/source/en/optimization/fp16.md"]
+    },
+    {
+      "key":"vae","title":"[P1／VAE] 同形状tile microbatch与时间chunk调度，保持原decode窗口和blend",
+      "priority":"P1","component":"VAE","phase":"Decoder","precision":"逐位门禁","status":"Todo","dependencies":["baseline"],
+      "labels":["h3-roadmap","optimization","priority:P1","precision-gate"],
+      "objective":"VAE原FP32参数保留；warm video20.565s与cold combined142.143s分别优化。4.502GiB operand副本只省约0.20s，不继续把扩大缓存当主线。",
+      "work":["使用主机同一final latent，只测decode，baseline source／config／weight fingerprint固定。","按shape归组先microbatch=2，必要再4；保持norm语义、tile窗口／overlap／blend顺序和输出dtype。","联合空间tile与时间chunk调度；当前28／21任务且有chunk barriers，不能仅总任务平均即claim balance。","分开resident video、audio、加载／cache prime、gather／blend／D2H；所有rank proof collective顺序一致。","比较memory peak、临界rank等待、decoder leaf和完整prequant tiles；不只用uint8媒体相同做精度证明。"],
+      "acceptance":["全部原始196 complete prequant tile pairs和1152 leaf gate扩展到候选batch／schedule；原FP32参数不动。","新batch造成kernel／rounding差异时停用Awaiting approval；不换tile窗口／稀释overlap。","报告cold、warm与端到端三种范围；用户明确video VAE<20s验收范围之前都单列。","8rank无collective错序／尾tile丢失／拼接错位；audio native完整输出单独报告，不用低音量忽略差异。"],
+      "sources":["artifacts/diagnostics/round126/native_sources/remote_klvae.py","artifacts/diagnostics/round126/vae/tile_rounds126.py","artifacts/diagnostics/round126/vae/benchmark_operand_cache126.py","https://github.com/xdit-project/xDiT/blob/main/docs/methods/parallel_vae.md"]
+    },
+    {
+      "key":"graph","title":"[P2／Graph] 当前910A／CANN小区域编译与NPUGraph能力、固定地址和回放",
+      "priority":"P2","component":"Runtime","phase":"Graph","precision":"逐位门禁","status":"Blocked","dependencies":["runtime-facts","runtime-overlap","fa","gemm"],
+      "labels":["h3-roadmap","optimization","priority:P2","precision-gate"],
+      "objective":"先一个固定shape block／MLP的regional compile／graph验证，减少host launch，不盲目全局打开compile或假设新TorchNPU API必支持original910A。",
+      "work":["核验实际torch／torch_npu／CANN／driver能力矩阵和graph限制，仅文档存在不等于host支持。","识别scalar读取、155strict check位置、动态offload地址、自定义ACL launch与collective是否可安全capture。","先单区域cold编译、warm execute、capture／replay、reload／地址失效；不能跨未保护的精度门捕获。","同输入整块输出、内存／编译成本和eager fallback／实际graph invocation全部记录。"],
+      "acceptance":["actual capture／replay或明确unsupported证据，fallback不能冒充编译成功。","原FP32例外、155checks、fail-closed与异常回滚保留；不延迟错误到sampler更新之后。","baseline→candidate→restored leaf／full outputs逐位门禁，编译改舍入停用等待决定。","收益对应整步host开销，初始化与warm分开；未获当前910A支持则Reject不耗模型重跑。"],
+      "sources":["artifacts/diagnostics/round126/runtime_preflight126.json","artifacts/diagnostics/round126/native_sources/sdpa_shim.py","https://github.com/Ascend/pytorch"]
+    },
+    {
+      "key":"topology","title":"[P2／TP＋USP] 组内TP／Ulysses与跨岛Ring2能力研究，TP不得关闭",
+      "priority":"P2","component":"Parallelism","phase":"Topology","precision":"需数值评估","status":"Blocked","dependencies":["runtime-facts","fa"],
+      "labels":["h3-roadmap","optimization","priority:P2","precision-gate"],
+      "objective":"候选TP2×组内Ulysses2×跨组Ring2；高频TP／all-to-all留HCCS岛内，跨岛KV exchange走PHB配对。不是把rank数增大当必然加速。",
+      "work":["核验physical IDs与group mapping：0–3／4–7，PHB0↔4等，记录numa与HCCL路径。","先当前910A FA partial-output＋LSE契约，online merge与mask／range边界；没有能力不启动完整49步。","实现块传输／计算重叠，测KV通信、all-to-all、TP collectives各自device timeline。","同初始noise／conditioning做isolated pair；Ring改变归约顺序可能产生偏差，先记录暂停待用户判断。","不借助previous-step KV、PipeFusion、FP8通信或TP1；官方当前Ascend不支持PipeFusion。"],
+      "acceptance":["每层真实TP shards／local heads与参加8卡组完整；默认baselineTP2＋USP4／encoderTP8不变。","partial FA、LSE merge、完整attention与全DiT输出比较，数值差异不以noise band自动通过。","actual PHB／SYS transport和overlap证据，GEMM／group变化不得简单归因为拓扑。","比baseline快且精度许可才Keep；更慢／无支持即Reject、记录原因，不禁用TP。"],
+      "sources":["artifacts/diagnostics/round126/topology_query126.json","artifacts/diagnostics/round126/native_sources/parallel_state.py","https://github.com/xdit-project/xDiT/blob/main/docs/methods/usp.md","https://github.com/xdit-project/xDiT/blob/main/docs/methods/pipefusion.md"]
+    },
+    {
+      "key":"encoder","title":"[P1／Encoder] live FP16 TP8重现性与小区域算子优化，TP4不得自动晋升",
+      "priority":"P1","component":"Encoder","phase":"Encoder","precision":"逐位门禁","status":"Blocked","dependencies":["runtime-facts"],
+      "labels":["h3-roadmap","optimization","priority:P1","precision-gate"],
+      "objective":"encoder warm约2.34s，达到<2s需要约15%节省；geometry cache2.340→2.339s无实用收益，不继续微优化相同路径。",
+      "work":["保留live encoderTP8：27vision＋3DeepStack＋50text，原FP16权重与FP32 range保护。","native-repeat差从text layer0起逐层追踪；bounded on-host capture、同输入isolated operator pair，不能以3.007%全hidden自重复误差作为允许损失。","优先真实norm／linear布局／QK-rotary／host launch的小区域瓶颈，保持原数学与舍入合同。","TP4 HCCS岛内2.341／2.297s且vs freshTP8 hidden relRMS2.783%，无明确速度收益，不自动切换。","编码器输出不得用GPU／CPU教师、cache hidden／features替换；cold load和warm encode单列。"],
+      "acceptance":["全27／3／50图真实执行与逐叶子A/B；原native输出被返回，不因测量改变主轨迹。","明确每项速度、显存、actual kernel及numeric delta，不合格Restore／Awaiting approval。","<2s若未达报告现状，不使用过往不同precision／timing的低数值代替。","完成Issue代表实验有结论，不代表TP4／新precision接受。"],
+      "sources":["artifacts/diagnostics/round126/encoder_native_diagnostic126_rank0.json","artifacts/diagnostics/round126/mesh_encoder_summary126.json","artifacts/diagnostics/round126/encoder/diagnose_live_encoder126.py"]
+    },
+    {
+      "key":"optional-numeric","title":"[决策门／默认不执行] 近似cache、量化、稀疏、少步数、蒸馏和已有数值差异",
+      "priority":"P2","component":"Precision","phase":"Approval","precision":"先批准再执行","status":"Awaiting approval","dependencies":[],
+      "labels":["h3-roadmap","precision-gate","awaiting-user-decision","priority:P2"],
+      "objective":"记录明确排除的主流大幅加速方案，防止新会话把广告中的无损或noise band当用户许可。此Issue不自动触发任何compute／算法修改。",
+      "work":["TeaCache／PAB／TaylorSeer／Cache-DiT复用或预测跨步activation；不是精确缓存。","SageAttention／INT8／FP8／FP4、稀疏attention、减少49步或FastH3／LoRA／student均改变计算或模型。","PipeFusion复用previous-step KV且当前官方Ascend不支持；LLM KV cache不能套随latent／t变化的DiT。","既有encoderTP4 hidden2.783% delta与native audio relRMS1.057未获精度许可；候选未晋升。","若用户未来要试，先提出独立分支、收益hypothesis、fixed-conditioning质量协议与原生音视频验收，逐项请求，不以此Issue开着为默认授权。"],
+      "acceptance":["每项仅在用户明确接受对应数值／算法变化后创建可执行子Issue或更改候选状态。","当前所有近似／量化／少步数／蒸馏分支默认关闭；原模型基线和参数SHA不变。","允许用户决定保持原精度并将此Issue长期Backlog，不阻止无损主线或总体回归。","审批引用用户决定与来源，不在聊天猜测或凭PSNR／低音量自动关闭。"],
+      "sources":["artifacts/diagnostics/round126/R125_FA_vs_R126_media.json","artifacts/diagnostics/round126/mesh_encoder_summary126.json","https://github.com/huggingface/diffusers/blob/main/docs/source/en/optimization/cache.md","https://haoailab.com/FastVideo/cookbook/minimax-h3/"]
+    },
+    {
+      "key":"integration","title":"[P1／验收] 合格项组合：8rank×49原模型回归、原生音视频与同口径性能",
+      "priority":"P1","component":"Validation","phase":"Integration","precision":"逐位门禁","status":"Blocked","dependencies":["runtime-facts","runtime-overlap","fa","gemm","vae","graph","topology","encoder"],
+      "labels":["h3-roadmap","optimization","priority:P1","precision-gate"],
+      "objective":"仅组合Keep且精度合同已满足的项；Reject实验可结束但不合并；Awaiting approval候选排除。optional-numeric不是此Issue的依赖。",
+      "work":["冻结exact source、image／noise／sigma、weights／configs SHA、TP映射和launch；新fresh输出root防重复。","8worker每步50original blocks、每rank49forward、155strict checks／step，60760total；原124frame24fps／32000Hz audio。","live FP16TP8 encoder与原FP32VAEs，禁teacher隐藏替换／student／clip／BF16。","报告same whole-forward hook、cold／warm／reload、init、full generation、VAE video／audio／gather与memory；isolated numbers不代替full scope。","media完整原Float与encoded视频比较；固定conditioning isolated proofs和独立live轨迹差异分别说明；质量许可由用户决定。","清理private key／process与release owned lease；commit／PR／sourcepins／failure receipts全部链接。"],
+      "acceptance":["实际8×49与60760checks、source／mediaSHA verifier通过；本地不保留weights／activation archives。","encoder<2s、videoVAE<20s、whole-stepDiT<15s是否达标，按明确口径逐项列；没达就保留问题。","数值改变需批准后才合并，未批准候选不影响共享基线；不自动声称音视频质量等价。","在主Issue同步最终结论与待优化瓶颈，不能因49步run退出0就关闭整体路线图。"],
+      "sources":["artifacts/diagnostics/round126/verify_round126_evidence.py","artifacts/diagnostics/round126/generate_full_NPU126.py","artifacts/diagnostics/round126/compare_generated_media126.py"]
+    },
+    {
+      "key":"a2-a3","title":"[P2／对比] A2／A3同原模型、精度、输入与冷暖口径的真实硬件比较",
+      "priority":"P2","component":"Benchmark","phase":"Hardware","precision":"既定基线","status":"Backlog","dependencies":["baseline"],
+      "labels":["h3-roadmap","priority:P2","precision-gate"],
+      "objective":"长期目标仍未完成：以实际A2／A3运行比较，不用峰值TFLOPS、其他模型或官方广告倍数替代。",
+      "work":["先确认用户授权owned可用A2／A3与live lease；不得借dormant／CI或从稀有device占用猜权限。","同original checkpoint、FP16／FP32例外、50块×49、1344×768／124frameFL2VA、prompt／seed／sigma／初始noise。","记录卡型／数量／显存／CANN／driver／kernel／TP／USP／topology；无法相同的kernel精度差异显式写出。","分别报告first request／warm request、init、encoder、VAE video／audio、whole DiTstep、full wall、成本与功耗若实测可得。"],
+      "acceptance":["至少原910A与真实A2／A3的同口径证据齐全；没有资源即Blocked具体说明，不造数字。","质量／范围门禁匹配并明确是否另有precision许可，kernel换代不是自动无损。","Project与主Issue记录对比完整状态；未实测不宣布A2／A3目标完成。"],
+      "sources":["artifacts/diagnostics/round126/full_generation_summary126.json","artifacts/diagnostics/round126/topology_query126.json"]
+    }
+  ]
+}
