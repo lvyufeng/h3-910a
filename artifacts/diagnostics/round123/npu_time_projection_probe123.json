@@ -1,0 +1,125 @@
+{
+  "scope": "Actual first-step time-embedding FP32 projection probe with exact TP2 math.\n\nRuns only on GPU/NPU; no CPU model reference. Preserves original FP32 time weights,\nsin/cos FP32 input, original SiLU, and TP2 split/gather/sum order. The NPU candidate\nuses the same four Half-operand FP32-output residual guard tested on patch inputs.\nThis is a two-timestep leaf diagnostic, not an end-to-end speed/quality acceptance.\n",
+  "completed": true,
+  "backend": "npu",
+  "original_FP32_parameter_identities": {
+    "time_embedder.proj_in.weight": {
+      "shape": [
+        5376,
+        256
+      ],
+      "original_value_FP32_sha256": "4c50eabe3c434dc05422e6501cdf7baa5cecbb1a7706ae9599c7a5b0e34e2913"
+    },
+    "time_embedder.proj_in.bias": {
+      "shape": [
+        5376
+      ],
+      "original_value_FP32_sha256": "64763a5e39cb078eb0d8c5be5d56ad36cac3dec37be93a87e106d82ea6c071b7"
+    },
+    "time_embedder.proj_out.weight": {
+      "shape": [
+        2688,
+        5376
+      ],
+      "original_value_FP32_sha256": "697819dd9413e0fec3a50987a964f1fd5db568ca545267414238f452294a8154"
+    },
+    "time_embedder.proj_out.bias": {
+      "shape": [
+        2688
+      ],
+      "original_value_FP32_sha256": "096a3c7539f0248698cc65376c8da260e7365bf4ccef847c09bb9a36782a743c"
+    }
+  },
+  "TP2_local_projection_width": 2688,
+  "numeric_tolerance": null,
+  "full_model_or_speed_accepted": false,
+  "CPU_model_inference_executed": false,
+  "native_output_finite": true,
+  "native_stage_errors_vs_GPU": {
+    "t_freq": {
+      "relative_RMS": 3.599363041536086e-08,
+      "max_abs_error": 1.1920928955078125e-07,
+      "finite": true,
+      "shape": [
+        2,
+        256
+      ]
+    },
+    "projection_in_output": {
+      "relative_RMS": 0.0008845757909653705,
+      "max_abs_error": 0.017338275909423828,
+      "finite": true,
+      "shape": [
+        2,
+        5376
+      ]
+    },
+    "projection_out_input": {
+      "relative_RMS": 0.009508696707777896,
+      "max_abs_error": 0.0005060471594333649,
+      "finite": true,
+      "shape": [
+        2,
+        5376
+      ]
+    },
+    "time_embedding": {
+      "relative_RMS": 0.005134709878898515,
+      "max_abs_error": 0.006084069609642029,
+      "finite": true,
+      "shape": [
+        2,
+        2688
+      ]
+    }
+  },
+  "residual_GEMM_stage_errors_vs_GPU": {
+    "projection_in_output": {
+      "relative_RMS": 1.9741004969570986e-07,
+      "max_abs_error": 3.814697265625e-06,
+      "finite": true,
+      "shape": [
+        2,
+        5376
+      ]
+    },
+    "projection_out_input": {
+      "relative_RMS": 2.06055891126107e-06,
+      "max_abs_error": 1.1920928955078125e-07,
+      "finite": true,
+      "shape": [
+        2,
+        5376
+      ]
+    },
+    "time_embedding": {
+      "relative_RMS": 6.955095312284616e-07,
+      "max_abs_error": 6.332993507385254e-07,
+      "finite": true,
+      "shape": [
+        2,
+        2688
+      ]
+    }
+  },
+  "GPU_hidden_teacher_forced_row_projection": {
+    "native": {
+      "relative_RMS": 0.0006028091619100976,
+      "max_abs_error": 0.00020676851272583008,
+      "finite": true,
+      "shape": [
+        2,
+        2688
+      ]
+    },
+    "residual_GEMM": {
+      "relative_RMS": 3.167017565870013e-07,
+      "max_abs_error": 1.4901161193847656e-07,
+      "finite": true,
+      "shape": [
+        2,
+        2688
+      ]
+    }
+  }
+}

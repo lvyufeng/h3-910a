@@ -1,6 +1,23 @@
 # MiniMax-H3 on Ascend 910A via vLLM-Omni
 
-> **Current native/lossless optimization work:** see the
+> **Current state (round125):** the 910A stack now produces a real 49-step
+> original-checkpoint video with its own FP16 encoder and the original FP32 VAE,
+> and the fused 910A flash-attention kernel is the one acceleration that survived
+> measurement. Warm DiT step went **40.47 s -> 18.41 s** (engine: 38.33 s ->
+> 17.76 s), the full 49-step generation wall went **2316.96 s -> 1329.96 s**
+> (1.74x), and all 124 frames stay at **PSNR >= 51.18 dB** against the previous
+> generation. Three other approved candidates were measured and rejected: the VAE
+> Half-parameter fast path moved decode only 138.6 s -> 132.4 s with no wall gain,
+> an FP16 residual stream was 40% *slower*, and fusing the SwiGLU product bought no
+> time while drifting to 0.22% video / 1.64% audio by step 48. Encoder (~65 s vs a
+> 2 s target), VAE decode (~132 s vs 20 s) and the A2/A3 comparison remain open; the
+> per-step cost is now dominated by per-block weight staging, because tensor
+> parallelism does not shard this DiT and residency does not fit 32 GiB.
+> See the [Round125 acceleration measurements](<artifacts/diagnostics/round125/README.md>),
+> the [Round124 same-input gates and first real 49-step generation](<artifacts/diagnostics/round124/README.md>),
+> and the [round125 machine summary](<artifacts/diagnostics/round125/STATE125.json>).
+>
+> **Earlier native/lossless optimization work:** see the
 > [Round108 true Vision TP8 + text TP8: genuine full encoder1.321s, all5<2s; CPU FP16 gap4.40% still not accepted](<artifacts/diagnostics/round108/README.md>),
 > [Round107 actual all27 Vision TP8:1.484s→0.675s, original Half weights/Float HCCL; not an8× or precision-pass claim](<artifacts/diagnostics/round107/README.md>),
 > [Round110 exact-input block43: CPU FP16 gap0.0271%→0.00687%; full propagation still open, final source/worker audit](<artifacts/diagnostics/round110/README.md>),
