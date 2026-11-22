@@ -10,6 +10,15 @@
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
 
+> **R131 approved full50 diagnostic:** same8 workers completed9forwards/rank with
+> **11,160 strict checks** and3,600originalFAlaunches. Deterministic **time andvideo**
+> predictions repeat bit-for-bit, butaudio still differs bymaxabs **6.0796738e-6**,
+> relRMS **0.0000343518%**. [R131 findings](<artifacts/diagnostics/round131/RESULTS.md>)
+> preserve input/master invariants and19.927/20.013/19.905s native/true/restored
+> diagnostic warmtimes. The full-output gate stillfails: noflagpolicy/tolerance or
+> copycandidateadopted, #15open/#4Blocked. FlagsrestoredFalse, privateprocess/key/lease
+> cleaned. These are step25 full50prediction tensors, **not decoded49-step media**.
+>
 > **R130 original GEMM diagnosis:** time `proj_out` first changes at MM0 with
 > equal actual Half operands and FP32 output. All32 fixed-GEMM rank/op groups drift;
 > all28 fixed scaled-add/bias groups repeat exactly. A private deterministic-control

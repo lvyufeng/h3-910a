@@ -5,6 +5,19 @@
 [User approval](approval131.json) authorizes diagnostics, **not** adoption of a new
 precision baseline, tolerance or copy-stream candidate.
 
+## Recorded outcome
+
+[Full findings](RESULTS.md) and [verified actual receipts](verified131.json) show the
+same8workers completed all9forwards/rank,11,160checks and3,600FAlaunches without
+wrappererrors. Deterministictime **andvideo** predictions arebit-repeatable, but
+**audio still differs**: maxabs6.0796738e-6/relRMS0.0000343518%. No full-output bitgate
+or decodedmedia qualitypass isclaimed. Native/deterministic/restored diagnostics
+warmtimes are19.927/20.013/19.905s in theexactdeclaredscope.
+
+[Cleanup](cleanup131.json) confirms allprivateprocessesexited andflagsFalse restored,
+keyremoved; ownedlease released. Keep thisdiagnosis,Reject automaticadoption ofthe
+still-nonrepeatable fulloutput baseline. #15 staysInProgress and#4Blocked.
+
 ## Execution contract
 
 [Private worker RPC](diagnostic_rpc131.py) calls original`VerifiedDiT.forward` under
