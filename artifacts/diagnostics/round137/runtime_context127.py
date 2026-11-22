@@ -6,9 +6,9 @@ from pathlib import Path
 import threading
 import time
 
-ROOT=Path('/tmp/h3_components13702')
+ROOT=Path('/tmp/h3_components13703')
 SESSION=Path(os.environ['H3_R127_SESSION_OUT']).resolve()
-assert SESSION.parent==ROOT and SESSION.name=='engine_components137b' and SESSION.is_dir()
+assert SESSION.parent==ROOT and SESSION.name=='engine_components137c' and SESSION.is_dir()
 LABELS={1:'r01_cold',2:'r02_warm',3:'r03_native_reload'}
 _CURRENT=0
 _SEQUENCE=0
