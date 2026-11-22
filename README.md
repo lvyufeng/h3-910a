@@ -10,13 +10,22 @@
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
 
+> **R136 approved full49 quality comparison:** three requests completed **182,280
+> strictchecks /58,800DiT FAlaunches /0errors**. Candidatecombo(Falseoriginal→globalTrue
+> +AdaLN→False restored) changesvideo latent0.184615%,nativeRGBPSNR55.9579dB but
+> maxchannel173/255;audio native relRMS105.5768% onnear-silentreference. False-restored
+> controlencoderhiddenalsochanges3.69675%,so notsingleoperatorcausality oradoption.
+> [R136 results](<artifacts/diagnostics/round136/RESULTS.md>) preserve raw/independent
+> checks and20.045/20.111/20.034s DiT warmmedian scope. No tolerance/copyadopted;
+> methods/Falseflags/privateIPC restoredandlease released, #15open/#4Blocked.
+>
 > **R135 approved full50 candidate diagnosis:** same8workers completed11,160strict
 > checks/3,600FAlaunches/0errors. Candidatevideo/audio3repeats arebit-identical, but
 > change3,578,877videoFP32words／13,245audioFP32words versusoriginal-underTrue:
 > relRMS **0.007187915% /0.008823783%**. [R135 evidence](<artifacts/diagnostics/round135/RESULTS.md>)
 > reports20.201/20.179/20.177s warmrank-maxmedian. No defaultFalsequalitypass/49media,
 > noadoption/tolerance/copy; allmethods/Falseflags/privateIPC restored,lease released.
-> Full49qualityvalidation needsnewuserpermission; #15open/#4Blocked, goalsstillopen.
+> Its laterauthorizedfull49qualitycomparisonisabove; #15open/#4Blocked, goalsstillopen.
 >
 > **R134 authorized local candidate:** Half operands with explicitFP32output/bias
 > andoneHalfwriteback repeat exactly inall8local128/module32groups, butchangeup

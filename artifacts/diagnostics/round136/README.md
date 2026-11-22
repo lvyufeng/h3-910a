@@ -6,6 +6,20 @@ the global flag can affect live encoder/VAE as well as DiT. It does not isolate 
 operator's causal quality effect or prove full49 candidate repeatability (one candidate request).
 [Issue #15](https://github.com/lvyufeng/h3-910a/issues/15) remainsopen; no tolerance/adoption/copy.
 
+## Recorded complete49 outcome
+
+[Results](RESULTS.md), [execution summary](summary_execution136.json) and [raw metrics](quality_comparison136.json)
+recordthreecomplete49requests/182,280checks/58,800DiTFAlaunches/0errors. Candidatecombo
+vsoriginalvideo latentrelRMS0.184615%,nativeRGBPSNR55.9579dB withmaxchannel173/255.
+Rawnear-silentaudiorelRMS105.5768%;original-restoredcontrolalso104.8334% anda live
+encoderhidden3.69675%delta,notacandidate tolerance orsingleoperatorcausalityproof.
+
+[Independent CPU reductions](independent_quality_audit136.json) cross-checkfloatwords/relL2/max
+andglobalvideoPSNR/MAE/pixelcounts/max,notallPearson/perframemetrics.
+[Cleanup](cleanup136.json) recordsoriginalmethods/Falseflags/privateIPC/modelworkers
+restored; the [lease release](lease_release136.json) recordsownedlease release. No candidate adoption/newtolerance,onlyonecandidate49request;
+nextoriginalcomponentrepeatabilitydiagnosticsneedanexplicitnewscopechoice.
+
 [Driver](generate_quality136.py) retains theoriginal50blocks,49actualevaluations/50sigma
 boundaries,TP2+USP4/encoderTP8/VAEpatch8,FP16matrices andoriginalFP32protections.
 [Integration](integration_hooks127.py) keeps155Halfchecks and measuresactualFA/candidate
