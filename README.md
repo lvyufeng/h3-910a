@@ -10,11 +10,19 @@
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
 
+> **R135 approved full50 candidate diagnosis:** same8workers completed11,160strict
+> checks/3,600FAlaunches/0errors. Candidatevideo/audio3repeats arebit-identical, but
+> change3,578,877videoFP32words／13,245audioFP32words versusoriginal-underTrue:
+> relRMS **0.007187915% /0.008823783%**. [R135 evidence](<artifacts/diagnostics/round135/RESULTS.md>)
+> reports20.201/20.179/20.177s warmrank-maxmedian. No defaultFalsequalitypass/49media,
+> noadoption/tolerance/copy; allmethods/Falseflags/privateIPC restored,lease released.
+> Full49qualityvalidation needsnewuserpermission; #15open/#4Blocked, goalsstillopen.
+>
 > **R134 authorized local candidate:** Half operands with explicitFP32output/bias
 > andoneHalfwriteback repeat exactly inall8local128/module32groups, butchangeup
 > **6484/32256postgatherHalfwords**,maxabs9.765625e-4／relRMS **0.01595574%** versus
 > originalModulefirst. [R134 numbers](<artifacts/diagnostics/round134/RESULTS.md>) are
-> **not a lossless or adoptedbaseline**; full50candidate requiresnewuserpermission.
+> **not a lossless or adoptedbaseline**; subsequentfull50diagnosticisrecordedabove.
 > Original/restoredlocalpaths retainoneHalfworddrift;input/paramsunchanged,flags/
 > descriptor/privateprocessesrestoredandownedlease released. #15open/#4Blocked.
 >
@@ -24,8 +32,8 @@
 > another11,160strictchecks. [Original AdaLN component](<artifacts/diagnostics/round133/RESULTS.md>)
 > reproducesoneHalfworddrift beforeTPgather withsameHalfinput/weight/bias onall8ranks,
 > up7.6293945e-6 /4.8828125e-4 in twolocalcoordinates oftime row1. Allaudio tokens use
-> row1;selectedvideo usesrows0/2. Noalgorithmchanged or tolerancegranted; nextlocal
-> FP32out/bias candidate requires user authorization. #15open/#4Blocked,flagsrestored,
+> row1;selectedvideo usesrows0/2. Thelaterauthorizedcandidate tests areabove,without
+> algorithmadoption or tolerancegranted. #15open/#4Blocked,flagsrestored,
 > privateprocessescleaned andlease released; fullperformancegoal remainsopen.
 >
 > **R131 approved full50 diagnostic:** same8 workers completed9forwards/rank with
