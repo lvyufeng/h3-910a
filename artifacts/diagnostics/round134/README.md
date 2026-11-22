@@ -5,6 +5,18 @@ comparison**, not full50 regression,49-step generation,baseline adoption,toleran
 orcopy optimization. [Issue #15](https://github.com/lvyufeng/h3-910a/issues/15) stays
 InProgress; [Issue #4](https://github.com/lvyufeng/h3-910a/issues/4) remainsBlocked.
 
+## Recorded local outcome
+
+[Actual results](RESULTS.md) and [verified numerical summary](summary134.json) show
+all8candidate rankgroups repeat exactly for128local/32modulecalls. Nativeandrestored
+paths stilldrift byoneHalfword. Butcandidatechangesup5447/16128localHalfwords or
+6484/32256postgatherHalfwords, maxabs9.765625e-4 andpostgatherrelRMS0.01595574%.
+Thisisnot a lossless replacement; baseline/thresholdnotadopted,full50 nottested.
+
+[Cleanup](cleanup134.json) records allprivateprocessesexited,parameter/sourcepins
+unchanged,False/warnFalse andmethoddescriptors restored;ownedlease released.
+Anyfull50candidate diagnostic needsnewexplicituserauthorization; copyremainsoff.
+
 [Candidate](fp32_bias_candidate134.py) keeps sameHalf x/weight andoriginalHalfbias.
 It calls`torch.mm(x,weight.t(),out_dtype=float32)`,adds`bias.float()` inFP32,then
 narrows once toHalf. **This changes originalrounding/bias behavior** andisnot

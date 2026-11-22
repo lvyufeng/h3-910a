@@ -10,6 +10,14 @@
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
 
+> **R134 authorized local candidate:** Half operands with explicitFP32output/bias
+> andoneHalfwriteback repeat exactly inall8local128/module32groups, butchangeup
+> **6484/32256postgatherHalfwords**,maxabs9.765625e-4／relRMS **0.01595574%** versus
+> originalModulefirst. [R134 numbers](<artifacts/diagnostics/round134/RESULTS.md>) are
+> **not a lossless or adoptedbaseline**; full50candidate requiresnewuserpermission.
+> Original/restoredlocalpaths retainoneHalfworddrift;input/paramsunchanged,flags/
+> descriptor/privateprocessesrestoredandownedlease released. #15open/#4Blocked.
+>
 > **R132/R133 audio residual diagnosis:** firsttailchange is finalAdaLNoutput;
 > audiohead inputalreadychanges391FP32words,while itsfixedFULL-input localreplays
 > arebit-identical. [R132 evidence](<artifacts/diagnostics/round132/RESULTS.md>) adds
