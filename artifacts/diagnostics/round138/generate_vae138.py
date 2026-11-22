@@ -5,12 +5,13 @@ import os
 from pathlib import Path
 import time
 
-ROOT=Path('/tmp/h3_vae13801');SESSION=ROOT/'engine_vae138a'
+ROOT=Path('/tmp/h3_vae13802');SESSION=ROOT/'engine_vae138b'
 
 
 def main():
     assert SESSION.is_dir();receipt=SESSION/'vae_lifecycle138.json';assert not receipt.exists()
-    approval=json.loads((ROOT/'approval137.json').read_text());assert approval['original_math_and_parameters_unchanged'] and not approval['full49_generation']
+    contract=json.loads((ROOT/'issue7_contract138.json').read_text())
+    assert contract['measurement_only'] and contract['no_math_change'] and contract['no_candidate'] and contract['no_tolerance']
     os.environ['H3_R127_SESSION_OUT']=str(SESSION)
     from full_bootstrap127 import install_alignment
     install_alignment()
@@ -19,7 +20,7 @@ def main():
         'ulysses_degree':4,'ring_degree':1,'dtype':'half','enforce_eager':True,'enable_layerwise_offload':True,
         'vae_use_tiling':True,'vae_parallel_mode':'tile','vae_patch_parallel_size':8,
         'diffusion_attention_backend':'TORCH_SDPA','stage_init_timeout':2400,'init_timeout':2400}
-    report={'scope':__doc__,'completed':False,'approval':approval,'kwargs':kwargs,'sampler_evaluations':0,'DiT_forward_calls':0,
+    report={'scope':__doc__,'completed':False,'contract':contract,'kwargs':kwargs,'sampler_evaluations':0,'DiT_forward_calls':0,
         'candidate_enabled':False,'numeric_tolerance_adopted':False,'RPCs':[]}
     def publish():receipt.write_text(json.dumps(report,indent=2)+'\n')
     publish();omni=None

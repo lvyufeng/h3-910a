@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 import sys
 
-ROOT=Path('/tmp/h3_vae13801')
+ROOT=Path('/tmp/h3_vae13802')
 PRIOR=Path('/tmp/h3_quality13601/engine_quality136a')
 PRIOR_RECEIPT=PRIOR/'lifecycle_result136.json'
 SOURCES=(
@@ -32,7 +32,7 @@ def sha(path):
 
 def main():
     assert sys.version_info[:2]==(3,12),sys.version
-    assert ROOT.resolve()==Path('/tmp/h3_vae13801') and not (ROOT/'engine_vae138a').exists()
+    assert ROOT.resolve()==Path('/tmp/h3_vae13802') and not (ROOT/'engine_vae138b').exists()
     prior=json.loads(PRIOR_RECEIPT.read_text());assert prior['completed']
     row=prior['requests'][0];assert row['label']=='r01_original_false'
     files=list((PRIOR/row['label']).glob('final_latents_pid*127.pt'));assert len(files)==1

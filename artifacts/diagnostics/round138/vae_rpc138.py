@@ -14,7 +14,7 @@ import time
 from fingerprints129 import fingerprint, normalized_fingerprint
 from original_state137 import component_state, same_original_state
 
-ROOT=Path('/tmp/h3_vae13801')
+ROOT=Path('/tmp/h3_vae13802')
 PRIOR=Path('/tmp/h3_quality13601/engine_quality136a/r01_original_false')
 REPEATS=4
 
