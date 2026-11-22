@@ -10,6 +10,15 @@
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
 
+> **R130 original GEMM diagnosis:** time `proj_out` first changes at MM0 with
+> equal actual Half operands and FP32 output. All32 fixed-GEMM rank/op groups drift;
+> all28 fixed scaled-add/bias groups repeat exactly. A private deterministic-control
+> probe is repeatable in40/40 groups (10 repeats), versus0/40 in native and restored.
+> It **changes output bits**: full local time-guard maxabs5.9604645e-8,
+> relRMS4.37294e-8 versus native. [R130 results](<artifacts/diagnostics/round130/RESULTS.md>)
+> await the user's decision before any full50 deterministic diagnostic; the model
+> flag staysfalse, #4 remainsBlocked, and no precision/performance policy is adopted.
+>
 > **R129 native repeatability isolation:** seven original50-layer diagnostic
 > forwards/rank passed **8,680 strict checks**. Input/weight/buffer fingerprints stayed
 > stable and everyforward launched50FA kernels withoutfallbackerrors. The first
