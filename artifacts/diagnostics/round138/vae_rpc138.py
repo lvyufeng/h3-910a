@@ -14,7 +14,7 @@ import time
 from fingerprints129 import fingerprint, normalized_fingerprint
 from original_state137 import component_state, same_original_state
 
-ROOT=Path('/tmp/h3_vae13802')
+ROOT=Path('/tmp/h3_vae13803')
 PRIOR=Path('/tmp/h3_quality13601/engine_quality136a/r01_original_false')
 REPEATS=4
 
@@ -73,9 +73,19 @@ def tiling_facts(video_vae,latent,torch):
         decoder_tile_count=int(video_vae._decoder_tile_count(latent)))
     sp_size=facts['parallel_size']
     if sp_size>1:
-        state=video_vae._native_parallel_state();rank=int(state['sp_rank']);size=int(state['sp_size'])
+        state=video_vae._native_parallel_state()
+        rank=int(state['sp_rank']);size=int(state['sp_size'])
         local=model._local_tile_indices(facts['num_tiles'],rank,size)
-        facts.update(sp_group=list(state['sp_process_group'].ranks()),sp_size=size,sp_rank=rank,
+        group=state['sp_process_group']
+        # Portable process-group introspection: this torch build has no
+        # ProcessGroup.ranks attribute, and tile ownership only needs size/rank.
+        ranks=None
+        getter=getattr(torch.distributed,'get_process_group_ranks',None)
+        if callable(getter):
+            try:ranks=[int(v) for v in getter(group)]
+            except BaseException:ranks=None
+        world=int(torch.distributed.get_world_size(group))
+        facts.update(sp_group_ranks=ranks,sp_group_world_size=world,sp_size=size,sp_rank=rank,
             local_tile_indices=[int(v) for v in local],local_tile_count=len(local),
             max_tiles_per_rank=-(-facts['num_tiles']//size))
     facts['stack_tiling']=bool(getattr(model,'stack_tiling',False))

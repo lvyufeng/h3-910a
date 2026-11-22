@@ -22,7 +22,7 @@ def install_alignment():
 def configure_python_startup():
     global _PATCHED
     key_path=Path(os.environ['H3_R127_IPC_KEY_FILE']).resolve()
-    assert key_path.parent==Path('/tmp/h3_vae13802') and not key_path.is_symlink()
+    assert key_path.parent==Path('/tmp/h3_vae13803') and not key_path.is_symlink()
     assert key_path.stat().st_mode&0o077==0
     key=key_path.read_bytes();assert len(key)==32
     mp.current_process().authkey=key
