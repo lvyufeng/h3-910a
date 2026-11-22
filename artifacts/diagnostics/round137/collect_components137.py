@@ -20,10 +20,10 @@ if r.get('exit_code') is None and not r.get('completion_unknown'):
   try:ready,_,_=select.select([fd],[],[],7500);assert ready
   finally:os.close(fd)
  r=json.loads(receipt.read_text());assert r.get('exit_code') is not None or r.get('completion_unknown')
-files=[receipt,session/'component_lifecycle137.json',root/'launch_source_pins137a.json']
-files+=list(root.glob('component_rank*137.json'))+list(root.glob('cohort_failure*.json'))+list(root.glob('private_abort_details137*.json'))
+files=[receipt,session/'component_lifecycle137.json']+list(root.glob('launch_source_pins*.json'))
+files+=list(root.glob('component_rank*137.json'))+list(root.glob('cohort_failure*.json'))+list(root.glob('private_abort_details137*.json'))+list(root.glob('attempt137*_failure/*'))
 files+=list(session.glob('*.jsonl'))+list(session.glob('initialization_crash_pid*127.txt'))
-assert all(p.is_file() and not p.is_symlink() and p.suffix in ('.json','.jsonl','.txt') for p in files)
+assert all(p.is_file() and not p.is_symlink() and p.suffix in ('.json','.jsonl','.txt') for p in files), [str(p) for p in files if not p.is_file()]
 assert sum(p.stat().st_size for p in files)<=64*1024**2
 buffer=io.BytesIO()
 with tarfile.open(fileobj=buffer,mode='w:gz',compresslevel=6) as archive:

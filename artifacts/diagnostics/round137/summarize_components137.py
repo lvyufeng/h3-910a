@@ -11,14 +11,15 @@ from original_state137 import same_original_state
 SOURCE=Path(__file__).resolve().parent
 
 
-def summarize(root):
+def summarize(root,sources=None):
     process=json.loads((root/'engine_components137c_process.json').read_text());life=json.loads((root/'engine_components137c/component_lifecycle137.json').read_text())
     reports=sorted([json.loads(p.read_text()) for p in root.glob('component_rank*137.json')],key=lambda r:r['rank'])
     result={'scope':'Original native fixed encoder and fixed audio latent repetitions only','process_exit_code':process.get('exit_code'),
         'completion_unknown':process.get('completion_unknown',False),'lifecycle_completed':life['completed'],
         'engine_initialization_s':life.get('engine_initialization_s'),'reports':len(reports),'components':[],
         'new_math_flag_policy_or_tolerance':False,'sampler_or_DiT_evaluations':0,'native_false_throughout':True}
-    for path,digest in process['source_sha256'].items():assert hashlib.sha256((SOURCE/'executed_sources137b'/Path(path).name).read_bytes()).hexdigest()==digest
+    sources=sources or (SOURCE/'executed_sources137c')
+    for path,digest in process['source_sha256'].items():assert hashlib.sha256((sources/Path(path).name).read_bytes()).hexdigest()==digest
     result['executed_source_SHA_verified']=True
     if life.get('failure'):result['failure']=life['failure']
     if (root/'cohort_failure128.json').exists():result['cohort_failure']=json.loads((root/'cohort_failure128.json').read_text())
@@ -66,8 +67,8 @@ def summarize(root):
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path,required=True);parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
-    result=summarize(args.root)
+    parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path,required=True);parser.add_argument('--sources',type=Path);parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()
+    result=summarize(args.root,args.sources)
     if args.output.exists():assert json.loads(args.output.read_text())==result
     else:args.output.write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))
