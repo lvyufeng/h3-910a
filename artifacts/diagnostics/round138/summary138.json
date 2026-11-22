@@ -1,0 +1,84 @@
+{
+  "scope": "video VAE decode timing decomposition and bitwise repeatability, fixed latent, original FP32 params",
+  "engine_initialization_s": 239.81104642990977,
+  "completed": true,
+  "process_exit_code": 0,
+  "workers": 8,
+  "decodes_total": 32,
+  "output_shape": [
+    1,
+    3,
+    124,
+    768,
+    1344
+  ],
+  "output_dtype": "torch.uint8",
+  "output_words": 383975424,
+  "vae_parallel": 8,
+  "num_tiles": 28,
+  "tile_rows": 4,
+  "tile_cols": 7,
+  "tiles_per_rank": 4,
+  "stack_tiling": false,
+  "temporal": {
+    "clip_length": 17,
+    "tokens_chunk_size": 5,
+    "token_overlap": 2,
+    "vae_ratio_t": 4,
+    "token_drop": 3
+  },
+  "cold_decode_rankmax_s": 80.29337299987674,
+  "warm_decode_rankmax_per_repeat_s": [
+    21.73712843004614,
+    21.760098500177264,
+    21.67783288983628
+  ],
+  "warm_decode_median_all_ranks_s": 21.6926739749033,
+  "warm_decode_base_rankmax_per_repeat_s": [
+    21.713707480113953,
+    21.729277479927987,
+    21.65832104999572
+  ],
+  "warm_residual_revert_normalize_copy_rankmax_s": 0.030821020249277353,
+  "staging_load_rankmax_s": 0.10899548977613449,
+  "peak_allocated_GiB_rankmax": 13.435993671417236,
+  "bitwise_repeatable": false,
+  "repeat_vs_first": {
+    "1": {
+      "different_words": 253384,
+      "fraction_percent": 0.06598964000362689,
+      "max_abs_difference_LSB_uint8": 1.0,
+      "relative_RMS_percent": 0.013473391409764165
+    },
+    "2": {
+      "different_words": 253471,
+      "fraction_percent": 0.0660122977037197,
+      "max_abs_difference_LSB_uint8": 1.0,
+      "relative_RMS_percent": 0.013475704271767662
+    },
+    "3": {
+      "different_words": 253135,
+      "fraction_percent": 0.06592479210336129,
+      "max_abs_difference_LSB_uint8": 1.0,
+      "relative_RMS_percent": 0.013466769643840656
+    }
+  },
+  "all_ranks_identical_output_per_repeat": true,
+  "fixed_latent_word_gate": {
+    "word_bits": 32,
+    "total_words": 3580416,
+    "different_words": 0,
+    "all_words_equal": true,
+    "max_abs_difference": 0.0,
+    "relative_RMS_percent": 0.0,
+    "max_abs_over_reference_RMS_percent": 0.0
+  },
+  "vae_parameters_dtype": "torch.float32",
+  "vae_parameter_words": 2603868984,
+  "original_state_and_methods_restored": true,
+  "no_math_change": true,
+  "no_candidate": true,
+  "no_tolerance": true,
+  "sampler_or_dit_evaluations": 0,
+  "implication": "decode_base dominates the 21.6s warm decode; pipeline-side revert/normalize/copy is ~0.02s and staging ~0.08s, so <20s requires decoder-internal tiling/temporal scheduling changes, which change numeric order. Native decode already differs by 1 uint8 level on 0.066% of components, so a bitwise gate cannot be satisfied by cross-run comparison."
+}

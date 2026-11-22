@@ -1,0 +1,85 @@
+{
+  "scope": "One original8worker video-VAE timing/repeatability RPC, never sampling or changing math.",
+  "completed": true,
+  "contract": {
+    "issue": "#7",
+    "comment": "https://github.com/lvyufeng/h3-910a/issues/7#issuecomment-7082063847",
+    "executor": "lvyufeng",
+    "host": "ts-217",
+    "host_pool": "owned",
+    "device": "8x910B CANN 9.2.0",
+    "measurement_only": true,
+    "no_math_change": true,
+    "no_candidate": true,
+    "no_tolerance": true,
+    "fixed_latent": {
+      "file_sha256": "bf9daec88b451f9cd7273a1544260ce6e8bd9c594225e5cbef3529ff0f5d02e0",
+      "shape": [
+        1,
+        24,
+        37,
+        48,
+        84
+      ],
+      "dtype": "torch.float32",
+      "words": 3580416
+    }
+  },
+  "kwargs": {
+    "trust_remote_code": true,
+    "task_type": "fl2va",
+    "num_gpus": 8,
+    "tensor_parallel_size": 2,
+    "text_encoder_tp_size": 8,
+    "ulysses_degree": 4,
+    "ring_degree": 1,
+    "dtype": "half",
+    "enforce_eager": true,
+    "enable_layerwise_offload": true,
+    "vae_use_tiling": true,
+    "vae_parallel_mode": "tile",
+    "vae_patch_parallel_size": 8,
+    "diffusion_attention_backend": "TORCH_SDPA",
+    "stage_init_timeout": 2400,
+    "init_timeout": 2400
+  },
+  "sampler_evaluations": 0,
+  "DiT_forward_calls": 0,
+  "candidate_enabled": false,
+  "numeric_tolerance_adopted": false,
+  "RPCs": [
+    {
+      "host_wall_s": 371.6045514899306,
+      "reply": [
+        [
+          {
+            "rank": 0,
+            "completed": true,
+            "report": "/tmp/h3_vae13803/vae_rank0138.json",
+            "repeats": 4,
+            "no_math_change": true
+          }
+        ]
+      ],
+      "actual8_worker_receipts": true,
+      "worker_pids": [
+        2198610,
+        2198611,
+        2198612,
+        2198613,
+        2198614,
+        2198615,
+        2198616,
+        2198617
+      ],
+      "video_vae_decodes_allranks": 32,
+      "per_rank_repeats": 4,
+      "repeat1_is_staging_cold_and_listed_separately": true,
+      "no_sampler_or_math_change": true,
+      "original_fp32_vae_parameters": true
+    }
+  ],
+  "engine_initialization_s": 239.81104642990977,
+  "business_work_completed": true,
+  "engine_close_completed": true
+}
