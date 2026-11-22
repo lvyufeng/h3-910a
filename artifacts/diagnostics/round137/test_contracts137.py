@@ -52,6 +52,8 @@ class Tests(unittest.TestCase):
         s=(ROOT/'component_rpc137.py').read_text()
         self.assertNotIn('torch.use_deterministic_algorithms(True',s);self.assertNotIn('FinalAdaLNCandidate',s)
         self.assertNotIn('ExplicitFP32Bias',s);self.assertIn('parametrize._cache_enabled',s)
+        self.assertIn('set_forward_context(vllm_config=worker.vllm_config,omni_diffusion_config=worker.od_config)',s)
+        self.assertNotIn('set_forward_context(od_config=',s)
         self.assertIn("report['final_runtime']==report['initial_runtime']",s)
     def test_shared_private_control_and_failure(self):
         s=(ROOT/'component_rpc137.py').read_text()
@@ -61,11 +63,14 @@ class Tests(unittest.TestCase):
         abort=(ROOT/'private_abort137.py').read_text();self.assertIn('pidfd_send_signal',abort);self.assertNotIn('os.kill(',abort)
     def test_exact_runtime_session(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root=Path(tmp).resolve();session=root/'engine_components137a';session.mkdir()
-            text=(ROOT/'runtime_context127.py').read_text().replace("ROOT=Path('/tmp/h3_components13701')",f'ROOT=Path({str(root)!r})')
+            root=Path(tmp).resolve();session=root/'engine_components137b';session.mkdir()
+            text=(ROOT/'runtime_context127.py').read_text().replace("ROOT=Path('/tmp/h3_components13702')",f'ROOT=Path({str(root)!r})')
             with patch.dict(os.environ,{'H3_R127_SESSION_OUT':str(session)}):
                 ns={'__name__':'runtime_test137'};exec(compile(text,'runtime_test137','exec'),ns);self.assertEqual(ns['SESSION'],session)
-        self.assertIn("SESSION.name=='engine_components137a'",(ROOT/'runtime_context127.py').read_text())
+        self.assertIn("SESSION.name=='engine_components137b'",(ROOT/'runtime_context127.py').read_text())
+        for name in ('full_bootstrap127.py','sitecustomize.py','component_rpc137.py','launch_components137.py','cohort128.py','private_abort137.py','generate_components137.py','collect_components137.py','summarize_components137.py'):
+            text=(ROOT/name).read_text();self.assertNotIn('/tmp/h3_components13701',text)
+            self.assertNotIn('engine_components137a',text)
     def test_refuse_uncertain_launch(self):
         s=(ROOT/'launch_components137.py').read_text()
         self.assertIn('not SESSION.exists() and not receipt.exists()',s)

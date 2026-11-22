@@ -43,7 +43,7 @@ class FailureInjectionTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp,patch.dict(sys.modules,{'private_abort137':private,'cohort128':cohort}),\
                  patch.object(launcher,'ROOT',Path(tmp)),patch.object(launcher.subprocess,'Popen',return_value=FakeProcess()) as spawn,\
                  patch.object(launcher.threading,'Thread',FakeThread),patch.object(launcher.os,'pidfd_open',side_effect=pidfd):
-                env={'H3_R127_IPC_KEY_FILE':'/tmp/h3_components13701/private_IPC_key127.bin'}
+                env={'H3_R127_IPC_KEY_FILE':'/tmp/h3_components13702/private_IPC_key127.bin'}
                 with self.assertRaises((RuntimeError,OSError)):
                     launcher.guarded_launch137(['mock'],env,Path(tmp)/'mock.log',row,publish,watchfd,time.monotonic()+10)
                 self.assertEqual(spawn.call_args.kwargs['env'],env)
@@ -64,7 +64,7 @@ if __name__=='__main__':
     suite=unittest.defaultTestLoader.loadTestsFromTestCase(FailureInjectionTests)
     result=unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():raise SystemExit(1)
-    root=Path('/tmp/h3_components13701');target=root/'controller_unit137.json';assert not target.exists()
+    root=Path('/tmp/h3_components13702');target=root/'controller_unit137.json';assert not target.exists()
     row={'completed':True,'tests_passed':3,'pure_mock_no_model_or_signal_sent':True,
         'publish_thread_pidfd_setup_failure_trigger_private_cleanup':True,'child_capability_present_before_shell_exports':True,
         'completion_unknown_not_fake_success_on_controller_failure':True,'unknown_launch_not_replayed':True}

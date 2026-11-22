@@ -10,8 +10,8 @@ import threading
 import select
 import time
 
-ROOT=Path('/tmp/h3_components13701')
-SESSION=ROOT/'engine_components137a'
+ROOT=Path('/tmp/h3_components13702')
+SESSION=ROOT/'engine_components137b'
 
 
 def guarded_launch137(command,child_env,log_path,row,publish,failure_watch,deadline_monotonic):
@@ -83,10 +83,11 @@ def guarded_launch137(command,child_env,log_path,row,publish,failure_watch,deadl
 
 
 def main():
-    receipt=ROOT/'engine_components137a_process.json';assert not SESSION.exists() and not receipt.exists(),'Refuse replay of uncertain launch'
+    receipt=ROOT/'engine_components137b_process.json';assert not SESSION.exists() and not receipt.exists(),'Refuse replay of uncertain launch'
     preflight=json.loads((ROOT/'preflight127.json').read_text());assert preflight['completed'] and not preflight['weights_loaded']
     fresh=json.loads((ROOT/'preflight137.json').read_text());assert fresh['completed']
     assert fresh['original_audio_latent_SHA_verified'] and fresh['native_source_SHA_verified']
+    assert json.loads((ROOT/'forward_context_signature137b.json').read_text())['correct_kwarg_names_bind']
     pins={'/tmp/h3_align12401/NPU_encoder_FP16_124.py':'0959895b778fc0900d785250b71279055d3940d975f3523909856072960f5026',
         '/tmp/h3_align12401/h3_replay123/transformer.py':'5d94ba09216e3f4dce121cebbf50c960b9ddf47882fb325baffbab4c47a4fe0b',
         '/tmp/h3_align12301/same_initial_sampling123.pt':'8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9'}
@@ -105,7 +106,7 @@ def main():
     key_path=ROOT/'private_IPC_key127.bin';assert not key_path.exists()
     fd=os.open(key_path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
     with os.fdopen(fd,'wb') as f:f.write(os.urandom(32))
-    work=ROOT/'cann_engine_components137a';work.mkdir(exist_ok=False)
+    work=ROOT/'cann_engine_components137b';work.mkdir(exist_ok=False)
     assignments={'H3_R127_IPC_KEY_FILE':str(key_path),'H3_R127_SELECTIVE_BOOTSTRAP':'1','H3_R127_SESSION_OUT':str(SESSION),
         'H3_R127_INIT_DIAGNOSTICS':'1',
         'H3_NPU_ALIGNMENT124_BOOTSTRAP':'0','H3_NPU_ALIGNMENT124_SELECTIVE_BOOTSTRAP':'0',
@@ -118,9 +119,9 @@ def main():
         'HF_HUB_OFFLINE':'1','TRANSFORMERS_OFFLINE':'1','OMP_NUM_THREADS':'4','OPENBLAS_NUM_THREADS':'1',
         'ASCEND_RT_VISIBLE_DEVICES':'0,1,2,3,4,5,6,7','ASCEND_WORK_PATH':str(work)}
     assert all(' ' not in v and '\n' not in v for v in assignments.values())
-    shell='source /home/mseco/Ascend/cann-9.2.0/set_env.sh; export PYTHONPATH=/tmp/h3_components13701:/tmp/h3_align12401:$PYTHONPATH; export '
+    shell='source /home/mseco/Ascend/cann-9.2.0/set_env.sh; export PYTHONPATH=/tmp/h3_components13702:/tmp/h3_align12401:$PYTHONPATH; export '
     shell+=' '.join(k+'='+v for k,v in assignments.items())
-    shell+='; exec /home/mseco/vllm910a/bin/python -u /tmp/h3_components13701/generate_components137.py'
+    shell+='; exec /home/mseco/vllm910a/bin/python -u /tmp/h3_components13702/generate_components137.py'
     command=['/bin/bash','-c',shell]
     sources={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in ROOT.glob('*.py')}
     deadline_monotonic=time.monotonic()+5400
@@ -128,12 +129,12 @@ def main():
          'compute_budget_seconds':5400,'cleanup_grace_seconds':360,'new_precision_policy_accepted':False,'model_weights_transferred':False}
     def publish():
         if receipt.exists():assert json.loads(receipt.read_text())['pid']==row['pid']
-        temporary=ROOT/'engine_components137a_process.new'
-        assert temporary.resolve()==Path('/tmp/h3_components13701/engine_components137a_process.new')
-        assert receipt.resolve()==Path('/tmp/h3_components13701/engine_components137a_process.json')
+        temporary=ROOT/'engine_components137b_process.new'
+        assert temporary.resolve()==Path('/tmp/h3_components13702/engine_components137b_process.new')
+        assert receipt.resolve()==Path('/tmp/h3_components13702/engine_components137b_process.json')
         temporary.write_text(json.dumps(row,indent=2)+'\n');os.replace(temporary,receipt)
     child_env={**os.environ,**assignments}
-    rc=guarded_launch137(command,child_env,ROOT/'engine_components137a.log',row,publish,failure_watch,deadline_monotonic)
+    rc=guarded_launch137(command,child_env,ROOT/'engine_components137b.log',row,publish,failure_watch,deadline_monotonic)
     print(json.dumps({'completed_process':row['pid'],'exit_code':rc}),flush=True);raise SystemExit(rc)
 
 

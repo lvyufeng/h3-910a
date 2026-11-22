@@ -14,7 +14,7 @@ from fingerprints129 import fingerprint,normalized_fingerprint
 from original_state137 import component_state,same_original_state,qualified
 from cohort128 import Cohort128,publish_fatal128
 
-ROOT=Path('/tmp/h3_components13701')
+ROOT=Path('/tmp/h3_components13702')
 PRIOR=Path('/tmp/h3_quality13601/engine_quality136a/r01_original_false')
 
 
@@ -141,7 +141,7 @@ def diagnostic_rpc(worker):
                 num_inference_steps=49,extra_args={'task':'fl2va','duration_seconds':5,'audio_mode':'native','frame_indices':[0,-1]})
             raw={'prompt':'a red ball bouncing from left to right on the floor','multi_modal_data':{'image':images}}
             return prepare_encoder_inputs(raw,sampling,task='fl2va')
-        with set_current_vllm_config(worker.vllm_config),set_current_diffusion_config(worker.od_config),set_forward_context(od_config=worker.od_config):
+        with set_current_vllm_config(worker.vllm_config),set_current_diffusion_config(worker.od_config),set_forward_context(vllm_config=worker.vllm_config,omni_diffusion_config=worker.od_config),torch.inference_mode():
             prepared=cohort.run('native_presentation_prepare_rank0_only',prepare_rank0)
             fixed={};original_encode=encoder._encode;had_capture='_encode' in vars(encoder);capture_override=vars(encoder).get('_encode')
             def capture(self,*args,**kwargs):
