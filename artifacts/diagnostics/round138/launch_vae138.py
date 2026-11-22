@@ -87,7 +87,7 @@ def main():
     preflight=json.loads((ROOT/'preflight127.json').read_text());assert preflight['completed'] and not preflight['weights_loaded']
     fresh=json.loads((ROOT/'preflight138.json').read_text());assert fresh['completed']
     assert fresh['fixed_video_latent_SHA_verified'] and fresh['native_source_SHA_verified']
-    assert json.loads((ROOT/'forward_context_signature138.json').read_text())['correct_kwarg_names_bind']
+    assert fresh['correct_kwarg_names_bind'] and fresh['wrong_kwarg_rejected']
     pins={'/tmp/h3_align12401/NPU_encoder_FP16_124.py':'0959895b778fc0900d785250b71279055d3940d975f3523909856072960f5026',
         '/tmp/h3_align12401/h3_replay123/transformer.py':'5d94ba09216e3f4dce121cebbf50c960b9ddf47882fb325baffbab4c47a4fe0b'}
     for path,digest in pins.items():assert hashlib.sha256(Path(path).read_bytes()).hexdigest()==digest
