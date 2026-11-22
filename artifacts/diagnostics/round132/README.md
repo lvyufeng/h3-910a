@@ -4,6 +4,19 @@
 [Issue #4](https://github.com/lvyufeng/h3-910a/issues/4) staysBlocked. [Continuation scope](approval132.json)
 is diagnostic only: no accepted newbaseline, tolerance, copycandidate or49-stepmedia.
 
+## Recorded findings
+
+[Verified R132 findings](RESULTS.md): same8workers completed9full50forwards/rank,
+11,160strictchecks/3,600FAlaunches/0errors. Firsttailchangeinrank0/1 isfinalAdaLNoutput,
+whileaudioheadinputalreadychanges391F32words. Other6ranksdidnotchangeinthesetwo
+observedpasses. OriginalaudioheadfixedFULLinput10replays/rank isbit-identical,
+so thisrun doesnotattributethefirstdelta toFP32audio_out orTPgather.
+
+[Cleanup](cleanup132.json) confirms allprivateprocessesexited/Falseflagsrestored/key
+removed. TheleasewasretainedonlyforthefollowingR133originalsmallcomponent,then
+releasedafter [its cleanup](../round133/cleanup133.json). NeitherTruebaseline nor
+copycandidate/precisiontolerance isadopted; #15staysopen/#4Blocked.
+
 [Worker RPC](diagnostic_rpc132.py) keeps actualTP2+USP4, original50blocks/155checks,
 FP16matrices/originalFP32exceptions and nativecopy/offload. Planned9fullforwards/rank:
 False1 → Truecontrol3 → Truetailtrace2 → original localheadreplays10 → Truerestored2 → False1.

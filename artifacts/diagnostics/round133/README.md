@@ -4,6 +4,18 @@
 [R132 audio-tail evidence](../round132/RESULTS.md). TemporaryTrue isdiagnostic;
 no numericalbaseline/tolerance/copycandidate isadopted.
 
+## Recorded original-component result
+
+[Actual findings](RESULTS.md) and [fullword verification](summary133.json) show8ranks
+withsameHalfinput/weight/bias yetoneHalfworddrift ineachfixedlocal128repeatgroup.
+Evenlocalindex[1,1024] differs up7.6293945e-6,odd[1,1390] up4.8828125e-4.
+Allmoduleinputsarebit-identical; drift isalreadybeforeTPgather. Originalindex
+mapping assigns all414audio tokens totime row1;video usesonlyrows0/2.
+
+Noalgorithmwaschanged. [Cleanup](cleanup133.json) confirms originalFalseflags,
+processesexited and sourcepinsunchanged;ownedlease released. A proposedFP32out/bias
+localcandidatewouldchangeroundingandrequiresuserauthorizationtottest,notautomaticadoption.
+
 [Component](component133.py) loads only originaltimeandfinalAdaLN weights, using
 actualTP2+USP4/world8. The reconstructedtimeembedding mustmatch theactualR132
 formal finalAdaLN inputSHA/shape/stride; finalweight/bias also match R132resident

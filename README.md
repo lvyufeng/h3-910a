@@ -10,6 +10,16 @@
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
 
+> **R132/R133 audio residual diagnosis:** firsttailchange is finalAdaLNoutput;
+> audiohead inputalreadychanges391FP32words,while itsfixedFULL-input localreplays
+> arebit-identical. [R132 evidence](<artifacts/diagnostics/round132/RESULTS.md>) adds
+> another11,160strictchecks. [Original AdaLN component](<artifacts/diagnostics/round133/RESULTS.md>)
+> reproducesoneHalfworddrift beforeTPgather withsameHalfinput/weight/bias onall8ranks,
+> up7.6293945e-6 /4.8828125e-4 in twolocalcoordinates oftime row1. Allaudio tokens use
+> row1;selectedvideo usesrows0/2. Noalgorithmchanged or tolerancegranted; nextlocal
+> FP32out/bias candidate requires user authorization. #15open/#4Blocked,flagsrestored,
+> privateprocessescleaned andlease released; fullperformancegoal remainsopen.
+>
 > **R131 approved full50 diagnostic:** same8 workers completed9forwards/rank with
 > **11,160 strict checks** and3,600originalFAlaunches. Deterministic **time andvideo**
 > predictions repeat bit-for-bit, butaudio still differs bymaxabs **6.0796738e-6**,
