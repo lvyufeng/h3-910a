@@ -1,0 +1,61 @@
+{
+  "scope": "R202: source-level confirmation that consecutive encoder calls re-transfer 63 GB each, giving a no-maths-change fix for the encoder under-2s target",
+  "offline_source_reading": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "confirms_r201b_premise": {
+    "previous_status": "inferred from the numerical coincidence 63 GB / 3.047 s = 20.7 GB/s against the measured 20.0 GB/s H2D bandwidth",
+    "now": "confirmed from source",
+    "evidence": "_encode_text_hidden (pipeline_minimax_h3.py:1438) has three paths; the manual component offload path wraps the call in `with self._component_on_device(self.text_encoder)`, which loads on entry and offloads on exit, so every encode_prompt call transfers the full 63 GB"
+  },
+  "core_new_finding": {
+    "location": "pipeline_minimax_h3.py:2404-2410",
+    "code": "hidden = self.encode_prompt(prepared) then a loop appending self.encode_prompt(...) for prompts[1:]",
+    "observation": "the N encoder calls run back to back with nothing between them, and the DiT has not started yet",
+    "implication": "there is no reason to re-transfer the weights between these calls, yet the current implementation does exactly that"
+  },
+  "fix": {
+    "shape": "wrap all N calls in a single residency window",
+    "current": "[load 63 GB][encode][offload] repeated N times",
+    "target": "[load 63 GB][encode][encode][encode][offload]",
+    "saves": "(N-1) x 63 GB of transfer, about (N-1) x 3.05 s",
+    "math_impact": "none: the computation is identical, so this satisfies the keep-original-maths requirement for the encoder direction",
+    "projection": [
+      {
+        "N": 1,
+        "current_s": 3.05,
+        "after_s": 3.05,
+        "amortised_s": 3.05,
+        "meets_2s": false
+      },
+      {
+        "N": 2,
+        "current_s": 6.1,
+        "after_s": "3.05 + c",
+        "amortised_s": 1.5,
+        "meets_2s": true
+      },
+      {
+        "N": 3,
+        "current_s": 9.15,
+        "after_s": "3.05 + 2c",
+        "amortised_s": 1.0,
+        "meets_2s": true
+      }
+    ],
+    "note": "c is pure compute, roughly 0.17-0.6 s by the compute roofline"
+  },
+  "additional_mechanism": "_prepare_local_conditioning also has a reuse_text branch that reuses already-encoded hidden states instead of recomputing, so upstream could avoid even the repeated encoding",
+  "open_questions": [
+    "what is N exactly; R136s wording of three requests suggests 3 but it was not confirmed",
+    "which of the three paths is actually taken, which depends on the engines offload configuration"
+  ],
+  "note_these_are_answerable": "both can be checked from existing receipts or configuration without running the model",
+  "methodology_improvement": "after three consecutive compute-first errors (R189, R199, R199-C), R201b flagged the premise as unverified and this round confirmed it directly from source; the conclusion now rests on code rather than on a numerical coincidence",
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
