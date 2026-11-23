@@ -1,0 +1,19 @@
+{
+  "issue1_comment": "https://github.com/lvyufeng/h3-910a/issues/1#issuecomment-7108555715",
+  "headline": "the encoder under-2s target has a complete feasible solution that changes no maths: load it to the device once and release the host copy",
+  "rediagnosis": "about 99 percent of the encoder time is the 63 GB weight transfer, not compute; arithmetic floor is 0.17 s against 3.047 s measured, and 63 GB / 3.047 s = 20.7 GB/s matches the measured 20.0 GB/s pinned H2D",
+  "hard_bound": "per-call loading makes 3.15 s a hard floor, so under 2 s is physically impossible that way",
+  "solution": "scheme B: pinned needs only the DiT at 57.7 GiB of a 94.3 GiB limit (36.5 spare) and the device needs 18.97 GiB of 32 (13.03 spare); per-request encoder becomes about 0.5 s",
+  "refuted": "excluding the vision tower saves only 0.82 GB against a 30.7 GB gap",
+  "unverified": [
+    "current code calls load_to_device and offload_to_cpu in pairs, so releasing the host copy needs a code change",
+    "the DiT pinned-master lifetime is not stated",
+    "NUMA placement was not recorded when the 20 GB/s was measured",
+    "whether the 3.15 s one-off amortises depends on the deployment model"
+  ],
+  "decisions_needed": [
+    "approve stage A adoption",
+    "approve FA kernel work",
+    "decide the FP32 guard criterion form"
+  ]
+}
