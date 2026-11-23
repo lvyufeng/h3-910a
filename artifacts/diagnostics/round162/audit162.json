@@ -1,0 +1,46 @@
+{
+  "scope": "R162 audit-disabled diagnostic: what the 155 Half checks cost in the harness",
+  "diagnostic_only": true,
+  "never_a_candidate": true,
+  "model_arithmetic_unchanged": true,
+  "audit_was_disabled_for_this_run_only": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 15.035,
+  "calls": 450,
+  "median_ms": {
+    "fc1": 23.385,
+    "activation": 3.526,
+    "fc2": 29.539,
+    "tail": 0.006,
+    "total": 56.555
+  },
+  "per_step_activation_s": 0.176,
+  "comparison_with_strict_audit": {
+    "strict_step_s": 17.902,
+    "audit_disabled_step_s": 15.035,
+    "step_delta_s": -2.867,
+    "strict_activation_ms": 34.717,
+    "audit_disabled_activation_ms": 3.526,
+    "activation_delta_ms": -31.191,
+    "strict_mlp_total_ms": 88.217,
+    "audit_disabled_mlp_total_ms": 56.555,
+    "fc1_strict": 23.274,
+    "fc1_audit_disabled": 23.385,
+    "fc2_strict": 29.999,
+    "fc2_audit_disabled": 29.539
+  },
+  "attribution": "RESOLVED: the 34.7 ms activation region is the safety audit, not the MLP arithmetic",
+  "why_it_was_missed": "the audit hook is registered on .mlp.fc1, .qkv_proj and .adaln_proj.linear, and its fc1 hook fires exactly at the E1 boundary of the span probe, so its scan time landed inside the fc1-to-fc2 interval. With the scan disabled the region collapses to 3.526 ms, which matches the 3.24 ms standalone measurement of the same operators.",
+  "what_the_audit_costs": "each of the 155 audited calls materialises non-finite masks over a large FP16 tensor, sums them, and counts exact 65504 values: several full passes over up to 300 MB per call. Deferring the host readback (R161) did not help because the cost is the device-side scan, not the device-to-host copy.",
+  "implication_for_reported_numbers": "the 17.9 to 18.1 s step measured so far, and therefore the 19.37 s and 20.03 s figures in the objective, all include about 2.87 s of verification scaffolding. The model itself runs at about 15.0 s per step in this configuration.",
+  "candidate_shape": "keep all 155 checks but implement them far more cheaply: for an FP16 tensor the boundary condition is equivalent to max(abs(x)) reaching 65504, and finiteness can be tested with a nan/inf reduction, so two reductions replace the mask materialisation. Equivalence has to be argued and proven per condition before use.",
+  "expected_recovery_s": 2.87,
+  "honest_limit": "this does not remove the checks, which the contract requires. It replaces a slow implementation with a cheap equivalent one, and the checks stay in the validated loop.",
+  "feasibility_update": {
+    "step_without_audit_s": 15.035,
+    "fa_2x_then_s": 11.23,
+    "fa_2x_plus_linears_at_standalone_s": 8.97,
+    "note": "with the audit cost separated out, 15.035 s minus a 2x FA kernel (3.80 s) and the linears at their measured standalone rates (2.26 s) lands at 8.98 s, so the 10 s target no longer needs the extra overhead reductions that the earlier 18.03 s arithmetic demanded"
+  }
+}
