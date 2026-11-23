@@ -8,11 +8,14 @@ from pathlib import Path
 import subprocess
 import sys
 
-ROOT=Path('/tmp/h3_roofline140');LABEL='roofline140a'
+ROOT=Path('/tmp/h3_roofline140');LABEL='roofline140b'
 
 def main():
     process_receipt=ROOT/(LABEL+'_process.json');out=ROOT/LABEL
     assert not out.exists() and not process_receipt.exists(),'Refuse replay of a prior or uncertain launch'
+    # roofline140a failed at exec (no torchrun binary) before any worker started; its
+    # receipt and empty out dir are preserved under the previous label.
+    assert (ROOT/'roofline140a_process.json').exists() and json.loads((ROOT/'roofline140a_process.json').read_text())['exit_code']==127
     pins={'/tmp/h3_align12401/NPU_encoder_FP16_124.py':'0959895b778fc0900d785250b71279055d3940d975f3523909856072960f5026',
           '/tmp/h3_align12401/h3_replay123/transformer.py':'5d94ba09216e3f4dce121cebbf50c960b9ddf47882fb325baffbab4c47a4fe0b',
           '/tmp/h3_align12301/same_initial_sampling123.pt':'8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9'}
@@ -29,7 +32,7 @@ def main():
     exports=' '.join(f'{k}={v}' for k,v in assignments.items())
     command=['/bin/bash','-c',
         ('source /home/mseco/Ascend/cann-9.2.0/set_env.sh; export PYTHONPATH=/tmp/h3_roofline140:/tmp/h3_align12401:$PYTHONPATH; export '+exports+
-         '; exec /home/mseco/vllm910a/bin/torchrun --nproc_per_node 8 --master_port 29541 /tmp/h3_roofline140/run_probe140.py')]
+         '; exec /home/mseco/vllm910a/bin/torch_npu_run --standalone --nproc-per-node 8 /tmp/h3_roofline140/run_probe140.py')]
     sources={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(ROOT.glob('*.py'))}
     with (ROOT/(LABEL+'.log')).open('xb') as log:
         process=subprocess.Popen(command,cwd=ROOT,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
