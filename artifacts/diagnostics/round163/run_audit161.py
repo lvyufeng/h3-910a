@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""R155 driver: additive span decomposition of the MLP forward."""
+from __future__ import annotations
+import json, os, sys
+from pathlib import Path
+ROOT = Path('/tmp/h3_noaudit162'); LABEL = os.environ.get('H3_AUDIT161_LABEL', 'noaudit162a')
+
+
+def main():
+    rank = int(os.environ['RANK']); local_rank = int(os.environ['LOCAL_RANK'])
+    out = ROOT / LABEL
+    assert out.is_dir(), 'launcher must pre-create the output directory'
+    sys.path.insert(0, str(ROOT))
+    import torch, torch_npu
+    import auditprobe161 as probe
+    torch.npu.set_device(local_rank)
+    import vllm_omni.diffusion.offloader.layerwise_backend as lb
+    real_group = lb._install_layerwise_hook_group
+
+    def patched(blocks, device, stream, pin_memory=True):
+        hooks = real_group(blocks, device, stream, pin_memory)
+        probe.install(torch, blocks)
+        return hooks
+
+    lb._install_layerwise_hook_group = patched
+    # DIAGNOSTIC ONLY: disable the safety audit's per-call scan to measure what it costs.
+    from matrix_safety126 import MatrixSafetyAudit126
+    MatrixSafetyAudit126._hook = lambda self, name: (lambda module, inputs, result: None)
+    MatrixSafetyAudit126.begin = lambda self: None
+    MatrixSafetyAudit126.end = lambda self: {'diagnostic_audit_disabled': True}
+
+    sys.argv = ['benchmark_actual_attention126.py',
+        '--checkpoint', '/home/mseco/models/MiniMax-H3/FL2VA/transformer',
+        '--mode', 'baseline', '--label', LABEL, '--tp', '2', '--usp', '4', '--offload', 'native',
+        '--audit-sequence', 'deferred,deferred,deferred', '--audit', 'deferred', '--steps', '25', '--warmup', '2', '--repeats', '1']
+    import benchmark_actual_attention126 as bench
+    bench.ROOT = ROOT
+    bench.main()
+    receipt = out / f'candidate_rank{rank}.json'
+    if receipt.exists():
+        data = json.loads(receipt.read_text())
+        data['noaudit162'] = probe.collect(torch)
+        receipt.write_text(json.dumps(data, indent=2) + '\n')
+
+
+if __name__ == '__main__':
+    main()
