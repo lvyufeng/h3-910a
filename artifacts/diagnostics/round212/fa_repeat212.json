@@ -1,0 +1,103 @@
+{
+  "scope": "R212: the FA kernel is bit-reproducible too, closing the R211 claim and pointing issue 15 squarely at the prefetch machinery",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "no_model_no_weights": true,
+  "why_r211b_failed": {
+    "error": "sequence length must be a positive multiple of 16, even at seq 4096",
+    "root_cause": "fa910a.py unpacks b, h, source_n, d = q.shape, so the layout is B,H,N,D",
+    "my_mistake": "I passed (1, seq, heads, hd) which made h=41792 and source_n=7, and 7 % 16 != 0",
+    "fix": "use (1, 7, 41792, 128), the real per-rank shape from R159"
+  },
+  "results": [
+    {
+      "shape": [
+        1,
+        7,
+        4096,
+        128
+      ],
+      "repeats": 6,
+      "distinct": 1,
+      "reproducible": true,
+      "hash": "4c1a44ee920933f9"
+    },
+    {
+      "shape": [
+        1,
+        7,
+        41792,
+        128
+      ],
+      "repeats": 4,
+      "distinct": 1,
+      "reproducible": true,
+      "hash": "2332bce70735d607",
+      "note": "the real per-rank shape accounting for 41.5 percent of a step"
+    }
+  ],
+  "three_layer_refutation": [
+    {
+      "layer": "collectives",
+      "conclusion": "HCCL all-reduce bit-reproducible, 8 ranks, three real widths",
+      "source": "R210"
+    },
+    {
+      "layer": "single operators",
+      "conclusion": "matmul at four real GEMM shapes, sum, max, RMSNorm, add, softmax all bit-reproducible",
+      "source": "R211"
+    },
+    {
+      "layer": "FA kernel",
+      "conclusion": "bit-reproducible including the real shape at 41.5 percent of a step",
+      "source": "R212"
+    },
+    {
+      "contrast": "yet the full 50-block DiT differs by relRMS 0.026 percent",
+      "source": "R128"
+    }
+  ],
+  "conclusion": "the maths, the collectives and the largest operator are all deterministic, so the difference must come from the layer that composes them",
+  "narrowed_candidates": [
+    {
+      "candidate": "asynchronous weight offload and prefetch racing computation",
+      "fit": "highest - per-block offload moves 32.3 GB every step, and a prefetch of block i+1 overwriting block i still in use would produce exactly this",
+      "rank": 1
+    },
+    {
+      "candidate": "multiple stream interleaving",
+      "fit": "high, since the operator tests were all single stream",
+      "rank": 2
+    },
+    {
+      "candidate": "allocator reuse or address-dependent tiling",
+      "fit": "medium, tiling is proven deterministic but addresses might still matter",
+      "rank": 3
+    },
+    {
+      "candidate": "collective and compute interleaving order",
+      "fit": "medium, HCCL is deterministic but the interleaving may not be",
+      "rank": 4
+    }
+  ],
+  "reinterpretation_of_15_and_4": {
+    "old": "15 blocks 4",
+    "new": "after refuting three layers, 15s difference most likely originates inside the prefetch and copy machinery that 4 governs, making them two faces of one problem where 4s mechanism is the remedy",
+    "value": "issue 4s basis moves from guesswork to known-single-remaining-suspect"
+  },
+  "recommended_next_step": "compare repeatability with prefetch on versus off: block-by-block synchronous copies should be bit-reproducible if prefetch is the root cause, which would confirm it and simultaneously define issue 4s safe implementation boundary",
+  "limits": [
+    "the operator and FA tests are single card and single stream, so they cannot detect multi-card or multi-stream interleaving; this both grounds and bounds the inference",
+    "4 to 10 repeats may be too few for very low frequency jitter, though the real DiT 0.026 percent is stable so it is probably high frequency",
+    "I did not check whether changing addresses changes matmul tiling, which is the allocator candidate"
+  ],
+  "compliance": {
+    "machine_claimed": true,
+    "machine_used_for": "a synthetic FA repeat probe",
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true,
+    "private_dir": "/tmp/h3_oprep212 mode 0700"
+  }
+}
