@@ -1,0 +1,82 @@
+{
+  "scope": "R203: the encoder under-2s target is physically impossible under per-call loading, so residency is the only route",
+  "offline_source_and_arithmetic": true,
+  "no_machine_used": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "pinning_lever_exhausted": {
+    "source": "encoder.py:1369 load_to_device",
+    "two_paths": [
+      "layerwise offload uses PinnedModuleStager with pin_memory defaulting to True",
+      "otherwise plain vision.to() and text_model.to(), which are pageable"
+    ],
+    "evidence_already_pinned": "the measured 63 GB / 3.05 s = 20.7 GB/s matches the measured pinned bandwidth of 20.0 GB/s",
+    "conclusion": "the encoder already walks the pinned path, so R202s proposal to switch to pinned has no headroom"
+  },
+  "decisive_arithmetic": {
+    "weight_volume_GB": 63,
+    "measured_max_H2D_GBps": 20.0,
+    "minimum_transfer_s": 3.15,
+    "table": [
+      {
+        "target_s": 2.0,
+        "transferable_GB": 40.0,
+        "needed_GB": 63,
+        "verdict": "physically impossible"
+      },
+      {
+        "target_s": 3.0,
+        "transferable_GB": 60.0,
+        "needed_GB": 63,
+        "verdict": "still short"
+      },
+      {
+        "measured": "3.05-3.14 s, already at the transfer limit"
+      }
+    ],
+    "consequence": "as long as every encode_prompt loads 63 GB, about 3.1 s is a hard floor and 2 s cannot be met; this is consistent with compute being only about 0.17 s, i.e. roughly 99 percent of the encoder time is transfer"
+  },
+  "only_route_residency": {
+    "per_rank_encoder_GB": 7.88,
+    "card_HBM_GB": 32,
+    "headroom_GB": 24.12,
+    "if_DiT_fully_resident": "31 GB plus 7.88 equals 38.9 GB, which does not fit",
+    "but": "the DiT uses per-block offload, so only a few blocks are resident at once",
+    "condition": "the encoder can stay resident if the DiTs steady-state footprint is at most 24.12 GB per rank",
+    "payoff_if_met": {
+      "compute_floor_s": 0.17,
+      "with_efficiency_discount_s": "about 0.5",
+      "verdict": "far under the 2 s target"
+    }
+  },
+  "converged_question": "what is the DiT phases actual steady-state device memory, and is it at most 24.12 GB per rank?",
+  "branching": {
+    "if_yes": "encoder residency is feasible, the encoder drops to about 0.5 s and the target is met",
+    "if_no": "the encoder under-2s target is unreachable unless the transfer method changes, and 20 GB/s is already the link limit; the only alternatives are new hardware or a different dtype, the latter violating keep-original-maths"
+  },
+  "conclusion_strength": [
+    {
+      "claim": "about 99 percent of encoder time is the 63 GB transfer",
+      "strength": "strong"
+    },
+    {
+      "claim": "already pinned, so pinning offers no further gain",
+      "strength": "strong"
+    },
+    {
+      "claim": "under 2 s is physically impossible with per-call loading",
+      "strength": "certain"
+    },
+    {
+      "claim": "residency would bring the encoder to about 0.5 s",
+      "strength": "conditional on the DiT memory measurement"
+    }
+  ],
+  "progression": "R201b inferred transfer-bound and flagged it; R202 confirmed the mechanism but its proposed fix was withdrawn in the same round because N=1; R203 gives a hard arithmetic bound and reduces the problem to one measurable number",
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
