@@ -1,0 +1,66 @@
+{
+  "scope": "R183: stage A passes both axes - verdict equivalence and speed",
+  "verdict": "PASS",
+  "bug1_writeback": {
+    "symptom": "R182 read garbage values above 0x7fff that the kernel could never write",
+    "diagnosis": "sentinel probe showed only 3 of 8 slots were written and the rest held uninitialised bytes",
+    "cause": "SetGlobalBuffer(y+coreIdx,1) but DataCopy wrote 8 ints per core, so the eight cores overwrote each other with uninitialised buffer contents",
+    "fix": "each core owns an aligned 8-int (32 byte) region, zeroed then publishing blockMax in slot 0; output shape coreNum*8 = 64"
+  },
+  "bug2_alignment": {
+    "symptom": "every small case returned the same constant 0x5209",
+    "cause": "DataCopy and ReduceMax need 32-byte aligned lengths; 2-6 halfs is 4-12 bytes",
+    "fix": "pad to a multiple of 128 halfs with 0x0000, whose magnitude bits are zero so it cannot change a maximum"
+  },
+  "correctness": {
+    "adversarial_passes": "15/15",
+    "result": "RESULT PASS",
+    "notable_cases": {
+      "nan_and_saturation": "0x7e00",
+      "inf_and_saturation": "0x7c00",
+      "many_bad": "0x7e00",
+      "just_below_max": "0x7bfe",
+      "rounds_up_to_max": "0x7bff",
+      "zeros": "0x0000"
+    }
+  },
+  "key_semantic_finding": {
+    "finding": "AscendC ReduceMax propagates NaN (a NaN input yields 0x7e00)",
+    "why_it_matters": "R165 measured torch's max() masking NaN, which made a plain Abs+ReduceMax look unsafe; the AscendC primitive behaves differently, so the simplest kernel is correct and no bit masking with Ands is needed",
+    "unresolved_by_the_fix": "Ands is not used at all, so its missing 16-bit instantiation no longer matters"
+  },
+  "timings_ms": {
+    "mlp_fc1_10448x14336": 2.071,
+    "qkv_proj_10448x10752": 1.578,
+    "adaln_3x96768": 0.086
+  },
+  "r178_proxy_ms": {
+    "mlp_fc1": 3.905,
+    "qkv_proj": 2.947,
+    "adaln": 0.146
+  },
+  "speedup_vs_proxy": 1.89,
+  "per_step_ms": 187.2,
+  "current_audit_ms_per_step": 2870,
+  "implied_saving_s_per_step": 2.68,
+  "test_bug_found": {
+    "detail": "the hand-rolled C++ f16() truncates instead of round-to-nearest, so f16(65503) gave 0x7bfe instead of 0x7bff",
+    "verdict": "the expectation was wrong, not the kernel",
+    "fix": "pin the explicit bit patterns, consistent with round180/reference180.py"
+  },
+  "stage_a_status": {
+    "contract_A_adversarial": "PASS",
+    "contract_C_timing": "PASS",
+    "contract_B_real_tensors": "not yet run, requires integration into the model path",
+    "next": "integration is now the remaining question, not kernel correctness or speed"
+  },
+  "compliance": {
+    "shared_cann_modified": false,
+    "bisheng_wrapper_in": "/tmp",
+    "overlay_in": "/tmp",
+    "vendor_install": "opp/vendors, the CANN-supported extension location",
+    "weights_downloaded": false,
+    "driver_or_device_reset": false,
+    "model_math_unchanged": true
+  }
+}
