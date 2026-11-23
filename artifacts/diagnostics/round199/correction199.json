@@ -1,0 +1,90 @@
+{
+  "kind": "CORRECTION",
+  "corrects": "R199 (vae_chunk199.json)",
+  "what_was_wrong": "R199 treated tokens_chunk_size as a free parameter and assumes token_overlap stays fixed at 2",
+  "real_code": {
+    "line_104": "self.tokens_chunk_size = math.ceil(self.clip_length / self.vae_ratio_t)",
+    "line_105": "self.token_overlap = (-self.token_drop) % self.tokens_chunk_size",
+    "real_num_chunks": "pseudo_total = T - isolated + token_drop; pad to a multiple of tokens_chunk_size; num_chunks = pseudo_total//tcs - int(token_drop>0)"
+  },
+  "meaning": [
+    "tokens_chunk_size is derived from clip_length, not tunable directly",
+    "token_overlap grows with chunk size, so bigger chunks waste MORE, not less"
+  ],
+  "corrected_table": [
+    {
+      "clip_length": 12,
+      "chunk": 3,
+      "overlap": 0,
+      "chunks": 13,
+      "frames": 156,
+      "rel_work": 0.796
+    },
+    {
+      "clip_length": 16,
+      "chunk": 4,
+      "overlap": 1,
+      "chunks": 9,
+      "frames": 180,
+      "rel_work": 0.918
+    },
+    {
+      "clip_length": 17,
+      "chunk": 5,
+      "overlap": 2,
+      "chunks": 7,
+      "frames": 196,
+      "rel_work": 1.0,
+      "current": true
+    },
+    {
+      "clip_length": 24,
+      "chunk": 6,
+      "overlap": 3,
+      "chunks": 6,
+      "frames": 216,
+      "rel_work": 1.102
+    },
+    {
+      "clip_length": 36,
+      "chunk": 9,
+      "overlap": 6,
+      "chunks": 4,
+      "frames": 240,
+      "rel_work": 1.224
+    }
+  ],
+  "r199_error_magnitude": "R199 claimed chunk=18 gives 0.816x; the real equivalent (clip_length=36) is 1.224x, i.e. 22 percent WORSE, so the recommendation pointed the opposite way",
+  "corrected_candidates": [
+    {
+      "candidate": "clip_length=16",
+      "rel_work": 0.918,
+      "projected_s": 19.9,
+      "risk": "moderate: chunk=4 overlap=1 keeps one blend window",
+      "memory": "per chunk 20 frames versus 28 now, so memory goes DOWN and R199s memory worry is resolved",
+      "verdict": "the only realistic candidate, just clears the target"
+    },
+    {
+      "candidate": "clip_length=12",
+      "rel_work": 0.796,
+      "projected_s": 17.3,
+      "risk": "HIGH: overlap becomes 0, which means no boundary blend at all and therefore possible visible temporal seams; this is a quality change, far beyond a rounding difference, and not recommended"
+    }
+  ],
+  "still_valid_from_r199": [
+    "the observation that num_chunks=7 and 196 frames gives 1.58x overlap waste",
+    "the conclusion that the waste sits in decode_temporals chunking and that the pipeline side has no room"
+  ],
+  "invalidated_from_r199": [
+    "the claim that raising tokens_chunk_size saves 10-18 percent, which has the sign backwards",
+    "the memory-OOM worry, which does not apply to clip_length=16 because chunk frames drop"
+  ],
+  "lesson": "R199 treated a derived quantity as tunable without checking the assignment code, the same class of error as R189s missing head factor: compute first, verify after. The right order is to confirm in source what computes a quantity and whether it can change, then compute the payoff.",
+  "compliance": {
+    "machine_claimed": true,
+    "machine_used_for": "source reading only",
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
