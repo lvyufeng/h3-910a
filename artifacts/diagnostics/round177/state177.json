@@ -1,0 +1,48 @@
+{
+  "scope": "R177: three corrections about the AscendC build plumbing, and why the official ini route also fails",
+  "corrections": {
+    "wrong_dynamic_py": {
+      "used_by_compile": "build_out/op_kernel/ascendc_kernels/binary/dynamic/h3_range_stats.py",
+      "patched_by_r175_r176": "build_out/op_kernel/H3RangeStats_ascend910b/dynamic/H3RangeStats.py",
+      "consequence": "R176's conclusion that the variable does not feed the compile was wrong; it was the wrong file"
+    },
+    "custom_compile_options_ini_does_have_a_reader": {
+      "reader": "opdesc_parser.py line 396",
+      "r175_claim": "no reader anywhere in CANN",
+      "verdict": "wrong"
+    },
+    "ini_format_determined": {
+      "fields": [
+        "op_type",
+        "soc_ver",
+        "options"
+      ],
+      "separators": {
+        "field": "comma",
+        "options": "semicolon"
+      }
+    }
+  },
+  "why_the_ini_route_still_fails": {
+    "observed": "after writing the ini the build emptied and rewrote it",
+    "conclusion": "the ini is a build product regenerated during configure, so it cannot be pre-populated"
+  },
+  "attempts_so_far": [
+    "cstdint at precompile",
+    "autogen ini assumed unread",
+    "wrong dynamic py patched",
+    "real dynamic py patched",
+    "official ini written then overwritten"
+  ],
+  "recommended_next": {
+    "option_a": "private PYTHONPATH overlay of compiler/tikcpp/ascendc_kernel_cmake appending the three -isystem flags in get_op_desc; shared CANN untouched",
+    "option_b": "bypass msopgen: manual bisheng .o build plus hand-built package, or a direct-call route just to obtain the timing"
+  },
+  "why_the_timing_number_matters": "if the kernel reaches 1-2 ms per call the saving is 2.5-2.9 s per step, but at 10 ms it is only 1.3 s; nothing should be planned on 2.5 s before it is measured",
+  "compliance": {
+    "shared_cann_modified": false,
+    "weights_downloaded": false,
+    "driver_or_device_reset": false,
+    "lease_released": true
+  }
+}
