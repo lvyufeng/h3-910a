@@ -1,3 +1,10 @@
+> ⚠️ **本轮的 pinned 预算推演已被 R205 作废。**
+> 逐层 offload 下任何时刻只有**一个 block**（≈0.82 GB）在 pinned 缓冲里，
+> 而不是 125 GB 全常驻；**pinned 上限（94.3 GiB）从来不是阻塞点**。
+> 真正开关是一个配置项，见 `round205/RESULTS.md`。
+> 本轮仍然成立的部分：encoder 时间 ~99% 是 63 GB 搬运、算力 roofline 0.17 s、
+> 每次载入 3.15 s 硬下限、vision 塔只占 0.82 GB。
+
 # R204 — encoder <2 s 的**完整可行解**：载入 device 一次、释放 host 副本
 
 ## 一、先否掉 R203 的解法 2（vision 塔排除）
