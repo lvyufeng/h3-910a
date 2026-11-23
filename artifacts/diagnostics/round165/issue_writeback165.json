@@ -1,0 +1,8 @@
+{
+  "issue1_comment": "https://github.com/lvyufeng/h3-910a/issues/1#issuecomment-7098011689",
+  "finding": "FP16 float predicates (isnan/isinf/!=/max) are unreliable on this device; the codebase already documents this",
+  "isnan_disagreements": 10,
+  "self_inequality_disagreements": 30,
+  "consequence": "the R163/R164 cheap check was unsound by construction",
+  "salvageable": "bit patterns on int16 without the int32 widening, one magnitude comparison for NaN+Inf, 0x7bff for saturation"
+}

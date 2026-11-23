@@ -1,0 +1,100 @@
+{
+  "scope": "R165 reliability of FP16 NaN/Inf predicates on this device",
+  "verification_only": true,
+  "single_device": true,
+  "model_arithmetic_unchanged": true,
+  "nothing_adopted": true,
+  "cases": 45,
+  "float_predicates_are_unreliable": {
+    "isnan_plus_isinf_disagrees_with_native": 10,
+    "self_inequality_disagrees_with_native": 30,
+    "examples": [
+      {
+        "shape": [
+          1,
+          2
+        ],
+        "pos": 0,
+        "kind": "nan",
+        "native": 1,
+        "isnan_sum": 0,
+        "isinf_sum": 0,
+        "isfinite_all": true,
+        "isnan_any": false,
+        "isinf_any": false,
+        "max": NaN,
+        "min": 0.0,
+        "ne_self_count": 0
+      },
+      {
+        "shape": [
+          1,
+          17
+        ],
+        "pos": 0,
+        "kind": "nan",
+        "native": 1,
+        "isnan_sum": 0,
+        "isinf_sum": 0,
+        "isfinite_all": true,
+        "isnan_any": false,
+        "isinf_any": false,
+        "max": 65504.0,
+        "min": 0.0,
+        "ne_self_count": 0
+      },
+      {
+        "shape": [
+          1,
+          17
+        ],
+        "pos": 8,
+        "kind": "nan",
+        "native": 1,
+        "isnan_sum": 0,
+        "isinf_sum": 0,
+        "isfinite_all": true,
+        "isnan_any": false,
+        "isinf_any": false,
+        "max": 65504.0,
+        "min": 0.0,
+        "ne_self_count": 0
+      },
+      {
+        "shape": [
+          1,
+          17
+        ],
+        "pos": 16,
+        "kind": "nan",
+        "native": 1,
+        "isnan_sum": 0,
+        "isinf_sum": 0,
+        "isfinite_all": true,
+        "isnan_any": false,
+        "isinf_any": false,
+        "max": 65504.0,
+        "min": 0.0,
+        "ne_self_count": 0
+      }
+    ]
+  },
+  "worst_observations": [
+    "a tensor of zeros containing a single NaN reports isnan().any() = False and isfinite().all() = True",
+    "the same tensor reports x != x count 0, so the classic NaN test also fails",
+    "max() on a NaN-containing tensor returned 65504.0, the largest finite half value, rather than NaN"
+  ],
+  "root_cause_already_documented_here": "npu_half_nan_compat124.py states that CANN lacks NanToNum for FP16 and FP32 and that the code classifies NPU bit patterns \"without unreliable float predicates\". The device behaviour measured here is exactly why that helper exists.",
+  "consequence": "the cheap check from R163 and R164 was built on the predicates the codebase deliberately avoids, so it was unsound by construction and its R164 failures are explained",
+  "salvageable_direction": "keep the bit-pattern approach, which is required for correctness, but make it cheaper: work on the int16 view directly instead of widening to int32, and derive both counts from the magnitude field, since magnitude >= 0x7c00 covers NaN and Inf together and magnitude == 0x7bff marks either saturation. That removes the int32 expansion and two of the three materialised masks.",
+  "expected_gain": "the int32 widening doubles the traffic of the current implementation and the mask materialisation adds two more full-size buffers, so a bit-pattern version without those should be materially cheaper than 24.25 ms per call, though how much has to be measured",
+  "must_still_pass": [
+    "the R164 adversarial suite",
+    "the 465-call real-data comparison from R163"
+  ],
+  "correction_chain": [
+    "R163 claimed a proven equivalence on real data whose counts were all zero",
+    "R164 disproved it on adversarial inputs",
+    "R165 explains why: the predicates are unreliable on this device for FP16"
+  ]
+}
