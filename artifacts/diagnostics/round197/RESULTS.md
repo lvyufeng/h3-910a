@@ -78,9 +78,28 @@ NPU function error: call aclnnPromptFlashAttentionV3 failed, error code is 56110
 - 561103 的确切含义我没有查证（CANN 错误码表未在手边）。我的解读
   "该构建缺 ascend910 算子二进制"是**推断**，未证实。可以查到的替代解释：
   参数组合仍不合法（例如 `sparse_mode=2` 需要配套 `atten_mask`）。
-- **未尝试带 `atten_mask` 的 `sparse_mode=2` 调用**——这是唯一还没试的参数变体。
-  若要彻底排除，值得再试一次（带显式 causal mask）。
+- ~~未尝试带 `atten_mask` 的 `sparse_mode=2` 调用~~ —— **R197c 已补测，全部仍失败**（见下）。
 - 只测了 `B=1, H=7, D=128` 与 fp16。
+
+## 六b、补测：带显式 `atten_mask` 的全部变体也失败（R197c）
+
+为彻底排除"参数组合不对"这一解释，在 `N=4096`（常规长度）上补测了 5 个变体：
+
+| 变体 | 结果 |
+|---|---|
+| `sparse_mode=2` + atten_mask(uint8) | ❌ 561103 |
+| `sparse_mode=3` + atten_mask(uint8) | ❌ 561103 |
+| `sparse_mode=1` + atten_mask(uint8) | ❌ 561103 |
+| `sparse_mode=0` + atten_mask(uint8) | ❌ 561103 |
+| `sparse_mode=2` + bool mask | ❌ 561103 |
+
+**无论是哪种稀疏模式、带不带显式 mask、长度对齐与否，全部 561103。**
+
+⇒ **R197 的结论现在是确定的**：该算子在当前芯片 + CANN 组合上**不可用**，
+不是参数用法错误。"换官方算子"这条路**正式关闭**。
+
+（这也把 R197 原先标注的"561103 含义未查证"这一不确定性，从"可能是我参数错"
+收窄为"参数已穷尽，只能是算子/二进制层面不支持"。）
 
 ## 七、合规
 

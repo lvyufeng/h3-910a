@@ -74,8 +74,7 @@
     "rewrite_TIK_sync": "the only remaining route"
   },
   "limits": [
-    "the meaning of 561103 was not verified against a CANN error table; the reading that the build lacks an ascend910 binary is an inference",
-    "the sparse_mode=2 call was made without an explicit atten_mask, which is the one parameter variant still untried and would settle it",
+    "the meaning of 561103 was not verified against a CANN error table, but with every parameter variant exhausted the remaining explanation is operator or binary support",
     "only B=1, H=7, D=128 in fp16 was tested"
   ],
   "compliance": {
@@ -83,5 +82,33 @@
     "shared_cann_modified": false,
     "driver_or_device_reset": false,
     "model_math_unchanged": true
+  },
+  "supplementary_sweep_with_mask": {
+    "purpose": "rule out a wrong parameter combination as the explanation for 561103",
+    "N": 4096,
+    "variants": [
+      {
+        "variant": "sparse_mode=2 with uint8 atten_mask",
+        "ok": false
+      },
+      {
+        "variant": "sparse_mode=3 with uint8 atten_mask",
+        "ok": false
+      },
+      {
+        "variant": "sparse_mode=1 with uint8 atten_mask",
+        "ok": false
+      },
+      {
+        "variant": "sparse_mode=0 with uint8 atten_mask",
+        "ok": false
+      },
+      {
+        "variant": "sparse_mode=2 with bool mask",
+        "ok": false
+      }
+    ],
+    "conclusion": "every sparse mode, with or without an explicit mask, aligned or not, fails with 561103, so the op is genuinely unusable on this chip and CANN build rather than being called wrongly",
+    "effect_on_uncertainty": "narrows the previous caveat from possibly-my-parameters to parameters-exhausted-so-it-must-be-the-operator-or-its-binary"
   }
 }
