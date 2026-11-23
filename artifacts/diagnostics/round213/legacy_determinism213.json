@@ -1,0 +1,98 @@
+{
+  "scope": "R213: disabling prefetch still leaves the DiT non-deterministic, refuting the R212 hypothesis",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "setup": {
+    "offload_mode": "legacy, i.e. per-block synchronous module.to() through forward pre and post hooks, no async prefetch",
+    "contrast": "native installs _install_layerwise_hook_group with a copy stream and asynchronous next-block prefetch",
+    "cmd": "--offload legacy --mode baseline --steps 25 --warmup 1 --repeats 3 --audit strict",
+    "cases": "3 audit cases times 3 repeats equals 9 measurements"
+  },
+  "results": {
+    "bit_identical": "9 of 9 false",
+    "distinct_prediction_sha256": "9 of 9 different",
+    "relative_RMS_range": [
+      0.0002626,
+      0.0002726
+    ],
+    "video_differing_elements": "3579840 to 3579893 of 3580416",
+    "audio_differing_elements": "13245 to 13248 of 13248",
+    "all_steps_bit_identical": false,
+    "warm_step_median_s": 26.923,
+    "peak_allocated_bytes": 7031589888
+  },
+  "verdict": "with prefetch off and fully synchronous per-block module.to, the output still differs on every repeat, so the prefetch hypothesis is refuted",
+  "five_hypotheses_four_refuted_by_measurement": [
+    {
+      "hypothesis": "timesteps persistent buffer mutated in place",
+      "proposed": "R209",
+      "status": "refuted by reading the code, fresh allocation each time"
+    },
+    {
+      "hypothesis": "HCCL reduction order non-deterministic",
+      "proposed": "R209",
+      "status": "REFUTED BY MEASUREMENT in R210"
+    },
+    {
+      "hypothesis": "single operators non-deterministic",
+      "proposed": "R210 leading to R211",
+      "status": "REFUTED BY MEASUREMENT, nine operators all reproducible"
+    },
+    {
+      "hypothesis": "FA kernel non-deterministic",
+      "proposed": "R211",
+      "status": "REFUTED BY MEASUREMENT in R212"
+    },
+    {
+      "hypothesis": "async prefetch copy racing computation",
+      "proposed": "R212",
+      "status": "REFUTED BY MEASUREMENT this round"
+    }
+  ],
+  "remaining_candidates_by_suspicion": [
+    {
+      "candidate": "USP all-to-all",
+      "why": "I only tested all-reduce and explicitly missed all-to-all and reduce-scatter, yet USP with --usp 4 relies heavily on all-to-all",
+      "rank": 1
+    },
+    {
+      "candidate": "AICPU or host-side scheduling",
+      "why": "unobservable since the profiler is unavailable",
+      "rank": 2
+    },
+    {
+      "candidate": "model-owned non-parameter state",
+      "why": "I only inspected timesteps, without a systematic sweep",
+      "rank": 3
+    },
+    {
+      "candidate": "allocator address affecting tiling",
+      "why": "not verified",
+      "rank": 4
+    },
+    {
+      "candidate": "multi-card collective and compute interleaving order",
+      "why": "the operator tests were all single card single stream",
+      "rank": 5
+    }
+  ],
+  "side_finding": {
+    "native_warm_step_s": "about 20.0 from R136",
+    "legacy_warm_step_s": 26.923,
+    "conclusion": "legacy is about 35 percent slower because synchronous copies do not overlap, which confirms that native prefetch does deliver the performance benefit even though it is not the non-determinism cause"
+  },
+  "limits": [
+    "only step 25, three repeats per case, a small sample",
+    "I did not run the same configuration in native mode for a strict pairing, so legacy being non-deterministic is self-sufficient at 9 of 9 but the direct contrast is missing",
+    "the 7.03 GB peak is measured without a resident encoder"
+  ],
+  "compliance": {
+    "machine_claimed": true,
+    "machine_used_for": "the DiT benchmark in legacy offload mode",
+    "weights_loaded": true,
+    "weights_source": "reused verified on-host weights, no download",
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
