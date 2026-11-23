@@ -1,0 +1,71 @@
+{
+  "scope": "R204: complete feasible solution for the encoder under-2s target - load to device once and release the host copy",
+  "offline_arithmetic": true,
+  "no_machine_used": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "refutes_r203_solution_2": {
+    "proposal": "exclude the vision tower from pinning since text-only prompts do not need it",
+    "parameter_counts": {
+      "text_tower_B": 31.21,
+      "embedding_B": 0.778,
+      "text_total_B": 31.98,
+      "text_total_GB": 64.0,
+      "vision_tower_B": 0.411,
+      "vision_GB": 0.82,
+      "patch_embed_B": 0.0009
+    },
+    "verdict": "vision is only 0.82 GB against a 30.7 GB shortfall, so it closes 2.7 percent and the proposal is withdrawn",
+    "model_reconciliation": "text plus vision is 64.8 GB against a 63 GB directory, a 2.8 percent difference attributable to bf16 and alignment, so the parameter model checks out"
+  },
+  "key_pivot": "the previous round assumed both DiT and encoder must be pinned simultaneously, but that premise is unnecessary: the encoder host copy exists only as the source for the device upload, so once the encoder is resident on device the host copy can be released",
+  "two_orderings": [
+    {
+      "scheme": "A, naive, both pinned at once",
+      "pinned_GB": 125,
+      "pinned_GiB": 116.4,
+      "limit_GiB": 94.3,
+      "verdict": "does not fit, short by 22.2 GiB"
+    },
+    {
+      "scheme": "B, encoder loaded to device once then host copy released, DiT stays pinned",
+      "pinned_GB": 62,
+      "pinned_GiB": 57.7,
+      "limit_GiB": 94.3,
+      "verdict": "fits with 36.5 GiB spare",
+      "device_during_encoder_GiB": 18.97,
+      "device_limit_GiB": 32,
+      "device_verdict": "fits with 13.03 GiB spare"
+    }
+  ],
+  "verdict": "scheme B passes both the pinned and the device budget with ample headroom",
+  "cost_and_benefit": {
+    "one_time_cost_s": 3.15,
+    "one_time_scope": "once per process rather than once per request",
+    "per_request_encoder_s": 0.5,
+    "target_s": 2.0,
+    "meets": true,
+    "math_change": false
+  },
+  "causal_chain": [
+    "encoder time is about 99 percent the 63 GB transfer, compute being only 0.17 s",
+    "therefore per-call loading makes 3.15 s a hard floor and under 2 s physically impossible",
+    "therefore residency is the only route",
+    "residency needs 7.33 GiB per rank on device; the measured DiT peak is 11.64 GiB, totalling 18.97 of 32",
+    "but pinned cannot hold both host copies, 116.4 GiB against a 94.3 GiB limit",
+    "so release the encoder host copy after loading, leaving only the DiT 57.7 GiB pinned",
+    "therefore per-request encoder becomes about 0.5 s and the target is met"
+  ],
+  "open_issues": [
+    "whether the current code permits releasing the encoder host copy after load_to_device is unverified; today load and offload are paired calls",
+    "the lifetime of the DiT 62 GB pinned masters is not stated in R126, only that they are immutable pinned masters; if the DiT also pins per block the budget is looser",
+    "the NUMA hazard remains: 8 nodes, cross-node pinned memory lowers H2D bandwidth, and R198 did not record NUMA placement",
+    "the deployment model decides whether the 3.15 s one-off amortises, depending on whether the process is long-lived and how many requests it serves"
+  ],
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
