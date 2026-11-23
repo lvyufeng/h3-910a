@@ -49,6 +49,7 @@ def install(torch):
             value = result[0] if isinstance(result, tuple) else result
             if not isinstance(value, torch.Tensor) or value.dtype != torch.float16:
                 return
+            self.calls += 1          # keep the native call accounting so end() still asserts 155
             start = torch.npu.Event(enable_timing=True); end = torch.npu.Event(enable_timing=True)
             start.record()
             bad_native, boundary_native = _native_counts(torch, value)

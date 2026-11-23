@@ -8,7 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-ROOT=Path('/tmp/h3_fast163');LABEL='fast163a'
+ROOT=Path('/tmp/h3_fast163');LABEL='fast163b'
 
 def main():
     process_receipt=ROOT/(LABEL+'_process.json');out=ROOT/LABEL
