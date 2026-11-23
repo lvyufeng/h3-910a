@@ -1,0 +1,33 @@
+{
+  "scope": "R163 equivalence verification of a cheap implementation of the same 155 safety checks",
+  "verification_only": true,
+  "native_verdict_authoritative_this_run": true,
+  "no_check_removed": true,
+  "model_arithmetic_unchanged": true,
+  "nothing_adopted": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s_with_both_checks_running": 19.096,
+  "calls_compared": 465,
+  "equivalence": {
+    "equivalent_on_every_call": true,
+    "mismatch_count": 0,
+    "what_was_compared": "the exact non-finite count and the exact saturation count, per call, for every audited tensor",
+    "calls_note": "465 compared calls are 3 forward passes x 155 audited tensors, the same accounting the native audit asserts"
+  },
+  "cost": {
+    "native_median_ms_per_call": 24.253,
+    "fast_median_ms_per_call": 9.234,
+    "speedup": 2.63,
+    "native_device_s_per_step": 3.76,
+    "fast_device_s_per_step": 1.43,
+    "device_saving_s_per_step": 2.33
+  },
+  "why_the_native_check_is_expensive": "ieee_nonfinite_masks format-casts the tensor with npu_format_cast and makes it contiguous, then views int16 and widens to int32, so it copies the whole tensor and doubles its footprint before materialising three boolean masks of full tensor size; only then are they summed.",
+  "why_the_fast_check_is_equivalent": "for FP16 data the non-finite count is isnan().sum() plus isinf().sum(), and the saturation count equals the presence of the maximum finite magnitude: 65504 is the largest FP16 magnitude, so a value with abs 65504 exists exactly when max(x) is 65504 or min(x) is -65504. Both were compared against the native counts on every call.",
+  "cross_check_with_r162": "R162 removed the audit entirely and the step fell by 2.87 s. Here the native check alone measures about 3.76 s of device time per step, so the 2.87 s net drop reflects partial overlap of the check with other work.",
+  "expected_net_saving": "about 2.33 s of device time, realistically 1.5 to 2 s of step time after the same overlap",
+  "adoption_question": "this changes only how the checks are implemented; the checks themselves are unchanged and now proven to give identical counts",
+  "residual_cost": "the fast check still costs about 1.43 s per step because four separate reductions over up to 300 MB are issued per call; fusing them would need kernel work",
+  "next": "adopt the fast check and re-measure the compliant harness number with the full 155 checks still running"
+}
