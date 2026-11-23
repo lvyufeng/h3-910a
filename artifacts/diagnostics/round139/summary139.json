@@ -1,0 +1,106 @@
+{
+  "scope": "R139 native stack_tiling microbatch candidate under user noise-band rule",
+  "completed_by_workers": true,
+  "workers": 8,
+  "engine_initialization_s": 284.73680564016104,
+  "driver_postcheck_failed_after_work": {
+    "type": "KeyError",
+    "message": "'decode_base_timer_removed'"
+  },
+  "candidate": {
+    "name": "native stack_tiling microbatch",
+    "knob_original": false,
+    "knob_candidate": true,
+    "tile_windows_overlap_blend_changed": false,
+    "parameters_changed": false,
+    "num_tiles": 28,
+    "parallel_size": 8,
+    "tiles_per_rank": 4
+  },
+  "timing": {
+    "native": {
+      "rankmax_per_repeat": [
+        85.347,
+        21.696,
+        21.687,
+        21.692
+      ],
+      "warm_median_s": 21.61848315037787,
+      "warm_rankmax_s": 21.69554543029517,
+      "peak_allocated_GiB": 13.435993671417236
+    },
+    "candidate": {
+      "rankmax_per_repeat": [
+        280.774,
+        21.732,
+        21.723,
+        21.626
+      ],
+      "warm_median_s": 21.608756395289674,
+      "warm_rankmax_s": 21.732487909961492,
+      "peak_allocated_GiB": 13.428671836853027
+    },
+    "restored": {
+      "rankmax_per_repeat": [
+        22.118,
+        21.806,
+        21.629,
+        21.658
+      ],
+      "warm_median_s": 21.618945529917255,
+      "warm_rankmax_s": 21.80563035979867,
+      "peak_allocated_GiB": 13.42769718170166
+    }
+  },
+  "bands": {
+    "native_vs_native": {
+      "max_fraction_percent": 0.06625293810470537,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.01350024373999612,
+      "any_identical": false
+    },
+    "candidate_vs_native": {
+      "max_fraction_percent": 0.0674959864097969,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.013626302307004791,
+      "any_identical": false
+    },
+    "restored_vs_native_control": {
+      "max_fraction_percent": 0.06641206287202381,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.013516446302960637,
+      "any_identical": false
+    },
+    "restored_vs_restored_control_internal": {
+      "max_fraction_percent": 0.06627872100481097,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.013502870084173045,
+      "any_identical": false
+    },
+    "candidate_vs_candidate": {
+      "max_fraction_percent": 0.0,
+      "max_abs_LSB": 0,
+      "max_relative_RMS_percent": 0.0,
+      "any_identical": true
+    },
+    "candidate_vs_restored": {
+      "max_fraction_percent": 0.06724909560878563,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.013601357455501225,
+      "any_identical": false
+    }
+  },
+  "verdict": {
+    "candidate_within_band": false,
+    "restored_control_within_band": false,
+    "rule_satisfiable_by_pure_native_control": false,
+    "candidate_passes": false
+  },
+  "all_ranks_agree": true,
+  "warm_speedup_s": 0.009726755088195205,
+  "cold_penalty_s": 195.42700000000002,
+  "original_state_and_knob_restored": true,
+  "no_math_installed": true,
+  "sampler_or_dit_evaluations": 0,
+  "conclusion": "Reject: no warm gain (21.65 vs 21.65 s), large cold penalty (+195 s), and the literal rule is unsatisfiable by the pure-native restored control, so the rule itself needs refinement before further candidates can be judged."
+}

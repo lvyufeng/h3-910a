@@ -1,0 +1,279 @@
+{
+  "scope": "Evaluate the native `stack_tiling` microbatch candidate on the video VAE.\n\nPhases in one process on the same fixed latent: native (4 repeats) -> candidate\n(native stack_tiling=True, 4 repeats) -> restored (native again, 4 repeats).\nThe pure-native restored phase is a control: it is judged by the same user\napproved rule, so an unsatisfiable rule is reported instead of being relaxed.\n\nUser rule (Issue #7, option 1): a candidate passes only if its deviation from\nthe original is no worse than the native repeat-to-repeat deviation, in both\ndiffering uint8 component fraction and maxabs. No other math is installed.\n",
+  "rank": 3,
+  "pid": 2363344,
+  "completed": true,
+  "rule": {
+    "user_choice": "option 1 (native noise band as upper bound)",
+    "rule": "a candidate passes only if its deviation from the original is no worse than the native decode repeat-to-repeat deviation, in both (a) differing uint8 component fraction and (b) maxabs (1 LSB)",
+    "measured_native_band_from_R138": {
+      "different_words": [
+        253135,
+        253471
+      ],
+      "total_words": 383975424,
+      "fraction_percent": [
+        0.065925,
+        0.066012
+      ],
+      "maxabs_uint8_LSB": 1,
+      "relative_RMS_percent": [
+        0.013467,
+        0.013476
+      ]
+    },
+    "control_requirement": "the same rule is also applied to a pure-native restored phase; if the restored control itself cannot satisfy the rule, the rule is reported as unsatisfiable rather than relaxed silently",
+    "scope": "video VAE decode gating under Issue #7 only; not a general precision tolerance and not applicable to other components without a fresh user decision",
+    "source": "R138 measurement, commits ac31f2d / 0f5eb54"
+  },
+  "phases": {
+    "native": [
+      {
+        "repeat": 0,
+        "decode_s": 84.8934934400022,
+        "peak_allocated_GiB": 13.435993671417236,
+        "output_SHA": "3729cab58557010ea324182d3f6f64602bca3c15114890a8c0d2180a038b7337",
+        "stack_tiling": false
+      },
+      {
+        "repeat": 1,
+        "decode_s": 21.682809120044112,
+        "peak_allocated_GiB": 13.42769718170166,
+        "output_SHA": "26d887cd4996a3de0ad266146d6de642f5a83f88d47e787bcd5d5599b1e46034",
+        "stack_tiling": false
+      },
+      {
+        "repeat": 2,
+        "decode_s": 21.68720109993592,
+        "peak_allocated_GiB": 13.42769718170166,
+        "output_SHA": "29fedbb7866ff2165c658ca536b9e1d84aa48628222bf626a8df87d978f4a2c5",
+        "stack_tiling": false
+      },
+      {
+        "repeat": 3,
+        "decode_s": 21.626150970347226,
+        "peak_allocated_GiB": 13.42769718170166,
+        "output_SHA": "001b4c651733fba991ac335743b385fba2246a7bb4b40fbecae2f4780ed5a069",
+        "stack_tiling": false
+      }
+    ],
+    "candidate": [
+      {
+        "repeat": 0,
+        "decode_s": 280.65866574971005,
+        "peak_allocated_GiB": 13.428671836853027,
+        "output_SHA": "0efd5259030f4939b7ae53f4d243ea3e6cdbc8d004fb8736b7127776fae1dac1",
+        "stack_tiling": true
+      },
+      {
+        "repeat": 1,
+        "decode_s": 21.73234121967107,
+        "peak_allocated_GiB": 13.428671836853027,
+        "output_SHA": "0efd5259030f4939b7ae53f4d243ea3e6cdbc8d004fb8736b7127776fae1dac1",
+        "stack_tiling": true
+      },
+      {
+        "repeat": 2,
+        "decode_s": 21.722943999804556,
+        "peak_allocated_GiB": 13.428671836853027,
+        "output_SHA": "0efd5259030f4939b7ae53f4d243ea3e6cdbc8d004fb8736b7127776fae1dac1",
+        "stack_tiling": true
+      },
+      {
+        "repeat": 3,
+        "decode_s": 21.60720664029941,
+        "peak_allocated_GiB": 13.428671836853027,
+        "output_SHA": "0efd5259030f4939b7ae53f4d243ea3e6cdbc8d004fb8736b7127776fae1dac1",
+        "stack_tiling": true
+      }
+    ],
+    "restored": [
+      {
+        "repeat": 0,
+        "decode_s": 22.102464970201254,
+        "peak_allocated_GiB": 13.42769718170166,
+        "output_SHA": "ddea99634bfe1cf07f42b276aff651b0544f6fce5d0eeb87291c29d10ade80fb",
+        "stack_tiling": false
+      },
+      {
+        "repeat": 1,
+        "decode_s": 21.7814447497949,
+        "peak_allocated_GiB": 13.42769718170166,
+        "output_SHA": "2cbe93937260740c6ad5f41ef40b76c02d4cbeabed4fe7b5b4b0378bbc88a3d2",
+        "stack_tiling": false
+      },
+      {
+        "repeat": 2,
+        "decode_s": 21.616580290254205,
+        "peak_allocated_GiB": 13.42769718170166,
+        "output_SHA": "2765b60ca02e8a6c539a05c6952b43f5fcdae2feb380cb43684e74bdf9e8d3c7",
+        "stack_tiling": false
+      },
+      {
+        "repeat": 3,
+        "decode_s": 21.65781457023695,
+        "peak_allocated_GiB": 13.42769718170166,
+        "output_SHA": "74804a959c07830fdc529000f0e670c26204ecad5d63d57e6960ef46f32b711d",
+        "stack_tiling": false
+      }
+    ]
+  },
+  "sampler_evaluations": 0,
+  "DiT_forward_calls": 0,
+  "candidate_name": "native stack_tiling microbatch",
+  "initial_runtime": {
+    "deterministic": false,
+    "warn_only": false,
+    "HF32_matmul": false,
+    "HF32_conv": false,
+    "current_stream": 187652548171112,
+    "parametrization_cache_enabled": 0,
+    "cudnn_SDP_enabled": true
+  },
+  "TP_actual": 2,
+  "SP_actual": 4,
+  "fixed_latent": {
+    "source_file": "/tmp/h3_quality13601/engine_quality136a/r01_original_false/final_latents_pid914407127.pt",
+    "source_file_SHA": "bf9daec88b451f9cd7273a1544260ce6e8bd9c594225e5cbef3529ff0f5d02e0",
+    "shape": [
+      1,
+      24,
+      37,
+      48,
+      84
+    ],
+    "dtype": "torch.float32",
+    "fingerprint": {
+      "kind": "tensor",
+      "shape": [
+        1,
+        24,
+        37,
+        48,
+        84
+      ],
+      "dtype": "torch.float32",
+      "stride": [
+        3580416,
+        149184,
+        4032,
+        84,
+        1
+      ],
+      "storage_offset": 0,
+      "logical_bytes": 14321664,
+      "device": "npu:3",
+      "sha256_logical_words": "9ee3eb9d62b8ce13ac6f3c96f402cf391cbd3565b7c8c6182167dc7591791e53",
+      "tensor_version": 0,
+      "data_pointer": 20621077512192,
+      "storage_base_pointer": 20621077512192,
+      "storage_bytes": 14321664,
+      "storage_identity": 187652490111968
+    }
+  },
+  "candidate_knob": {
+    "name": "stack_tiling",
+    "original_value": false,
+    "candidate_value": true,
+    "native_config_option": true,
+    "tile_windows_or_blend_changed": false,
+    "parameters_changed": false
+  },
+  "geometry": {
+    "num_tiles": 28,
+    "parallel_size": 8,
+    "tiles_per_rank": 4,
+    "tile_rows": null
+  },
+  "state_before": {
+    "normalized_structure_SHA": "64f549646701177c65e472ff210f02ab0cf340d68f8af2c26564250822c02be3",
+    "full_fingerprints_on_host": true
+  },
+  "knob_restored": true,
+  "bands": {
+    "native_vs_native": {
+      "label": "native_vs_native",
+      "pairs": 6,
+      "max_fraction_percent": 0.06625293810470537,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.01350024373999612,
+      "any_identical": false
+    },
+    "candidate_vs_native": {
+      "label": "candidate_vs_native",
+      "pairs": 16,
+      "max_fraction_percent": 0.0674959864097969,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.013626302307004791,
+      "any_identical": false
+    },
+    "restored_vs_native_control": {
+      "label": "restored_vs_native_control",
+      "pairs": 16,
+      "max_fraction_percent": 0.06641206287202381,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.013516446302960637,
+      "any_identical": false
+    },
+    "restored_vs_restored_control_internal": {
+      "label": "restored_vs_restored_control_internal",
+      "pairs": 6,
+      "max_fraction_percent": 0.06627872100481097,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.013502870084173045,
+      "any_identical": false
+    },
+    "candidate_vs_candidate": {
+      "label": "candidate_vs_candidate",
+      "pairs": 6,
+      "max_fraction_percent": 0.0,
+      "max_abs_LSB": 0,
+      "max_relative_RMS_percent": 0.0,
+      "any_identical": true
+    },
+    "candidate_vs_restored": {
+      "label": "candidate_vs_restored",
+      "pairs": 16,
+      "max_fraction_percent": 0.06724909560878563,
+      "max_abs_LSB": 1,
+      "max_relative_RMS_percent": 0.013601357455501225,
+      "any_identical": false
+    }
+  },
+  "verdict": {
+    "rule": "a candidate passes only if its deviation from the original is no worse than the native decode repeat-to-repeat deviation, in both (a) differing uint8 component fraction and (b) maxabs (1 LSB)",
+    "native_band": {
+      "max_fraction_percent": 0.06625293810470537,
+      "max_abs_LSB": 1,
+      "any_identical": false
+    },
+    "candidate_vs_native": {
+      "max_fraction_percent": 0.0674959864097969,
+      "max_abs_LSB": 1,
+      "any_identical": false
+    },
+    "restored_control_vs_native": {
+      "max_fraction_percent": 0.06641206287202381,
+      "max_abs_LSB": 1,
+      "any_identical": false
+    },
+    "candidate_within_band": false,
+    "restored_control_within_band": false,
+    "rule_satisfiable_by_pure_native_control": false,
+    "candidate_passes": false
+  },
+  "state_after": {
+    "normalized_structure_SHA": "64f549646701177c65e472ff210f02ab0cf340d68f8af2c26564250822c02be3",
+    "full_fingerprints_on_host": true
+  },
+  "original_parameter_state_unchanged": true,
+  "final_runtime": {
+    "deterministic": false,
+    "warn_only": false,
+    "HF32_matmul": false,
+    "HF32_conv": false,
+    "current_stream": 187652548171112,
+    "parametrization_cache_enabled": 0,
+    "cudnn_SDP_enabled": true
+  }
+}

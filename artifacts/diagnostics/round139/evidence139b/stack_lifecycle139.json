@@ -1,0 +1,80 @@
+{
+  "scope": "One original8worker video-VAE timing/repeatability RPC, never sampling or changing math.",
+  "completed": false,
+  "contract": {
+    "issue": "#7",
+    "comment": "https://github.com/lvyufeng/h3-910a/issues/7#issuecomment-7082063847",
+    "executor": "lvyufeng",
+    "host": "ts-217",
+    "host_pool": "owned",
+    "device": "8x910B CANN 9.2.0",
+    "measurement_only": true,
+    "no_math_change": true,
+    "no_candidate": true,
+    "no_tolerance": true,
+    "fixed_latent": {
+      "file_sha256": "bf9daec88b451f9cd7273a1544260ce6e8bd9c594225e5cbef3529ff0f5d02e0",
+      "shape": [
+        1,
+        24,
+        37,
+        48,
+        84
+      ],
+      "dtype": "torch.float32",
+      "words": 3580416
+    }
+  },
+  "acceptance_rule": {
+    "user_choice": "option 1 (native noise band as upper bound)",
+    "rule": "a candidate passes only if its deviation from the original is no worse than the native decode repeat-to-repeat deviation, in both (a) differing uint8 component fraction and (b) maxabs (1 LSB)",
+    "measured_native_band_from_R138": {
+      "different_words": [
+        253135,
+        253471
+      ],
+      "total_words": 383975424,
+      "fraction_percent": [
+        0.065925,
+        0.066012
+      ],
+      "maxabs_uint8_LSB": 1,
+      "relative_RMS_percent": [
+        0.013467,
+        0.013476
+      ]
+    },
+    "control_requirement": "the same rule is also applied to a pure-native restored phase; if the restored control itself cannot satisfy the rule, the rule is reported as unsatisfiable rather than relaxed silently",
+    "scope": "video VAE decode gating under Issue #7 only; not a general precision tolerance and not applicable to other components without a fresh user decision",
+    "source": "R138 measurement, commits ac31f2d / 0f5eb54"
+  },
+  "kwargs": {
+    "trust_remote_code": true,
+    "task_type": "fl2va",
+    "num_gpus": 8,
+    "tensor_parallel_size": 2,
+    "text_encoder_tp_size": 8,
+    "ulysses_degree": 4,
+    "ring_degree": 1,
+    "dtype": "half",
+    "enforce_eager": true,
+    "enable_layerwise_offload": true,
+    "vae_use_tiling": true,
+    "vae_parallel_mode": "tile",
+    "vae_patch_parallel_size": 8,
+    "diffusion_attention_backend": "TORCH_SDPA",
+    "stage_init_timeout": 2400,
+    "init_timeout": 2400
+  },
+  "sampler_evaluations": 0,
+  "DiT_forward_calls": 0,
+  "candidate_enabled": false,
+  "numeric_tolerance_adopted": false,
+  "RPCs": [],
+  "engine_initialization_s": 284.73680564016104,
+  "failure": {
+    "type": "KeyError",
+    "message": "'decode_base_timer_removed'"
+  },
+  "engine_close_completed": true
+}

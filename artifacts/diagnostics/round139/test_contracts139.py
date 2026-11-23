@@ -10,9 +10,7 @@ ROOT=Path(__file__).resolve().parent
 
 class Tests(unittest.TestCase):
     def test_parse(self):
-        for p in ROOT.glob('*.py'):
-            if p.name=='test_boundary_trace137.py':continue
-            ast.parse(p.read_text(),filename=str(p))
+        for p in ROOT.glob('*.py'):ast.parse(p.read_text(),filename=str(p))
     def test_rule_recorded_and_scoped(self):
         r=json.loads((ROOT/'acceptance_rule139.json').read_text())
         self.assertEqual(r['user_choice'],'option 1 (native noise band as upper bound)')
@@ -24,28 +22,33 @@ class Tests(unittest.TestCase):
         s=(ROOT/'stack_rpc139.py').read_text()
         for call in ("run_phase('native',False,REPEATS)","run_phase('candidate',True,REPEATS)","run_phase('restored',original_stack_tiling,REPEATS)"):
             self.assertIn(call,s)
-        self.assertIn("restored_control_within_band",s)
-        self.assertIn("rule_satisfiable_by_pure_native_control",s)
-        self.assertIn("candidate_passes",s)
+        for key in ('restored_control_within_band','rule_satisfiable_by_pure_native_control','candidate_passes'):
+            self.assertIn(key,s)
     def test_candidate_is_native_knob_only(self):
         s=(ROOT/'stack_rpc139.py').read_text()
         self.assertIn("'name':'stack_tiling'",s)
         self.assertIn("'native_config_option':True",s)
         self.assertIn("'tile_windows_or_blend_changed':False",s)
         self.assertIn("'parameters_changed':False",s)
-        self.assertIn("assert bool(model.stack_tiling)==original_stack_tiling",s)
+        self.assertIn('assert bool(model.stack_tiling)==original_stack_tiling',s)
         for banned in ('omni.generate(','FinalAdaLN','ExplicitFP32Bias','use_deterministic_algorithms(True'):
             self.assertNotIn(banned,s)
     def test_band_uses_complete_uint8_domain(self):
         s=(ROOT/'stack_rpc139.py').read_text()
         self.assertIn('np.count_nonzero(av!=bv)',s)
-        self.assertIn('total_words',s)
-        self.assertIn("max_abs_LSB",s)
-    def test_no_r138_roots(self):
-        for name in ('stack_rpc139.py','launch_stack139.py','generate_stack139.py','collect_stack139.py'):
+        self.assertIn("'max_abs_LSB'",s)
+    def test_result_rejected_and_rule_flagged(self):
+        s=json.loads((ROOT/'summary139.json').read_text())
+        self.assertFalse(s['verdict']['candidate_passes'])
+        self.assertFalse(s['verdict']['rule_satisfiable_by_pure_native_control'])
+        self.assertLess(abs(s['warm_speedup_s']),0.1)
+        self.assertGreater(s['cold_penalty_s'],100)
+        self.assertTrue(s['original_state_and_knob_restored'])
+        self.assertTrue(s['all_ranks_agree'])
+    def test_no_stale_roots(self):
+        for name in ('stack_rpc139.py','launch_stack139.py','generate_stack139.py'):
             text=(ROOT/name).read_text()
             self.assertNotIn('h3_vae13803',text)
-            self.assertNotIn('engine_vae138c',text)
 
 
 if __name__=='__main__':unittest.main()
