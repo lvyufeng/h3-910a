@@ -1,0 +1,72 @@
+{
+  "scope": "R171 maximal-combination bound: is any reachable combination below 10 s",
+  "read_only_analysis": true,
+  "no_machine_time": true,
+  "nothing_adopted": true,
+  "method": "take every region that has an identified improvement path, apply each one at the best value this host has ever demonstrated or at a fully optimistic halving, and add them all at once. Anything left over gets no saving at all.",
+  "baseline_s": 17.902,
+  "regions": {
+    "fa_kernel": {
+      "now_s": 7.607,
+      "best_case": "the host best measured GEMM efficiency, 96.9 TFLOPS per card",
+      "speedup": 2.36,
+      "best_s": 3.23,
+      "saving_s": 4.38
+    },
+    "four_linears": {
+      "now_s": 4.581,
+      "best_case": "all at their measured standalone rates",
+      "saving_s": 2.099,
+      "caveat": "1.665 s of this is the FP32 guard pair and needs a user precision decision"
+    },
+    "usp_pre_post": {
+      "now_s": 1.087,
+      "best_case": "halved",
+      "saving_s": 0.54,
+      "caveat": "NO mechanism identified in twenty rounds of profiling"
+    },
+    "attention_residual": {
+      "now_s": 1.36,
+      "best_case": "halved",
+      "saving_s": 0.68,
+      "caveat": "NO mechanism identified in twenty rounds of profiling"
+    },
+    "safety_audit": {
+      "now_s": 2.87,
+      "best_case": "unchanged",
+      "saving_s": 0.0,
+      "why": "R168 a cheaper implementation regressed the step by 0.75 s and R170 showed deferral needs 24.44 GiB against 20.36 GiB of headroom, so this is irreducible under the current contract"
+    },
+    "qk_norm": {
+      "now_s": 0.23,
+      "saving_s": 0.0,
+      "why": "no identified mechanism"
+    },
+    "block_residual": {
+      "now_s": 0.47,
+      "saving_s": 0.0,
+      "why": "no identified mechanism"
+    },
+    "front_and_tail": {
+      "now_s": 0.62,
+      "saving_s": 0.0,
+      "why": "no identified mechanism"
+    }
+  },
+  "maximal_saving_s": 7.7,
+  "maximal_result_s": 10.2,
+  "verdict": "10 s is NOT reachable by any combination of identified improvements",
+  "argument": [
+    "adding every identified saving at once takes 17.902 s down to 10.2 s",
+    "that is still above the 10 s target",
+    "and it assumes two halvings, for USP and for the attention residual, that have no identified mechanism at all",
+    "without those two, the best combination is about 11.42 s"
+  ],
+  "what_would_be_needed": [
+    "a kernel faster than the best GEMM efficiency this host has ever demonstrated, or",
+    "a mechanism for the 1.36 s attention residual and the 1.087 s USP overhead, neither of which exists today, or",
+    "relaxing the constraint that all 155 checks run inside every measured step, which alone is worth 2.87 s"
+  ],
+  "consequence": "the target cannot be met by engine work; it needs a decision at the target or constraint level",
+  "without_the_two_unmechanised_halvings_s": 11.42
+}
