@@ -78,5 +78,39 @@
     "weights_loaded": false,
     "model_math_unchanged": true,
     "nothing_adopted": true
-  }
+  },
+  "answer_to_converged_question": {
+    "question": "what is the DiT steady-state device memory, and is it at most 24.12 GB per rank",
+    "answer": "already in the receipts: R170 measured the DiT block-interval peak at 7.13 GiB allocated and 11.64 GiB reserved, leaving 20.36 GiB headroom",
+    "encoder_per_rank": {
+      "GB": 7.88,
+      "GiB": 7.33
+    },
+    "coexistence": {
+      "allocated_basis_GiB": 14.46,
+      "spare_GiB": 13.03,
+      "fits": true,
+      "reserved_basis_GiB": 18.97
+    },
+    "condition_met": "R203s condition was DiT <= 24.12 GiB per rank; the measured reserved figure of 11.64 GiB satisfies it",
+    "conclusion": "encoder residency is memory-feasible with over 13 GiB to spare, so the encoder time becomes pure compute",
+    "projected": {
+      "compute_floor_s": 0.17,
+      "with_3x_discount_s": 0.5,
+      "target_s": 2.0,
+      "meets": true
+    },
+    "math_impact": "none - residency changes when weights are loaded, not what is computed"
+  },
+  "new_real_constraint_host_ram": {
+    "requirement": {
+      "DiT_host_GB": 62,
+      "encoder_host_GB": 63,
+      "total_host_GB": 125
+    },
+    "meaning": "the both-resident-on-host, taking-turns-on-device premise needs about 125 GB of usable pinned host memory",
+    "status": "MUST BE CHECKED NEXT, and it outranks further projection: if host RAM is insufficient the whole residency route collapses",
+    "how_to_check": "free -g on the host plus any pinned-memory limit"
+  },
+  "status_update": "R203 no longer ends on an open question: the memory answer is in the receipts and the route is feasible; the next gate is host RAM"
 }
