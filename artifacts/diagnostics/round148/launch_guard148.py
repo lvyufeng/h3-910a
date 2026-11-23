@@ -8,11 +8,12 @@ from pathlib import Path
 import subprocess
 import sys
 
-ROOT=Path('/tmp/h3_guard148');LABEL='guard148a'
+ROOT=Path('/tmp/h3_guard148');LABEL='guard148d'
 
 def main():
     process_receipt=ROOT/(LABEL+'_process.json');out=ROOT/LABEL
     assert not out.exists() and not process_receipt.exists(),'Refuse replay of a prior or uncertain launch'
+    assert (ROOT/'guard148a_process.json').exists(),'the earlier failing attempt must stay preserved'
     pins={'/tmp/h3_align12401/NPU_encoder_FP16_124.py':'0959895b778fc0900d785250b71279055d3940d975f3523909856072960f5026',
           '/tmp/h3_align12401/h3_replay123/transformer.py':'5d94ba09216e3f4dce121cebbf50c960b9ddf47882fb325baffbab4c47a4fe0b',
           '/tmp/h3_align12301/same_initial_sampling123.pt':'8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9'}
