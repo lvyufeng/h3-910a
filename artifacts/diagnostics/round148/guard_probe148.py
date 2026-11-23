@@ -39,7 +39,7 @@ def install(torch,limit=100):
         if len(_STATE['calls'])>=limit:
             return native
         product=x.float()
-        peak=float(product.abs().amax())
+        peak=float(product.abs().amax(dim=tuple(range(product.ndim))))
         exponent=max(0,math.ceil(math.log2(peak/32752.0))) if peak>32752.0 else 0
         record={'peak':peak,'exponent':exponent,'scale':float(2**exponent),
                 'in_fast_path_regime':exponent==0,'shape':list(x.shape)}
