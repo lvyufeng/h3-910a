@@ -1,0 +1,46 @@
+{
+  "scope": "R174: kernel compiles when the CANN bundled hcc C++ include paths are passed explicitly",
+  "kernel_source_valid": true,
+  "manual_bisheng_syntax_check": {
+    "exit_code": 0,
+    "arch": "dav-c220",
+    "only_warnings_from_cann_headers": true
+  },
+  "r173_diagnosis_corrected": {
+    "wrong_claim": "the toolkit/toolchain/hcc layout did not match tools/hcc",
+    "reality": "toolkit/toolchain/hcc is a symlink to ../../tools/hcc and cstdint resolves through it",
+    "actual_cause": "asc_opc does not pass any -isystem flags for the hcc C++ headers when compiling device code"
+  },
+  "confirmed": {
+    "msopgen_project": true,
+    "op_host_compiled": true,
+    "device_kernel_code_valid": true,
+    "device_kernel_build_via_asc_opc": false
+  },
+  "injection_point": {
+    "file": "build_out/op_kernel/H3RangeStats_ascend910/dynamic/H3RangeStats.py",
+    "variables": [
+      "custom_compile_options",
+      "custom_all_compile_options"
+    ],
+    "helper": "get_shortsoc_compile_option merges them into the bisheng options",
+    "caveat": "the file is regenerated during the build, so the patch must be applied after generation"
+  },
+  "second_config_bug": {
+    "observed": "--soc_version=Ascend910A in the generated compile command",
+    "expected": "Ascend910B, because the device is a 910B",
+    "fix": "change AddConfig(\"ascend910\") to ascend910b in op_host"
+  },
+  "next_steps": [
+    "fix the soc config",
+    "inject the -isystem flags before asc_opc",
+    "install into opp/vendors and time a single aclnn call",
+    "verify verdict equivalence with the native bit-pattern check on the R166 suite and real tensors"
+  ],
+  "compliance": {
+    "weights_downloaded": false,
+    "shared_cann_modified": false,
+    "driver_or_device_reset": false,
+    "lease_released": true
+  }
+}
