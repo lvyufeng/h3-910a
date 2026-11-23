@@ -1,0 +1,28 @@
+{
+  "scope": "R148 FP32 range-guard fast-path identity check in the model",
+  "measurement_only": true,
+  "model_always_returned_the_native_result": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "calls_recorded": 100,
+  "peak_distribution": {
+    "min": 20.453125,
+    "median": 434.637451171875,
+    "max": 193531.625,
+    "in_scale_one_regime": 97,
+    "exceeding_32752": 3
+  },
+  "identity_check": "INCONCLUSIVE",
+  "identity_check_reason": "the native repeat control was itself not bit-identical, so the harness could not establish a reference run; the retained output tensors are not stable across the step while the layerwise offloader keeps rebinding storage, so native-vs-fast comparison from this run proves nothing either way",
+  "control_observed": {
+    "count": 4,
+    "all_bit_identical": false,
+    "max_differing_elements": 10983168,
+    "max_relative_RMS": 1.2600134385054498,
+    "max_abs_diff": 17944.5302734375
+  },
+  "implication": "the guard mm output is not bitwise reproducible run-to-run, consistent with the R137 finding that native components are not bitwise repeatable; a bit-identical gate therefore cannot be demonstrated by output comparison",
+  "solid_result": "97 of 100 guarded calls sit in the scale==1 regime and 3 exceed 32752 (max 193531), so a fast path can only be conditional and the scaled branch must be kept",
+  "unexpected": "the recorded shapes were [2043, 3584] and [2043, 7168], not the 10448 block shapes, so these calls come from a different phase than the R147 block measurement; worth identifying before using the 1.665 s estimate",
+  "next": "capture the guard inputs without mutating retained tensors (clone to host after the step, or re-run the guard offline on captured inputs) to settle identity with a noise-band criterion"
+}

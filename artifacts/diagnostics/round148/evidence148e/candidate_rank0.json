@@ -1,0 +1,209 @@
+{
+  "scope": "R126 warm, rank-max candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "baseline",
+  "rank": 0,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    25
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "case_index": 0,
+      "audit_mode": "strict",
+      "step_index": 25,
+      "repeat_index": 0,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.953686779830605,
+      "rank_max_elapsed_s": 17.98177719116211,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 8188306944,
+      "elapsed_s_after_explicit_warmup": 17.953686779830605,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648950099945068
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.889212131500244
+      },
+      "video_vs_R124_baseline": {
+        "shape": [
+          37296,
+          96
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 3579890,
+        "total_elements": 3580416,
+        "relative_RMS_vs_R124_NPU_baseline": 0.00026508893755619795,
+        "max_abs_difference": 0.023254498839378357,
+        "finite": true
+      },
+      "audio_vs_R124_baseline": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 13247,
+        "total_elements": 13248,
+        "relative_RMS_vs_R124_NPU_baseline": 0.00042148197196786,
+        "max_abs_difference": 0.005221962928771973,
+        "finite": true
+      },
+      "bit_identical_to_R124_baseline": false,
+      "candidate_prediction_sha256": "bc6c38523ea5a45a277b16828e9d6de1fbb7141efa4a5ebe1a2251a82321fec7"
+    }
+  ],
+  "candidate_hypothesis": "Baseline determinism check: repeated identical execution must reproduce itself bit for bit.",
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "tp_actual": 2,
+  "tp_group_ranks": [
+    0,
+    1
+  ],
+  "local_heads": 28,
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float32": 22377664,
+    "torch.float16": 16539411712
+  },
+  "offload_kind": "native immutable pinned masters, flattened dtype copies, asynchronous next-block prefetch",
+  "host_weight_bytes": 32279142400,
+  "D2H_weight_copies_after_each_layer": false,
+  "per_block_cpu_offload_used": true,
+  "safety_mode": "strict",
+  "warmup_each_selected_step": 1,
+  "clean_repeats_each_selected_step": 1,
+  "numerical_changes_are_not_automatically_accepted": true,
+  "all_steps_bit_identical_to_R124_baseline": false,
+  "warm_step_median_s": 17.98177719116211,
+  "warm_step_by_sigma": {
+    "25": 17.98177719116211
+  },
+  "warm_step_by_case": {
+    "0:strict": 17.98177719116211
+  },
+  "warm_step_min_s": 17.98177719116211,
+  "warm_step_max_s": 17.98177719116211,
+  "guard148": {
+    "installed": true,
+    "calls_recorded": 100,
+    "measurement_only_no_math_change": true,
+    "model_always_returns_the_native_result": true,
+    "note": "the candidate result is computed but never returned; the control re-runs the native path",
+    "peak": {
+      "min": 20.453125,
+      "median": 434.637451171875,
+      "max": 193531.625,
+      "all_within_32752": false,
+      "exceeding_32752": 3
+    },
+    "native_vs_fast": {
+      "count": 4,
+      "all_bit_identical": false,
+      "max_differing_elements": 10983168,
+      "max_relative_RMS": 1.2600134385054498,
+      "max_abs_diff": 17944.5302734375
+    },
+    "native_vs_native_control": {
+      "count": 4,
+      "all_bit_identical": false,
+      "max_differing_elements": 10983168,
+      "max_relative_RMS": 1.2600134385054498,
+      "max_abs_diff": 17944.5302734375
+    },
+    "verdict": {
+      "fast_path_no_worse_than_native_repeat": true,
+      "worst_fast_differing": 10983168,
+      "worst_control_differing": 10983168
+    },
+    "sample": [
+      {
+        "peak": 60.75,
+        "exponent": 0,
+        "scale": 1.0,
+        "in_fast_path_regime": true,
+        "shape": [
+          2043,
+          3584
+        ],
+        "native_vs_fast": {
+          "bit_identical": false
+        },
+        "native_vs_native_control": {
+          "bit_identical": false
+        }
+      },
+      {
+        "peak": 414.443359375,
+        "exponent": 0,
+        "scale": 1.0,
+        "in_fast_path_regime": true,
+        "shape": [
+          2043,
+          7168
+        ],
+        "native_vs_fast": {
+          "bit_identical": false
+        },
+        "native_vs_native_control": {
+          "bit_identical": false
+        }
+      },
+      {
+        "peak": 54.6875,
+        "exponent": 0,
+        "scale": 1.0,
+        "in_fast_path_regime": true,
+        "shape": [
+          2043,
+          3584
+        ],
+        "native_vs_fast": {
+          "bit_identical": false
+        },
+        "native_vs_native_control": {
+          "bit_identical": false
+        }
+      }
+    ]
+  }
+}
