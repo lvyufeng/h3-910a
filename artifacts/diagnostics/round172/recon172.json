@@ -1,0 +1,71 @@
+{
+  "scope": "R172 kernel-work phase: authorisation, toolchain reconnaissance, and the staged plan",
+  "user_authorisation": "2026-11-23: user permitted AscendC, TBE, and reverse-engineered CCE instruction work",
+  "what_that_unblocks": "kernel implementation routes; numeric-change discipline still applies",
+  "toolchain": {
+    "compiler": "bisheng clang 15.0.5 aarch64",
+    "ccec": true,
+    "msopgen": true,
+    "aoe": true,
+    "atc": true,
+    "tbe_python_dsl": [
+      "tbe",
+      "te",
+      "tbe.dsl",
+      "tbe.tik"
+    ],
+    "ascendc_headers": true,
+    "tikcfw": true,
+    "custom_op_vendor_dir": true,
+    "soc": "910B x8, 32 GiB HBM per card"
+  },
+  "reference_implementations_on_host": {
+    "prompt_flash_attention": {
+      "lines": 24506,
+      "supports": [
+        "DT_FLOAT16",
+        "sparse mode",
+        "headSize tiling"
+      ],
+      "note": "arch35 subdir present; 910B compatibility unverified"
+    },
+    "incre_flash_attention": {
+      "lines": "not counted"
+    }
+  },
+  "key_measurement": {
+    "audited_bytes_per_step_gib": 24.44,
+    "bandwidth_implied_by_that_data_ms": 20,
+    "measured_audit_s_per_step": 2.87,
+    "effective_bandwidth_gbs": 8.5,
+    "calls_per_step": 155,
+    "ms_per_call": 18.5,
+    "conclusion": "the audit cost is per-call kernel launch and dependency overhead, not data movement"
+  },
+  "staged_plan": {
+    "stage_a": {
+      "name": "single-pass range statistics kernel",
+      "expected_saving_s": "2.5 to 2.9",
+      "risk": "low",
+      "acceptance": "bit-exact equality with the native bit-pattern counts, on the R166 adversarial suite and the R167 465-call set"
+    },
+    "stage_b": {
+      "name": "fused FP32-accumulate GEMM for the guard pair",
+      "expected_saving_s": "up to 1.665",
+      "risk": "medium"
+    },
+    "stage_c": {
+      "name": "FA kernel",
+      "expected_saving_s": "up to 4.38",
+      "risk": "high"
+    }
+  },
+  "ten_second_projection": {
+    "now_s": 17.902,
+    "after_stage_a_s": 15.3,
+    "after_stage_b_s": 13.6,
+    "after_stage_c_s": 9.3,
+    "note": "the 10 s target only becomes reachable if all three stages succeed"
+  },
+  "why_stage_a_first": "it is both the most verifiable and, on its own, worth more than the guard work, and it exercises the whole custom-operator toolchain that the later stages depend on"
+}
