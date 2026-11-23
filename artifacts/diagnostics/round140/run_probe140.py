@@ -25,7 +25,7 @@ def main():
     device=torch.device(f'npu:{local_rank}')
     probe.install_prefetch_timing(torch)
     bandwidth=probe.h2d_bandwidth(torch,device)
-    sys.argv=['benchmark_actual_attention126.py','--checkpoint','/tmp/h3_align12401/original_metadata124f/FL2VA',
+    sys.argv=['benchmark_actual_attention126.py','--checkpoint','/home/mseco/models/MiniMax-H3/FL2VA/transformer',
         '--mode','profile','--label',LABEL,'--tp','2','--usp','4','--offload','native',
         '--audit-sequence','profile','--steps','25','--warmup','2','--repeats','2']
     import benchmark_actual_attention126 as bench
