@@ -1,0 +1,107 @@
+{
+  "scope": "R208: the FA kernel already had four pipeline variants tried by a prior author, none adopted, which changes my implementation plan",
+  "offline_source_reading": true,
+  "files_modified": false,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "discovery": {
+    "location": "/tmp/fa_pkg/flash_attention/ops/flash_attention/",
+    "backups": [
+      {
+        "file": "flash_attention_fwd.py.fp32exp.bak",
+        "date": "Nov 14 19:49",
+        "bytes": 29484
+      },
+      {
+        "file": "flash_attention_fwd.py.nopipe.bak",
+        "date": "Nov 14 20:34",
+        "bytes": 29890
+      },
+      {
+        "file": "flash_attention_fwd.py.pingpong.bak",
+        "date": "Nov 14 20:36",
+        "bytes": 30030
+      },
+      {
+        "file": "flash_attention_fwd.py.prepv.bak",
+        "date": "Nov 15 00:24",
+        "bytes": 29890
+      }
+    ]
+  },
+  "verification": [
+    {
+      "variant": "nopipe",
+      "diff_vs_current": "empty, identical",
+      "adopted": "reverted"
+    },
+    {
+      "variant": "prepv",
+      "diff_vs_current": "empty, identical",
+      "adopted": "reverted"
+    },
+    {
+      "variant": "pingpong",
+      "diff_vs_current": "differs",
+      "adopted": "NOT adopted - _vpar appears 0 times in the current file"
+    },
+    {
+      "variant": "fp32exp",
+      "adopted": "not adopted, not read in detail"
+    }
+  ],
+  "what_pingpong_changed": {
+    "code": "_vpar = kv_blk_idx % 2, then Vj_l1_zN and KjT_l1_zN get per-parity names",
+    "target": "the K/V L1 buffers, so loading kv_blk i+1 cannot alias the tile kv_blk i reads",
+    "distinct_from_r196": "R196 identified the RAW conflict on Sij_ub_zN, the UB score buffer, between softmax on the vector unit and the next matmul on the cube unit",
+    "conclusion": "the prior attempt did not cover this point"
+  },
+  "but_it_is_a_warning": [
+    "the prior ping-pong was cheaper and safer than mine (L1 buffers only, no extra UB) and still was not adopted",
+    "that agrees with R196: the real blocker is the disable_sync=False automatic barriers, so changing buffers without changing barriers will not create overlap"
+  ],
+  "effect_on_my_plan": {
+    "planned": "start with a minimal Sij double-buffer that keeps the automatic sync",
+    "obstacles": [
+      "at Bc=304 the score buffer is 77.8 KB so double buffering needs 155.6 KB of 192 KB UB, leaving too little",
+      "so it forces Bc=256 at 131 KB, but R191 measured Bc=256 as slower to begin with (169.94 vs 154.57 ms)",
+      "break-even therefore needs at least a 9.0 percent gain from double buffering alone, which is unlikely",
+      "and a cheaper prior ping-pong was already not adopted"
+    ],
+    "verdict": "the minimal ping-pong experiment has poor value and would likely repeat a previously rejected conclusion"
+  },
+  "revised_fa_judgement": [
+    {
+      "option": "buffer ping-pong",
+      "verdict": "likely ineffective and the UB window is narrow"
+    },
+    {
+      "option": "disable_sync=True with manual flag synchronisation",
+      "verdict": "still the only theoretically grounded direction, per R196 position two"
+    },
+    {
+      "option": "both together",
+      "verdict": "theoretically best but UB capacity must be solved first"
+    },
+    {
+      "conclusion": "the synchronisation skeleton really does have to change, confirming R196s assessment that this is a multi-day job with no cheap middle route"
+    }
+  ],
+  "net_value": [
+    "avoided repeating four experiments the prior author already tried, especially ping-pong which I was about to implement",
+    "corrected my own optimistic assumption that a minimal first experiment would be worthwhile",
+    "tightened the FA conclusion further: the change must happen at the barrier level, since the buffer level has no room left"
+  ],
+  "limits": [
+    "I did not find measurement data for those four prior experiments, only source backups, so not-adopted is inferred from code state rather than from measured failure; they might simply have been unfinished or unrecorded",
+    "fp32exp.bak was not read in detail"
+  ],
+  "compliance": {
+    "machine_claimed": true,
+    "machine_used_for": "reading and diffing files only",
+    "weights_loaded": false,
+    "files_modified": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
