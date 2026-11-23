@@ -1,0 +1,101 @@
+{
+  "scope": "R210: a standalone measurement refutes the R209 hypothesis that HCCL all-reduce reduction order is non-deterministic",
+  "kind": "hypothesis_refuted",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "no_model_no_weights": true,
+  "precondition_check": {
+    "HCCL_DETERMINISTIC_exists": true,
+    "default": "false",
+    "evidence": [
+      "libhccl.so contains: HCCL_DETERMINISTIC set by default to [false]",
+      "libhccl.so contains: ErrToWarn: HCCL_DETERMINISTIC is set to [%s], which is incorrect"
+    ]
+  },
+  "design": {
+    "world_size": 8,
+    "backend": "hccl",
+    "launcher": "torch_npu_run --standalone --nproc-per-node 8",
+    "input": "identical on every rank via manual_seed(1234+n)",
+    "repeats": 12,
+    "comparison": "sha256 of the result buffer after clone plus barrier",
+    "shapes": [
+      {
+        "tag": "small",
+        "n": 4096
+      },
+      {
+        "tag": "hidden5120",
+        "n": 5120
+      },
+      {
+        "tag": "inter25600",
+        "n": 25600
+      }
+    ],
+    "config_tested": "HCCL_DETERMINISTIC unset, i.e. the default false"
+  },
+  "results": [
+    {
+      "shape": "small",
+      "n": 4096,
+      "distinct_results": 1,
+      "reproducible": true
+    },
+    {
+      "shape": "hidden5120",
+      "n": 5120,
+      "distinct_results": 1,
+      "reproducible": true,
+      "hash": "23c6a4722df1e0f4"
+    },
+    {
+      "shape": "inter25600",
+      "n": 25600,
+      "distinct_results": 1,
+      "reproducible": true,
+      "hash": "968bf6d020f341bc"
+    }
+  ],
+  "verdict": "all-reduce is bit-reproducible by default, so HCCL_DETERMINISTIC is not even needed; the R209 hypothesis is refuted",
+  "consequence": "the non-determinism must be operator level rather than collective level",
+  "narrowed_candidates": [
+    {
+      "candidate": "matmul tiling or split-K accumulation order",
+      "how_to_test": "repeat a single matmul operator on identical input and compare bits"
+    },
+    {
+      "candidate": "reduction order inside the FA TIK kernel",
+      "how_to_test": "run only FA repeatedly"
+    },
+    {
+      "candidate": "atomic accumulation in some op",
+      "how_to_test": "read the operator implementation"
+    },
+    {
+      "candidate": "AICPU or async stream interleaving",
+      "how_to_test": "single-stream control"
+    }
+  ],
+  "next_step": "a single-operator bit-repeat probe over matmul, FA and norm, which is far cheaper than running the whole model and needs no weights at all",
+  "value": [
+    "eliminated a whole class of candidates, narrowing issue 15s search space",
+    "showed this kind of hypothesis is testable without the model, cutting the cost from about 16 minutes to about 1",
+    "produced a reusable probe structure for operator-level tests",
+    "for issue 4: if the operators themselves prove bit-reproducible then prefetch safety concerns correctness rather than numeric jitter, which makes 4 simpler"
+  ],
+  "limits": [
+    "the input was identical across ranks, whereas the real model has different per-rank values; the reduction path would differ numerically although the randomness hypothesis is already excluded",
+    "only HCCL_DETERMINISTIC unset was run, since it was already reproducible and =1 adds no information",
+    "only all-reduce was tested, not reduce-scatter or all-gather"
+  ],
+  "compliance": {
+    "machine_claimed": true,
+    "machine_used_for": "a synthetic 8-rank collective probe",
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true,
+    "private_dir": "/tmp/h3_hccl210 mode 0700"
+  }
+}
