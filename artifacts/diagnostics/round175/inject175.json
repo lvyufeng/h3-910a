@@ -1,0 +1,36 @@
+{
+  "scope": "R175: injecting the hcc C++ include flags into the official AscendC op build",
+  "kernel_code_valid": true,
+  "injection_point": {
+    "file": "build_out/op_kernel/H3RangeStats_ascend910/dynamic/H3RangeStats.py",
+    "line": 211,
+    "before": "custom_compile_options = {},",
+    "after": "custom_compile_options = {\"__ALLSOC__\": ['-isystem', '<hcc>/include', '-isystem', '<hcc>/include/c++/14.3.0', '-isystem', '<hcc>/include/c++/14.3.0/aarch64-target-linux-gnu']},",
+    "consumed_by": "get_shortsoc_compile_option merges it into the bisheng options"
+  },
+  "patch_survived_an_asc_opc_run": true,
+  "meaning": "the generated file is produced by the cmake stage and reused, so patch-then-rebuild is viable",
+  "manual_asc_opc_direct_call_produced_no_artifacts": true,
+  "why": "the .sh wrapper consumes --kernel-src and shifts, so replicating its positional argument use by hand is wrong; the next step is simply to re-run build.sh",
+  "rejected_injection_points": {
+    "build_out/autogen/custom_compile_options.ini": "empty and has no reader anywhere in CANN, confirmed by grep",
+    "build_out/autogen/custom_opc_options.ini": "same"
+  },
+  "open_config_bug": {
+    "observed": "--soc_version=Ascend910A",
+    "device": "910B",
+    "fix": "change AddConfig(\"ascend910\") to ascend910b in op_host"
+  },
+  "next_steps": [
+    "re-run build.sh and check whether the patch persists",
+    "fix the soc config to ascend910b",
+    "install into opp/vendors, run an aclnn single-op call and time it",
+    "verify verdict equivalence against the native bit-pattern counts"
+  ],
+  "compliance": {
+    "shared_cann_modified": false,
+    "weights_downloaded": false,
+    "driver_or_device_reset": false,
+    "lease_released": true
+  }
+}
