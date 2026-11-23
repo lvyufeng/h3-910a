@@ -25,7 +25,6 @@ def main():
         '--audit-sequence','strict','--steps','25','--warmup','1','--repeats','1']
     import benchmark_actual_attention126 as bench
     bench.ROOT=ROOT
-    import vllm_omni.diffusion.layers.linear as _  # noqa: F401  (import side effect parity)
     real_main=bench.main
     def main_with_probe():
         # install right before the model runs: the harness builds the model inside main,
