@@ -1,0 +1,75 @@
+{
+  "scope": "R170 measured audited-tensor shapes and whole-block-stack peak memory, and what they imply for the 10 s target",
+  "read_only_diagnostic": true,
+  "native_audit_untouched": true,
+  "model_arithmetic_unchanged": true,
+  "nothing_adopted": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 17.89,
+  "measured_shapes": {
+    "linear": {
+      "shape": [
+        "3x96768"
+      ],
+      "calls": 150,
+      "max_mib_per_tensor": 0.6,
+      "per_step_count": 55,
+      "per_step_gib": 0.03
+    },
+    "qkv_proj": {
+      "shape": [
+        "10448x10752"
+      ],
+      "calls": 150,
+      "max_mib_per_tensor": 214.3,
+      "per_step_count": 50,
+      "per_step_gib": 10.46
+    },
+    "fc1": {
+      "shape": [
+        "10448x14336"
+      ],
+      "calls": 150,
+      "max_mib_per_tensor": 285.7,
+      "per_step_count": 50,
+      "per_step_gib": 13.95
+    }
+  },
+  "deferred_total_gib": 24.44,
+  "peak_memory": {
+    "samples": 3,
+    "peak_allocated_gib_max": 7.13,
+    "peak_allocated_gib_median": 7.13,
+    "peak_reserved_gib_max": 11.64,
+    "peak_reserved_gib_median": 11.64
+  },
+  "headroom_gib": 20.36,
+  "deferral_verdict": "NOT FEASIBLE, now on measured numbers",
+  "what_r169_got_wrong": "R169 assumed qkv_proj is 5376 wide and estimated 19.4 GiB. It is actually 10752 wide, so the deferred set is 24.44 GiB, and the measured reserved peak leaves only 20.36 GiB. The direction is therefore closed by measurement rather than left as marginal.",
+  "closing_of_the_audit_direction": [
+    "R168: a cheaper implementation costs more end-to-end (-0.75 s regression)",
+    "R170: deferring the checks needs 24.44 GiB against 20.36 GiB of headroom",
+    "therefore the audits roughly 2.87 s cannot be recovered without changing what the contract requires"
+  ],
+  "ten_second_arithmetic": {
+    "compliant_baseline_s": 17.902,
+    "fa_kernel_s": 7.607,
+    "if_fa_were_free_s": 10.3,
+    "note_if_fa_were_free": "even a zero-cost FA kernel leaves 10.29 s, so the target cannot be met by the FA kernel alone",
+    "fa_at_measured_gemm_efficiency_s": 13.52,
+    "fa2x_plus_linears_s": 12.0,
+    "fa236x_plus_linears_s": 11.42,
+    "fa3x_plus_linears_s": 10.73,
+    "fa3x_plus_linears_plus_usp_and_attn_halved_s": 9.51
+  },
+  "the_required_fa_rate": {
+    "fa2x_tflops_per_card": 82.2,
+    "fa3x_tflops_per_card": 123.3,
+    "best_measured_gemm_tflops_per_card": 96.9,
+    "reading": "a 3x FA kernel would need about 123 TFLOPS per card, above the best GEMM rate measured on this host. A 2.36x FA kernel is the most that the measured GEMM efficiency supports, and that combination lands near 11.4 s."
+  },
+  "honest_conclusion": "under the current hard constraints the 10 s target is very likely unreachable. The measured ceiling from the two big levers, FA at the best GEMM efficiency this host has demonstrated plus the FP32 guard removed, is about 11.4 s. Reaching 10 s additionally needs FA beyond that efficiency, or further gains in USP and the attention residual, or a change to the constraints themselves.",
+  "what_this_answers": "goal item one, the staged feasibility judgement for 10 s",
+  "recommendation": "report the ceiling rather than keep hunting; the honest options are to accept a target near 11.5 s, or to revisit one of the hard constraints, for example whether all 155 per-layer checks must run inside every measured step."
+}
