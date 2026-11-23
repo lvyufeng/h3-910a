@@ -1,0 +1,87 @@
+{
+  "scope": "R198: pivot to the video VAE parallel goal and establish that its internal roofline is missing",
+  "offline_analysis": true,
+  "no_new_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "why": "the DiT decisions are all waiting on the user, while the objective lists encoder, video VAE and A2/A3 as parallel goals that are not blocked by those decisions",
+  "targets": {
+    "video_vae": {
+      "target_s": 20,
+      "current_warm_rank_max_s": [
+        21.62,
+        21.76
+      ],
+      "gap_s": "1.6-1.8",
+      "gap_pct": 7.5
+    },
+    "encoder": {
+      "target_s": 2,
+      "in_pipeline_s": [
+        3.14,
+        3.17
+      ],
+      "isolated_s": 2.34
+    },
+    "audio_vae": {
+      "current_s": [
+        0.21,
+        0.23
+      ],
+      "status": "not a bottleneck"
+    }
+  },
+  "established_by_r138": {
+    "warm_decode_median_s": 21.693,
+    "decode_base_s": 21.714,
+    "decode_base_pct": 99.8,
+    "pipeline_side_s": 0.14,
+    "pipeline_side_pct": 0.6,
+    "output": "[1,3,124,768,1344] uint8 = 383,975,424 elements = 384 MB",
+    "input_latent": "[1,24,37,48,84] FP32 = 14.4 MB",
+    "peak_allocated_GiB": 13.436,
+    "tile_grid": "4x7 = 28 tiles over 8 ranks, 4 serial per rank",
+    "stack_tiling": false,
+    "conclusion": "only the decoder internals can be changed to get under 20 s; the pipeline side has no room"
+  },
+  "excluded_by_r139": {
+    "candidate": "stack_tiling=True micro-batching",
+    "warm_s": 21.609,
+    "native_s": 21.618,
+    "verdict": "no speedup within noise, cold start +195 s, rejected",
+    "inference": "the bottleneck is not kernel launch count"
+  },
+  "the_gap": "only total time and reproducibility were measured; there is no per-stage or per-layer breakdown of the 21.7 s, which is exactly the per-region roofline the objective asks for",
+  "code_locations": {
+    "file": "/home/mseco/vllm-omni/vllm_omni/diffusion/models/minimax_h3/vae.py",
+    "lines": 1184,
+    "MiniMaxH3VideoVAE": 326,
+    "decode_latent": 635,
+    "_decoder_tile_count": 659,
+    "_decode_tiling_context": 937,
+    "_VideoVAEPartProxy": 283,
+    "residency_stagers": "59-152: _build_residency_stagers, _load_part_to_device, _offload_part_to_cpu"
+  },
+  "primary_suspicion": {
+    "observation": "_VideoVAEPartProxy plus residency stagers mean VAE parts are shuttled between CPU and NPU, and the FP32 parameters are about 10.4 GB, which reconciles with the 13.436 GiB peak",
+    "hypothesis": "if each of the 4 tiles re-shuttles the same parts, that is pure overhead and could be fixed without touching the maths",
+    "status": "inference from code structure, not measured"
+  },
+  "next_steps": [
+    "instrument decode_base with NPU Event timers per stage: up-block, conv, attention, upsample, then run one warm decode",
+    "measure _load_part_to_device and _offload_part_to_cpu call counts and total time, to see whether the same parts are re-shuttled per tile",
+    "use the breakdown to decide whether this is compute-bound (needs faster kernels) or shuttling/scheduling bound (possibly pure engineering gain)"
+  ],
+  "cost_estimate": "one run is about 240 s engine init plus 21.7 s decode, so roughly five minutes",
+  "limits": [
+    "no new measurement this round, only code location and receipt consolidation",
+    "the re-shuttling hypothesis comes from code structure and is unmeasured",
+    "the agreement between 13.4 GiB peak and 10.4 GB FP32 parameters is arithmetic consistency, not proof"
+  ],
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
