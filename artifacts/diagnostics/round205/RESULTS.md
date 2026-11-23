@@ -86,6 +86,49 @@ encoder 就变成常驻，不再逐层流式搬运。**
 3. **DiT 是否依赖 encoder 的 offload 腾出的内存**：若 DiT 逐层 offload 的峰值 +
    encoder 常驻超出 32 GiB，就会 OOM。**这是唯一真正的风险。**
 
+## 五b、最后一环确认：`_component_on_device` 确实**进入载入、退出卸载**
+
+读了 `pipeline_minimax_h3.py:1520` 的完整实现：
+
+```python
+@contextmanager
+def _component_on_device(self, component):
+    if getattr(self, "_model_cpu_offload_modules", None):
+        ...
+        with sequential_offload_component(component):
+            yield
+        return
+    staged = self._uses_manual_component_offload(component)
+    try:
+        if staged:
+            component.load_to_device()          # ← 进入载入
+        yield
+    except BaseException:
+        if staged:
+            component.offload_to_cpu()          # ← 异常路径也卸载
+        raise
+    else:
+        if staged:
+            component.offload_to_cpu()          # ← 正常路径卸载
+```
+
+**两条分支（模型级 offload / 手动组件级）都是"进入载入、退出卸载"。**
+
+⇒ **encoder 每次 `encode_prompt` 都完整载入再卸载一次，R203/R205 的诊断链完全成立。**
+
+### 而 `_encode_text_hidden` 的路径 3 恰恰相反
+
+```python
+# 路径 3（staged=False 时走这里）
+self.text_encoder.load_to_device()      # ← 显式载入一次
+return self.text_encoder.encode_ids(...)  # ← 之后从不卸载
+```
+
+**⇒ 把 text_encoder 从 `components` 去掉 ⇒ `staged=False` ⇒ 不走上下文管理器
+⇒ 只走路径 3 ⇒ 载入一次、永驻。预测成立。**
+
+**至此 encoder 方案从"日志现象"到"代码机制"到"改法"整条链闭合，全部有源码依据。**
+
 ## 六、这是本轮最有价值的产出
 
 **从"需要写代码/改内核"降级为"改一个配置项"，而且推翻了一个我自己造出来的伪瓶颈（pinned 上限）。**

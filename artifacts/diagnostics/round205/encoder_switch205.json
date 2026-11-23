@@ -50,5 +50,16 @@
     "weights_loaded": false,
     "model_math_unchanged": true,
     "nothing_adopted": true
+  },
+  "final_link_confirmed": {
+    "source": "pipeline_minimax_h3.py:1520 _component_on_device",
+    "code_shape": [
+      "staged = self._uses_manual_component_offload(component)",
+      "if staged: component.load_to_device() before yield",
+      "if staged: component.offload_to_cpu() in both the exception path and the success path"
+    ],
+    "conclusion": "both branches of the context manager load on entry and offload on exit, so the encoder is fully loaded and unloaded on every encode_prompt call and the R203 diagnosis holds",
+    "contrast_with_the_fix": "_encode_text_hidden path 3 explicitly calls load_to_device() and never offloads, so with staged=False the encoder loads once and stays resident - the prediction is sound",
+    "status": "the chain from log observation to code mechanism to the actual change is now closed, every link backed by source"
   }
 }
