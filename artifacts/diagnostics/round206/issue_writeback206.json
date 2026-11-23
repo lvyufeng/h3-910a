@@ -1,0 +1,7 @@
+{
+  "issue10_encoder": "https://github.com/lvyufeng/h3-910a/issues/10#issuecomment-7108782707",
+  "issue5_fa": "https://github.com/lvyufeng/h3-910a/issues/5#issuecomment-7108784464",
+  "note": "backfill: the encoder findings R201b-R206 and the FA serialisation root cause R196 had only been recorded in issue 1, not in their own topic issues",
+  "encoder_summary": "about 99 percent of encoder time is the 63 GB weight transfer; the fix is one config item (drop text_encoder from offload components); the measurement needs a 16-minute full-generation run and is ready to go",
+  "fa_summary": "the per-tile serialisation comes from a single Sij buffer plus disable_sync=False barriers; the middle route (hand-synchronise only the softmax-to-matmul pair) projects 1.53x, which clears the 10 s requirement"
+}
