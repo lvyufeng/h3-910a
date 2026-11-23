@@ -1,0 +1,22 @@
+{
+  "issue1_comment": "https://github.com/lvyufeng/h3-910a/issues/1#issuecomment-7108624722",
+  "headline": "the encoder switch is a single config change (drop text_encoder from offload components), and the pinned-memory blocker was a model error I introduced",
+  "log_evidence": "layerwise offload is enabled for both text_encoder (77 blocks across 2 stacks) and the DiT",
+  "my_error": "I modelled pinned need as 125 GB for both components, but layerwise offload keeps only one block (about 0.82 GB) in the pinned buffer at a time, so the pinned limit was never the constraint",
+  "real_switch": "set diffusion_offload_config.components to [dit]; DEFAULT_OFFLOAD_COMPONENTS is already {dit}, and the non-offload path uses load_to_device with the comment Keep Qwen resident",
+  "projected": "encoder per request 3.14 s to about 0.5 s, meeting the under-2s target with no maths change",
+  "only_real_risk": "whether encoder resident 7.33 GiB per rank plus the DiT layerwise blocks exceeds 32 GiB; the earlier 18.97 GiB figure used a DiT peak measured without a resident encoder, so it needs measurement",
+  "self_corrections": [
+    "R189 missing head factor",
+    "R199 derived quantity treated as free",
+    "R199-C changed output frame count",
+    "R202 residency window useless because N=1",
+    "R203/R204 pinned need overstated by about 100x"
+  ],
+  "decisions_needed": [
+    "approve stage A adoption",
+    "approve the encoder config experiment",
+    "approve FA kernel work",
+    "decide the FP32 guard criterion form"
+  ]
+}
