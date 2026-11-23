@@ -1,0 +1,40 @@
+{
+  "scope": "R176: soc configuration fixed; the dynamic-py compile options are not the feeder for the failing kernel compile",
+  "soc_fixed": {
+    "required_locations": [
+      "CMakePresets.json -> ASCEND_COMPUTE_UNIT = ascend910b",
+      "op_host/h3_range_stats.cpp -> AddConfig(\"ascend910b\")"
+    ],
+    "verified": "build target dir became H3RangeStats_ascend910b and the compile log prefix is [ascend910b]",
+    "r175_gap": "changing op_host alone fails earlier at gen_ops_config; the project-level soc lives in CMakePresets"
+  },
+  "patch_applied_correctly": {
+    "file": "build_out/op_kernel/H3RangeStats_ascend910b/dynamic/H3RangeStats.py line 211",
+    "r175_idempotency_bug": "the check tested for the substring __ALLSOC__ which appears elsewhere in the file, so the patch was silently skipped",
+    "fixed_this_round": "exact match on 'custom_compile_options = {},' with a single replacement, verified by grep"
+  },
+  "negative_result": {
+    "finding": "with the patch in place the rebuild still produced 10 cstdint fatal errors",
+    "conclusion": "custom_compile_options in the generated dynamic python file is NOT the variable feeding the failing bisheng invocation",
+    "failing_stage": "fwk_modules/util/ascendc_compile_kernel.py:196 kernel_builder.ascendc_build()",
+    "options_assembled_by": [
+      "ascendc_compile_base.py",
+      "ascendc_compile_v200.py"
+    ]
+  },
+  "next_attempts_in_order": [
+    "private PYTHONPATH overlay of compiler/tikcpp/ascendc_kernel_cmake with the three -isystem flags added, leaving the shared CANN untouched",
+    "trace where compile_option_tuple.compile_options originates (possibly bin_param/*_param.json) and inject there",
+    "fall back to a manual bisheng build plus a hand-built op package"
+  ],
+  "ruled_out": [
+    "build_out/autogen/custom_compile_options.ini and custom_opc_options.ini are empty with no reader in CANN",
+    "the dynamic python custom_compile_options variable"
+  ],
+  "compliance": {
+    "shared_cann_modified": false,
+    "weights_downloaded": false,
+    "driver_or_device_reset": false,
+    "lease_released": true
+  }
+}
