@@ -1,0 +1,29 @@
+{
+  "scope": "R167 in-model verification of the bit-pattern safety check (465 audited calls)",
+  "verification_only": true,
+  "native_verdict_authoritative_this_run": true,
+  "no_check_removed": true,
+  "nothing_adopted": true,
+  "model_arithmetic_unchanged": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s_with_both_checks_running": 21.636,
+  "calls_compared": 465,
+  "equivalence": {
+    "exactly_count_equivalent_on_every_call": true,
+    "mismatch_count": 0,
+    "combined_with_r166": "R166 tested 37 crafted and randomised cases including the shapes the model audits and found zero count mismatches; together the two rounds establish exact count equivalence for both counts, multiplicity included"
+  },
+  "cost": {
+    "native_median_ms": 24.568,
+    "bit_median_ms": 30.522,
+    "median_ratio": 0.8,
+    "native_device_s_per_step": 6.656,
+    "bit_device_s_per_step": 4.808,
+    "device_saving_s_per_step": 1.848
+  },
+  "the_median_paradox": "the bit version has a worse median per call, 30.5 ms against 24.6 ms, yet a lower total, 4.808 s against 6.656 s per step, so the native implementation has a much heavier tail. Totals are what matter for step time.",
+  "corrected_expectation_for_step_time": "R162 removed the audit and the step fell 2.87 s while the native check measured about 8.3 s of device time, a ratio near 0.35. Applied to the 1.85 s device saving this gives about 0.6 to 0.7 s of net step time, not the 1.5 to 2 s I suggested after R163.",
+  "status": "correction complete; the speed benefit is modest but real and the equivalence is now proven twice",
+  "remaining_audit_cost": "even with the bit version the checks still cost 4.808 s of device time per step, so the audit stays a contract-required cost. Cutting it further needs a fused single-pass kernel over the int16 view."
+}
