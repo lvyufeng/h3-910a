@@ -1,0 +1,111 @@
+{
+  "scope": "R214: all four collective primitives are bit-reproducible, including all-to-all which R210 had missed, and a false positive of my own was caught before reporting",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "no_model_no_weights": true,
+  "why": "R210 tested only all-reduce, an explicit gap because USP with --usp 4 relies on all-to-all; reduce-scatter and all-gather were never tested either",
+  "self_error_caught": {
+    "first_run": {
+      "all_reduce_sum": 1,
+      "all_to_all_single": 1,
+      "reduce_scatter": 1,
+      "all_gather": 10
+    },
+    "bug": "the all_gather loop called torch.randn inside the loop, so every repeat used different input data, while the other three cloned a common base",
+    "verdict": "a false positive, not an HCCL problem, caught before reporting",
+    "fix": "clone a single seeded base tensor outside the loop"
+  },
+  "corrected_results": {
+    "world_size": 8,
+    "repeats": 10,
+    "rows": [
+      {
+        "op": "all_reduce_sum",
+        "distinct": 1,
+        "reproducible": true,
+        "hash": "c57718a56146fa8d"
+      },
+      {
+        "op": "all_to_all_single",
+        "distinct": 1,
+        "reproducible": true,
+        "hash": "caac6b14d6da8e58"
+      },
+      {
+        "op": "reduce_scatter",
+        "distinct": 1,
+        "reproducible": true,
+        "hash": "7744e02dfaeaf990"
+      },
+      {
+        "op": "all_gather",
+        "distinct": 1,
+        "reproducible": true,
+        "hash": "577e4ebed1652ff8"
+      }
+    ]
+  },
+  "conclusion": "the collective layer is fully exonerated, all-to-all included",
+  "six_rounds_five_refuted_by_measurement": [
+    {
+      "hypothesis": "timesteps persistent buffer mutated",
+      "status": "refuted by reading code, fresh allocation"
+    },
+    {
+      "hypothesis": "HCCL all-reduce reduction order",
+      "status": "refuted by measurement R210"
+    },
+    {
+      "hypothesis": "single operators non-deterministic",
+      "status": "refuted by measurement R211"
+    },
+    {
+      "hypothesis": "FA kernel non-deterministic",
+      "status": "refuted by measurement R212"
+    },
+    {
+      "hypothesis": "prefetch async copy racing",
+      "status": "refuted by measurement R213"
+    },
+    {
+      "hypothesis": "all-to-all, reduce_scatter, all_gather",
+      "status": "refuted by measurement this round"
+    }
+  ],
+  "remaining_candidates": [
+    {
+      "candidate": "multi-card collective and compute overlap or interleaving order",
+      "note": "operators and collectives were tested separately, while the real path interleaves them across cards"
+    },
+    {
+      "candidate": "AICPU or host-side scheduling",
+      "note": "unobservable, profiler unavailable"
+    },
+    {
+      "candidate": "model-owned non-parameter state",
+      "note": "only timesteps was inspected, no systematic sweep"
+    },
+    {
+      "candidate": "allocator address affecting kernel tiling",
+      "note": "unverified"
+    },
+    {
+      "candidate": "multiple streams touching the same buffer",
+      "note": "unverified"
+    }
+  ],
+  "next_steps_cheapest_first": [
+    "a two-card minimal repro: TP2 only, single block, repeated identical input; if two cards already reproduce it we avoid the 50-block search, costing only minutes",
+    "single block single card versus single block multi card, to isolate the multi-card variable",
+    "merge the copy stream and compute stream into one and repeat"
+  ],
+  "compliance": {
+    "machine_claimed": true,
+    "machine_used_for": "a synthetic 8-rank collective probe",
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true,
+    "private_dir": "/tmp/h3_coll214 mode 0700"
+  }
+}
