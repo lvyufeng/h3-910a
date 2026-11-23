@@ -1,0 +1,65 @@
+{
+  "scope": "R178 proxy measurement: cost of one full pass over the audited tensors, using existing CANN reductions",
+  "read_only_measurement": true,
+  "no_custom_op_needed": true,
+  "model_arithmetic_unchanged": true,
+  "nothing_adopted": true,
+  "device": "npu:0",
+  "dtype": "float16",
+  "op_used_as_proxy": "torch.amax(x, dim=all) (one full-tensor read); flat amax fails on this CANN build",
+  "warmup": 3,
+  "repeats": 10,
+  "rows": [
+    {
+      "tensor": "mlp_fc1",
+      "shape": [
+        10448,
+        14336
+      ],
+      "mib": 285.7,
+      "calls_per_step": 50,
+      "median_ms": 3.905,
+      "best_ms": 3.894,
+      "effective_gbs": 76.7,
+      "per_step_ms": 195.2
+    },
+    {
+      "tensor": "qkv_proj",
+      "shape": [
+        10448,
+        10752
+      ],
+      "mib": 214.3,
+      "calls_per_step": 50,
+      "median_ms": 2.947,
+      "best_ms": 2.943,
+      "effective_gbs": 76.2,
+      "per_step_ms": 147.4
+    },
+    {
+      "tensor": "adaln_linear",
+      "shape": [
+        3,
+        96768
+      ],
+      "mib": 0.6,
+      "calls_per_step": 55,
+      "median_ms": 0.146,
+      "best_ms": 0.141,
+      "effective_gbs": 4.0,
+      "per_step_ms": 8.1
+    }
+  ],
+  "per_step_total_ms": 350.7,
+  "per_step_total_s": 0.351,
+  "per_step_bytes_gib": 24.45,
+  "current_audit_s_per_step": 2.87,
+  "current_audit_ms_per_call": 18.5,
+  "implied_saving_s_per_step": 2.519,
+  "verdict": "stage A remains worth pursuing: a single pass is much cheaper than the current audit",
+  "caveats": [
+    "amax is a single reduction; a statistics kernel that also counts bit patterns may cost more",
+    "the proxy reads the same bytes but does not reproduce the exact predicate work",
+    "this bounds what stage A can save; it does not prove any kernel achieves it"
+  ]
+}

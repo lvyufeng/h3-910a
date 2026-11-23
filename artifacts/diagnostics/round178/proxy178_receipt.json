@@ -1,0 +1,76 @@
+{
+  "scope": "R178 proxy measurement bounding what the single-pass statistics kernel can save",
+  "read_only_measurement": true,
+  "no_custom_op_needed": true,
+  "nothing_adopted": true,
+  "model_arithmetic_unchanged": true,
+  "device": "npu:0",
+  "op_used_as_proxy": "torch.amax(x, dim=all) (one full-tensor read); flat amax fails on this CANN build",
+  "warmup": 3,
+  "repeats": 10,
+  "rows": [
+    {
+      "tensor": "mlp_fc1",
+      "shape": [
+        10448,
+        14336
+      ],
+      "mib": 285.7,
+      "calls_per_step": 50,
+      "median_ms": 3.905,
+      "best_ms": 3.894,
+      "effective_gbs": 76.7,
+      "per_step_ms": 195.2
+    },
+    {
+      "tensor": "qkv_proj",
+      "shape": [
+        10448,
+        10752
+      ],
+      "mib": 214.3,
+      "calls_per_step": 50,
+      "median_ms": 2.947,
+      "best_ms": 2.943,
+      "effective_gbs": 76.2,
+      "per_step_ms": 147.4
+    },
+    {
+      "tensor": "adaln_linear",
+      "shape": [
+        3,
+        96768
+      ],
+      "mib": 0.6,
+      "calls_per_step": 55,
+      "median_ms": 0.146,
+      "best_ms": 0.141,
+      "effective_gbs": 4.0,
+      "per_step_ms": 8.1
+    }
+  ],
+  "per_step_total_s": 0.351,
+  "per_step_bytes_gib": 24.45,
+  "current_audit_s_per_step": 2.87,
+  "implied_saving_s_per_step": 2.519,
+  "verdict": "stage A remains worth pursuing: a single pass is much cheaper than the current audit",
+  "known_op_quirk": "flat torch.amax fails with ReduceMax aclrtAllocatorGetByStream; dim-specified amax works (same class as R148)",
+  "notes": [
+    "effective bandwidth is only about 76 GB/s, well below HBM peak, so this proxy is likely pessimistic",
+    "adaln is launch-bound at 4 GB/s, so tiny tensors have no headroom",
+    "the current audit is roughly 8x slower than a single pass"
+  ],
+  "bounds_not_proof": "this shows a single pass costs 0.351 s; it does not prove the custom kernel achieves it",
+  "ceiling_projection": {
+    "now_s": 17.902,
+    "after_stage_a_s": 15.4,
+    "after_stage_b_s": 13.7,
+    "after_stage_c_s": 9.3
+  },
+  "compliance": {
+    "weights_downloaded": false,
+    "shared_cann_modified": false,
+    "driver_or_device_reset": false,
+    "lease_released": true
+  }
+}
