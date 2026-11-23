@@ -57,5 +57,31 @@
     "weights_loaded": false,
     "model_math_unchanged": true,
     "nothing_adopted": true
-  }
+  },
+  "same_round_correction": {
+    "issue": "the residency-window fix proposed above does not apply because N=1 in the measured path",
+    "evidence": "grep for 'encoding continuation prompt' across the R126 logs returns nothing, and pipeline_minimax_h3.py:2409 logs that line before every continuation prompt; no hit means len(prompts)==1, so N=1",
+    "consequence": "with a single call there is no repeated transfer to eliminate, so the fix yields zero benefit and is withdrawn",
+    "what_r136_meant": "the 'three requests' were probably three separate benchmark requests, not three prompts inside one request; those are entirely different because separate requests do not involve consecutive repeat transfers",
+    "also_clarified": "per_block_cpu_offload_used and --offload native refer to DiT per-block CPU offload, not text encoder residency; I had conflated the two"
+  },
+  "real_remaining_paths_with_N1": [
+    {
+      "path": "keep the encoder resident across requests",
+      "feasible": "needs verification",
+      "obstacle": "memory: DiT at TP2 is about 31 GB per rank plus encoder 7.9 GB per rank equals 38.9 GB, above 32 GB, but DiT uses per-block offload so its steady-state footprint may be far below 31 GB and the actual peak must be measured"
+    },
+    {
+      "path": "reduce the transferred volume, for example a smaller dtype copy",
+      "feasible": false,
+      "obstacle": "changes numerics, violating keep-original-maths and requiring approval"
+    },
+    {
+      "path": "speed up the transfer itself, pinned memory or a wider H2D path",
+      "feasible": "needs verification",
+      "detail": "R198 measured 20.0 GB/s pinned against 9.7 GB/s unpinned for large tensors, a 2.06x difference; if the encoder load currently walks an unpinned path, switching would take the 63 GB load from the 6.5 s class down to the 3.15 s class"
+    }
+  ],
+  "cheapest_likely_path": "pinning: confirm and fix the memory pin state of the encoder load; this needs no maths change and could alone bring the encoder under 2 s",
+  "ready_to_measure": true
 }

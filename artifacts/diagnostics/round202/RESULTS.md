@@ -87,6 +87,62 @@ else:
 
 **这两点都可以从现有回执或配置里查，不需要跑模型。**
 
+## 五b、**同轮内修正：N=1，所以上面的修法不适用**
+
+我在第五节把"N"列为未确认。本轮继续查了日志，得到决定性的**否定**证据：
+
+```
+grep -rn "encoding continuation prompt" /tmp/h3_perf12601/*.log   → 无任何命中
+```
+
+而 `pipeline_minimax_h3.py:2409` 在**每一次** continuation prompt 编码前都会打这条日志：
+
+```python
+logger.info("MiniMax H3 encoding continuation prompt %d/%d", index, len(prompts))
+```
+
+**日志里一条都没有 ⇒ 实测路径中 `prompts` 长度 = 1 ⇒ N = 1。**
+
+### 这对第三节的修法是致命的
+
+| N | 修法收益 |
+|---|---|
+| 1 | **0**（只有一次调用，没有重复搬运可消除） |
+
+**⇒ R202 提出的"常驻窗口"修法在实测路径上没有收益。必须作废。**
+
+（R136 说的"这三个请求"应该是指 **benchmark 跑了 3 个独立请求**，
+而不是一个请求内有 3 个 prompt。这两者完全不同：前者每个请求各自编码一次，
+不存在连续重复搬运。）
+
+### 另一个被澄清的点
+
+`per_block_cpu_offload_used` / `--offload native` 指的是 **DiT 的逐块 CPU offload**，
+**与 text encoder 的 residency 无关**。我原先把它与 encoder 路径混在一起推测，是错的。
+
+## 五c、那 encoder 还剩什么真实路径
+
+在 N=1 的前提下，3.14 s = **一次 63 GB 载入 + 一次前向**。要进 <2 s 只有三条：
+
+| 路径 | 可行性 | 障碍 |
+|---|---|---|
+| ① **跨请求常驻**（多个请求间不卸载） | 需验证 | 内存：DiT TP2 约 31 GB/rank + encoder 7.9 GB/rank = 38.9 GB > 32 GB。**但 DiT 采用逐块 offload，稳态占用可能远小于 31 GB** —— 这个必须先测实际峰值 |
+| ② 降低搬运量（如更小的 dtype 副本） | ❌ | 会改数值，违反"保持原数学"且需批准 |
+| ③ 加速载入本身（pinned memory / 更大 H2D 通道） | 待测 | 实测 pinned 已是 20 GB/s，非 pinned 只有 9.7 GB/s；**如果当前用的是非 pinned，换 pinned 可直接从 3.05 s → 1.5 s** |
+
+### ③ 是最便宜且最可能的一条
+
+R198 实测：
+| 方式 | 带宽 |
+|---|---|
+| pinned | **20.0 GB/s** |
+| 非 pinned（大张量） | **9.7 GB/s** |
+
+**差 2.06×。** 若 encoder 载入当前走的是非 pinned 路径，
+换成 pinned 就能把 63 GB 载入从 6.5 s 降到 3.15 s 量级 —— 直接达标。
+
+**这条不需要改数学，只需要确认并修正内存 pin 状态。**
+
 ## 六、这个方法上的进步
 
 前三轮（R189/R199/R199-C）我是"算完就报"，错了三次。
