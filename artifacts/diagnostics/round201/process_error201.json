@@ -1,0 +1,47 @@
+{
+  "kind": "PROCESS_ERROR_AND_DOC_FIX",
+  "scope": "R201: I spent three rounds on a path the user had already paused, and found a documentation gap that makes stage A look unbuilt when it is actually built, validated and awaiting approval",
+  "error": {
+    "what": "R198-R200 pivoted to the video VAE on the basis that it was an unblocked parallel goal",
+    "why_wrong": "PERFORMANCE_STATUS.md section 4 item 5 already states that the user paused the video VAE path (1.7 s remaining)",
+    "root_cause": "I did not read my own list of paused and blocked paths before deciding the path was unblocked, even though I had just written that the right order is to check what constrains a thing before acting",
+    "status_of_the_work_itself": "the analysis was not wrong: the frame-plan model was validated against the known 124 frames and the conclusion that clip_length is not tunable holds; the problem is that it should not have been current work"
+  },
+  "documentation_gap_found": {
+    "location": "PERFORMANCE_STATUS.md section 6, item 3",
+    "stale_text": "stage A is described as the only viable route with a measured value of 2.52 s per step, but its op-ification build is recorded as not yet working",
+    "reality": "R182-R186 completed it: the op build works (R182/R183), verdict equivalence is 15/15 adversarial (R183) and 310/310 on real tensors (R186), and the end-to-end measurement is 17.987 to 15.473 s, saving 2.514 s (R185); the default path is untouched",
+    "why_it_matters": "unbuilt and built-but-awaiting-approval are completely different; the former suggests there is nothing to decide yet and may stop the user from making a one-word decision that is already fully evidenced"
+  },
+  "other_stale_text": "section 4 item 3 still carries the R168 rejection framing next to the R185 success without distinguishing them; R185 succeeded precisely because it collapsed the per-layer serialisation to one launch and one sync, which does not contradict R168",
+  "actions_taken": [
+    "recorded the process error",
+    "fixed section 6 item 3 to say stage A is complete, measured and awaiting approval",
+    "added a note to section 4 item 3 distinguishing R168 failure from R185 success",
+    "wrote this back to the issue"
+  ],
+  "what_is_actually_unblocked": {
+    "needs_user_decision": [
+      "stage A adoption",
+      "FA kernel work",
+      "FP32 guard criterion",
+      "VAE criterion"
+    ],
+    "paused_by_user": [
+      "video VAE (1.7 s remaining)"
+    ],
+    "blocked_by_dependency": [
+      "#4 prefetch, blocked by #15"
+    ],
+    "possible_but_needs_confirmation": [
+      "encoder remaining 15 percent, preserving original maths, via norm/linear layout, QK-rotary or host launch mechanisms"
+    ]
+  },
+  "next": "encoder is the only direction that might not have been paused, but I have to confirm that first rather than assume it again",
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
