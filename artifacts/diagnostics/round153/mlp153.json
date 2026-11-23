@@ -1,0 +1,30 @@
+{
+  "scope": "R153b per-shape SiLU attribution inside the MLP (hooks only, native forward path)",
+  "measurement_only": true,
+  "no_sync_inside_forward": true,
+  "uses_the_native_forward_path": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 17.905,
+  "per_layer_ms": {
+    "mlp_median": 88.088,
+    "fc1": 23.161,
+    "fc2": 30.204,
+    "mlp_residual": 34.723
+  },
+  "mlp_residual_per_step_s": 1.736,
+  "silu_for_the_mlp_shape_ms": 1.14,
+  "silu_share_of_residual_percent": 3.3,
+  "mul_plus_chunk_ms": 33.583,
+  "mul_plus_chunk_per_step_s": 1.679,
+  "hypothesis_verdict": "REJECTED for SiLU",
+  "finding": "The SiLU on the MLP shape costs only 1.14 ms per layer, 3.3 percent of the 34.7 ms residual. The elementwise multiply plus the strided views produced by chunk account for 33.6 ms per layer, 1.68 s per step.",
+  "why_it_is_anomalous": "A plain FP32 multiply over 75M elements is about 0.56 ms of memory traffic, so 33.6 ms is roughly 60x that. The chunk views have row stride 14336 while their logical width is 7168, so the elementwise kernel most likely falls back to per-row processing over about 10448 rows.",
+  "candidate": "Make the two halves contiguous before the activation (or have fc1 emit two contiguous outputs). The arithmetic is unchanged elementwise, so this is expected to be numerically identical apart from nothing; it still has to be verified bitwise, and it costs one extra copy of about 600 MB.",
+  "potential_saving_s_per_step": 1.51,
+  "next": "R154 microbench: silu+mul on strided chunk views versus contiguous copies, to confirm the strided penalty before any model change",
+  "limits": [
+    "the multiply and the chunk view handling are not separable in this probe",
+    "the 10448-row explanation is a hypothesis, not yet measured"
+  ]
+}
