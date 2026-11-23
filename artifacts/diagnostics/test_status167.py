@@ -23,9 +23,13 @@ class Tests(unittest.TestCase):
         text=DOC.read_text()
         self.assertIn('合同口径',text)
         self.assertIn('不合规',text)
-    def test_feasibility_scenario_reaches_below_ten(self):
+    def test_both_chains_are_stated(self):
         text=DOC.read_text()
-        self.assertIn('8.3 s',text)
+        # the diagnostic chain may reach below ten, the compliant one must be shown as still short
+        self.assertIn('诊断链',text)
+        self.assertIn('合规链',text)
+        self.assertIn('11.84 s',text)
+        self.assertIn('仍差 1.84 s',text)
         self.assertIn('69 TFLOPS',text)
     def test_retired_hypotheses_are_listed(self):
         text=DOC.read_text()

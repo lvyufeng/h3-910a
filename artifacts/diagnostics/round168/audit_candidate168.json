@@ -1,0 +1,30 @@
+{
+  "scope": "R168 end-to-end measurement of the cheap bit-pattern audit candidate",
+  "candidate": "bit-pattern implementation of the 155 safety checks",
+  "decision": "REJECT",
+  "reason": "the step became slower, not faster, even though the check itself costs less device time",
+  "workers": 8,
+  "all_ranks_completed": true,
+  "baseline_step_s": 17.902,
+  "baseline_source": "R155 native audit, same harness and configuration",
+  "candidate_step_s": 18.65,
+  "delta_s": 0.748,
+  "checks_still_running": {
+    "calls_checked": 465,
+    "all_155_checks_still_run": true,
+    "model_arithmetic_unchanged": true,
+    "flagged": 0,
+    "note": "465 calls are 3 forward passes x 155 audited tensors, the same accounting the harness asserts"
+  },
+  "check_cost": {
+    "calls": 465,
+    "median_ms": 30.186,
+    "device_s_per_step": 4.737
+  },
+  "the_contradiction": "the check itself is cheaper per step than the native one, 4.737 s here against 6.656 s measured in R167, yet the step is 0.75 s slower. Cutting device time inside the check did not translate into step time.",
+  "what_this_teaches": "R162 removed the audit entirely and the step fell 2.87 s. Replacing it with a cheaper implementation keeps the same per-layer serialisation point, so the scheduler cannot overlap around it the way it could when the work was absent. The 2.87 s was therefore not simply the audits arithmetic time, and a cheaper check cannot claim it back.",
+  "noise_check": "the baseline band across R147 to R156 is 17.902 to 18.092 s, so 18.650 s sits outside it and the regression is unlikely to be run-to-run noise, though each figure is a single run",
+  "consequence_for_the_status_document": "the 0.65 s saving that R167 estimated for adopting the cheap check must be withdrawn. The status document has to stop offering the cheap audit as a way to buy step time.",
+  "decision_for_the_user": "none needed; this candidate is rejected on measurement, so it no longer requires a decision",
+  "salvageable": "the equivalence proof stands, and a cheaper check would only pay off if it also removes the per-layer serialisation, for example by batching the whole steps checks after the forward rather than per layer"
+}
