@@ -126,6 +126,45 @@ encoder 每卡份额（TP8）：`63 GB / 8 = 7.88 GB` = **7.33 GiB**
 **这是下一步必须先查的数**（`free -g` + pinned 上限），
 比继续推算更重要——**如果 host RAM 不够，整条常驻路就断了。**
 
+## 四d、host RAM 查了：**RAM 够，但 pinned 上限不够**
+
+| 项 | 实测 |
+|---|---|
+| 主机 RAM 总/可用 | **754 GB / 741 GB** |
+| **`ulimit -l`（memlock 上限）** | **98,842,564 KB = 94.3 GiB** |
+| NUMA | 8 节点（4 socket × 48 核） |
+| HugePages | 0（未启用） |
+
+### 对照需求
+
+| 项 | 值 |
+|---|---|
+| DiT 权重（host 侧 pinned masters） | 62 GB |
+| encoder 权重（host 侧） | 63 GB |
+| **需要同时 pinned** | **125 GB** |
+| **实际上限** | **94.3 GiB** |
+| **差额** | **约 −31 GB** ❌ |
+
+**⇒ 瓶颈不是 RAM（754 GB 很充裕），而是可锁页内存上限 94.3 GiB。**
+
+### 三条可能的解法（按代价排序）
+
+| # | 解法 | 代价 | 是否改数学 |
+|---|---|---|---|
+| 1 | **提高 `ulimit -l`**（需 root 或 CAP_IPC_LOCK） | 运维动作 | ❌ 不改 |
+| 2 | **encoder 只 pin 需要的部分**：Qwen3-VL 的 **vision 塔**（27 层、hidden 1152）在纯文本 prompt 下不需要 —— 若它能留在 pageable 或干脆不加载，pinned 需求显著下降 | 代码改动 | ❌ 不改 |
+| 3 | 让 DiT 与 encoder **分时 pin**（进入 encoder 阶段前 unpin DiT） | 代码改动 + 仍要搬一次 | ❌ 不改 |
+
+**解法 2 值得优先算**：vision 塔参数量远小于 text 塔（depth 27、hidden 1152 vs 64 层、hidden 5120），
+若它占 63 GB 中的一部分，省下来可能刚好填平 31 GB 的缺口。
+
+### 另一个被忽略的隐患：NUMA
+
+**8 个 NUMA 节点**。pinned 内存若跨 NUMA 节点，H2D 带宽会明显低于同节点。
+R198 测得的 20 GB/s 是在什么 NUMA 布局下测的**没有记录**。
+若 encoder/DiT 的 pinned masters 落在远端 NUMA，实际带宽可能低于 20 GB/s，
+**那连 3.15 s 的下限都会被推高**。
+
 ## 五、诚实的结论
 
 | 结论 | 强度 |

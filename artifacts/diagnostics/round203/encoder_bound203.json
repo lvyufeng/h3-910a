@@ -112,5 +112,44 @@
     "status": "MUST BE CHECKED NEXT, and it outranks further projection: if host RAM is insufficient the whole residency route collapses",
     "how_to_check": "free -g on the host plus any pinned-memory limit"
   },
-  "status_update": "R203 no longer ends on an open question: the memory answer is in the receipts and the route is feasible; the next gate is host RAM"
+  "status_update": "R203 no longer ends on an open question: the memory answer is in the receipts and the route is feasible; the next gate is host RAM",
+  "host_ram_check": {
+    "host_RAM_total_GB": 754,
+    "host_RAM_available_GB": 741,
+    "ulimit_l_KB": 98842564,
+    "ulimit_l_GiB": 94.3,
+    "needed_pinned_GB": 125,
+    "shortfall_GB": 31,
+    "verdict": "RAM itself is plentiful, but the pinned-memory limit of 94.3 GiB is below the 125 GB needed for DiT plus encoder to be pinned simultaneously",
+    "solutions_ranked": [
+      {
+        "rank": 1,
+        "solution": "raise ulimit -l",
+        "cost": "ops action needing root or CAP_IPC_LOCK",
+        "math_change": false
+      },
+      {
+        "rank": 2,
+        "solution": "pin only the needed encoder part: the Qwen3-VL vision tower (27 layers, hidden 1152) is unnecessary for text-only prompts, so leaving it pageable or unloaded could close the 31 GB gap",
+        "cost": "code change",
+        "math_change": false,
+        "note": "worth computing first, since the vision tower is far smaller than the 64-layer hidden-5120 text tower"
+      },
+      {
+        "rank": 3,
+        "solution": "pin DiT and encoder in turns, unpinning the DiT before the encoder phase",
+        "cost": "code change plus one remaining transfer",
+        "math_change": false
+      }
+    ],
+    "new_hazard_NUMA": {
+      "detail": "the host has 8 NUMA nodes; pinned memory spanning nodes has lower H2D bandwidth than same-node memory, and R198 did not record the NUMA placement under which it measured 20 GB/s",
+      "implication": "if the masters land on a remote NUMA node the real bandwidth may fall below 20 GB/s, which would push even the 3.15 s floor higher"
+    }
+  },
+  "gates_in_order": [
+    "host RAM: PASS (754 GB available)",
+    "pinned limit: FAIL as measured (94.3 GiB vs 125 GB) - needs ulimit raise or a smaller pinned footprint",
+    "NUMA placement: UNKNOWN, could reduce bandwidth further"
+  ]
 }
