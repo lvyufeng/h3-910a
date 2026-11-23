@@ -100,7 +100,7 @@ def collect(torch):
             count = per_step['adaln_proj.linear']
         deferred += count * row['max_bytes_per_tensor']
         row['per_step_count'] = count
-        row['per_step_gib'] = round(count * row['bytes'] / GiB, 2)
+        row['per_step_gib'] = round(count * row['max_bytes_per_tensor'] / GiB, 2)
     out['deferred_total_gib_from_measured_shapes'] = round(deferred / GiB, 2)
     if _STATE['peaks']:
         peaks = _STATE['peaks']

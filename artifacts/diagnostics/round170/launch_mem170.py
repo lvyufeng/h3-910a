@@ -8,7 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-ROOT=Path('/tmp/h3_mem170');LABEL='mem170a'
+ROOT=Path('/tmp/h3_mem170');LABEL='mem170b'
 
 def main():
     process_receipt=ROOT/(LABEL+'_process.json');out=ROOT/LABEL
