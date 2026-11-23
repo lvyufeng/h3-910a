@@ -1,0 +1,88 @@
+{
+  "step_s": 19.9064998626709,
+  "warm_median_s": 19.914101600646973,
+  "regions": [
+    {
+      "region": "FA kernel (50 calls)",
+      "device_s": 7.454,
+      "share_percent": 37.4,
+      "flops_TFLOPs_per_rank_step": 313.0,
+      "achieved_TFLOPS_per_card": 42.0,
+      "percent_of_310TFLOPS_peak": 13.5,
+      "note": "measured R126 device time; re-used as it is unchanged in this probe"
+    },
+    {
+      "region": "attention total (attn region)",
+      "device_s": 12.298,
+      "share_percent": 61.8,
+      "flops_TFLOPs_per_rank_step": 330.6,
+      "achieved_TFLOPS_per_card": 26.9,
+      "percent_of_310TFLOPS_peak": 8.7,
+      "note": "includes FA + USP + q/k norm + qkv/o GEMM"
+    },
+    {
+      "region": "mlp region",
+      "device_s": 4.42,
+      "share_percent": 22.2,
+      "flops_TFLOPs_per_rank_step": 120.8,
+      "achieved_TFLOPS_per_card": 27.3,
+      "percent_of_310TFLOPS_peak": 8.8,
+      "note": "gate/up/down, TP2 row-parallel"
+    },
+    {
+      "region": "adaln region",
+      "device_s": 0.295,
+      "share_percent": 1.5,
+      "flops_TFLOPs_per_rank_step": null,
+      "achieved_TFLOPS_per_card": null,
+      "percent_of_310TFLOPS_peak": null,
+      "note": "modulation projections"
+    },
+    {
+      "region": "norm1+norm2",
+      "device_s": 0.187,
+      "share_percent": 0.9,
+      "flops_TFLOPs_per_rank_step": null,
+      "achieved_TFLOPS_per_card": null,
+      "percent_of_310TFLOPS_peak": null,
+      "note": "FP32-protected norms"
+    },
+    {
+      "region": "misc (token_refiner/patch/final/time)",
+      "device_s": 0.161,
+      "share_percent": 0.8,
+      "flops_TFLOPs_per_rank_step": null,
+      "achieved_TFLOPS_per_card": null,
+      "percent_of_310TFLOPS_peak": null,
+      "note": "front/tail"
+    },
+    {
+      "region": "unattributed (transitions/collectives outside hooks)",
+      "device_s": 2.545,
+      "share_percent": 12.8,
+      "flops_TFLOPs_per_rank_step": null,
+      "achieved_TFLOPS_per_card": null,
+      "percent_of_310TFLOPS_peak": null,
+      "note": "residual to warm step"
+    }
+  ],
+  "total_modelled_flops_TF_per_rank_step": 451.4,
+  "achieved_TFLOPS_per_card": 22.7,
+  "achieved_percent_of_peak": 7.3,
+  "target_10s_TFLOPS_per_card": 45.1,
+  "target_10s_percent_of_peak": 14.6,
+  "peak_assumed_FP16_TFLOPS": 310,
+  "h2d": {
+    "weight_bytes": 32279142400,
+    "bandwidth_GB_per_s": 21.81,
+    "floor_s": 1.48,
+    "share_of_today_percent": 7.4,
+    "share_of_10s_budget_percent": 14.8,
+    "prefetch_calls": 201,
+    "prefetch_copy_stream_span_s": 7.62
+  },
+  "measurement_only_no_math_change": true,
+  "regions_use_synchronize_coarse_attribution": true,
+  "parent_child_regions_do_not_sum": true,
+  "peak_assumption_is_order_of_magnitude_not_vendor_quote": true
+}
