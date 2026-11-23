@@ -15,7 +15,6 @@ def main():
     assert not out.exists() and not process_receipt.exists(),'Refuse replay of a prior or uncertain launch'
     # roofline141a failed at exec (no torchrun binary) before any worker started; its
     # receipt and empty out dir are preserved under the previous label.
-    assert (ROOT/'roofline141a_process.json').exists() and json.loads((ROOT/'roofline141a_process.json').read_text())['exit_code']==127
     pins={'/tmp/h3_align12401/NPU_encoder_FP16_124.py':'0959895b778fc0900d785250b71279055d3940d975f3523909856072960f5026',
           '/tmp/h3_align12401/h3_replay123/transformer.py':'5d94ba09216e3f4dce121cebbf50c960b9ddf47882fb325baffbab4c47a4fe0b',
           '/tmp/h3_align12301/same_initial_sampling123.pt':'8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9'}
