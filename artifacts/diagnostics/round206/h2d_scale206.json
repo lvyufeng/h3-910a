@@ -1,0 +1,60 @@
+{
+  "scope": "R206: pinned H2D bandwidth holds at scale, which tightens the encoder conclusion",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "why": "R198 measured pinned H2D only up to 2 GB and got 20.0 GB/s; the encoder transfers 63 GB, so scale degradation would invalidate the 3.15 s floor",
+  "results": [
+    {
+      "gb": 8,
+      "seconds": 0.408,
+      "GB_per_s": 19.62,
+      "implied_63GB_s": 3.21
+    },
+    {
+      "gb": 16,
+      "seconds": 0.843,
+      "GB_per_s": 18.99,
+      "implied_63GB_s": 3.32
+    },
+    {
+      "gb": 32,
+      "error": "OOM, a 32 GiB card cannot hold 32 GB of fp16 plus its own working set"
+    }
+  ],
+  "finding_1_bandwidth_holds": "19.0-19.6 GB/s at scale, about 5 percent below the 2 GB figure, so there is no scale degradation and the transfer floor should be corrected to about 3.32 s",
+  "finding_2_overlap_already_happening": {
+    "theory_floor_s": 3.32,
+    "measured_encoder_s": "3.05-3.14",
+    "note": "the measurement is BELOW the pure-transfer floor, which is impossible without overlap",
+    "conclusion": "layerwise offload already overlaps transfer with compute, consistent with the asynchronous next-block prefetch noted in the benchmark report"
+  },
+  "finding_3_only_route": "with transfer at the link limit, overlap already in place and compute at only 0.17 s, the 3.0-3.1 s figure is the physical limit of this data path; getting under 2 s requires not transferring at all, i.e. the R205 config change to keep the encoder resident",
+  "effect_on_r205": [
+    {
+      "claim": "about 99 percent of encoder time is transfer",
+      "effect": "strengthened"
+    },
+    {
+      "claim": "under 2 s is impossible with per-call loading",
+      "effect": "strengthened, the floor moved from 3.15 to 3.32 s"
+    },
+    {
+      "claim": "residency is the only route",
+      "effect": "strengthened"
+    },
+    {
+      "new": "layerwise offload already overlaps, so there is no transfer-side optimisation left at all"
+    }
+  ],
+  "not_done": {
+    "what": "the R205 config experiment itself",
+    "why": "the benchmark is DiT-only and never touches the encoder, so measuring it needs a full generation run at roughly 16 minutes plus 8-rank setup, and if it failed there would not be enough context left to debug",
+    "status": "preparation is complete: driver located, config item identified, expected value known; ready to run on approval"
+  },
+  "compliance": {
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
