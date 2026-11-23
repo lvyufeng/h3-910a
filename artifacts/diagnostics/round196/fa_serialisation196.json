@@ -1,0 +1,119 @@
+{
+  "scope": "R196: the per-tile serialisation is located - a single Sij buffer blocks the intended prefetch",
+  "read_only_source_study": true,
+  "not_implemented": true,
+  "not_measured": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "source": "/tmp/fa_pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py (538 lines)",
+  "loop_structure": {
+    "outer": "for q_blk_idx in 342 q blocks",
+    "inner": "for kv_blk_idx over 144 k blocks, with if_scope skipping non-causal blocks for this q block"
+  },
+  "per_tile_step_order": [
+    {
+      "step": 1,
+      "what": "Sij = Qi x Kj.T",
+      "unit": "cube",
+      "buffer": "writes Sij_ub_zN"
+    },
+    {
+      "step": 2,
+      "what": "Sij += attn_mask on the diagonal block only",
+      "unit": "vector",
+      "buffer": "reads and writes Sij_ub_zN"
+    },
+    {
+      "step": 3,
+      "what": "Pij = softmax(Sij)",
+      "unit": "vector",
+      "buffer": "reads Sij_ub_zN"
+    },
+    {
+      "step": 4,
+      "what": "load K(j+1) then Sij = Qi x K(j+1).T",
+      "unit": "cube",
+      "buffer": "WRITES Sij_ub_zN - the same buffer as step 3"
+    },
+    {
+      "step": 5,
+      "what": "Oi = output_compute(Oi, Pij, Vj)",
+      "unit": "cube",
+      "buffer": "reads Pij_l1_zN"
+    }
+  ],
+  "smoking_gun": {
+    "observation": "step 4 passes workspace=Sij_ub_zN, writing back into the buffer softmax in step 3 just read",
+    "consequence": "a read-after-write / write-after-read dependency forces softmax to finish completely before the next matmul can start writing",
+    "why_it_matters": "softmax (vector) and matmul (cube) are precisely the pair that should overlap; single buffering makes overlap impossible and costs one cube-vector round trip per tile",
+    "matches_r193": "consistent in both magnitude and mechanism with the measured 2.922 us per-tile fixed cost"
+  },
+  "fix": {
+    "name": "Sij ping-pong double buffering",
+    "design": "two alternating UB buffers; softmax reads buf[j%2] while matmul(j+1) writes buf[(j+1)%2], removing the conflict",
+    "ub_budget_kb": {
+      "per_core": 192
+    },
+    "feasibility": [
+      {
+        "Bc": 256,
+        "one_buffer_kb": 65.5,
+        "two_buffers_kb": 131.1,
+        "fits": true,
+        "headroom_kb": 61
+      },
+      {
+        "Bc": 304,
+        "one_buffer_kb": 77.8,
+        "two_buffers_kb": 155.6,
+        "fits": "marginal",
+        "headroom_kb": 36
+      },
+      {
+        "Bc": 384,
+        "one_buffer_kb": 98.3,
+        "two_buffers_kb": 196.6,
+        "fits": false
+      }
+    ],
+    "chosen_config": "Bc=256, which divides 43776 and gives 29412 tiles",
+    "note": "Bc=256 on its own measured slower than Bc=304 (169.94 vs 154.57 ms, 0.910x), so the double buffering has to more than offset that"
+  },
+  "projected_payoff_at_bc256": {
+    "tiles": 29412,
+    "single_buffer_ms": 169.94,
+    "fixed_overhead_ms": 85.9,
+    "fixed_overhead_pct": 51,
+    "if_50_pct_removed": {
+      "ms": 127.0,
+      "vs_base_154_57": 1.22
+    },
+    "if_80_pct_removed": {
+      "ms": 101.2,
+      "vs_base": 1.53
+    },
+    "if_fully_removed": {
+      "ms": 84.0,
+      "vs_base": 1.84
+    },
+    "conclusion": "removing 80 percent of the overhead already clears the 1.50x the 10 s target needs"
+  },
+  "secondary_finding": {
+    "observation": "the outer loop runs range(Tc-1) and skips non-causal blocks at runtime through if_scope rather than trimming the loop bound per q block",
+    "potential": "could save some of the guard work across 828 waves",
+    "priority": "lower than double buffering"
+  },
+  "limits": [
+    "source reading only, not implementation and not measurement; every payoff figure above is an estimate",
+    "whether TIK synchronisation semantics actually allow overlap inside one new_stmt_scope still has to be verified in tik_ops_utils before implementing",
+    "compiling the Bc=256 double-buffered variant is unverified",
+    "retiling changes accumulation order, so any variant is numerically non-equivalent and must be measured only, never adopted without approval"
+  ],
+  "compliance": {
+    "files_modified": false,
+    "private_dir": "/tmp",
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "driver_or_device_reset": false
+  }
+}
