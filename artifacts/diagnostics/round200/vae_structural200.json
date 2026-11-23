@@ -1,0 +1,96 @@
+{
+  "scope": "R200: validate the frame-plan model and prove clip_length is pinned by the 124-frame output, so the VAE overlap waste is structural",
+  "offline_analysis": true,
+  "no_machine_used": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "model_validation": {
+    "method": "simulate _decode_temporal_output_frame_plan (klvae.py:531) with the exact code and check it reproduces the known 124 output frames",
+    "results": [
+      {
+        "clip_length": 17,
+        "chunks": 7,
+        "total_frames": 124,
+        "output_frames": 124,
+        "matches": true
+      },
+      {
+        "clip_length": 16,
+        "chunks": 9,
+        "output_frames": 148,
+        "matches": false
+      },
+      {
+        "clip_length": 18,
+        "chunks": 7,
+        "output_frames": 132,
+        "matches": false
+      }
+    ],
+    "verdict": "validated: clip_length=17 gives num_chunks=7 and exactly 124 output frames, matching R138s measured shape",
+    "also_confirms": "R199s observation of 196 frames decoded against 124 output, i.e. 1.58x overlap waste, is real"
+  },
+  "new_proof": {
+    "claim": "clip_length is not tunable - it is pinned by the required 124 output frames",
+    "evidence": {
+      "16": "148 frames",
+      "17": "124 frames",
+      "18": "132 frames"
+    },
+    "consequence": "the R199-CORRECTION recommendation of clip_length=16 is invalid since it would change the output from 124 to 148 frames"
+  },
+  "structural_chain": [
+    "output must be 124 frames",
+    "therefore clip_length = 17",
+    "therefore tokens_chunk_size = 5",
+    "therefore token_overlap = 2",
+    "therefore frame_pre_padding = 3",
+    "therefore num_chunks = 7",
+    "therefore 196 decoded frames for 124 output",
+    "therefore the 1.58x waste is structurally determined and no temporal-chunking parameter is free"
+  ],
+  "remaining_paths": [
+    {
+      "path": "tune chunk parameters",
+      "feasible": false,
+      "why": "all derived from the output frame count"
+    },
+    {
+      "path": "tune token_drop",
+      "feasible": false,
+      "why": "participates in num_chunks and changes output semantics"
+    },
+    {
+      "path": "change the decode algorithm, e.g. overlap-free causal streaming",
+      "feasible": "algorithmic",
+      "why": "changes output content, needs a user criterion"
+    },
+    {
+      "path": "speed up the decoder kernels",
+      "feasible": true,
+      "why": "the only semantics-preserving route but needs real conv/attention kernel work"
+    },
+    {
+      "path": "accept 21.6 s",
+      "feasible": true,
+      "why": "current state"
+    }
+  ],
+  "conclusion": "the video VAE under-20s target cannot be reached by parameter tuning; the three cheap paths (R139 micro-batching, R198 shuttling, R199 chunk resizing) are all refuted",
+  "what_is_still_missing": "the per-stage breakdown of where the 21.7 s goes inside the decoder, noted missing in R198 - the only remaining informative VAE step",
+  "methodology_note": {
+    "errors_made": [
+      "R189 omitted the head factor H=7, producing an impossible 29x headroom",
+      "R199 treated the derived tokens_chunk_size as free and got the benefit sign backwards",
+      "R199-CORRECTION recommended clip_length=16 without checking it changes the output frame count"
+    ],
+    "pattern": "I compute then report, whereas the right order is to establish what constrains a quantity before computing with it",
+    "improvement": "R200 applied that order first and immediately caught the previous round error"
+  },
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
