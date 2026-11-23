@@ -1,0 +1,225 @@
+{
+  "scope": "R164 adversarial unit test of the native versus cheap safety checks",
+  "verification_only": true,
+  "model_arithmetic_unchanged": true,
+  "no_check_removed": true,
+  "nothing_adopted": true,
+  "device": "npu:0",
+  "cases": 16,
+  "verdict_mismatches": 2,
+  "count_mismatches": 4,
+  "verdicts_always_agree": false,
+  "rows": [
+    {
+      "case": "all_finite_normal",
+      "native": [
+        0,
+        0
+      ],
+      "fast": [
+        0,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "single_nan",
+      "native": [
+        1,
+        0
+      ],
+      "fast": [
+        1,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "single_posinf",
+      "native": [
+        1,
+        0
+      ],
+      "fast": [
+        1,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "single_neginf",
+      "native": [
+        1,
+        0
+      ],
+      "fast": [
+        1,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "single_pos_saturation",
+      "native": [
+        0,
+        1
+      ],
+      "fast": [
+        0,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "single_neg_saturation",
+      "native": [
+        0,
+        1
+      ],
+      "fast": [
+        0,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "two_pos_saturation_multiplicity",
+      "native": [
+        0,
+        2
+      ],
+      "fast": [
+        0,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": false
+    },
+    {
+      "case": "two_neg_saturation_multiplicity",
+      "native": [
+        0,
+        2
+      ],
+      "fast": [
+        0,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": false
+    },
+    {
+      "case": "both_signs_saturated",
+      "native": [
+        0,
+        2
+      ],
+      "fast": [
+        0,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "nan_and_saturation",
+      "native": [
+        1,
+        1
+      ],
+      "fast": [
+        0,
+        0
+      ],
+      "verdict_same": false,
+      "counts_same": false
+    },
+    {
+      "case": "inf_and_saturation",
+      "native": [
+        1,
+        1
+      ],
+      "fast": [
+        1,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "just_below_max_finite",
+      "native": [
+        0,
+        2
+      ],
+      "fast": [
+        0,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "largest_finite_below_65504",
+      "native": [
+        0,
+        0
+      ],
+      "fast": [
+        0,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "subnormals",
+      "native": [
+        0,
+        0
+      ],
+      "fast": [
+        0,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "zeros",
+      "native": [
+        0,
+        0
+      ],
+      "fast": [
+        0,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "many_bad",
+      "native": [
+        3,
+        2
+      ],
+      "fast": [
+        2,
+        0
+      ],
+      "verdict_same": false,
+      "counts_same": false
+    }
+  ],
+  "multiplicity_nuance": "the native saturation check counts occurrences while the cheap check tests presence, so duplicate saturated values make the counts differ even though the verdict does not. The audit only consumes the verdict in both modes, so presence is sufficient, but R163s claim of identical counts is only valid where the counts are zero or one.",
+  "why_the_verdicts_are_equivalent": "65504 is the largest finite FP16 magnitude, so at least one element with abs 65504 exists exactly when max(x) is 65504 or min(x) is -65504; non-finite elements are counted directly by isnan and isinf.",
+  "consequence_for_adoption": "if the cheap check is adopted, its contract should be stated as an identical pass/fail verdict, not as identical counts, unless the count itself is needed."
+}

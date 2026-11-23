@@ -1,0 +1,73 @@
+{
+  "scope": "R164 adversarial unit test of the native versus cheap safety checks",
+  "verification_only": true,
+  "model_arithmetic_unchanged": true,
+  "no_check_removed": true,
+  "nothing_adopted": true,
+  "device": "npu:0",
+  "cases": 16,
+  "verdict_mismatches": 2,
+  "count_mismatches": 4,
+  "verdicts_always_agree": false,
+  "conclusion": "THE CHEAP IMPLEMENTATION IS NOT EQUIVALENT",
+  "failing_cases": [
+    {
+      "case": "nan_and_saturation",
+      "native": [
+        1,
+        1
+      ],
+      "fast": [
+        0,
+        0
+      ]
+    },
+    {
+      "case": "many_bad",
+      "native": [
+        3,
+        2
+      ],
+      "fast": [
+        2,
+        0
+      ]
+    }
+  ],
+  "count_only_differences": [
+    {
+      "case": "two_pos_saturation_multiplicity",
+      "native": [
+        0,
+        2
+      ],
+      "fast": [
+        0,
+        1
+      ]
+    },
+    {
+      "case": "two_neg_saturation_multiplicity",
+      "native": [
+        0,
+        2
+      ],
+      "fast": [
+        0,
+        1
+      ]
+    }
+  ],
+  "two_defects": {
+    "nan_poisons_the_extremes": "when the tensor contains NaN, max/min return NaN, so the comparison against 65504 is false and the saturation detection is lost entirely: nan_and_saturation reports [0,0] against a native [1,1].",
+    "non_finite_count_lost_on_a_tiny_tensor": "on the two-element NaN case isnan().sum() returned 0, so the non-finite count was lost as well. That needs its own investigation before the cheap path can rely on isnan."
+  },
+  "correction_to_r163": "R163 reported identical counts on 465 audited tensors and I described that as a proven equivalence. It is not: every one of those tensors had zero bad elements, so the comparison only showed that both implementations report zero. The claim is hereby narrowed to exactly that, and the cheap implementation must not be adopted as written.",
+  "salvageable_design": "the fast path is only valid when the tensor holds no non-finite value. A safe version would first test finiteness and, when that test passes, use the max/min presence test for saturation; otherwise it must fall back to the exact counting path. That keeps the win in the ordinary case, where real activations are finite, while never losing a detection.",
+  "status_of_the_2_point_9_s": "the audit really does cost about 2.87 s of step time (R162) and the fast check really is 2.6 times cheaper per call (R163), but the cheaper version cannot be used until a fail-safe design is written and passes this adversarial suite plus the real-data comparison.",
+  "next": [
+    "explain why isnan missed the NaN in the two-element case",
+    "write the fail-safe version with an exact fallback",
+    "re-run both this suite and the 465-call real-data comparison against it"
+  ]
+}
