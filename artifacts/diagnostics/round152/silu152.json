@@ -1,0 +1,50 @@
+{
+  "scope": "R152 timing of the MLP SiLU activation with device events",
+  "measurement_only": true,
+  "no_sync_inside_forward": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 18.001,
+  "hook_duplication_factor": 3,
+  "duplication_evidence": "mlp median 88.16 ms matches the R149 independent measurement (88.178 ms), so the span is right and only the count is multiplied",
+  "silu": {
+    "raw_sum_ms": 996.3,
+    "dedup_sum_ms": 332.1,
+    "raw_calls": 312,
+    "dedup_calls": 104,
+    "median_ms": 0.276,
+    "min_ms": 0.004,
+    "max_ms": 219.21,
+    "shapes_seen": [
+      [
+        3,
+        2688
+      ],
+      [
+        3,
+        5376
+      ],
+      [
+        2043,
+        7168
+      ],
+      [
+        10448,
+        7168
+      ]
+    ]
+  },
+  "mlp": {
+    "raw_sum_ms": 18037.5,
+    "dedup_sum_ms": 6012.5,
+    "median_ms": 88.16,
+    "dedup_calls": 50
+  },
+  "mlp_residual_ms": 1728.6000000000004,
+  "silu_share_of_mlp_residual_percent": 19.2,
+  "hypothesis_verdict": "PARTIALLY REJECTED",
+  "finding": "The SiLU is only about a fifth of the 1.729 s mlp residual; roughly 1.4 s lies elsewhere in the mlp activation path.",
+  "new_suspicion": "MiniMaxH3MLP.forward calls hidden.chunk(2, dim=-1), which returns non-contiguous views, and then runs F.silu(gate) * up on strided inputs over an FP32 [10448, 14336] buffer. Strided elementwise passes over a ~600 MB buffer, plus the separate multiply, are a plausible source of the remaining ~1.4 s and are numerically free to change as long as the per-element formula and evaluation order are preserved.",
+  "open": "per-shape silu totals were not aggregated, so the 50 MLP calls are not yet separated from the ~54 adaLN calls",
+  "next": "measure the chunk/mul path with a contiguous-narrow control to quantify the strided-access cost"
+}
