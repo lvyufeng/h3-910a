@@ -1,0 +1,36 @@
+{
+  "scope": "R156 allocator-counter check around the MLP call",
+  "measurement_only": true,
+  "no_sync_inside_forward": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 18.092,
+  "calls": 150,
+  "mlp_total_median_ms": 88.059,
+  "silu_median_ms": 1.14,
+  "allocator_counters": {
+    "num_alloc_retries": 0,
+    "num_ooms": 0,
+    "reserved_bytes_first_call": 6199181312,
+    "reserved_bytes_last_call": 12496928768,
+    "reserved_growth_gib": 5.87
+  },
+  "per_call_allocation_churn": {
+    "allocated_bytes_median": 9140680192.0,
+    "freed_bytes_median": 8916005888.0,
+    "active_bytes_median": 224674304.0,
+    "note": "the median bytes allocated inside one mlp call, well above the ~1.2 GB of visible temporaries"
+  },
+  "allocator_hypothesis": "REJECTED",
+  "why_rejected": "num_alloc_retries and num_ooms are both zero for the whole run, so the allocator never retried and never fell back to a synchronising allocation; the growth in reserved bytes is ordinary caching growth, not a stall.",
+  "cross_check_from_r125": "R125 already measured the fused FP16 SiluAndMul variant at 18.83 s against an 18.41 s FA base, inside noise, with worse numerics. Replacing three pointwise kernels with one changed the step time by nothing, which is only consistent with that region being bound by waiting rather than by the elementwise kernels.",
+  "remaining_hypotheses": [
+    "contention with the asynchronous host-to-device weight prefetch on the copy stream",
+    "the E2 event sits after the harness pre-hooks for fc2, so the region may include a weight staging wait"
+  ],
+  "next": "read the registration order of the fc2 pre-hooks against the copy stream, then decide whether a kernel-level profile is needed",
+  "limitations": [
+    "the counters do not attribute time, only allocation behaviour",
+    "the region boundaries depend on hook ordering relative to the harness dispatcher"
+  ]
+}
