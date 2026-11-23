@@ -1,0 +1,88 @@
+{
+  "scope": "R201b: the encoder under-2s target looks reachable because it is transfer-bound, not compute-bound - a strong lead, explicitly not yet a conclusion",
+  "offline_analysis": true,
+  "no_machine_used": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "path_status_check": "PERFORMANCE_STATUS.md records only the video VAE as paused; the encoder is not paused and section 4 item 6 asks for a new mechanism preserving the original maths",
+  "encoder_config": {
+    "arch": "Qwen3VLForConditionalGeneration",
+    "layers": 64,
+    "hidden_size": 5120,
+    "intermediate_size": 25600,
+    "heads": 64,
+    "kv_heads": 8,
+    "head_dim": 128,
+    "vocab_size": 151936,
+    "dtype": "bfloat16",
+    "shards": 14,
+    "total_GB": 63,
+    "source": "/home/mseco/models/MiniMax-H3/FL2VA/text_encoder/config.json"
+  },
+  "parameter_reconciliation": {
+    "per_layer": {
+      "attention_M": 94,
+      "mlp_M": 393,
+      "total_M": 487
+    },
+    "total_params_B": 32,
+    "bytes_at_bf16_B": 64,
+    "directory_GB": 63,
+    "verdict": "reconciles: 32 B parameters at 2 bytes is 64 GB against a 63 GB directory"
+  },
+  "roofline": {
+    "input_tokens": 2043,
+    "measured_native_median_s": 3.047,
+    "cards": 8,
+    "peak_TFLOPS_per_card": 96.9,
+    "compute_floor_s": 0.169,
+    "measured_over_floor": 18,
+    "weight_bytes_GB": 63,
+    "implied_transfer_rate_GBps": 20.7,
+    "measured_H2D_GBps": 20.0,
+    "interpretation": "two independent numbers agree: the measured encoder time divided by its weight volume equals the measured host-to-device bandwidth, which strongly suggests every call moves all 63 GB of weights and that compute is only about 5.5 percent of the cost"
+  },
+  "memory_feasibility": {
+    "HBM_per_card_GB": 32,
+    "per_card_weight_share_GB": 7.9,
+    "verdict": "the weights fit comfortably, so residency is possible; the transfer exists because device memory is time-shared with the DiT, which needs about 31 GB per card at TP2"
+  },
+  "feasibility_for_2s": [
+    {
+      "scenario": "current, moving 63 GB per call",
+      "projected_s": 3.05,
+      "meets": false
+    },
+    {
+      "scenario": "weights resident, paying only compute",
+      "projected_s": "0.2-0.6",
+      "meets": true
+    },
+    {
+      "scenario": "move once per generation shared across 3 requests",
+      "projected_s": 1.0,
+      "meets": true
+    }
+  ],
+  "key_unverified_premise": {
+    "premise": "every call re-transfers all 63 GB",
+    "status": "NOT verified; it is inferred from the numerical coincidence of the transfer rate",
+    "supporting_hint": "R137 measured 8 runs all near 3 s (2.93-3.12 s), which tends to support per-call transfer, but whether those 8 runs shared one process and one weight lifetime was not checked",
+    "decisive_cheap_test": [
+      "call the encoder twice in the same process and see whether the second call is also about 3 s; a much faster second call would mean weights load once and the inference is wrong",
+      "watch npu-smi device memory around the call for a resident 7.9 GB block appearing and disappearing"
+    ]
+  },
+  "why_this_round_differs": [
+    "checked first that the path is not paused",
+    "obtained the real config and reconciled parameter count against directory size (32 B x 2 bytes = 64 GB vs 63 GB)",
+    "cross-validated with two independent numbers (20.7 vs 20.0 GB/s)",
+    "explicitly flagged the unverified premise and its cheap test instead of concluding"
+  ],
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
