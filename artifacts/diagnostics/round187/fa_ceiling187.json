@@ -1,0 +1,62 @@
+{
+  "scope": "R187: attempted to measure the achievable causal attention ceiling; three library paths were blocked",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "goal": "decide whether the 69 TFLOPS/card the 10 s target needs is reachable before investing in a new FA kernel",
+  "shape_from_receipts": {
+    "input_N": 41792,
+    "kernel_N": 43776,
+    "key_limit": 41769,
+    "core_budget": 30,
+    "blockDim": 30,
+    "B": 1,
+    "H": 7,
+    "D": 128,
+    "Br": 128,
+    "Bc": 304
+  },
+  "flops_check": {
+    "dense_per_block_TF": 6.26,
+    "blocks": 50,
+    "dense_per_step_TF": 313.0,
+    "note": "313 TFLOP is the dense (non-causal) figure, which reconciles with the R149/R150 receipts"
+  },
+  "attempts": [
+    {
+      "path": "npu_fusion_attention(pre_tockens,next_tockens)",
+      "result": "error 161001 param invalid"
+    },
+    {
+      "path": "npu_fusion_attention(sparse_mode=2)",
+      "result": "error 161001 param invalid"
+    },
+    {
+      "path": "sdpa 7 heads is_causal",
+      "result": "OOM 45.55 GiB against 32 GiB"
+    },
+    {
+      "path": "sdpa per head on a sliced tensor",
+      "result": "can not cast format when output is input"
+    }
+  ],
+  "interpretation": {
+    "finding_1": "the generic npu_fusion_attention rejects these shapes, so the model must be using the 910A-specific plugin (VLLM_OMNI_910A_FLASH_ATTN=1); comparing against the generic library is not the same measurement",
+    "finding_2": "sdpa materialises the N x N score matrix at 45.55 GiB, which confirms flash structure is mandatory on a 32 GiB card"
+  },
+  "verdict": "the ceiling question is UNANSWERED; nothing here implies 69 TFLOPS/card is infeasible",
+  "next_round_plan": [
+    "locate the Python entry point of the 910A FA plugin the model actually uses",
+    "call it directly on one card with the R159 plan parameters and compare the per-block time against 7.454/50 = 149 ms",
+    "sweep core_budget from 30 up to the full AIV count to test whether core occupancy is the bottleneck",
+    "sweep Br/Bc if the plugin exposes them"
+  ],
+  "key_decision_point": "if the model's own FA op with all cores still only reaches about 41 TFLOPS/card, the limit is that implementation; if it is much higher, the 30-core budget is the bottleneck and a core-budget change may be far cheaper than a new kernel",
+  "compliance": {
+    "weights_loaded": false,
+    "synthetic_inputs": true,
+    "shared_cann_modified": false,
+    "driver_or_device_reset": false,
+    "model_math_unchanged": true
+  }
+}
