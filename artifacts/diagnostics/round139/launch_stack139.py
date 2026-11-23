@@ -10,8 +10,8 @@ import threading
 import select
 import time
 
-ROOT=Path('/tmp/h3_vae13901')
-SESSION=ROOT/'engine_vae139a'
+ROOT=Path('/tmp/h3_vae13902')
+SESSION=ROOT/'engine_vae139b'
 
 
 def guarded_launch137(command,child_env,log_path,row,publish,failure_watch,deadline_monotonic):
@@ -83,7 +83,7 @@ def guarded_launch137(command,child_env,log_path,row,publish,failure_watch,deadl
 
 
 def main():
-    receipt=ROOT/'engine_vae139a_process.json';assert not SESSION.exists() and not receipt.exists(),'Refuse replay of uncertain launch'
+    receipt=ROOT/'engine_vae139b_process.json';assert not SESSION.exists() and not receipt.exists(),'Refuse replay of uncertain launch'
     preflight=json.loads((ROOT/'preflight127.json').read_text());assert preflight['completed'] and not preflight['weights_loaded']
     fresh=json.loads((ROOT/'preflight139.json').read_text());assert fresh['completed']
     assert fresh['fixed_video_latent_SHA_verified'] and fresh['native_source_SHA_verified']
@@ -107,7 +107,7 @@ def main():
     key_path=ROOT/'private_IPC_key127.bin';assert not key_path.exists()
     fd=os.open(key_path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
     with os.fdopen(fd,'wb') as f:f.write(os.urandom(32))
-    work=ROOT/'cann_engine_vae139a';work.mkdir(exist_ok=False)
+    work=ROOT/'cann_engine_vae139b';work.mkdir(exist_ok=False)
     assignments={'H3_R127_IPC_KEY_FILE':str(key_path),'H3_R127_SELECTIVE_BOOTSTRAP':'1','H3_R127_SESSION_OUT':str(SESSION),
         'H3_R127_INIT_DIAGNOSTICS':'1',
         'H3_NPU_ALIGNMENT124_BOOTSTRAP':'0','H3_NPU_ALIGNMENT124_SELECTIVE_BOOTSTRAP':'0',
@@ -120,9 +120,9 @@ def main():
         'HF_HUB_OFFLINE':'1','TRANSFORMERS_OFFLINE':'1','OMP_NUM_THREADS':'4','OPENBLAS_NUM_THREADS':'1',
         'ASCEND_RT_VISIBLE_DEVICES':'0,1,2,3,4,5,6,7','ASCEND_WORK_PATH':str(work)}
     assert all(' ' not in v and '\n' not in v for v in assignments.values())
-    shell='source /home/mseco/Ascend/cann-9.2.0/set_env.sh; export PYTHONPATH=/tmp/h3_vae13901:/tmp/h3_align12401:$PYTHONPATH; export '
+    shell='source /home/mseco/Ascend/cann-9.2.0/set_env.sh; export PYTHONPATH=/tmp/h3_vae13902:/tmp/h3_align12401:$PYTHONPATH; export '
     shell+=' '.join(k+'='+v for k,v in assignments.items())
-    shell+='; exec /home/mseco/vllm910a/bin/python -u /tmp/h3_vae13901/generate_stack139.py'
+    shell+='; exec /home/mseco/vllm910a/bin/python -u /tmp/h3_vae13902/generate_stack139.py'
     command=['/bin/bash','-c',shell]
     sources={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in ROOT.glob('*.py')}
     deadline_monotonic=time.monotonic()+5400
@@ -130,12 +130,12 @@ def main():
          'compute_budget_seconds':5400,'cleanup_grace_seconds':360,'new_precision_policy_accepted':False,'model_weights_transferred':False}
     def publish():
         if receipt.exists():assert json.loads(receipt.read_text())['pid']==row['pid']
-        temporary=ROOT/'engine_vae139a_process.new'
-        assert temporary.resolve()==Path('/tmp/h3_vae13901/engine_vae139a_process.new')
-        assert receipt.resolve()==Path('/tmp/h3_vae13901/engine_vae139a_process.json')
+        temporary=ROOT/'engine_vae139b_process.new'
+        assert temporary.resolve()==Path('/tmp/h3_vae13902/engine_vae139b_process.new')
+        assert receipt.resolve()==Path('/tmp/h3_vae13902/engine_vae139b_process.json')
         temporary.write_text(json.dumps(row,indent=2)+'\n');os.replace(temporary,receipt)
     child_env={**os.environ,**assignments}
-    rc=guarded_launch137(command,child_env,ROOT/'engine_vae139a.log',row,publish,failure_watch,deadline_monotonic)
+    rc=guarded_launch137(command,child_env,ROOT/'engine_vae139b.log',row,publish,failure_watch,deadline_monotonic)
     print(json.dumps({'completed_process':row['pid'],'exit_code':rc}),flush=True);raise SystemExit(rc)
 
 

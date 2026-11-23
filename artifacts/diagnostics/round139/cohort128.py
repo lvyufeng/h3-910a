@@ -16,13 +16,13 @@ import signal
 import struct
 import threading
 
-ROOT=Path('/tmp/h3_vae13901')
+ROOT=Path('/tmp/h3_vae13902')
 FAILURE=ROOT/'cohort_failure128.json'
 
 
 def publish_fatal128(row):
     # No NPU access: usable even when a rank failed before a TCP Store capability exists.
-    target=FAILURE;assert target.resolve()==Path('/tmp/h3_vae13901/cohort_failure128.json')
+    target=FAILURE;assert target.resolve()==Path('/tmp/h3_vae13902/cohort_failure128.json')
     temporary=ROOT/f'cohort_failure_pid{os.getpid()}_{__import__("time").monotonic_ns()}.json'
     assert not temporary.exists();temporary.write_text(json.dumps(row,indent=2)+'\n')
     try:os.link(temporary,target)

@@ -5,13 +5,15 @@ import os
 from pathlib import Path
 import time
 
-ROOT=Path('/tmp/h3_vae13901');SESSION=ROOT/'engine_vae139a'
+ROOT=Path('/tmp/h3_vae13902');SESSION=ROOT/'engine_vae139b'
 
 
 def main():
     assert SESSION.is_dir();receipt=SESSION/'stack_lifecycle139.json';assert not receipt.exists()
-    contract=json.loads((ROOT/'issue7_contract139.json').read_text())
-    assert contract['measurement_only'] and contract['no_math_change'] and contract['no_candidate'] and contract['no_tolerance']
+    rule=json.loads((ROOT/'acceptance_rule139.json').read_text())
+    assert rule['user_choice'].startswith('option 1') and rule['scope'].startswith('video VAE')
+    contract=json.loads((ROOT/'issue7_contract138.json').read_text())
+    assert contract['measurement_only'] and contract['no_math_change']
     os.environ['H3_R127_SESSION_OUT']=str(SESSION)
     from full_bootstrap127 import install_alignment
     install_alignment()
@@ -20,7 +22,7 @@ def main():
         'ulysses_degree':4,'ring_degree':1,'dtype':'half','enforce_eager':True,'enable_layerwise_offload':True,
         'vae_use_tiling':True,'vae_parallel_mode':'tile','vae_patch_parallel_size':8,
         'diffusion_attention_backend':'TORCH_SDPA','stage_init_timeout':2400,'init_timeout':2400}
-    report={'scope':__doc__,'completed':False,'contract':contract,'kwargs':kwargs,'sampler_evaluations':0,'DiT_forward_calls':0,
+    report={'scope':__doc__,'completed':False,'contract':contract,'acceptance_rule':rule,'kwargs':kwargs,'sampler_evaluations':0,'DiT_forward_calls':0,
         'candidate_enabled':False,'numeric_tolerance_adopted':False,'RPCs':[]}
     def publish():receipt.write_text(json.dumps(report,indent=2)+'\n')
     publish();omni=None

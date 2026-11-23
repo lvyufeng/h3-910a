@@ -18,7 +18,7 @@ import time
 from fingerprints129 import fingerprint, normalized_fingerprint
 from original_state137 import component_state, same_original_state
 
-ROOT=Path('/tmp/h3_vae13901')
+ROOT=Path('/tmp/h3_vae13902')
 PRIOR=Path('/tmp/h3_quality13601/engine_quality136a/r01_original_false')
 REPEATS=4
 RULE_PATH='acceptance_rule139.json'
