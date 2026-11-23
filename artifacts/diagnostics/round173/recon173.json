@@ -1,0 +1,40 @@
+{
+  "scope": "R173 custom-operator pipeline: project generated and kernel written; device compile blocked on a CANN include path mismatch",
+  "user_authorisation": "2026-11-23 user permitted AscendC, TBE and reverse-engineered CCE work",
+  "progress": {
+    "msopgen_project_generated": true,
+    "soc": "ascend910b",
+    "language": "cpp",
+    "framework": "aclnn",
+    "kernel_written": true,
+    "build": "BLOCKED on toolchain include path"
+  },
+  "kernel_design": {
+    "input": "float16 tensor, reinterpreted to its 16-bit pattern",
+    "computation": "single-pass maximum of (bits & 0x7fff) per core",
+    "why_max_instead_of_counts": "FP16 magnitude bits order monotonically with |x|, so maxMag >= 0x7c00 means a NaN or Inf exists and maxMag == 0x7bff means a value of magnitude 65504 exists. R164 established the audit only consumes the zero-versus-nonzero verdict, so verdict equivalence is sufficient.",
+    "no_float_predicates": "bit patterns only, because R165 measured the FP16 float predicates on this device miss NaN",
+    "output": "one int32 per core holding that core maximum magnitude bit value; the host takes the maximum"
+  },
+  "build_error": {
+    "message": "fatal error: 'cstdint' file not found",
+    "origin": "CANN header aarch64-linux/asc/impl/utils/sys_macros_impl.h line 18, pulled in by kernel_operator.h",
+    "not_caused_by_our_code": "the same error persists after removing cstdint from the generated tiling header",
+    "headers_exist_at": "/home/mseco/Ascend/cann-9.2.0/tools/hcc/aarch64-target-linux-gnu/include/c++/14.3.0",
+    "build_expects": "$ENV{ASCEND_HOME_PATH}/toolkit/toolchain/hcc/aarch64-target-linux-gnu/include/c++/14.3.0",
+    "root_cause": "the expected toolkit/toolchain/hcc path does not match the installed tools/hcc layout"
+  },
+  "fix_order": [
+    "private overlay with a symbolic link, leaving the shared CANN install untouched",
+    "look for an official environment variable in the TBE compile path",
+    "add -isystem to this project only via op_kernel/CMakeLists.txt",
+    "only as a last resort modify the shared CANN install, which would need user approval"
+  ],
+  "compliance": {
+    "weights_downloaded": false,
+    "shared_cann_modified": false,
+    "driver_or_device_reset": false,
+    "private_dirs_mode_700": true,
+    "lease_released": true
+  }
+}
