@@ -1,0 +1,139 @@
+{
+  "scope": "R199: the video VAE wastes 58 percent of its decode work on overlapping temporal chunks",
+  "offline_analysis": true,
+  "no_machine_used": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "target": {
+    "name": "video VAE < 20 s",
+    "current_s": [
+      21.62,
+      21.76
+    ],
+    "gap_s": "1.6-1.8",
+    "gap_pct": 7.5
+  },
+  "code_structure": {
+    "file": "/tmp/h3_align12401/original_metadata124f/FL2VA/video_vae/klvae.py",
+    "lines": 1258,
+    "decode_base": 790,
+    "decode_temporal": 678,
+    "_adaptive_decode": 437,
+    "pattern": "decode_temporal loops over num_chunks serially; each chunk takes tokens_chunk_size + token_overlap latent frames through _adaptive_decode, and adjacent chunks overlap by token_overlap before blending"
+  },
+  "geometry": {
+    "latent_T": 37,
+    "tokens_chunk_size": 5,
+    "token_overlap": 2,
+    "vae_ratio_t": 4,
+    "num_chunks": 7,
+    "frames_per_chunk": 28,
+    "total_decoded_frames": 196,
+    "output_frames": 124,
+    "redundancy_factor": 1.58,
+    "finding": "58 percent of decode work goes into overlapping frames that are then discarded by blend"
+  },
+  "chunk_size_sweep": [
+    {
+      "chunk_size": 3,
+      "chunks": 12,
+      "frames": 240,
+      "waste": 1.94,
+      "rel_work": 1.22
+    },
+    {
+      "chunk_size": 5,
+      "chunks": 7,
+      "frames": 196,
+      "waste": 1.58,
+      "rel_work": 1.0,
+      "current": true
+    },
+    {
+      "chunk_size": 7,
+      "chunks": 5,
+      "frames": 180,
+      "waste": 1.45,
+      "rel_work": 0.918
+    },
+    {
+      "chunk_size": 9,
+      "chunks": 4,
+      "frames": 176,
+      "waste": 1.42,
+      "rel_work": 0.898
+    },
+    {
+      "chunk_size": 12,
+      "chunks": 3,
+      "frames": 168,
+      "waste": 1.35,
+      "rel_work": 0.857
+    },
+    {
+      "chunk_size": 18,
+      "chunks": 2,
+      "frames": 160,
+      "waste": 1.29,
+      "rel_work": 0.816
+    },
+    {
+      "chunk_size": 20,
+      "chunks": 2,
+      "frames": 176,
+      "waste": 1.42,
+      "rel_work": 0.898
+    }
+  ],
+  "best": {
+    "chunk_size": 18,
+    "rel_work": 0.816,
+    "projected_s": 17.7,
+    "note": "also cuts chunk count from 7 to 2, removing five chunk-level fixed costs"
+  },
+  "candidates_ranked": [
+    {
+      "chunk_size": 9,
+      "rel_work": 0.898,
+      "projected_s": 19.5,
+      "memory_risk": "low",
+      "recommendation": "safest first step and already clears the target"
+    },
+    {
+      "chunk_size": 12,
+      "rel_work": 0.857,
+      "projected_s": 18.6,
+      "memory_risk": "medium"
+    },
+    {
+      "chunk_size": 18,
+      "rel_work": 0.816,
+      "projected_s": 17.7,
+      "memory_risk": "high"
+    }
+  ],
+  "two_blocking_caveats": [
+    {
+      "issue": "numerically non-equivalent",
+      "detail": "changing tokens_chunk_size changes which frames take part in the overlap blend and changes the temporal convolution context length, so outputs differ; per contract it must be disabled, reported and decided by the user"
+    },
+    {
+      "issue": "memory risk",
+      "detail": "activation memory grows with chunk length: chunk_size=5 peaks at 13.436 GiB while chunk_size=18 decodes 80 frames per chunk (2.9x); a rough total of about 19 GiB may still fit on a 32 GiB card but this is unmeasured"
+    }
+  ],
+  "significance": "the video VAE target may need only one temporal-chunk parameter change, with no kernel work at all",
+  "limits": [
+    "pure arithmetic with no machine run or measurement; the payoff depends on per-chunk cost scaling linearly",
+    "the num_chunks formula was reverse-engineered from the loop and not checked against the code that computes it",
+    "whether isolated head/tail frames affect num_chunks was not verified",
+    "memory sufficiency was not tested and is the largest uncertainty",
+    "the change is numerically non-equivalent and needs a user decision"
+  ],
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
