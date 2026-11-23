@@ -94,8 +94,9 @@ def main():
     for name,entry in preflight['sources'].items():assert hashlib.sha256(Path(entry['path']).read_bytes()).hexdigest()==entry['sha256']
     assert not (ROOT/'cohort_failure128.json').exists()
     assert not list(ROOT.glob('stack_rank*139.json'))
-    contract=json.loads((ROOT/'issue7_contract139.json').read_text())
-    assert contract['measurement_only'] and contract['no_math_change'] and contract['no_candidate'] and contract['no_tolerance']
+    rule=json.loads((ROOT/'acceptance_rule139.json').read_text())
+    assert rule['user_choice'].startswith('option 1') and rule['scope'].startswith('video VAE')
+    assert json.loads((ROOT/'issue7_contract138.json').read_text())['measurement_only'] is True
     assert json.loads((ROOT/'stack_unit139.json').read_text())['completed']
     assert json.loads((ROOT/'controller_unit139.json').read_text())['completed']
     for path,digest in fresh['native_source_sha256'].items():assert hashlib.sha256(Path(path).read_bytes()).hexdigest()==digest
