@@ -1,0 +1,54 @@
+{
+  "scope": "R205: the encoder switch is a single config item, and the pinned-memory concern from R203/R204 was based on a wrong model",
+  "offline_source_and_log_reading": true,
+  "no_machine_used": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "decisive_log_evidence": [
+    "layerwise_backend.py:363 Enabled rank-local layerwise offload for encoder text_encoder (77 blocks across 2 stacks)",
+    "layerwise_backend.py:454 Applying layer-wise offloading on ['transformer']"
+  ],
+  "confirms_r203": "both the text encoder and the DiT use layerwise offload, so the encoder takes the manual-component-offload path that loads on entry and offloads on exit, re-streaming 63 GB per encode_prompt call",
+  "refutes_r203_r204_core_worry": {
+    "my_wrong_model": "DiT 62 GB plus encoder 63 GB both pinned equals 125 GB against a 94.3 GiB limit, short by 22 GiB",
+    "reality": "layerwise offload means only one block is in the pinned buffer at any time, so per block it is 63 GB / 77 = about 0.82 GB and the pinned need is roughly 1-2 GB",
+    "verdict": "the pinned limit was never the blocker; the scheme-B reasoning in R203 section 4d and R204 is withdrawn",
+    "still_valid": [
+      "about 99 percent of encoder time is transfer",
+      "the compute roofline is 0.17 s",
+      "per-call loading makes 3.15 s a hard floor"
+    ]
+  },
+  "the_real_switch": {
+    "file": "vllm_omni/diffusion/offloader/config.py",
+    "facts": [
+      "DIT_COMPONENT = dit",
+      "TEXT_ENCODER_COMPONENT = text_encoder",
+      "OFFLOAD_COMPONENTS = {dit, text_encoder}",
+      "DEFAULT_OFFLOAD_COMPONENTS = {dit} - the default already excludes the text encoder",
+      "should_offload_component returns resolved.offloads(component) under layer-wise strategies"
+    ],
+    "consumer": "pipeline_minimax_h3.py:1438 _uses_manual_component_offload gates the load/offload path, otherwise load_to_device with the comment Keep Qwen resident",
+    "change": "drop text_encoder from diffusion_offload_config.components, leaving [dit]",
+    "nature": "a configuration change, not a code change and not a kernel change"
+  },
+  "projected": {
+    "current_per_request_s": 3.14,
+    "after_per_request_s": 0.5,
+    "target_s": 2.0,
+    "meets": true,
+    "device_resident_GiB_per_rank": 7.33
+  },
+  "must_verify_not_assume": [
+    "device memory: encoder resident 7.33 GiB per rank plus the DiT layerwise blocks; the earlier 18.97 GiB figure used a DiT peak measured without a resident encoder, so it needs measurement",
+    "whether Module.to truly releases the host copy, though this matters less now that pinning is known not to be the constraint",
+    "whether the DLO setup needs the memory freed by the encoder offload; if DiT peak plus resident encoder exceeds 32 GiB it will OOM, and that is the only real risk"
+  ],
+  "headline_value": "downgrades the work from writing code or a kernel to changing one config item, and removes a false bottleneck I had invented myself",
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
