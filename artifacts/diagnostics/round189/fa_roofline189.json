@@ -1,0 +1,103 @@
+{
+  "scope": "R189: FA roofline arithmetic - the 10 s target is 36% of GEMM efficiency, not 71%",
+  "offline_arithmetic": true,
+  "no_machine_used": true,
+  "model_math_unchanged": true,
+  "nothing_adopted": true,
+  "own_error_corrected": {
+    "first_attempt": "omitted the head factor H=7 and concluded 3.3 TFLOPS per tile with 29x headroom",
+    "implausible_signal": "3.4% of GEMM peak is not credible for a production kernel, which is what exposed the error",
+    "corrected": "per-tile flops 139.5 MFLOP after multiplying by H"
+  },
+  "validation_against_receipts": {
+    "dense_flops_per_step": 343.4,
+    "receipt": 313.0,
+    "difference_explained_by_padding": "43776/41792 = 1.047",
+    "dense_normalised_rate": 46.1,
+    "r171_figure": 41.1
+  },
+  "config": {
+    "B": 1,
+    "H": 7,
+    "N": 43776,
+    "D": 128,
+    "Br": 128,
+    "Bc": 304,
+    "cores": 30
+  },
+  "tiles": {
+    "q_blocks": 342,
+    "k_blocks": 144,
+    "dense_tiles": 49248,
+    "causal_tiles": 24858,
+    "causal_fraction": 0.505,
+    "per_tile_time_us": 6.0,
+    "tail_waste_pct": 0.048,
+    "tail_note": "24858 tiles over 30 cores is 828.6 waves, so tail waste is negligible"
+  },
+  "achieved": {
+    "per_tile_flops_MFLOP": 139.5,
+    "causal_TFLOPS_per_card": 23.3,
+    "pct_of_GEMM_peak": 24.0,
+    "causal_flops_per_step_TFLOP": 173.3
+  },
+  "key_correction": {
+    "old_framing": "FA must go from 41.1 to 69 TFLOPS per card against a 96.9 GEMM peak, which reads as 71% of GEMM and sounds very hard",
+    "both_are_dense_normalised": "however 41.1 and 69 are dense figures, while a causal kernel only performs 50.5% of the tiles",
+    "causal_terms": {
+      "current": 23.3,
+      "needed_for_10s": 34.8,
+      "pct_of_GEMM": 35.9,
+      "multiple": 1.5
+    },
+    "conclusion": "36% of GEMM peak is an ordinary level for a mature flash-attention kernel, so the target is materially easier than previously described"
+  },
+  "payoff_table": [
+    {
+      "gemm_pct": 24,
+      "causal_TFLOPS": 23.3,
+      "fa_s": 7.45,
+      "saving_s": 0.0
+    },
+    {
+      "gemm_pct": 30,
+      "causal_TFLOPS": 29.1,
+      "fa_s": 5.96,
+      "saving_s": 1.49
+    },
+    {
+      "gemm_pct": 40,
+      "causal_TFLOPS": 38.8,
+      "fa_s": 4.47,
+      "saving_s": 2.98
+    },
+    {
+      "gemm_pct": 50,
+      "causal_TFLOPS": 48.5,
+      "fa_s": 3.58,
+      "saving_s": 3.88
+    },
+    {
+      "gemm_pct": 70,
+      "causal_TFLOPS": 67.8,
+      "fa_s": 2.56,
+      "saving_s": 4.9
+    }
+  ],
+  "implications": [
+    "FA is worth pursuing: 1.50x is needed, not the 1.68x the dense framing implied and far from matching GEMM",
+    "R171s 4.38 s upper bound assumed matching GEMM, which is not required; 2.98 s suffices for 10 s",
+    "the current 24% means each 6.00 us tile carries substantial non-cube cost that has to fall to 3.60 us"
+  ],
+  "not_measured": "this is arithmetic, not measurement; whether 40% is reachable needs to be known where the 6 us goes (softmax vector work versus insufficient K/V reuse)",
+  "cheapest_next_discriminator": [
+    "sweep Bc if the plugin allows it and check whether per-tile time scales roughly linearly (cube-limited) or not (vector-limited)",
+    "use the R150 event-probe infrastructure to read cube and vector occupancy inside the FA kernel"
+  ],
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
