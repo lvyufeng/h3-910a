@@ -7,9 +7,20 @@ DOC=ROOT/'PERFORMANCE_STATUS.md'
 
 class Tests(unittest.TestCase):
     def test_exists_and_is_current(self):
+        import re
         text=DOC.read_text()
-        self.assertIn('截至 R167',text)
+        # version-agnostic: the header must name a round number, and it must not be the stale R139 one
+        m=re.search(r'截至 R(\d+)',text)
+        self.assertIsNotNone(m,'the header must state which round it is current to')
+        self.assertGreaterEqual(int(m.group(1)),167)
         self.assertNotIn('截至 R139',text)
+
+    def test_kernel_phase_is_recorded(self):
+        text=DOC.read_text()
+        self.assertIn('内核阶段',text)
+        self.assertIn('0.351 s',text)
+        self.assertIn('2.52 s',text)
+        self.assertIn('overlay179.sh',text)
     def test_dit_target_is_ten_seconds(self):
         text=DOC.read_text()
         self.assertIn('<10 s/step',text)
