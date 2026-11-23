@@ -1,0 +1,40 @@
+{
+  "scope": "R186: contract B - per-tensor verdict comparison on the real 8-rank model path",
+  "verification_only": true,
+  "nothing_adopted": true,
+  "default_path_unchanged": true,
+  "mode": "H3_FAST_AUDIT=verify computes both verdicts per layer and compares them",
+  "result": {
+    "comparisons": 310,
+    "mismatches": 0,
+    "agree": true,
+    "nonfinite_hits": 0,
+    "saturated_hits": 0,
+    "warm_step_median_s_verify_mode": 18.2475,
+    "note": "310 = 155 checks x 2 forwards; verify mode is slower than native by construction"
+  },
+  "limitation": {
+    "key_points": [
+      "no real tensor triggered a non-finite or saturated verdict, so all 310 comparisons are clean-vs-clean",
+      "the discriminating cases come from R183's 15/15 adversarial suite instead"
+    ],
+    "combined_evidence": "R186 covers real distributions, R183 covers boundary and pathological inputs"
+  },
+  "rank_receipt_gap": {
+    "observed": "only rank0.json was produced",
+    "cause": "atexit took dist.get_rank() after the process group was destroyed, the exception was swallowed and fell back to rank 0, so all ranks wrote the same file",
+    "impact": "none for the equivalence claim, which holds per rank; fix next time by reading RANK from the environment"
+  },
+  "bug_fixed_this_round": {
+    "symptom": "RuntimeError SetPrecisionMode plus No module named tbe",
+    "cause": "the launch script replaced PYTHONPATH instead of appending, dropping the CANN packages set_env.sh adds",
+    "sibling_lesson": "R185 had the same class of error with HOME removed by a wholesale env dict"
+  },
+  "compliance": {
+    "weights_downloaded": false,
+    "shared_cann_modified": false,
+    "artifacts_in": "/tmp",
+    "driver_or_device_reset": false,
+    "model_math_unchanged": true
+  }
+}
