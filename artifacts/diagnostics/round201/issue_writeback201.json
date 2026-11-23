@@ -1,0 +1,12 @@
+{
+  "issue1_comment": "https://github.com/lvyufeng/h3-910a/issues/1#issuecomment-7108362108",
+  "process_error": "R198-R200 worked on the video VAE although PERFORMANCE_STATUS.md records that the user paused that path",
+  "doc_fix": "section 6 item 3 claimed stage As op-ification was not yet working; it is actually built, verified 15/15 and 310/310, and measured at 2.514 s end to end, awaiting approval",
+  "encoder_lead": "the encoder (Qwen3-VL, 64 layers, 5120 hidden, 32 B parameters, 63 GB bf16) measures 3.047 s against a 0.169 s compute floor; 63 GB / 3.047 s = 20.7 GB/s matches the measured 20.0 GB/s host-to-device bandwidth, so it looks transfer-bound rather than compute-bound",
+  "unverified_premise": "that every call re-transfers all 63 GB; the next step is to call the encoder twice in one process and see whether the second call is also about 3 s",
+  "decisions_needed": [
+    "approve stage A adoption",
+    "approve FA kernel work",
+    "decide the FP32 guard criterion form"
+  ]
+}
