@@ -1,0 +1,23 @@
+{
+  "user_choice": "option 1 (native noise band as upper bound)",
+  "rule": "a candidate passes only if its deviation from the original is no worse than the native decode repeat-to-repeat deviation, in both (a) differing uint8 component fraction and (b) maxabs (1 LSB)",
+  "measured_native_band_from_R138": {
+    "different_words": [
+      253135,
+      253471
+    ],
+    "total_words": 383975424,
+    "fraction_percent": [
+      0.065925,
+      0.066012
+    ],
+    "maxabs_uint8_LSB": 1,
+    "relative_RMS_percent": [
+      0.013467,
+      0.013476
+    ]
+  },
+  "control_requirement": "the same rule is also applied to a pure-native restored phase; if the restored control itself cannot satisfy the rule, the rule is reported as unsatisfiable rather than relaxed silently",
+  "scope": "video VAE decode gating under Issue #7 only; not a general precision tolerance and not applicable to other components without a fresh user decision",
+  "source": "R138 measurement, commits ac31f2d / 0f5eb54"
+}
