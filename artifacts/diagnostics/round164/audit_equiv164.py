@@ -20,11 +20,12 @@ import sys
 from pathlib import Path
 
 
-def cases(torch):
+def cases(torch, device):
     f16 = torch.float16
     nan = float('nan'); inf = float('inf')
     def t(values):
-        return torch.tensor(values, dtype=f16).reshape(1, -1)
+        # the native helper only accepts NPU tensors, so build every case on the device
+        return torch.tensor(values, dtype=f16, device=device).reshape(1, -1)
     return [
         ('all_finite_normal', t([1.0, -2.5, 100.0, -0.5])),
         ('single_nan', t([1.0, nan, 3.0])),
@@ -66,7 +67,7 @@ def main():
     rows = []
     verdict_mismatches = 0
     count_mismatches = 0
-    for name, tensor in cases(torch):
+    for name, tensor in cases(torch, 'npu'):
         nb, nboundary = native_counts(tensor)
         fb, fboundary = fast_counts(tensor)
         verdict_same = (nb != 0) == (fb != 0) and (nboundary != 0) == (fboundary != 0)
