@@ -1,0 +1,66 @@
+{
+  "scope": "R192: device-side profiling is unsupported on this chip, so the bubble hypothesis cannot be directly confirmed",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "goal": "directly confirm or refute R190's pipeline-bubble inference, which underpins the belief that the FA 1.5x is reachable",
+  "tool_found": {
+    "path": "$CANN/tools/msopprof/bin/msopprof",
+    "relevant_metrics": [
+      "PipeUtilization",
+      "ArithmeticUtilization",
+      "Memory",
+      "MemoryL0",
+      "MemoryUB",
+      "L2Cache",
+      "ResourceConflictRatio"
+    ],
+    "note": "exactly the cube/vector/MTE pipe split that would settle the question"
+  },
+  "blocker": {
+    "error": "Device profiling is not supported on current chip",
+    "also": "msprof fails to start with a missing libascendalog.so and only offers coarser granularity",
+    "conclusion": "occupancy timelines are not obtainable with the available tooling on this chip"
+  },
+  "evidence_strength_for_bubble_hypothesis": [
+    {
+      "evidence": "cube 24 percent, vector at most 21 percent, HBM 23 percent, all low at once",
+      "type": "arithmetic inference",
+      "strength": "moderate"
+    },
+    {
+      "evidence": "Bc=384 fastest, Bc=128 with 2.4x the tiles is 1.65x slower",
+      "type": "measured",
+      "strength": "fairly strong, consistent with a sizeable fixed per-tile cost"
+    },
+    {
+      "evidence": "Bc=304 is only 8.9 percent slower than 384",
+      "type": "measured",
+      "strength": "strong, rules out cube fragmentation as the main cause"
+    },
+    {
+      "evidence": "softmax at 12 ops per element would still use only 21 percent of the vector peak",
+      "type": "arithmetic inference",
+      "strength": "moderate to strong, rules out vector throughput"
+    }
+  ],
+  "honest_statement": "the bubble hypothesis has indirect support but no direct observation; it must not be described as confirmed",
+  "alternatives_not_needing_a_profiler": [
+    {
+      "idea": "fit time = a*tiles + b*flops over the R191 configurations, where a>0 demonstrates a fixed per-tile cost",
+      "status": "can be done immediately from existing data"
+    },
+    {
+      "idea": "measure an empty kernel with the same blockDim and wave count to size the per-wave fixed cost",
+      "status": "would give an independent estimate"
+    }
+  ],
+  "next": "fit the R191 five points to separate per-tile fixed cost from per-flop cost - this is direct evidence that needs no profiler",
+  "compliance": {
+    "original_fa910a_unmodified": true,
+    "private_copy_in": "/tmp",
+    "weights_loaded": false,
+    "driver_or_device_reset": false,
+    "model_math_unchanged": true
+  }
+}
