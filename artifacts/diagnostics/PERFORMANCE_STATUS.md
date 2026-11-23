@@ -1,4 +1,4 @@
-# 当前性能状态与结论（截至 R194）
+# 当前性能状态与结论（截至 R204）
 
 单一入口，避免再从聊天记录里翻数字。所有数字都带口径；嵌套 span **不相加**。
 更细的证据在各 `round*/RESULTS.md`；本文件只做"现在在哪、差多少、下一步该打哪"。
@@ -12,7 +12,7 @@
 | 目标 | 现状 | 差距 | 证据 |
 |---|---|---|---|
 | DiT **<10 s/step**（用户 2026-11-23 上调） | **合同口径 17.90 s**；装阶段 A 后**实测 15.473 s** | **可达**：阶段 A 已实测 −2.514 s；FA 再需 1.50×（实测证明可达 1.89×）→ 路径见 §1b | R185/R189/R193/R194 |
-| encoder **<2 s** | in-pipeline `encode_prompt` rank-max **3.14–3.17 s**；隔离态 live FP16 **2.34 s** | 按隔离口径 **−15%** | round136 / round126 |
+| encoder **<2 s** | in-pipeline `encode_prompt` rank-max **3.14–3.17 s**；隔离态 live FP16 **2.34 s** | **R203/R204 已查明：约 99% 是 63 GB 搬运；存在不改数学的可行解（约为 0.5 s）** | round136 / round126 / **round203 / round204** |
 | video VAE **<20 s** | `decode_latent` warm rank-max **21.62–21.76 s** | 差 **1.6–1.8 s（−7.5%）** | round138 / round139 |
 | audio VAE | **0.21–0.23 s** | 非瓶颈 | round136 |
 | A2/A3 真实硬件同口径 | **未做** | — | #13 open |
@@ -237,8 +237,18 @@ GEMM 峰值的 71%。但因果内核只做 50.5% 的 tile，换成**因果口径
      **⇒ 只差用户一句批准即可接入默认路径。**
 4. **#4 worker-local copy stream / 安全 prefetch**：仍 **Blocked by #15**。
 5. **video VAE 剩余 1.7 s**：用户已暂停该路。
-6. **encoder 剩余 15%**：历史已证 geometry cache 无收益、TP4 岛内无明确收益；
-   需新机制（norm/linear 布局/QK-rotary/host launch），保持原数学。
+6. **encoder 剩余 15%** —— **R203/R204 已重定位，结论变了**：
+   历史机制（geometry cache、TP4 岛内）无收益是对的，但**真正的瓶颈此前没找到**。
+   实测 `63 GB ÷ 3.05 s = 20.7 GB/s` ≈ 本机 pinned H2D 实测 **20.0 GB/s**
+   ⇒ **encoder 时间约 99% 是 63 GB 权重搬运**（算力 roofline 仅 0.17 s）。
+   - **每次载入则 3.15 s 是硬下限，<2 s 物理不可能**
+   - **可行解**：encoder 上卡一次后**释放 host 副本**（DiT 继续 pinned）
+     - pinned：仅 DiT 62 GB = **57.7 GiB < 94.3 GiB 上限** ✅ 余 36.5
+     - device：encoder 7.33 + DiT 流式 11.64 = **18.97 GiB < 32** ✅ 余 13.03
+     - 每请求 encoder → **≈0.5 s**，**<2 s 达成**
+   - **不改数学**；一次性代价 3.15 s/进程
+   - 未验证点：现有 `load_to_device`/`offload_to_cpu` 是成对调用，需改成"上卡后不卸载且 host 副本可回收"；
+     NUMA（8 节点）对 H2D 带宽的影响未测。
 
 ## 5. 判据问题（仍待用户）
 
