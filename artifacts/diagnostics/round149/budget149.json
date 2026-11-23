@@ -1,0 +1,51 @@
+{
+  "scope": "R149 complete device-event step budget (no sync in forward)",
+  "measurement_only": true,
+  "no_sync_inside_forward": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 18.078,
+  "fa_wrapper_install_factor": 3.0,
+  "fa_wrapper_note": "the FA wrapper was installed once per hook-group call, so each launch was recorded 3 times; the FA total below divides the recorded sum by that factor",
+  "budget_ms": {
+    "fa": 8198.7,
+    "linears_total": 4581.0,
+    "linears": {
+      "qkv": 853.3,
+      "out_proj": 1037.7,
+      "fc1": 1190.3,
+      "fc2": 1499.7
+    },
+    "attn_total": 12300.7,
+    "attn_internal_residual": 2211.0,
+    "mlp_total": 4418.6,
+    "adaln": 94.8,
+    "norms": 167.7,
+    "block_total": 17455.4,
+    "block_residual": 473.6,
+    "step_front_tail_residual": 622.2
+  },
+  "share_of_step_percent": {
+    "fa": 45.4,
+    "linears": 25.3,
+    "usp_R126": 6.0,
+    "attn_internal_residual": 12.2
+  },
+  "ten_second_arithmetic": {
+    "needed_reduction_s": 8.078,
+    "fa_total_s": 8.199,
+    "fa_elimination_still_leaves_s": 9.879,
+    "verdict": "even eliminating the whole FA term leaves 9.88 s, so 10 s cannot be reached by optimising FA alone"
+  },
+  "optimistic_projection": {
+    "fa_2x_s": 13.98,
+    "plus_linears_at_standalone_s": 11.72,
+    "note": "2x FA and linears at their measured standalone rates still lands around 12-13 s"
+  },
+  "conclusion": "10 s/step is not reachable under the current contract. FA alone is 45% of the step and eliminating it entirely would only reach 9.88 s; the realistic floor with 2x FA and GEMM at standalone rates is about 12-13 s.",
+  "options_for_user": [
+    "accept a revised target around 12-13 s with the contract intact",
+    "authorise a change to the mathematical contract (sparse or approximate attention, fewer steps, lower precision) - currently explicitly forbidden",
+    "authorise a hardware/parallelism change outside TP2+USP4"
+  ]
+}
