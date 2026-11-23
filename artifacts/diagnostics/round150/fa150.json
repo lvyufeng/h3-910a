@@ -1,0 +1,38 @@
+{
+  "scope": "R150 event-level FA/USP decomposition (baseline mode plus the R126 attention profiler)",
+  "measurement_only": true,
+  "no_sync_in_forward": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 18.027,
+  "ms_per_step": {
+    "FA_ACL_kernel": 7606.7,
+    "FA_padding": 83.6,
+    "FA_core": 7645.7,
+    "FA_wrapper_inclusive": 7736.2,
+    "FA_wrapper_overhead": 129.5,
+    "USP_pre": 809.4,
+    "USP_post": 277.8,
+    "USP_total": 1087.1,
+    "qk_norm": 230.5,
+    "attention_internal_residual": 1355.9
+  },
+  "corrections": {
+    "wrapper_overhead": "the FA wrapper adds only about 130 ms per step, not the ~745 ms that the R149 Python-level number implied; the R150 number is the precise one because the profiler wraps the 910A entry point directly",
+    "fa_kernel": "the 910A FA kernel itself is 7606.7 ms per step, which is 42.2 percent of the step"
+  },
+  "ten_second_arithmetic": {
+    "step_s": 18.027,
+    "needed_reduction_s": 8.027,
+    "fa_kernel_s": 7.607,
+    "fa_kernel_to_zero_leaves_s": 10.42,
+    "verdict": "a zero-cost attention kernel would still leave 10.42 s, so 10 s requires eliminating essentially all of the attention kernel cost (7.607 s today) and then finding another 0.42 s; no 2x-style kernel improvement can reach it"
+  },
+  "numerically_free_headroom": {
+    "attention_internal_residual": 1355.9,
+    "fa_wrapper_overhead": 129.5,
+    "note": "these are the only candidates that do not change arithmetic; together they are about 1.5 s, far short of the 8.03 s needed"
+  },
+  "conclusion": "10 s/step remains unreachable under the current contract. R150 refines the R149 numbers and removes the hope that wrapper overhead was a hidden win. The realistic floor stays about 12 s with a 2x FA kernel plus linears at their measured standalone rates.",
+  "awaiting": "user decision among: revised ~12 s target / authorise a mathematical-contract change / authorise a different hardware or parallelism plan"
+}
