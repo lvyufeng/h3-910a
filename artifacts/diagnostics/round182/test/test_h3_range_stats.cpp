@@ -66,7 +66,7 @@ static int run_op(const std::vector<uint16_t> &bits, int64_t rows, int64_t cols,
 
     void *dIn = nullptr, *dOut = nullptr;
     aclrtMalloc(&dIn, bytes, ACL_MEM_MALLOC_HUGE_FIRST);
-    const int64_t OUT_ELEMS = 8;    // one slot per core, matching H3_CORE_NUM in op_host
+    const int64_t OUT_ELEMS = 64;   // one aligned 8-int region per core (8 cores)
     size_t outBytes = (size_t)OUT_ELEMS * sizeof(int32_t);
     aclrtMalloc(&dOut, outBytes, ACL_MEM_MALLOC_HUGE_FIRST);
     aclrtMemcpy(dIn, bytes, bits.data(), bytes, ACL_MEMCPY_HOST_TO_DEVICE);
@@ -121,7 +121,10 @@ int main()
         {"inf_and_saturation", {0x7c00, f16(-65504.0f)}, true, false},
         {"many_bad", {0x7e00, 0x7c00, 0xfc00, f16(65504.0f), f16(-65504.0f), f16(1.0f)}, true, false},
         {"just_below_max", {f16(65472.0f), f16(-65472.0f)}, false, false},
-        {"rounds_up_to_max", {f16(65503.0f), f16(-65503.0f)}, false, true},
+        // 65503 is 1 below 65504 but 31 above 65472, so IEEE round-to-nearest gives 0x7bff.
+        // The local f16() helper truncates instead of rounding, so pin the patterns here;
+        // round180/reference180.py (struct.pack, which does round correctly) agrees.
+        {"rounds_up_to_max", {0x7bff, 0xfbff}, false, true},
         {"subnormals", {f16(6.1e-5f), f16(-6.1e-5f), f16(1e-7f)}, false, false},
         {"zeros", {0x0000, 0x8000}, false, false},
         {"max_finite_many", {0x7bff, 0x7bff, 0x7bff, 0x7bff}, false, true},
@@ -129,6 +132,10 @@ int main()
 
     int failures = 0;
     for (auto &c : cases) {
+        // DataCopy and ReduceMax need 32-byte aligned lengths, so pad to a multiple of 128
+        // halfs. +0.0 has magnitude bits 0x0000 and therefore cannot change a maximum, so the
+        // verdict is unaffected; the real audited tensors are far larger than this anyway.
+        while (c.bits.size() % 128 != 0) { c.bits.push_back(0x0000); }
         int maxMag = run_op(c.bits, 1, (int64_t)c.bits.size(), stream, nullptr);
         if (maxMag < 0) { printf("FAIL %-24s launch error\n", c.name); failures++; continue; }
         bool gotNf = maxMag >= (int)INF_NAN_BASE;

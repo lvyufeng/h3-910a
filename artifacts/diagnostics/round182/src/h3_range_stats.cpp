@@ -7,6 +7,8 @@ namespace {
 constexpr int TILE_ELEMS = 16384;
 constexpr int RED_WORK_ELEMS = TILE_ELEMS / 2 + 64;
 constexpr unsigned int ALIGN_ELEMS = 128;
+// one output region per core, 8 int32 = 32 bytes so DataCopy stays aligned
+constexpr int H3_OUT_STRIDE = 8;
 
 // Single pass over an FP16 tensor computing the largest magnitude.
 //
@@ -43,7 +45,10 @@ public:
         }
         len_ = len;
         xGm_.SetGlobalBuffer((__gm__ half *)x + start, len_);
-        yGm_.SetGlobalBuffer((__gm__ int *)y + coreIdx, 1);
+        // each core owns an aligned 8-int region; writing one int per core was not
+        // possible because DataCopy needs 32B alignment, and every core writing at
+        // y+coreIdx made the eight cores overwrite each other (R183 sentinel probe)
+        yGm_.SetGlobalBuffer((__gm__ int *)y + coreIdx * H3_OUT_STRIDE, H3_OUT_STRIDE);
         pipe_.InitBuffer(inQueue_, 1, TILE_ELEMS * (int)sizeof(half));
         pipe_.InitBuffer(workQueue_, 1, RED_WORK_ELEMS * (int)sizeof(half));
         pipe_.InitBuffer(redQueue_, 1, 256);
@@ -66,10 +71,12 @@ public:
             offset += n;
         }
         LocalTensor<int> o = outQueue_.AllocTensor<int>();
+        // zero the whole region so the host never sees stale bytes, then publish the maximum
+        for (int i = 0; i < H3_OUT_STRIDE; i++) { o.SetValue(i, 0); }
         o.SetValue(0, blockMax);
         outQueue_.EnQue(o);
         LocalTensor<int> oc = outQueue_.DeQue<int>();
-        DataCopy(yGm_, oc, 8);
+        DataCopy(yGm_, oc, H3_OUT_STRIDE);
         outQueue_.FreeTensor(oc);
     }
 

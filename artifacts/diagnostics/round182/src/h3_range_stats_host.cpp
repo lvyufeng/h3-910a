@@ -5,6 +5,9 @@
 // and the caller takes the maximum across the slots. The count is a fixed constant because
 // InferShape and TilingFunc must agree on it exactly.
 static constexpr int64_t H3_CORE_NUM = 8;
+// each core publishes into its own aligned 32-byte region (see the kernel)
+static constexpr int64_t H3_OUT_STRIDE = 8;
+static constexpr int64_t H3_OUT_ELEMS = H3_CORE_NUM * H3_OUT_STRIDE;
 
 namespace optiling {
 static ge::graphStatus TilingFunc(gert::TilingContext* context)
@@ -31,7 +34,7 @@ static ge::graphStatus InferShape(gert::InferShapeContext* context)
     // the output is one int32 per core
     gert::Shape* y_shape = context->GetOutputShape(0);
     y_shape->SetDimNum(1);
-    y_shape->SetDim(0, H3_CORE_NUM);
+    y_shape->SetDim(0, H3_OUT_ELEMS);
     return GRAPH_SUCCESS;
 }
 
