@@ -1,0 +1,79 @@
+{
+  "scope": "R209: a root-cause hypothesis for issue 15 - HCCL collective reduction order is non-deterministic - with a cheap decisive test",
+  "offline_source_reading": true,
+  "no_machine_used": true,
+  "hypothesis_not_yet_tested": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "why_this_work": "issue 4 (P0, worker-local copy stream and safe prefetch, i.e. candidate 4 weight-stream overlap on the 96.4 percent DiT path) is blocked by issue 15; resolving 15 is the only route that sits on the DiT main path and needs no numeric approval",
+  "my_first_hypothesis_refuted": {
+    "hypothesis": "timesteps in denoise_loop.py is a persistent buffer mutated in place and copied asynchronously without synchronisation, so a stale or partial read causes run-to-run variation",
+    "code": "timesteps.fill_(float(t_video)) then timesteps.copy_(_cpu_timesteps.to(timesteps.device, ...))",
+    "refutation": "line 201 allocates a fresh torch.empty each time and .to(device) also produces new tensors, and the comment states the CPU-then-copy design is deliberate for 910A",
+    "verdict": "not the root cause; recorded so it is not investigated again"
+  },
+  "three_independent_pieces_of_evidence": {
+    "DiT_50_blocks": {
+      "video_relRMS_pct": 0.0262,
+      "maxabs": 0.0169,
+      "source": "R128"
+    },
+    "encoder_native": {
+      "words_differing_pct": "96.1-96.4",
+      "relRMS_pct": "0.88-2.32",
+      "source": "R137",
+      "extra": "deviation already visible at encoder.text.layers.0 post output, event 62"
+    },
+    "video_VAE_decode": {
+      "components_differing_pct": 0.066,
+      "maxabs": "1 LSB",
+      "source": "R138"
+    },
+    "common_factor": "three entirely different components are all non-repeatable, so the shared factors are the NPU hardware and libraries, or the collectives"
+  },
+  "hypothesis": {
+    "claim": "HCCL all-reduce reduction order is non-deterministic",
+    "topology_context": "encoder runs TP8 with per-layer row-parallel and MLP all-reduce; DiT runs TP2 plus USP4 with several all-reduces per layer; the VAE also gathers tiles",
+    "why_it_fits": [
+      "the deviation accumulates with layer count, matching the encoder 64 layers showing 96 percent differing words",
+      "the DiT shows a small but consistently visible relRMS of 0.026 percent",
+      "the VAE shows only 1 LSB jitter, consistent with few gathers",
+      "one mechanism explains all three with sensible relative magnitudes"
+    ]
+  },
+  "decisive_test": {
+    "method": "set HCCL_DETERMINISTIC=1 and repeat the same-input run",
+    "outcomes": [
+      {
+        "result": "variation disappears, bit-identical",
+        "conclusion": "collective reduction order confirmed as root cause"
+      },
+      {
+        "result": "variation reduced but present",
+        "conclusion": "partial contribution, needs further separation"
+      },
+      {
+        "result": "no change at all",
+        "conclusion": "hypothesis refuted, fall back to operator-level non-determinism"
+      }
+    ],
+    "cost": "only an environment variable on the existing R128/R137 repeat methodology; no code change and no maths change"
+  },
+  "supporting_separation_tests": [
+    "single card with no collectives - if that repeats bit-identically, the collectives must be responsible",
+    "compare TP2 against TP8 - larger deviation at higher TP would further support the claim",
+    "use the no-extra-sync repeat control from the issue 15 checklist so syncs do not mask a race"
+  ],
+  "why_it_matters_for_the_main_goal": "issue 4 is P0, on the DiT main path, and is candidate 4 in the objective; determining 15s root cause tells us which synchronisations in the prefetch lifetime are actually required",
+  "limits": [
+    "this round is code audit plus hypothesis only, no test was run, so section five is unverified",
+    "I did not check whether HCCL_DETERMINISTIC is supported in this CANN version or whether it covers reduce-scatter and all-gather as well as all-reduce",
+    "the R137 note that the encoder deviates at the shallowest layer was not re-checked against possible input-distribution effects"
+  ],
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
