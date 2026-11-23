@@ -1,0 +1,120 @@
+{
+  "scope": "R211: every single operator tested is bit-reproducible, so the non-determinism must live in the composition or machinery layer rather than the maths",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "no_model_no_weights": true,
+  "design": {
+    "device": "npu:0",
+    "streams": "single",
+    "repeats": 10,
+    "comparison": "sha256 of the output buffer",
+    "inputs": "identical by manual_seed"
+  },
+  "results": [
+    {
+      "op": "matmul_qkv",
+      "shape": "41792x5120 @ 5120x5120",
+      "distinct": 1,
+      "reproducible": true
+    },
+    {
+      "op": "matmul_mlp_fc1",
+      "shape": "41792x5120 @ 5120x25600",
+      "distinct": 1,
+      "reproducible": true
+    },
+    {
+      "op": "matmul_mlp_fc2",
+      "shape": "41792x25600 @ 25600x5120",
+      "distinct": 1,
+      "reproducible": true
+    },
+    {
+      "op": "matmul_out_proj",
+      "shape": "41792x5120 @ 5120x5120",
+      "distinct": 1,
+      "reproducible": true
+    },
+    {
+      "op": "sum_dim_-1",
+      "distinct": 1,
+      "reproducible": true
+    },
+    {
+      "op": "max_dim_-1",
+      "distinct": 1,
+      "reproducible": true
+    },
+    {
+      "op": "rmsnorm_fp32",
+      "distinct": 1,
+      "reproducible": true
+    },
+    {
+      "op": "residual_add_fp16",
+      "distinct": 1,
+      "reproducible": true
+    },
+    {
+      "op": "softmax_fp32",
+      "distinct": 1,
+      "reproducible": true
+    }
+  ],
+  "verdict": "all operators are bit-reproducible across four real GEMM shapes plus the reductions, norms, residual add and softmax",
+  "combined_with_r210": [
+    {
+      "layer": "collectives",
+      "conclusion": "HCCL all-reduce is bit-reproducible, 8 ranks",
+      "source": "R210"
+    },
+    {
+      "layer": "single operators",
+      "conclusion": "bit-reproducible, single card",
+      "source": "R211"
+    },
+    {
+      "contrast": "yet the full 50-block DiT differs by relRMS 0.026 percent between runs",
+      "source": "R128"
+    }
+  ],
+  "inference": "the non-determinism can only come from the layer that composes the operators, not from the maths itself",
+  "narrowed_candidates": [
+    {
+      "candidate": "asynchronous weight offload and prefetch racing computation",
+      "note": "this is exactly issue 4s domain since each step moves per-block weights"
+    },
+    {
+      "candidate": "multiple stream interleaving",
+      "note": "the operator tests were single stream while the real path is multi-stream"
+    },
+    {
+      "candidate": "allocator reuse or address-dependent tiling"
+    },
+    {
+      "candidate": "collective and compute interleaving under TP2 plus USP4",
+      "note": "HCCL itself is deterministic but the interleaving order may not be"
+    }
+  ],
+  "implication_for_issue_4": "if operators and collectives are both deterministic, issue 15s 0.026 percent most likely comes from the prefetch and copy lifetime that issue 4 governs; so 15 and 4 may be two faces of one problem rather than one blocking the other, which would give 4 a concrete basis instead of a guess",
+  "fa_not_tested": {
+    "error": "sequence length must be a positive multiple of 16, even at seq 4096",
+    "source_location": "fa910a.py:107 in _kernel_sequence_length",
+    "likely_cause": "the interface probably expects B,H,N,D layout while I passed B,N,H,D, so it read heads=7 as the sequence length",
+    "status": "not resolved this round for lack of context"
+  },
+  "limits": [
+    "FA, the largest single consumer at 41.5 percent of a step, was not measured, so strictly the claim is every operator except FA",
+    "a single-stream single-card test cannot detect multi-stream or multi-card interleaving problems, which both grounds the inference and bounds it",
+    "10 repeats may be too few for very low frequency jitter"
+  ],
+  "compliance": {
+    "machine_claimed": true,
+    "machine_used_for": "synthetic operator probes",
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true,
+    "private_dir": "/tmp/h3_oprep211 mode 0700"
+  }
+}
