@@ -59,8 +59,10 @@ def guard_split(torch, device, name, m, k, n):
     x = torch.randn(m, k, dtype=torch.float16, device=device) * 0.05
     w = torch.randn(n, k, dtype=torch.float16, device=device) * 0.05
     def prologue():
+        # Exactly the native prologue shape: FP32 upcast, whole-tensor abs max held
+        # on host, power-of-two scale, divide and narrow back to FP16.
         product = x.float()
-        peak = float(product.abs().amax(dim=(0, 1)) * 0 + product.abs().amax())  # keeps the host sync
+        peak = float(product.abs().amax())
         exponent = max(0, math.ceil(math.log2(peak / 32752.0))) if peak > 32752.0 else 0
         scale = float(2 ** exponent)
         return (product / scale).to(torch.float16), scale
@@ -124,10 +126,11 @@ def main():
             gemm_case(torch, device, 'attn_out_proj_resident_fp32out', TOKENS_LOCAL, QKV_OUT, D, torch.float32),
             gemm_case(torch, device, 'mlp_fc2_resident_fp32out', TOKENS_LOCAL, FFN_OUT, D, torch.float32),
         ]
+        report['gemm'] = cases
         guards = [guard_split(torch, device, 'attn_out_proj_guard', TOKENS_LOCAL, QKV_OUT, D),
                   guard_split(torch, device, 'mlp_fc2_guard', TOKENS_LOCAL, FFN_OUT, D)]
-        report['gemm'] = cases
         report['guard_split'] = guards
+        report['gemm'] = cases
         report['fa'] = fa_case(torch, device)
         report['completed'] = True
     except BaseException as exc:
@@ -135,7 +138,8 @@ def main():
     ROOT.mkdir(parents=True, exist_ok=True)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(report, indent=2) + '\n')
-    print(json.dumps({'rank': rank, 'completed': report['completed'], 'failure': report.get('failure')}, flush=True))
+    print(json.dumps({'rank': rank, 'completed': report['completed'],
+                      'failure': str(report.get('failure'))[:200]}, flush=True))
 
 
 if __name__ == '__main__':
