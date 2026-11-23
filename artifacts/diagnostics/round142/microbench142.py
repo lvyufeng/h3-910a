@@ -127,9 +127,12 @@ def main():
             gemm_case(torch, device, 'mlp_fc2_resident_fp32out', TOKENS_LOCAL, FFN_OUT, D, torch.float32),
         ]
         report['gemm'] = cases
-        guards = [guard_split(torch, device, 'attn_out_proj_guard', TOKENS_LOCAL, QKV_OUT, D),
-                  guard_split(torch, device, 'mlp_fc2_guard', TOKENS_LOCAL, FFN_OUT, D)]
-        report['guard_split'] = guards
+        # The FP32 range-guard prologue is recorded separately: its whole-tensor
+        # abs-max reduce fails on this build for these shapes (ReduceMax), so the
+        # guard is reported as unresolved instead of guessed. The FP32-output GEMM
+        # cases above already bound what the matmul itself costs.
+        report['guard_split'] = {'unresolved': 'native prologue whole-tensor abs-max reduce raised ReduceMax for these shapes',
+                                 'no_estimate_reported': True}
         report['gemm'] = cases
         report['fa'] = fa_case(torch, device)
         report['completed'] = True

@@ -4,14 +4,14 @@ from __future__ import annotations
 import hashlib, json, subprocess
 from pathlib import Path
 
-ROOT = Path('/tmp/h3_micro142'); LABEL = 'micro142b'
+ROOT = Path('/tmp/h3_micro142'); LABEL = 'micro142c'
 
 
 def main():
     receipt = ROOT / (LABEL + '_process.json')
     out = ROOT / 'receipts'
     assert not receipt.exists(), 'refuse replay of an uncertain launch'
-    assert (ROOT/'micro142a_process.json').exists(), 'previous failing attempt must be preserved'
+    assert (ROOT/'micro142a_process.json').exists() and (ROOT/'micro142b_process.json').exists(), 'earlier attempts must be preserved'
     ROOT.mkdir(parents=True, exist_ok=True)
     out.mkdir(exist_ok=True)
     work = ROOT / ('cann_' + LABEL); work.mkdir(exist_ok=False)

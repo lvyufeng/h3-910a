@@ -1,0 +1,105 @@
+{
+  "scope": "R142: decide whether in-model GEMM/FA slowness is staging-wait or kernel efficiency.\n\nMeasurement only, standalone: no model weights are loaded, no model math is changed,\nnothing is installed into the model. Shapes are taken from the measured R141 roofline\n(M = tokens per rank per USP shard, K/N from the public architecture config).\n",
+  "completed": true,
+  "rank": 1,
+  "tokens_local": 10448,
+  "peak_assumed_FP16_TFLOPS": 310.0,
+  "no_model_weights_loaded": true,
+  "gemm": [
+    {
+      "case": "qkv_proj_resident",
+      "m": 10448,
+      "k": 5376,
+      "n": 7168,
+      "out_dtype": "float16",
+      "weight_prefetch_per_call_MiB": null,
+      "median_s": 0.00745,
+      "achieved_TFLOPS_per_card": 108.1,
+      "percent_of_FP16_peak": 34.9,
+      "flops_TF": 0.81
+    },
+    {
+      "case": "qkv_proj_with_weight_prefetch",
+      "m": 10448,
+      "k": 5376,
+      "n": 7168,
+      "out_dtype": "float16",
+      "weight_prefetch_per_call_MiB": 73.5,
+      "median_s": 0.012111,
+      "achieved_TFLOPS_per_card": 66.5,
+      "percent_of_FP16_peak": 21.4,
+      "flops_TF": 0.81
+    },
+    {
+      "case": "mlp_fc1_resident",
+      "m": 10448,
+      "k": 5376,
+      "n": 28672,
+      "out_dtype": "float16",
+      "weight_prefetch_per_call_MiB": null,
+      "median_s": 0.029595,
+      "achieved_TFLOPS_per_card": 108.8,
+      "percent_of_FP16_peak": 35.1,
+      "flops_TF": 3.22
+    },
+    {
+      "case": "mlp_fc1_with_weight_prefetch",
+      "m": 10448,
+      "k": 5376,
+      "n": 28672,
+      "out_dtype": "float16",
+      "weight_prefetch_per_call_MiB": 294.0,
+      "median_s": 0.044824,
+      "achieved_TFLOPS_per_card": 71.9,
+      "percent_of_FP16_peak": 23.2,
+      "flops_TF": 3.22
+    },
+    {
+      "case": "attn_out_proj_resident_fp32out",
+      "m": 10448,
+      "k": 7168,
+      "n": 5376,
+      "out_dtype": "float32",
+      "weight_prefetch_per_call_MiB": null,
+      "median_s": 0.011802,
+      "achieved_TFLOPS_per_card": 68.2,
+      "percent_of_FP16_peak": 22.0,
+      "flops_TF": 0.81
+    },
+    {
+      "case": "mlp_fc2_resident_fp32out",
+      "m": 10448,
+      "k": 14336,
+      "n": 5376,
+      "out_dtype": "float32",
+      "weight_prefetch_per_call_MiB": null,
+      "median_s": 0.022766,
+      "achieved_TFLOPS_per_card": 70.7,
+      "percent_of_FP16_peak": 22.8,
+      "flops_TF": 1.61
+    }
+  ],
+  "guard_split": {
+    "unresolved": "native prologue whole-tensor abs-max reduce raised ReduceMax for these shapes",
+    "no_estimate_reported": true
+  },
+  "fa": {
+    "case": "fa910a",
+    "skipped": true,
+    "reason": "no callable entry point found",
+    "source_sha256": "937671efa50e20ce57c94477946d89e69b6c5e82d905ba41e5d5a203508853f1",
+    "public_names": [
+      "FlashAttn910AError",
+      "ctypes",
+      "flash_attention_910a",
+      "hashlib",
+      "json",
+      "math",
+      "np",
+      "operator",
+      "os",
+      "pick_tile",
+      "sys"
+    ]
+  }
+}

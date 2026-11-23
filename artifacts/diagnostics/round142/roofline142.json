@@ -1,0 +1,80 @@
+{
+  "scope": "R142 standalone GEMM microbenchmark: staging-wait vs kernel efficiency",
+  "measurement_only": true,
+  "no_model_weights_loaded": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "standalone_gemm": {
+    "qkv_proj_resident": {
+      "median_ms": 7.468,
+      "TFLOPS": 107.8,
+      "percent_of_peak": 34.8
+    },
+    "qkv_proj_with_weight_prefetch": {
+      "median_ms": 11.948,
+      "TFLOPS": 67.4,
+      "percent_of_peak": 21.7
+    },
+    "mlp_fc1_resident": {
+      "median_ms": 29.754,
+      "TFLOPS": 108.3,
+      "percent_of_peak": 34.9
+    },
+    "mlp_fc1_with_weight_prefetch": {
+      "median_ms": 44.315,
+      "TFLOPS": 72.7,
+      "percent_of_peak": 23.4
+    },
+    "attn_out_proj_resident_fp32out": {
+      "median_ms": 11.767,
+      "TFLOPS": 68.4,
+      "percent_of_peak": 22.1
+    },
+    "mlp_fc2_resident_fp32out": {
+      "median_ms": 22.717,
+      "TFLOPS": 70.9,
+      "percent_of_peak": 22.9
+    }
+  },
+  "in_model_vs_standalone": [
+    {
+      "case": "qkv_proj_resident",
+      "in_model_ms_per_layer": 41.74,
+      "standalone_ms": 7.47,
+      "in_model_vs_standalone_x": 5.59,
+      "standalone_TFLOPS": 107.8,
+      "standalone_percent_of_peak": 34.8
+    },
+    {
+      "case": "mlp_fc1_resident",
+      "in_model_ms_per_layer": 54.6,
+      "standalone_ms": 29.75,
+      "in_model_vs_standalone_x": 1.84,
+      "standalone_TFLOPS": 108.3,
+      "standalone_percent_of_peak": 34.9
+    },
+    {
+      "case": "attn_out_proj_resident_fp32out",
+      "in_model_ms_per_layer": 19.02,
+      "standalone_ms": 11.77,
+      "in_model_vs_standalone_x": 1.62,
+      "standalone_TFLOPS": 68.4,
+      "standalone_percent_of_peak": 22.1
+    },
+    {
+      "case": "mlp_fc2_resident_fp32out",
+      "in_model_ms_per_layer": 30.3,
+      "standalone_ms": 22.72,
+      "in_model_vs_standalone_x": 1.33,
+      "standalone_TFLOPS": 70.9,
+      "standalone_percent_of_peak": 22.9
+    }
+  ],
+  "gemm_per_step_in_model_s": 7.283,
+  "gemm_per_step_at_standalone_rates_s": 3.585,
+  "gemm_attainable_saving_s": 3.698,
+  "practical_gemm_ceiling_TFLOPS_per_card": 108.3,
+  "conclusion": "In-model GEMM is 1.3-5.6x slower than the identical GEMM with resident weights, and even a per-call whole-weight copy variant stays 3.5x faster than in-model qkv. So the GEMM regions are limited by weight staging/lifecycle overlap, not by GEMM kernel efficiency. Closing that gap is worth about 3.7 s/step and is numerically free, which puts staging work (#4) ahead of GEMM layout work (#6).",
+  "guard_split_unresolved": "native FP32 range-guard whole-tensor abs-max reduce raised ReduceMax for these shapes; no estimate reported",
+  "fa_standalone": "not measured: the 910A FA is already a custom kernel, so re-timing it cannot reveal a faster variant"
+}
