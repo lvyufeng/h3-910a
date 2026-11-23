@@ -1,0 +1,504 @@
+{
+  "scope": "R166 exact-count equivalence of a bit-pattern safety check on int16",
+  "verification_only": true,
+  "model_arithmetic_unchanged": true,
+  "nothing_adopted": true,
+  "device": "npu:0",
+  "cases": 37,
+  "verdict_mismatches": 0,
+  "count_mismatches": 0,
+  "exactly_count_equivalent": true,
+  "predicates_used": [
+    "magnitude >= 0x7c00 for NaN and Inf together",
+    "magnitude == 0x7bff for the 65504 saturation bit pattern"
+  ],
+  "no_float_predicates": true,
+  "differences_from_the_shipped_implementation": [
+    "stays on the int16 view instead of widening to int32",
+    "one comparison covers NaN and Inf instead of three materialised masks",
+    "saturation is a bit comparison instead of an abs() plus equality over a new temporary"
+  ],
+  "rows": [
+    {
+      "case": "crafted:all_finite_normal",
+      "native": [
+        0,
+        0
+      ],
+      "bit": [
+        0,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:single_nan",
+      "native": [
+        1,
+        0
+      ],
+      "bit": [
+        1,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:single_posinf",
+      "native": [
+        1,
+        0
+      ],
+      "bit": [
+        1,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:single_neginf",
+      "native": [
+        1,
+        0
+      ],
+      "bit": [
+        1,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:single_pos_saturation",
+      "native": [
+        0,
+        1
+      ],
+      "bit": [
+        0,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:single_neg_saturation",
+      "native": [
+        0,
+        1
+      ],
+      "bit": [
+        0,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:two_pos_saturation",
+      "native": [
+        0,
+        2
+      ],
+      "bit": [
+        0,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:two_neg_saturation",
+      "native": [
+        0,
+        2
+      ],
+      "bit": [
+        0,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:both_signs",
+      "native": [
+        0,
+        2
+      ],
+      "bit": [
+        0,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:nan_and_saturation",
+      "native": [
+        1,
+        1
+      ],
+      "bit": [
+        1,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:inf_and_saturation",
+      "native": [
+        1,
+        1
+      ],
+      "bit": [
+        1,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:many_bad",
+      "native": [
+        3,
+        2
+      ],
+      "bit": [
+        3,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:just_below_max",
+      "native": [
+        0,
+        2
+      ],
+      "bit": [
+        0,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:subnormals",
+      "native": [
+        0,
+        0
+      ],
+      "bit": [
+        0,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:zeros",
+      "native": [
+        0,
+        0
+      ],
+      "bit": [
+        0,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "crafted:max_finite_many",
+      "native": [
+        0,
+        8
+      ],
+      "bit": [
+        0,
+        8
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 2):trial0",
+      "native": [
+        1,
+        1
+      ],
+      "bit": [
+        1,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 2):trial1",
+      "native": [
+        1,
+        1
+      ],
+      "bit": [
+        1,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 2):trial2",
+      "native": [
+        1,
+        1
+      ],
+      "bit": [
+        1,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 17):trial0",
+      "native": [
+        3,
+        2
+      ],
+      "bit": [
+        3,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 17):trial1",
+      "native": [
+        2,
+        2
+      ],
+      "bit": [
+        2,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 17):trial2",
+      "native": [
+        4,
+        1
+      ],
+      "bit": [
+        4,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 64):trial0",
+      "native": [
+        2,
+        3
+      ],
+      "bit": [
+        2,
+        3
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 64):trial1",
+      "native": [
+        2,
+        3
+      ],
+      "bit": [
+        2,
+        3
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 64):trial2",
+      "native": [
+        2,
+        3
+      ],
+      "bit": [
+        2,
+        3
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 1024):trial0",
+      "native": [
+        2,
+        3
+      ],
+      "bit": [
+        2,
+        3
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 1024):trial1",
+      "native": [
+        0,
+        5
+      ],
+      "bit": [
+        0,
+        5
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(1, 1024):trial2",
+      "native": [
+        2,
+        3
+      ],
+      "bit": [
+        2,
+        3
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(55, 5376):trial0",
+      "native": [
+        3,
+        2
+      ],
+      "bit": [
+        3,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(55, 5376):trial1",
+      "native": [
+        3,
+        2
+      ],
+      "bit": [
+        3,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(55, 5376):trial2",
+      "native": [
+        2,
+        3
+      ],
+      "bit": [
+        2,
+        3
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(2048, 3584):trial0",
+      "native": [
+        3,
+        2
+      ],
+      "bit": [
+        3,
+        2
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(2048, 3584):trial1",
+      "native": [
+        5,
+        0
+      ],
+      "bit": [
+        5,
+        0
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(2048, 3584):trial2",
+      "native": [
+        2,
+        3
+      ],
+      "bit": [
+        2,
+        3
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(10448, 14336):trial0",
+      "native": [
+        2,
+        3
+      ],
+      "bit": [
+        2,
+        3
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(10448, 14336):trial1",
+      "native": [
+        4,
+        1
+      ],
+      "bit": [
+        4,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    },
+    {
+      "case": "fuzz:(10448, 14336):trial2",
+      "native": [
+        4,
+        1
+      ],
+      "bit": [
+        4,
+        1
+      ],
+      "verdict_same": true,
+      "counts_same": true
+    }
+  ]
+}
