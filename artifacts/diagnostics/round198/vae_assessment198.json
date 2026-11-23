@@ -65,12 +65,11 @@
   "primary_suspicion": {
     "observation": "_VideoVAEPartProxy plus residency stagers mean VAE parts are shuttled between CPU and NPU, and the FP32 parameters are about 10.4 GB, which reconciles with the 13.436 GiB peak",
     "hypothesis": "if each of the 4 tiles re-shuttles the same parts, that is pure overhead and could be fixed without touching the maths",
-    "status": "inference from code structure, not measured"
+    "status": "REFUTED (see hypothesis_refuted)"
   },
   "next_steps": [
-    "instrument decode_base with NPU Event timers per stage: up-block, conv, attention, upsample, then run one warm decode",
-    "measure _load_part_to_device and _offload_part_to_cpu call counts and total time, to see whether the same parts are re-shuttled per tile",
-    "use the breakdown to decide whether this is compute-bound (needs faster kernels) or shuttling/scheduling bound (possibly pure engineering gain)"
+    "instrument the checkpoint decoder inside decode_base, since the 21.7 s is genuine compute there and the vllm_omni wrapper only accounts for 0.6 percent",
+    "the per-stage breakdown has to come from the checkpoint model code, not the wrapper"
   ],
   "cost_estimate": "one run is about 240 s engine init plus 21.7 s decode, so roughly five minutes",
   "limits": [
@@ -83,5 +82,57 @@
     "weights_loaded": false,
     "model_math_unchanged": true,
     "nothing_adopted": true
+  },
+  "h2d_measurement": {
+    "purpose": "size the cost if the VAE re-shuttled its parts per tile",
+    "results": [
+      {
+        "gb": 0.25,
+        "pinned": false,
+        "GB_per_s": 21.1
+      },
+      {
+        "gb": 0.25,
+        "pinned": true,
+        "GB_per_s": 18.1
+      },
+      {
+        "gb": 1.0,
+        "pinned": false,
+        "GB_per_s": 9.5
+      },
+      {
+        "gb": 1.0,
+        "pinned": true,
+        "GB_per_s": 19.6
+      },
+      {
+        "gb": 2.0,
+        "pinned": false,
+        "GB_per_s": 9.7
+      },
+      {
+        "gb": 2.0,
+        "pinned": true,
+        "GB_per_s": 20.0
+      }
+    ],
+    "bandwidth_GB_per_s": {
+      "pinned_typical": 20.0,
+      "unpinned_large": 9.7
+    },
+    "implied_cost": {
+      "one_full_10_4GB_shuttle_s": 0.49,
+      "four_shuttles_pinned_s": 1.97,
+      "four_shuttles_unpinned_s": 4.3,
+      "note": "this was the size of the 1.6-1.8 s gap, which made the hypothesis attractive"
+    }
+  },
+  "hypothesis_refuted": {
+    "hypothesis": "the video VAE re-shuttles its roughly 10.4 GB of FP32 parameters once per tile, making 4 shuttles per rank and costing 2-4 s",
+    "verdict": "REFUTED by reading the code",
+    "evidence": "the _VideoVAEPartProxy docstring states that the pipelines _component_on_device drives load_to_device/offload_to_cpu, and that routing per half keeps the decoder off the device while reference videos encode and the encoder off while latents decode, so shuttling happens once per pipeline direction, not per tile",
+    "consequence": "the tile loop runs inside decode_base and is unrelated to residency, which also explains why R138 measured decode_base at 99.8 percent: the 21.7 s is genuine decoder compute",
+    "value": "checking the code before optimising saved a wasted round; the H2D figures remain useful for sizing a one-off decoder load but are not inside the 21.7 s"
   }
 }

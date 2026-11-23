@@ -69,6 +69,43 @@ R138/R139 只测了**总时长**和**可重复性**。**没有一个逐个阶段
 
 **成本**：一次 run 需 engine init ≈ 240 s + decode 21.7 s ≈ **5 分钟**。可行。
 
+## 五b、本轮实测：H2D 带宽（并**否掉我自己的首要怀疑**）
+
+### 测量结果
+
+| 大小 | pinned | 中位 | 带宽 |
+|---|---|---|---|
+| 0.25 GB | 否 | 0.0118 s | 21.1 GB/s |
+| 0.25 GB | 是 | 0.0138 s | 18.1 GB/s |
+| 1 GB | 否 | 0.1047 s | 9.5 GB/s |
+| 1 GB | 是 | 0.0510 s | **19.6 GB/s** |
+| 2 GB | 否 | 0.2060 s | 9.7 GB/s |
+| 2 GB | 是 | 0.0998 s | **20.0 GB/s** |
+
+**H2D 约 20 GB/s（pinned）/ 9.7 GB/s（非 pinned 大张量）。**
+
+按 10.4 GB FP32 参数算：一次完整搬运 **0.49 s**，若每 tile 搬一次（4 次）则 **1.97 s（pinned）/ 4.3 s（非 pinned）**。
+
+### 但读了代码后发现：**这个怀疑不成立**
+
+`_VideoVAEPartProxy`（第 283 行）的 docstring 明确说明搬运的触发方式：
+
+> The pipeline's `_component_on_device` drives whatever object it is given through
+> `load_to_device`/`offload_to_cpu`. ... routing those calls per half keeps the decoder
+> off the device while reference videos encode and the encoder off while latents decode.
+
+即：搬运是**按 pipeline 方向各一次**（编码前载 encoder、解码前载 decoder），
+**不是每个 tile 一次**。tile 循环发生在 `decode_base` **内部**，与 residency 无关。
+
+⇒ **"每 tile 重复搬运"是被否掉的假设。** 这也解释为什么 R138 测到 `decode_base` = 99.8%：
+**21.7 s 是 decoder 的真实计算时间**，不是搬运开销。
+
+### 这条否证的价值
+
+如果我没读代码就直接去"优化搬运"，会白做一轮。
+H2D 数字仍有用（0.49 s 是 decoder 一次性载入的量级，可作未来判断依据），
+但**它不在 21.7 s 里头**。
+
 ## 六、诚实边界
 
 - 本轮**只做了代码定位与既有回执整理，没有新的测量**。
