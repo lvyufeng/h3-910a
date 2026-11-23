@@ -1,0 +1,47 @@
+{
+  "scope": "R150 follow-up: consolidated \u73b0\u72b6 vs \u4e0a\u9650 table and corrected 10 s arithmetic",
+  "measurement_basis": "all numbers are measured: R149 event budget, R150 event-level FA decomposition, R146 standalone GEMM rates",
+  "step_s": 18.027,
+  "components_s": {
+    "fa": 7.607,
+    "linears": 4.581,
+    "usp": 1.087,
+    "qknorm": 0.231,
+    "attn_resid": 1.356,
+    "mlp_resid": 1.729,
+    "adaln": 0.095,
+    "norms": 0.168,
+    "block_resid": 0.474,
+    "front_tail": 0.622
+  },
+  "fa_flops_per_rank_per_step_TF": 313.0,
+  "fa_achieved_TFLOPS_per_card": 41.1,
+  "best_measured_gemm_TFLOPS_per_card": 96.9,
+  "fa_time_if_it_hit_best_measured_gemm_efficiency_s": 3.23,
+  "scenarios_s": {
+    "S0 today": 17.95,
+    "S1 FA to zero, rest unchanged": 10.34,
+    "S2 FA 2x, rest unchanged": 14.14,
+    "S3 linears at standalone, rest unchanged": 15.69,
+    "S4 FA 2x + linears standalone": 11.89,
+    "S5 FA at best measured GEMM efficiency (3.23 s) + linears standalone": 11.31,
+    "S6 FA at GEMM efficiency + linears standalone + halve usp/attn_resid/mlp_resid/block_resid/front_tail": 8.68,
+    "S7 S6 plus halve qknorm/adaln/norms": 8.43
+  },
+  "correction": "My previous statement that 10 s is unreachable because a zero-cost FA still leaves 10.42 s was logically wrong: it held every other component fixed. The correct question is what the components reach together, and S5/S6 show the answer is not trivially out of reach.",
+  "what_10s_requires": {
+    "if_only_linears_improve": {
+      "fa_budget_s": 1.84,
+      "required_fa_TFLOPS_per_card": 170.2,
+      "vs_best_measured": 1.76,
+      "verdict": "needs 1.75x the best rate ever measured on this host for any GEMM"
+    },
+    "if_linears_improve_and_five_overheads_halve": {
+      "fa_budget_s": 4.55,
+      "required_fa_TFLOPS_per_card": 68.8,
+      "vs_best_measured": 0.71,
+      "verdict": "needs a FA kernel at or above the best measured GEMM efficiency, which is the open question for #5"
+    }
+  },
+  "conclusion": "10 s/step is not reachable by any single lever, but it is also not excluded the way I claimed last round. The realistic path needs the FA kernel to reach roughly the best efficiency measured anywhere in this workload (about 97 TFLOPS/card, from 41 today), the four linears to reach their standalone rates, and about half of the remaining overheads removed. Whether a 910A FA kernel can reach that efficiency is exactly what #5 has to answer."
+}
