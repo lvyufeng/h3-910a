@@ -1,0 +1,41 @@
+{
+  "scope": "R158 synchronous-prefetch diagnostic: no host-to-device copy in flight during a block",
+  "measurement_only": true,
+  "diagnostic_control_only": true,
+  "never_a_candidate": true,
+  "no_sync_inside_forward": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 19.597,
+  "calls": 150,
+  "median_ms": {
+    "fc1": 23.316,
+    "activation": 34.76,
+    "fc2": 30.022,
+    "tail": 0.005,
+    "total": 88.247
+  },
+  "closure_error_ms": 0.144,
+  "per_step_activation_s": 1.738,
+  "comparison": {
+    "async_prefetch_step_s": 17.902,
+    "sync_prefetch_step_s": 19.597,
+    "async_activation_ms": 34.717,
+    "sync_activation_ms": 34.76,
+    "activation_delta_ms": 0.043,
+    "async_fc1_ms": 23.274,
+    "sync_fc1_ms": 23.316,
+    "async_fc2_ms": 29.999,
+    "sync_fc2_ms": 30.022
+  },
+  "contention_hypothesis": "REJECTED",
+  "why_rejected": "with the prefetch forced synchronous the step got 1.7 s slower, as expected because the copies no longer overlap compute, but the MLP activation region did not move: 34.76 ms against 34.717 ms, a difference of 0.04 ms. If the region were waiting on the weight stream, removing the in-flight copy would have collapsed it.",
+  "hypotheses_now_rejected": [
+    "allocator retry or OOM fallback (R156: num_alloc_retries and num_ooms are both zero)",
+    "host-to-device copy-stream contention (R158: synchronous prefetch changes nothing)",
+    "the elementwise kernels themselves (R154: 3.24 ms standalone for the same shapes)",
+    "lack of kernel fusion (R125: fused SiluAndMul gave no speedup)"
+  ],
+  "what_this_leaves": "the region is executed device work in the model that is about ten times the standalone cost of the same operator sequence, and none of the four environment explanations account for it. The remaining differences are the memory layout of the fc1 output as produced inside the model and the kernels actually selected in that context, which only a kernel-level profile would show.",
+  "decision": "this thread has consumed six rounds for a 1.7 s region. Per the objective, #5 (FA, 7.6 s per step) is the critical path and needs a user decision before any kernel change. The next round moves the main effort to read-only FA analysis so the work can start immediately once approved."
+}
