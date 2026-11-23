@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 import statistics
 
-_STATE={'installed':False,'calls':[],'limits':None}
+_STATE={'installed':False,'calls':[],'limits':None,'kept':[]}
 
 
 def _stats(a,b,torch):
@@ -25,6 +25,9 @@ def _stats(a,b,torch):
             'max_abs_diff':float(diff.abs().max())}
 
 
+_KEEP=4
+
+
 def install(torch,limit=100):
     import h3_replay123.transformer as replay
     cls=replay._MiniMaxH3HalfInputFP32OutputLinearMethod
@@ -32,7 +35,7 @@ def install(torch,limit=100):
     _STATE['limits']=limit
 
     def apply(self,layer,x,bias=None):
-        native=original(self,layer,x,bias)
+        native=original(self,layer,x,bias)          # what the model actually uses
         if len(_STATE['calls'])>=limit:
             return native
         product=x.float()
@@ -40,17 +43,25 @@ def install(torch,limit=100):
         exponent=max(0,math.ceil(math.log2(peak/32752.0))) if peak>32752.0 else 0
         record={'peak':peak,'exponent':exponent,'scale':float(2**exponent),
                 'in_fast_path_regime':exponent==0,'shape':list(x.shape)}
-        control=original(self,layer,x,bias)          # native again: the repeat control
         if exponent==0:
-            half_input=product                       # scale==1 so the narrow is the identity
+            control=original(self,layer,x,bias)     # native again: the repeat control
+            # Native narrows (product / scale) to FP16 before the matmul. Dividing by
+            # 1.0 is exact, so this narrow is bit-identical to the native one.
+            half_input=product.to(torch.float16)
             fast=torch.mm(half_input.reshape(-1,half_input.shape[-1]),
                           layer.weight.t(),out_dtype=torch.float32)
             fast=fast.reshape(*x.shape[:-1],layer.weight.shape[0])
             if bias is not None:fast=fast+bias.float()
-            record['native_vs_fast']=_stats(native,fast,torch)
+            if len(_STATE['kept'])<_KEEP:
+                # Keep the tensors and compare after the step: a .cpu() here would
+                # collide with the offloader's copy-stream allocator while it is live.
+                _STATE['kept'].append({'record':record,'native':native.detach(),
+                                       'control':control.detach(),'fast':fast.detach()})
+                record['native_vs_fast']={'deferred':'compared after the step'}
+            else:
+                record['native_vs_fast']={'skipped':'beyond the retained sample'}
         else:
             record['native_vs_fast']={'skipped':'peak exceeds 32752 so the fast path does not apply'}
-        record['native_vs_native_control']=_stats(native,control,torch)
         _STATE['calls'].append(record)
         return native
 
@@ -71,8 +82,14 @@ def collect():
     out['peak']={'min':min(peaks),'median':statistics.median(peaks),'max':max(peaks),
                  'all_within_32752':all(c['in_fast_path_regime'] for c in calls),
                  'exceeding_32752':sum(1 for c in calls if not c['in_fast_path_regime'])}
-    cmp=[c['native_vs_fast'] for c in calls if 'bit_identical' in c.get('native_vs_fast',{})]
-    ctl=[c['native_vs_native_control'] for c in calls]
+    import torch as _torch
+    cmp=[];ctl=[]
+    for entry in _STATE['kept']:
+        cmp.append(_stats(entry['native'],entry['fast'],_torch))
+        ctl.append(_stats(entry['native'],entry['control'],_torch))
+        entry['record']['native_vs_fast']={'bit_identical':cmp[-1]['bit_identical']}
+        entry['record']['native_vs_native_control']={'bit_identical':ctl[-1]['bit_identical']}
+    _STATE['kept'].clear()
     def summ(rows):
         if not rows:return None
         return {'count':len(rows),'all_bit_identical':all(r['bit_identical'] for r in rows),
