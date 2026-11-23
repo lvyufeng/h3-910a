@@ -1,0 +1,73 @@
+{
+  "scope": "R194: the reduce-tile-count lever is capped at 1.089x by UB capacity",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "numeric_equivalence_note": "retiling changes accumulation order so none of this is numerically equivalent; measurement only",
+  "results": {
+    "384": {
+      "median_ms": 141.98,
+      "speedup": 1.089,
+      "ok": true
+    },
+    "512": {
+      "ok": false,
+      "reason": "UB overflow"
+    },
+    "768": {
+      "ok": false,
+      "reason": "UB overflow"
+    },
+    "1024": {
+      "ok": false,
+      "reason": "UB overflow"
+    },
+    "1536": {
+      "ok": false,
+      "reason": "UB overflow"
+    }
+  },
+  "failure_mechanism": {
+    "location": "/tmp/fa_pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py:445",
+    "allocation": "Sij_ub_zN = tik_instance.Tensor(FP16, (Bc//16, q_blk_h_aligned, 16), scope=UB)",
+    "scaling": "the score tile in UB grows with Bc times Br times 2 bytes",
+    "at_384_kb": 98,
+    "ub_per_core_kb": 192,
+    "why_512_fails": "131 KB for the score tile alone leaves too little for the Q/K/V sub-tiles, softmax temporaries and the output accumulator"
+  },
+  "reproducibility": {
+    "r191_384_ms": 142.0,
+    "r194_384_ms": 141.98,
+    "difference_ms": 0.02,
+    "r193_fit_prediction_ms": 140.99,
+    "fit_error_pct": 0.7,
+    "verdict": "both the measurement and the R193 linear model hold up"
+  },
+  "conclusion": {
+    "lever_1_reduce_tiles": "capped at 1.089x, about 0.6 s, far short of 1.50x",
+    "lever_2_reduce_per_tile_cost": "the only remaining route, potentially up to about 1.9x",
+    "nature_of_remaining_work": "not a configuration change but a kernel-implementation change inside MindIE's TIK kernel"
+  },
+  "final_fa_verdict": {
+    "core_budget": "ruled out, already the hardware limit (R188)",
+    "tile_tuning": "ruled out, ceiling 1.089x (R191/R194)",
+    "softmax_op_reduction": "ruled out, vector at most 21 percent (R190)",
+    "pipeline_overlap": "the only viable direction, requiring TIK kernel changes",
+    "theoretical_payoff": "removing the overhead entirely is 1.89x, enough for 1.50x (R193)"
+  },
+  "not_exhausted": {
+    "idea": "shrink Br while raising Bc (for example Br=64 with Bc=768), since the score tile size is the product Br*Bc and a different shape with the same product might still fit",
+    "why_it_matters": "this is the only parameter direction not yet tried",
+    "note": "it changes the q-block structure, so it deserves its own round"
+  },
+  "limits": [
+    "only one shape tested (N=41792, padded to 43776); the UB ceiling may differ at other N",
+    "the exact remaining UB headroom was not itemised across the kernels other buffers"
+  ],
+  "compliance": {
+    "original_files_unmodified": true,
+    "private_copy_in": "/tmp",
+    "weights_loaded": false,
+    "synthetic_tensors": true,
+    "driver_or_device_reset": false
+  }
+}
