@@ -1,0 +1,31 @@
+{
+  "scope": "R188: whether the FA core budget is a bottleneck - it is the hardware limit",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "question": "is core_budget=30 an arbitrary cap that could be raised cheaply, or the hardware AI Core count?",
+  "answer": "it is the hardware limit",
+  "evidence": {
+    "runtime_query": "fa910a.py calls aclrtGetDeviceInfo(device_id, 101) and gets 30; measured fa910a_core_budget = 30",
+    "docstring": "the toolchain compiles with CORE_NUM=32 while ACL and DCMI report 30 available cores; a 32-task grid on 30 cores leaves a second partial wave (558 ms) whereas repartitioning across 30 gives 317 ms",
+    "implication": "instance.core_num = min(instance.core_num, core_budget) is clamped to the physical maximum, not to a conservative setting"
+  },
+  "conclusions": [
+    "30 is the hardware count, not a cap",
+    "the FA kernel already runs on all 30 cores",
+    "there is no cheap core-budget win",
+    "41.1 TFLOPS/card is an implementation-efficiency limit, not core starvation"
+  ],
+  "positive_findings": [
+    "the existing core partitioning is already optimised, having captured a 1.76x gain when going from 32 to 30",
+    "raising to the 69 TFLOPS/card the 10 s target needs requires kernel or tiling work, with no shortcut"
+  ],
+  "not_done": "the theoretical ceiling at 30 cores with the same tiles was not computed; that would show what fraction of it 41.1 TFLOPS/card represents",
+  "next": "a pure-arithmetic roofline for 30 cores with Br=128 and Bc=304, compared against the measured 41.1, to judge whether an ideal kernel could reach 69",
+  "compliance": {
+    "weights_loaded": false,
+    "shared_cann_modified": false,
+    "driver_or_device_reset": false,
+    "model_math_unchanged": true
+  }
+}
