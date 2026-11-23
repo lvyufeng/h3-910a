@@ -1,0 +1,90 @@
+{
+  "scope": "R147 device-event attribution of the DiT linears (no sync in forward)",
+  "measurement_only": true,
+  "no_sync_inside_forward": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 17.919,
+  "block_ms_median": 346.345,
+  "block_sum_s": 17.342,
+  "linears": [
+    {
+      "label": "qkv",
+      "in_model_ms": 17.069,
+      "standalone_ms": 12.47,
+      "ratio": 1.37,
+      "per_step_s": 0.854,
+      "includes_fp32_range_guard": false
+    },
+    {
+      "label": "fc1",
+      "in_model_ms": 23.122,
+      "standalone_ms": 19.04,
+      "ratio": 1.21,
+      "per_step_s": 1.156,
+      "includes_fp32_range_guard": false
+    },
+    {
+      "label": "out_proj",
+      "in_model_ms": 18.306,
+      "standalone_ms": 2.73,
+      "ratio": 6.71,
+      "per_step_s": 0.924,
+      "includes_fp32_range_guard": true
+    },
+    {
+      "label": "fc2",
+      "in_model_ms": 29.934,
+      "standalone_ms": 12.21,
+      "ratio": 2.45,
+      "per_step_s": 1.501,
+      "includes_fp32_range_guard": true
+    }
+  ],
+  "rows": [
+    {
+      "label": "qkv",
+      "in_model_ms": 17.069,
+      "standalone_ms": 12.47,
+      "ratio": 1.37,
+      "per_step_s": 0.854,
+      "includes_fp32_range_guard": false
+    },
+    {
+      "label": "fc1",
+      "in_model_ms": 23.122,
+      "standalone_ms": 19.04,
+      "ratio": 1.21,
+      "per_step_s": 1.156,
+      "includes_fp32_range_guard": false
+    },
+    {
+      "label": "out_proj",
+      "in_model_ms": 18.306,
+      "standalone_ms": 2.73,
+      "ratio": 6.71,
+      "per_step_s": 0.924,
+      "includes_fp32_range_guard": true
+    },
+    {
+      "label": "fc2",
+      "in_model_ms": 29.934,
+      "standalone_ms": 12.21,
+      "ratio": 2.45,
+      "per_step_s": 1.501,
+      "includes_fp32_range_guard": true
+    }
+  ],
+  "gemm_ms_per_layer_in_model": 88.43,
+  "gemm_ms_per_layer_standalone": 46.45,
+  "gemm_per_step_in_model_s": 4.435,
+  "gemm_per_step_standalone_s": 2.322,
+  "recoverable_s_per_step": 2.099,
+  "recoverable_in_guarded_pair_s": 1.665,
+  "recoverable_in_unguarded_pair_s": 0.434,
+  "share_of_gap_in_guarded_pair_percent": 79.3,
+  "correction": "The R141 region numbers came from hooks that synchronize at both edges, which drains the copy stream too. With device events only, qkv and fc1 are 1.2-1.4x standalone (essentially efficient) instead of 2.9-3.4x, so the earlier \"uniform 3x GEMM gap\" was largely a timing artefact.",
+  "new_target": "out_proj (6.7x) and fc2 (2.45x) are the only inefficient linears and both run the native FP32 range guard; that guard prologue upcasts to FP32, does a whole-tensor abs-max and a host sync per call, 100 calls per step.",
+  "bit_identical_opportunity": "when the guard peak <= 32752 the scale is exactly 1 and FP16->FP32->divide-by-1->FP16 is an exact round trip, so skipping the prologue in that regime is bit-identical by construction; this must be proven, not assumed",
+  "scope_note": "step here is 17.919 s with events only, matching R143 (18.076 s) and R126 (17.946 s), not the 20.8 s seen under sync-based region hooks"
+}
