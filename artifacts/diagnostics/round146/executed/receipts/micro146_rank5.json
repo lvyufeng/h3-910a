@@ -1,0 +1,70 @@
+{
+  "scope": "R146: standalone GEMM at the TRUE in-model shapes measured by R144.\n\nMeasurement only, no model weights, no math change. R142 rescaled its numbers by\nFLOP ratio to guess these shapes; that rescaling is not valid for mm, so this run\nmeasures the real shapes directly.\n",
+  "completed": true,
+  "rank": 5,
+  "m_tokens": 10448,
+  "peak_assumed_FP16_TFLOPS": 310.0,
+  "no_model_weights_loaded": true,
+  "gemm": [
+    {
+      "case": "qkv_proj_true",
+      "m": 10448,
+      "k": 5376,
+      "n": 10752,
+      "input_dtype": "float16",
+      "out_dtype": "float16",
+      "median_ms": 12.561,
+      "min_ms": 12.502,
+      "flops_TF": 1.208,
+      "TFLOPS_per_card": 96.2,
+      "percent_of_FP16_peak": 31.0,
+      "in_model_ms_from_R141": 41.74,
+      "gap_x": 3.32
+    },
+    {
+      "case": "mlp_fc1_true",
+      "m": 10448,
+      "k": 5376,
+      "n": 14336,
+      "input_dtype": "float16",
+      "out_dtype": "float32",
+      "median_ms": 19.007,
+      "min_ms": 18.984,
+      "flops_TF": 1.61,
+      "TFLOPS_per_card": 84.7,
+      "percent_of_FP16_peak": 27.3,
+      "in_model_ms_from_R141": 54.6,
+      "gap_x": 2.87
+    },
+    {
+      "case": "attn_out_proj_true",
+      "m": 10448,
+      "k": 3584,
+      "n": 5376,
+      "input_dtype": "float16",
+      "out_dtype": "float32",
+      "median_ms": 2.733,
+      "min_ms": 2.727,
+      "flops_TF": 0.403,
+      "TFLOPS_per_card": 147.3,
+      "percent_of_FP16_peak": 47.5,
+      "in_model_ms_from_R141": 19.02,
+      "gap_x": 6.96
+    },
+    {
+      "case": "mlp_fc2_true_fp32_input",
+      "m": 10448,
+      "k": 7168,
+      "n": 5376,
+      "input_dtype": "float32->float16",
+      "out_dtype": "float32",
+      "median_ms": 12.272,
+      "min_ms": 12.22,
+      "flops_TF": 0.805,
+      "TFLOPS_per_card": 65.6,
+      "percent_of_FP16_peak": 21.2,
+      "in_model_ms_from_R141": 30.3,
+      "gap_x": 2.47
+    }
+  ]
+}

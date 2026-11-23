@@ -1,0 +1,75 @@
+{
+  "scope": "R146 standalone GEMM measured at the R144 true shapes (no rescaling)",
+  "measurement_only": true,
+  "no_model_weights_loaded": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "rows": [
+    {
+      "case": "qkv_proj_true",
+      "M": 10448,
+      "K": 5376,
+      "N": 10752,
+      "input": "float16",
+      "out": "float16",
+      "standalone_ms": 12.466,
+      "TFLOPS": 96.9,
+      "percent_of_peak": 31.3,
+      "in_model_ms_R141": 41.74,
+      "gap_x": 3.35,
+      "in_model_includes_fp32_range_guard": false
+    },
+    {
+      "case": "mlp_fc1_true",
+      "M": 10448,
+      "K": 5376,
+      "N": 14336,
+      "input": "float16",
+      "out": "float32",
+      "standalone_ms": 19.037,
+      "TFLOPS": 84.6,
+      "percent_of_peak": 27.3,
+      "in_model_ms_R141": 54.6,
+      "gap_x": 2.87,
+      "in_model_includes_fp32_range_guard": false
+    },
+    {
+      "case": "attn_out_proj_true",
+      "M": 10448,
+      "K": 3584,
+      "N": 5376,
+      "input": "float16",
+      "out": "float32",
+      "standalone_ms": 2.734,
+      "TFLOPS": 147.3,
+      "percent_of_peak": 47.5,
+      "in_model_ms_R141": 19.02,
+      "gap_x": 6.96,
+      "in_model_includes_fp32_range_guard": true
+    },
+    {
+      "case": "mlp_fc2_true_fp32_input",
+      "M": 10448,
+      "K": 7168,
+      "N": 5376,
+      "input": "float32->float16",
+      "out": "float32",
+      "standalone_ms": 12.213,
+      "TFLOPS": 65.9,
+      "percent_of_peak": 21.3,
+      "in_model_ms_R141": 30.3,
+      "gap_x": 2.48,
+      "in_model_includes_fp32_range_guard": true
+    }
+  ],
+  "in_model_total_ms_per_layer": 145.66,
+  "standalone_total_ms_per_layer": 46.45,
+  "potential_saving_s_per_step": 4.961,
+  "caveat": "standalone is a bare torch.mm; out_proj and fc2 in the model additionally run the FP32 range guard whose prologue contains a host sync, so their gap is not pure GEMM",
+  "ruled_out": {
+    "copy_stall": "R143: the copy completes 22-34 ms before the next block starts",
+    "hook_host_overhead": "R145: hooks are 0.27% of block time (prefetch_layer 0.94 ms/call)"
+  },
+  "open": "qkv (3.35x) and fc1 (2.87x) carry 29-36 ms per layer that is neither a copy stall, hook overhead, nor the FP32 guard; needs op-level profiling",
+  "note": "R142 rescaling was invalid for mm shapes; this run replaces it with direct measurement"
+}
