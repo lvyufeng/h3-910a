@@ -1,0 +1,91 @@
+{
+  "scope": "R190: where the 6.00 us per FA tile actually goes - not compute, not bandwidth, not softmax",
+  "offline_arithmetic": true,
+  "no_machine_used": true,
+  "model_math_unchanged": true,
+  "nothing_adopted": true,
+  "tile_flop_budget": {
+    "per_head_MFLOP": 19.92,
+    "per_tile_MFLOP": 139.5,
+    "cube_floor_us": 1.44,
+    "measured_us": 6.0,
+    "non_cube_us": 4.56,
+    "non_cube_share_pct": 76,
+    "ratio_vs_cube_floor": 4.17
+  },
+  "softmax_ruled_out": {
+    "score_elements_per_tile": 272384,
+    "table": [
+      {
+        "ops_per_elem": 3,
+        "needed_Gops": 179.2,
+        "pct_of_30x64_lane_peak": 5.2
+      },
+      {
+        "ops_per_elem": 5,
+        "needed_Gops": 298.6,
+        "pct_of_peak": 8.6
+      },
+      {
+        "ops_per_elem": 8,
+        "needed_Gops": 477.8,
+        "pct_of_peak": 13.8
+      },
+      {
+        "ops_per_elem": 12,
+        "needed_Gops": 716.7,
+        "pct_of_peak": 20.7
+      }
+    ],
+    "conclusion": "even at 12 vector ops per element softmax uses at most 21% of the vector peak, so it is not the bottleneck"
+  },
+  "hbm_ruled_out": {
+    "kv_bytes_per_tile_MB": 1.09,
+    "q_bytes_per_tile_MB": 0.23,
+    "bandwidth_if_no_reuse_GBps": 182,
+    "pct_of_800_GBps": 23,
+    "per_block_gb_if_no_reuse": 27.1,
+    "per_step_gb_if_no_reuse": 1354,
+    "per_block_if_perfect_reuse_MB": 22.4,
+    "conclusion": "HBM sits at 23%, so bandwidth is not the limiter either"
+  },
+  "conclusion": {
+    "type": "pipeline bubbles and dependency serialisation",
+    "evidence": "cube 24%, vector at most 21%, HBM 23% - all three units idle most of the time is the signature of a lack of overlap",
+    "contributing_factors": [
+      "the per-tile QK^T -> softmax -> PV chain has to complete serially with insufficient double buffering to hide MTE and vector work behind cube work",
+      "Bc=304 is not a multiple of 128, so cube work on the K dimension fragments into 2x128+48",
+      "829 waves across 30 cores means any fixed per-wave synchronisation cost is paid 829 times"
+    ]
+  },
+  "implications": {
+    "optimisation_direction": "overlap and pipelining, not fewer ops; fusing maths would bring little",
+    "directions": [
+      {
+        "name": "double buffering / deeper pipeline",
+        "reason": "most likely, given all three units sit near 20%"
+      },
+      {
+        "name": "align Bc to a multiple of 128",
+        "reason": "304 = 2x128+48, so the last 48 columns must run cube inefficiently"
+      },
+      {
+        "name": "fewer waves / more work per core",
+        "reason": "amortise any fixed per-wave cost across 829 waves"
+      }
+    ],
+    "for_10s": "R189 showed only 1.50x is needed; this round says that 1.50x comes from removing bubbles rather than doing more, and bubbles are 76% of the tile, so removing a third of them suffices"
+  },
+  "not_measured": "all of the above is arithmetic inference; the bubble hypothesis needs occupancy traces",
+  "next_steps": [
+    "capture AICore and vector occupancy of the FA kernel with msprof or the torch_npu profiler and check whether the two units do not overlap",
+    "sweep Bc over 128/256/304/384 to test the cube-fragmentation hypothesis",
+    "both are cheap and change no maths; a tile change alters accumulation order so it is numerically non-equivalent and would be measurement only, never a candidate without approval"
+  ],
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
