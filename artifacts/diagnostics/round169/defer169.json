@@ -1,0 +1,34 @@
+{
+  "scope": "R169 read-only memory feasibility of deferring the 155 safety checks off the per-layer path",
+  "no_machine_time": true,
+  "read_only_analysis": true,
+  "nothing_adopted": true,
+  "verdict": "MARGINAL, and very likely infeasible in practice, but NOT proven impossible",
+  "self_correction": "my first draft of this note called it plainly infeasible. The arithmetic does not support that: the deferred set comes to about 19.4 GiB against roughly 20.36 GiB of headroom, so it is tight rather than impossible. The verdict was corrected before anything was recorded in an issue.",
+  "measured_terms": {
+    "largest_tensor": "blocks.*.mlp.fc1 [10448, 14336] FP16",
+    "largest_tensor_mib": 285.7,
+    "mlp_fc1_total_gib": 13.95,
+    "source": "R163/R167 receipts recorded this shape directly"
+  },
+  "assumed_terms": {
+    "qkv_shape": "[10448, 5376] assumed, not measured",
+    "qkv_total_gib": 5.23,
+    "adaln_size": "4 MiB each assumed, not measured",
+    "adaln_total_gib": 0.21,
+    "why_assumed": "the receipts kept aggregate counts per call but not per-call shapes, so these two terms are estimates and the total inherits their uncertainty"
+  },
+  "total_deferred_gib": 19.4,
+  "headroom_gib": 20.36,
+  "margin_gib": 0.96,
+  "why_it_probably_does_not_work_in_practice": [
+    "the margin is only about 1.0 GiB",
+    "the offloader streams weights every layer and needs staging room, which this budget does not reserve",
+    "the 11.64 GiB baseline is reserved during an mlp call and the peak across a step may be higher",
+    "allocator fragmentation on a device that already fails whole-model residency at 31.06 GiB"
+  ],
+  "what_would_settle_it": "one measurement of the real per-call output shapes for qkv_proj and adaln_proj.linear, and the peak reserved bytes across a whole step rather than during an mlp call. Both are cheap to obtain from an existing harness hook.",
+  "what_survives": "the R166/R167 equivalence proof and the R168 measurement stand. What does not follow is that the checks can be deferred; that requires the memory budget above to hold, which is unproven either way.",
+  "only_remaining_variant": "a side-stream scan while each tensor is still alive: bounded memory, one producer-to-consumer event per tensor, and a requirement that the allocator not reuse the buffer before the scan finishes. Whether the scan keeps up with production is an open measurement.",
+  "consequence_for_the_user": "do not authorise the deferred variant on the strength of the R168 serialisation insight; on current numbers it is tight enough that it should be measured before being built, and I have not measured it."
+}
