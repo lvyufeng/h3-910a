@@ -1,0 +1,96 @@
+{
+  "scope": "R193: direct measurement confirms FA carries about 47 percent per-tile fixed overhead, without a profiler",
+  "offline_arithmetic_on_existing_receipts": true,
+  "no_machine_used": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "how_the_profiler_was_bypassed": {
+    "problem": "R192 found device profiling unsupported on this chip",
+    "insight": "the five R191 configurations are themselves a controlled experiment: their total flops are nearly identical at 3.444-3.467 TFLOP (under 1 percent apart) while the time spans 142.00 to 254.98 ms, an 1.8x spread",
+    "therefore": "with the arithmetic held constant, the spread can only come from how the work is chopped, that is from per-tile cost"
+  },
+  "fit": {
+    "equation": "time_ms = 83.53 + 2.922 us * tiles",
+    "scope": "the four br=128 points",
+    "points": [
+      {
+        "tiles": 19665,
+        "measured_ms": 142.0,
+        "predicted_ms": 140.98,
+        "residual": -1.02
+      },
+      {
+        "tiles": 24858,
+        "measured_ms": 154.57,
+        "predicted_ms": 156.16,
+        "residual": 1.59
+      },
+      {
+        "tiles": 29412,
+        "measured_ms": 169.94,
+        "predicted_ms": 169.46,
+        "residual": -0.48
+      },
+      {
+        "tiles": 58653,
+        "measured_ms": 254.98,
+        "predicted_ms": 254.89,
+        "residual": -0.09
+      }
+    ],
+    "max_residual_ms": 1.59,
+    "max_residual_pct_of_fastest": 1.1,
+    "excluded_point": "br=64/bc=304 does not fit the same line because changing br alters the q-block structure, a different variable"
+  },
+  "decomposition_at_base": {
+    "config": "br=128 bc=304",
+    "tiles": 24858,
+    "measured_ms": 154.57,
+    "per_tile_overhead_ms": 72.6,
+    "per_tile_overhead_pct": 47.0,
+    "tile_count_independent_ms": 81.9,
+    "tile_count_independent_pct": 53.0
+  },
+  "confirms_r190": {
+    "r190_status": "arithmetic inference from cube 24 percent, vector at most 21 percent, HBM 23 percent all being low at once",
+    "now": "independent measured confirmation that the time is governed by tile count at constant flops",
+    "verdict": "the bubble / fixed-overhead hypothesis now has direct evidence, not just inference"
+  },
+  "implications_for_10s": [
+    {
+      "scenario": "per-tile overhead halved",
+      "fa_s": 5.7,
+      "speedup": 1.2,
+      "sufficient": false
+    },
+    {
+      "scenario": "per-tile overhead removed entirely",
+      "fa_s": 3.95,
+      "speedup": 1.89,
+      "sufficient": true,
+      "note": "exceeds the 1.50x the 10 s target needs"
+    },
+    {
+      "conclusion": "the FA 1.5x is reachable by attacking per-tile overhead, which turns FA from an open question into a scoped engineering problem"
+    }
+  ],
+  "directions_from_the_fit": {
+    "formula": "T = 83.5 ms + 2.922 us * tiles, so there are two multiplicative levers",
+    "lever_1_reduce_tiles": "Bc=384 already drops tiles from 24858 to 19665 and yields 142.00 ms (1.089x); Bc=768 would halve the tiles again and is projected near 112 ms (1.38x), but UB capacity bounds Bc and that needs checking",
+    "lever_2_reduce_per_tile_cost": "lower the 2.922 us coefficient via pipeline overlap and double buffering, interleaving the cube and vector phases with K/V prefetch",
+    "combination": "halving both gives about 97.9 ms, roughly 1.58x, which clears the target"
+  },
+  "limits": [
+    "fitted on four points at one shape (B=1 H=7 N=41792 D=128), not validated across shapes",
+    "the 83.53 ms intercept is an extrapolation to zero tiles, not an attainable floor; the real floor is bounded by the 1.44 us per-tile cube work",
+    "the 47 percent applies to the current baseline configuration and will move with the config",
+    "changing the tile alters accumulation order, so it remains numerically non-equivalent and can never be a candidate without approval"
+  ],
+  "compliance": {
+    "machine_claimed": false,
+    "weights_loaded": false,
+    "original_fa910a_unmodified": true,
+    "model_math_unchanged": true,
+    "nothing_adopted": true
+  }
+}
