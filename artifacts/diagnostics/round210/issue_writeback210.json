@@ -1,0 +1,13 @@
+{
+  "issue15_comment": "https://github.com/lvyufeng/h3-910a/issues/15#issuecomment-7109039254",
+  "headline": "HCCL all-reduce is bit-reproducible by default, so the R209 hypothesis is refuted and the non-determinism must be operator level",
+  "evidence": "8 ranks, 12 repeats, three model-real widths, all with distinct_results=1; identical hashes everywhere",
+  "narrowed_to": [
+    "matmul tiling or split-K accumulation order",
+    "reduction order inside the FA TIK kernel",
+    "atomic accumulation",
+    "AICPU or async stream interleaving"
+  ],
+  "next_step": "a single-operator bit-repeat probe over matmul, FA and norm; about a minute, no weights needed",
+  "bonus_for_issue4": "if the operators prove bit-reproducible then issue 4 need not account for numeric jitter and can focus purely on prefetch correctness"
+}
