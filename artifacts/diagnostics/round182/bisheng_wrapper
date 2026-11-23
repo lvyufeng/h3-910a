@@ -1,0 +1,15 @@
+#!/bin/bash
+# R182: private bisheng wrapper.
+#
+# CANN resolves the device compiler with shutil.which("bisheng"), so this wrapper on PATH is
+# the one place that sees every device compile no matter which python module assembled the
+# command line. It appends the hcc C++ include paths that CANN ships but does not pass, which
+# is what made every custom-op build fail with "fatal error: 'cstdint' file not found".
+#
+# The shared CANN installation is not modified: this file lives in /tmp and only prepends args.
+REAL=/home/mseco/Ascend/cann-9.2.0/tools/bisheng_compiler/bin/bisheng
+H=/home/mseco/Ascend/cann-9.2.0/toolkit/toolchain/hcc/aarch64-target-linux-gnu
+exec "$REAL" "$@" \
+    -isystem "$H/include" \
+    -isystem "$H/include/c++/14.3.0" \
+    -isystem "$H/include/c++/14.3.0/aarch64-target-linux-gnu"

@@ -1,0 +1,56 @@
+{
+  "scope": "R182: first successful build, install and execution of the H3RangeStats custom op",
+  "built": true,
+  "installed": true,
+  "runs": true,
+  "build_solutions": {
+    "pythonpath_shadow_root_cause": "CANN's bin/asc_opc prepends its own site-packages to PYTHONPATH, shadowing every external overlay",
+    "solution_1": "private asc_opc wrapper importing opc.py with the overlay first",
+    "solution_2_recommended": "wrap bisheng itself on PATH; CANN resolves it via shutil.which, so this covers every device compile on both soc paths"
+  },
+  "soc_correction": {
+    "was": "ascend910b (set in R176, wrong)",
+    "now": "ascend910",
+    "evidence": "runtime error: SoC version ascend910 verification failed; this SoC is not configured through AddConfig",
+    "note": "the original task target did say 8x910A"
+  },
+  "op_host_fixes_required": [
+    "InferShape must produce [H3_CORE_NUM], not copy the input shape",
+    "InferDataType must produce DT_INT32, not propagate the input dtype",
+    "TilingFunc must set tiling->coreNum, which the skeleton left unset"
+  ],
+  "timings_ms": {
+    "mlp_fc1_10448x14336": 2.076,
+    "qkv_proj_10448x10752": 1.582,
+    "adaln_3x96768": 0.087
+  },
+  "r178_torch_proxy_ms": {
+    "mlp_fc1": 3.905,
+    "qkv_proj": 2.947,
+    "adaln": 0.146
+  },
+  "speedup_vs_proxy": 1.88,
+  "per_step_projection_ms": 187.7,
+  "current_audit_ms_per_step": 2870,
+  "implied_saving_s_per_step": 2.68,
+  "correctness": {
+    "verdict": "FAILED",
+    "adversarial_passes": "6/15 and the passes are coincidental, not correct",
+    "symptom": "maxMag exceeds 16 bits and repeats across unrelated inputs, which means the value read back is not the value the kernel wrote",
+    "tried_and_failed": "pipe_barrier(PIPE_ALL) between ReduceMax and GetValue",
+    "prime_suspect": "the output write: yGm_ is set to y+coreIdx with a length of 1, yet DataCopy(yGm_, oc, 8) writes 8 ints per core, so the 8 cores overwrite each other",
+    "other_suspects": [
+      "ReduceMax Level-2 dst size/alignment and whether GetValue(0) reads the right slot",
+      "VECCALC buffer aliasing with the ReduceMax shared temporary buffer"
+    ],
+    "adoption": "NOT adopted; the timing result stands on its own but the operator is unusable until the verdicts are right"
+  },
+  "stage_a_status": "the performance premise is confirmed and better than expected at 2.68 s, so the remaining question is correctness rather than whether it is worth doing",
+  "compliance": {
+    "shared_cann_modified": false,
+    "overlay_and_wrapper_in": "/tmp",
+    "vendor_install": "custom op package installed into opp/vendors, the CANN-supported extension location",
+    "weights_downloaded": false,
+    "driver_or_device_reset": false
+  }
+}

@@ -8,17 +8,21 @@ constexpr int TILE_ELEMS = 16384;
 constexpr int RED_WORK_ELEMS = TILE_ELEMS / 2 + 64;
 constexpr unsigned int ALIGN_ELEMS = 128;
 
-// Single pass over an FP16 tensor reducing the magnitude bit field.
-// The FP16 magnitude bits 0x0000..0x7fff order monotonically with |x|, so
+// Single pass over an FP16 tensor computing the largest magnitude.
+//
+// Abs() clears the sign bit, so the result carries exactly the FP16 magnitude bits
+// 0x0000..0x7fff, which order monotonically with |x|. The host then reads:
 //   maxMag >= 0x7c00  <=>  a NaN or Inf is present
 //   maxMag == 0x7bff  <=>  some |x| == 65504 (largest finite magnitude)
-// Only bit patterns are used: R165 measured that this device cannot be trusted to
-// report NaN through its FP16 float predicates.
 //
-// API constraints found from the real compile (R182):
-//   Ands       supports uint16/int16/int64/uint64, NOT half
-//   ReduceMax  supports half/float, NOT the integer types
-//   -> mask the sign bit on an int16 view, then cast to float (exact for int16) and reduce
+// Why not the integer route: R182 measured that Ands() (the natural way to mask the sign
+// bit) has no linkable instantiation for half, int16_t or uint16_t on this toolkit, while
+// ReduceMax() supports only half and float. Abs() is a half op, so this pairing links.
+//
+// NaN caveat, deliberately left to the acceptance suite to measure: if ReduceMax() does not
+// propagate NaN, a NaN-only tile would report a finite magnitude. R165 measured that claim
+// for torch's max(); it has NOT been measured for the AscendC ReduceMax primitive, and the
+// R180 adversarial cases ("nan_and_saturation", "many_bad") are exactly what decides it.
 class H3RangeStatsKernel {
 public:
     __aicore__ inline H3RangeStatsKernel() {}
@@ -41,8 +45,7 @@ public:
         xGm_.SetGlobalBuffer((__gm__ half *)x + start, len_);
         yGm_.SetGlobalBuffer((__gm__ int *)y + coreIdx, 1);
         pipe_.InitBuffer(inQueue_, 1, TILE_ELEMS * (int)sizeof(half));
-        pipe_.InitBuffer(fbufQueue_, 1, TILE_ELEMS * (int)sizeof(float));
-        pipe_.InitBuffer(workQueue_, 1, RED_WORK_ELEMS * (int)sizeof(float));
+        pipe_.InitBuffer(workQueue_, 1, RED_WORK_ELEMS * (int)sizeof(half));
         pipe_.InitBuffer(redQueue_, 1, 256);
         pipe_.InitBuffer(outQueue_, 1, 256);
     }
@@ -56,7 +59,8 @@ public:
             if (n > (unsigned int)TILE_ELEMS) { n = (unsigned int)TILE_ELEMS; }
             CopyIn(offset, n);
             LocalTensor<half> x = inQueue_.DeQue<half>();
-            int tileMax = TileMagnitudeMax(x, n);
+            Abs(x, x, (int32_t)n);                 // clear the sign bit in place
+            int tileMax = TileMax(x, n);
             if (tileMax > blockMax) { blockMax = tileMax; }
             inQueue_.FreeTensor(x);
             offset += n;
@@ -77,33 +81,24 @@ private:
         inQueue_.EnQue(x);
     }
 
-    __aicore__ inline int TileMagnitudeMax(const LocalTensor<half> &x, unsigned int n)
+    __aicore__ inline int TileMax(const LocalTensor<half> &x, unsigned int n)
     {
-        // 1. mask the sign bit; Ands needs an integer type, so view the same buffer as int16
-        LocalTensor<uint16_t> bits = x.template ReinterpretCast<uint16_t>();
-        Ands(bits, bits, (uint16_t)0x7fff, (int32_t)n);
-
-        // 2. widen to float, which represents every int16 value exactly, so the
-        //    saturation threshold 0x7bff and the non-finite threshold 0x7c00 stay distinct
-        LocalTensor<float> fb = fbufQueue_.AllocTensor<float>();
-        // uint16 magnitudes are all <= 32767, so the widening is exact
-        LocalTensor<int16_t> asI16 = bits.template ReinterpretCast<int16_t>();
-        Cast(fb, asI16, RoundMode::CAST_NONE, (int32_t)n);
-
-        // 3. reduce in float, the only dtype ReduceMax accepts besides half
-        LocalTensor<float> dst = redQueue_.AllocTensor<float>();
-        LocalTensor<float> work = workQueue_.AllocTensor<float>();
-        ReduceMax(dst, fb, work, (int32_t)n, false);
-        int v = (int)dst.GetValue(0);
+        LocalTensor<half> dst = redQueue_.AllocTensor<half>();
+        LocalTensor<half> work = workQueue_.AllocTensor<half>();
+        ReduceMax(dst, x, work, (int32_t)n, false);
+        // the reduced value is produced on the vector pipe but GetValue reads it through the
+        // scalar path, so the pipes must be synchronised or the read returns stale UB data
+        // (that is exactly the garbage maxMag the first run produced)
+        pipe_barrier(PIPE_ALL);
+        half h = dst.GetValue(0);
+        int v = (int)((*(unsigned short *)&h) & 0x7fff);
         workQueue_.FreeTensor(work);
         redQueue_.FreeTensor(dst);
-        fbufQueue_.FreeTensor(fb);
         return v;
     }
 
     TPipe pipe_;
     TQue<QuePosition::VECIN, 1> inQueue_;
-    TQue<QuePosition::VECCALC, 1> fbufQueue_;
     TQue<QuePosition::VECCALC, 1> workQueue_;
     TQue<QuePosition::VECCALC, 1> redQueue_;
     TQue<QuePosition::VECOUT, 1> outQueue_;
