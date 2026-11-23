@@ -242,13 +242,16 @@ GEMM 峰值的 71%。但因果内核只做 50.5% 的 tile，换成**因果口径
    实测 `63 GB ÷ 3.05 s = 20.7 GB/s` ≈ 本机 pinned H2D 实测 **20.0 GB/s**
    ⇒ **encoder 时间约 99% 是 63 GB 权重搬运**（算力 roofline 仅 0.17 s）。
    - **每次载入则 3.15 s 是硬下限，<2 s 物理不可能**
-   - **可行解**：encoder 上卡一次后**释放 host 副本**（DiT 继续 pinned）
-     - pinned：仅 DiT 62 GB = **57.7 GiB < 94.3 GiB 上限** ✅ 余 36.5
-     - device：encoder 7.33 + DiT 流式 11.64 = **18.97 GiB < 32** ✅ 余 13.03
-     - 每请求 encoder → **≈0.5 s**，**<2 s 达成**
-   - **不改数学**；一次性代价 3.15 s/进程
-   - 未验证点：现有 `load_to_device`/`offload_to_cpu` 是成对调用，需改成"上卡后不卸载且 host 副本可回收"；
-     NUMA（8 节点）对 H2D 带宽的影响未测。
+   - **真正开关（R205）：一个配置项** —— `diffusion_offload_config.components` 去掉 `text_encoder`
+     - 日志证据：`Enabled rank-local layerwise offload for encoder text_encoder (77 blocks across 2 stacks)`
+       ⇒ encoder 目前走逐层 offload，**每次 `encode_prompt` 重新流式载入 63 GB**
+     - `offloader/config.py` 里 `DEFAULT_OFFLOAD_COMPONENTS = {"dit"}` **本来就不含 text_encoder**
+     - 去掉后走 `load_to_device()` + 注释 "Keep Qwen resident" ⇒ **常驻，不再流式搬运**
+     - 预期每请求 encoder → **≈0.5 s**，**<2 s 达成**；**配置改动，不是代码/内核改动**
+   - **⚠️ 作废**：R203 §4d / R204 的"pinned 需 125 GB、差 22 GiB"推演**建立在错误模型上**——
+     逐层 offload 下任何时刻只有**一个 block**（≈0.82 GB）在 pinned 缓冲里，**pinned 上限从来不是瓶颈**
+   - 唯一真实风险：encoder 常驻 7.33 GiB/rank + DiT 逐层块 是否超 32 GiB ⇒ **需实测**
+   - NUMA（8 节点）对 H2D 带宽的影响仍未测。
 
 ## 5. 判据问题（仍待用户）
 
