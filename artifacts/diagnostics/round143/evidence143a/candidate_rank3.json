@@ -1,0 +1,503 @@
+{
+  "scope": "R126 warm, rank-max candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "baseline",
+  "rank": 3,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    25
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "case_index": 0,
+      "audit_mode": "strict",
+      "step_index": 25,
+      "repeat_index": 0,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.959016890265048,
+      "rank_max_elapsed_s": 18.07861328125,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7661108736,
+      "elapsed_s_after_explicit_warmup": 17.959016890265048,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648593425750732
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.88918399810791
+      }
+    },
+    {
+      "case_index": 0,
+      "audit_mode": "strict",
+      "step_index": 25,
+      "repeat_index": 1,
+      "sigma_video": 0.9201277494430542,
+      "sigma_audio": 0.7422680258750916,
+      "local_elapsed_s": 17.96813679020852,
+      "rank_max_elapsed_s": 18.073434829711914,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7676784128,
+      "elapsed_s_after_explicit_warmup": 17.96813679020852,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 7.648972034454346
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.888805389404297
+      }
+    }
+  ],
+  "candidate_hypothesis": "Baseline determinism check: repeated identical execution must reproduce itself bit for bit.",
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "tp_actual": 2,
+  "tp_group_ranks": [
+    2,
+    3
+  ],
+  "local_heads": 28,
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float32": 22377664,
+    "torch.float16": 16539411712
+  },
+  "offload_kind": "native immutable pinned masters, flattened dtype copies, asynchronous next-block prefetch",
+  "host_weight_bytes": 32279142400,
+  "D2H_weight_copies_after_each_layer": false,
+  "per_block_cpu_offload_used": true,
+  "safety_mode": "strict",
+  "warmup_each_selected_step": 2,
+  "clean_repeats_each_selected_step": 2,
+  "numerical_changes_are_not_automatically_accepted": true,
+  "staging143": {
+    "installed": true,
+    "blocks_observed": 50,
+    "block_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "per_block": [
+      {
+        "block": 0,
+        "prefetch_span_ms": 86.524,
+        "prefetch_end_after_block_start_ms": -17159.318,
+        "block_ms": 361.815
+      },
+      {
+        "block": 1,
+        "prefetch_span_ms": 62.412,
+        "prefetch_end_after_block_start_ms": 299.663,
+        "block_ms": 347.957
+      },
+      {
+        "block": 2,
+        "prefetch_span_ms": 86.393,
+        "prefetch_end_after_block_start_ms": 286.802,
+        "block_ms": 347.388
+      },
+      {
+        "block": 3,
+        "prefetch_span_ms": 87.033,
+        "prefetch_end_after_block_start_ms": 286.312,
+        "block_ms": 349.275
+      },
+      {
+        "block": 4,
+        "prefetch_span_ms": 89.42,
+        "prefetch_end_after_block_start_ms": 285.911,
+        "block_ms": 349.344
+      },
+      {
+        "block": 5,
+        "prefetch_span_ms": 88.946,
+        "prefetch_end_after_block_start_ms": 286.239,
+        "block_ms": 348.899
+      },
+      {
+        "block": 6,
+        "prefetch_span_ms": 89.095,
+        "prefetch_end_after_block_start_ms": 285.546,
+        "block_ms": 350.255
+      },
+      {
+        "block": 7,
+        "prefetch_span_ms": 90.671,
+        "prefetch_end_after_block_start_ms": 285.685,
+        "block_ms": 347.95
+      },
+      {
+        "block": 8,
+        "prefetch_span_ms": 87.362,
+        "prefetch_end_after_block_start_ms": 286.51,
+        "block_ms": 349.604
+      },
+      {
+        "block": 9,
+        "prefetch_span_ms": 90.096,
+        "prefetch_end_after_block_start_ms": 285.365,
+        "block_ms": 349.096
+      },
+      {
+        "block": 10,
+        "prefetch_span_ms": 89.831,
+        "prefetch_end_after_block_start_ms": 285.261,
+        "block_ms": 348.5
+      },
+      {
+        "block": 11,
+        "prefetch_span_ms": 88.266,
+        "prefetch_end_after_block_start_ms": 286.404,
+        "block_ms": 345.807
+      },
+      {
+        "block": 12,
+        "prefetch_span_ms": 84.002,
+        "prefetch_end_after_block_start_ms": 287.712,
+        "block_ms": 348.997
+      },
+      {
+        "block": 13,
+        "prefetch_span_ms": 87.911,
+        "prefetch_end_after_block_start_ms": 287.055,
+        "block_ms": 348.779
+      },
+      {
+        "block": 14,
+        "prefetch_span_ms": 86.741,
+        "prefetch_end_after_block_start_ms": 287.682,
+        "block_ms": 349.223
+      },
+      {
+        "block": 15,
+        "prefetch_span_ms": 85.583,
+        "prefetch_end_after_block_start_ms": 289.604,
+        "block_ms": 348.103
+      },
+      {
+        "block": 16,
+        "prefetch_span_ms": 88.084,
+        "prefetch_end_after_block_start_ms": 286.121,
+        "block_ms": 346.126
+      },
+      {
+        "block": 17,
+        "prefetch_span_ms": 74.003,
+        "prefetch_end_after_block_start_ms": 298.037,
+        "block_ms": 348.53
+      },
+      {
+        "block": 18,
+        "prefetch_span_ms": 86.751,
+        "prefetch_end_after_block_start_ms": 287.68,
+        "block_ms": 347.998
+      },
+      {
+        "block": 19,
+        "prefetch_span_ms": 87.847,
+        "prefetch_end_after_block_start_ms": 286.428,
+        "block_ms": 349.76
+      },
+      {
+        "block": 20,
+        "prefetch_span_ms": 89.315,
+        "prefetch_end_after_block_start_ms": 286.322,
+        "block_ms": 347.768
+      },
+      {
+        "block": 21,
+        "prefetch_span_ms": 88.141,
+        "prefetch_end_after_block_start_ms": 285.575,
+        "block_ms": 347.308
+      },
+      {
+        "block": 22,
+        "prefetch_span_ms": 87.222,
+        "prefetch_end_after_block_start_ms": 286.049,
+        "block_ms": 349.684
+      },
+      {
+        "block": 23,
+        "prefetch_span_ms": 90.408,
+        "prefetch_end_after_block_start_ms": 285.166,
+        "block_ms": 347.225
+      },
+      {
+        "block": 24,
+        "prefetch_span_ms": 87.446,
+        "prefetch_end_after_block_start_ms": 285.721,
+        "block_ms": 346.172
+      },
+      {
+        "block": 25,
+        "prefetch_span_ms": 60.54,
+        "prefetch_end_after_block_start_ms": 311.398,
+        "block_ms": 349.952
+      },
+      {
+        "block": 26,
+        "prefetch_span_ms": 90.399,
+        "prefetch_end_after_block_start_ms": 285.574,
+        "block_ms": 346.56
+      },
+      {
+        "block": 27,
+        "prefetch_span_ms": 75.169,
+        "prefetch_end_after_block_start_ms": 297.398,
+        "block_ms": 349.325
+      },
+      {
+        "block": 28,
+        "prefetch_span_ms": 89.83,
+        "prefetch_end_after_block_start_ms": 285.386,
+        "block_ms": 349.198
+      },
+      {
+        "block": 29,
+        "prefetch_span_ms": 89.626,
+        "prefetch_end_after_block_start_ms": 285.583,
+        "block_ms": 347.485
+      },
+      {
+        "block": 30,
+        "prefetch_span_ms": 87.242,
+        "prefetch_end_after_block_start_ms": 286.11,
+        "block_ms": 348.676
+      },
+      {
+        "block": 31,
+        "prefetch_span_ms": 88.182,
+        "prefetch_end_after_block_start_ms": 286.45,
+        "block_ms": 349.871
+      },
+      {
+        "block": 32,
+        "prefetch_span_ms": 89.163,
+        "prefetch_end_after_block_start_ms": 286.62,
+        "block_ms": 347.351
+      },
+      {
+        "block": 33,
+        "prefetch_span_ms": 86.996,
+        "prefetch_end_after_block_start_ms": 286.302,
+        "block_ms": 348.275
+      },
+      {
+        "block": 34,
+        "prefetch_span_ms": 88.422,
+        "prefetch_end_after_block_start_ms": 285.941,
+        "block_ms": 348.919
+      },
+      {
+        "block": 35,
+        "prefetch_span_ms": 88.688,
+        "prefetch_end_after_block_start_ms": 285.903,
+        "block_ms": 348.332
+      },
+      {
+        "block": 36,
+        "prefetch_span_ms": 88.158,
+        "prefetch_end_after_block_start_ms": 286.127,
+        "block_ms": 349.204
+      },
+      {
+        "block": 37,
+        "prefetch_span_ms": 89.324,
+        "prefetch_end_after_block_start_ms": 285.735,
+        "block_ms": 348.83
+      },
+      {
+        "block": 38,
+        "prefetch_span_ms": 87.672,
+        "prefetch_end_after_block_start_ms": 287.153,
+        "block_ms": 348.726
+      },
+      {
+        "block": 39,
+        "prefetch_span_ms": 88.597,
+        "prefetch_end_after_block_start_ms": 286.057,
+        "block_ms": 348.109
+      },
+      {
+        "block": 40,
+        "prefetch_span_ms": 88.306,
+        "prefetch_end_after_block_start_ms": 285.859,
+        "block_ms": 349.059
+      },
+      {
+        "block": 41,
+        "prefetch_span_ms": 75.127,
+        "prefetch_end_after_block_start_ms": 299.906,
+        "block_ms": 347.744
+      },
+      {
+        "block": 42,
+        "prefetch_span_ms": 87.35,
+        "prefetch_end_after_block_start_ms": 286.354,
+        "block_ms": 349.049
+      },
+      {
+        "block": 43,
+        "prefetch_span_ms": 89.65,
+        "prefetch_end_after_block_start_ms": 285.413,
+        "block_ms": 351.202
+      },
+      {
+        "block": 44,
+        "prefetch_span_ms": 90.419,
+        "prefetch_end_after_block_start_ms": 286.866,
+        "block_ms": 349.444
+      },
+      {
+        "block": 45,
+        "prefetch_span_ms": 89.456,
+        "prefetch_end_after_block_start_ms": 285.739,
+        "block_ms": 349.869
+      },
+      {
+        "block": 46,
+        "prefetch_span_ms": 90.871,
+        "prefetch_end_after_block_start_ms": 285.089,
+        "block_ms": 350.084
+      },
+      {
+        "block": 47,
+        "prefetch_span_ms": 88.646,
+        "prefetch_end_after_block_start_ms": 287.598,
+        "block_ms": 349.949
+      },
+      {
+        "block": 48,
+        "prefetch_span_ms": 90.226,
+        "prefetch_end_after_block_start_ms": 285.563,
+        "block_ms": 351.543
+      },
+      {
+        "block": 49,
+        "prefetch_span_ms": 90.201,
+        "prefetch_end_after_block_start_ms": 286.798,
+        "block_ms": 346.481
+      }
+    ],
+    "prefetch_blocks_with_events": 50,
+    "prefetch_span_ms_sum": 4327.8,
+    "prefetch_span_ms_max": 90.9,
+    "blocks_whose_weights_arrived_late": 49,
+    "late_total_ms": 14101.8,
+    "late_max_ms": 311.4,
+    "note": "positive late value = copy-stream completion happened after the block started consuming weights",
+    "measurement_only_no_math_change": true,
+    "no_synchronize_inside_forward": true
+  }
+}

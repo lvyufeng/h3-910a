@@ -1,0 +1,174 @@
+{
+  "scope": "R143+R144: in-model staging alignment and the shapes the DiT linears actually see",
+  "measurement_only": true,
+  "no_math_change": true,
+  "workers": 8,
+  "step_s_median_baseline_instrumented_only": 18.076,
+  "blocks": {
+    "count": 50,
+    "block_ms_median": 348.7,
+    "block_ms_sum_per_step": 17444.0
+  },
+  "staging": {
+    "prefetch_span_ms_median": 59.3,
+    "prefetch_span_ms_sum_per_step": 2939.6,
+    "copy_done_after_block_start_ms_median": 315.3,
+    "slack_to_next_block_ms_median": 33.8,
+    "slack_to_next_block_ms_min": 21.4,
+    "verdict": "staging is just-in-time with about 22-34 ms of margin per block; the copy runs concurrently with compute and is not idling"
+  },
+  "true_shapes_measured": {
+    "qkv_proj": {
+      "input": [
+        10448,
+        5376
+      ],
+      "weight": [
+        10752,
+        5376
+      ],
+      "dtype": "float16"
+    },
+    "attn.out_proj": {
+      "input": [
+        10448,
+        3584
+      ],
+      "weight": [
+        5376,
+        3584
+      ],
+      "dtype": "float16",
+      "output": "float32"
+    },
+    "mlp.fc1": {
+      "input": [
+        10448,
+        5376
+      ],
+      "weight": [
+        14336,
+        5376
+      ],
+      "dtype": "float16",
+      "output": "float32"
+    },
+    "mlp.fc2": {
+      "input": [
+        10448,
+        7168
+      ],
+      "weight": [
+        5376,
+        7168
+      ],
+      "dtype": "float32 input"
+    },
+    "fa910a": {
+      "q": [
+        1,
+        7,
+        41792,
+        128
+      ],
+      "n_pad": 23,
+      "note": "FA runs on the full sequence with 7 heads per rank, so USP splits heads, not tokens"
+    }
+  },
+  "r142_correction": {
+    "what_was_wrong": [
+      "qkv N was taken as 7168 but is 10752",
+      "mlp.fc1 N was taken as 28672 but is 14336",
+      "out_proj K was taken as 7168 but is 3584",
+      "fc2 K was taken as 14336 but is 7168"
+    ],
+    "why_it_matters": "R142 concluded qkv ran at 3.1% of peak; at the true shape the isolated qkv matmul is far healthier, and the four linears are uniformly about 3x slower in-model than in isolation rather than one outlier"
+  },
+  "revised_rows": [
+    {
+      "case": "qkv_proj_resident",
+      "true_mkn": [
+        10448,
+        5376,
+        10752
+      ],
+      "measured_mkn_in_R142": [
+        10448,
+        5376,
+        7168
+      ],
+      "flop_ratio_vs_R142": 1.5,
+      "standalone_ms_measured_in_R142": 7.468,
+      "standalone_ms_rescaled_to_true_shape": 11.2,
+      "in_model_ms_per_layer": 41.74,
+      "gap_x": 3.73,
+      "true_shape_TFLOPS_per_card": 107.8,
+      "true_shape_percent_of_peak": 34.8
+    },
+    {
+      "case": "mlp_fc1_resident",
+      "true_mkn": [
+        10448,
+        5376,
+        14336
+      ],
+      "measured_mkn_in_R142": [
+        10448,
+        5376,
+        28672
+      ],
+      "flop_ratio_vs_R142": 0.5,
+      "standalone_ms_measured_in_R142": 29.754,
+      "standalone_ms_rescaled_to_true_shape": 14.88,
+      "in_model_ms_per_layer": 54.6,
+      "gap_x": 3.67,
+      "true_shape_TFLOPS_per_card": 108.3,
+      "true_shape_percent_of_peak": 34.9
+    },
+    {
+      "case": "attn_out_proj_resident_fp32out",
+      "true_mkn": [
+        10448,
+        3584,
+        5376
+      ],
+      "measured_mkn_in_R142": [
+        10448,
+        7168,
+        5376
+      ],
+      "flop_ratio_vs_R142": 0.5,
+      "standalone_ms_measured_in_R142": 11.767,
+      "standalone_ms_rescaled_to_true_shape": 5.88,
+      "in_model_ms_per_layer": 19.02,
+      "gap_x": 3.23,
+      "true_shape_TFLOPS_per_card": 68.4,
+      "true_shape_percent_of_peak": 22.1
+    },
+    {
+      "case": "mlp_fc2_resident_fp32out",
+      "true_mkn": [
+        10448,
+        7168,
+        5376
+      ],
+      "measured_mkn_in_R142": [
+        10448,
+        14336,
+        5376
+      ],
+      "flop_ratio_vs_R142": 0.5,
+      "standalone_ms_measured_in_R142": 22.717,
+      "standalone_ms_rescaled_to_true_shape": 11.36,
+      "in_model_ms_per_layer": 30.3,
+      "gap_x": 2.67,
+      "true_shape_TFLOPS_per_card": 70.9,
+      "true_shape_percent_of_peak": 22.9
+    }
+  ],
+  "gemm_per_step_in_model_s": 7.283,
+  "gemm_per_step_true_shape_standalone_s": 2.166,
+  "potential_saving_s": 5.117,
+  "fp32_output_explains_rate": "fc1/out_proj/fc2 all produce FP32 and run at roughly 11-17 percent of FP16 peak in isolation, so their ceiling is the FP32 path, not the FP16 peak",
+  "open_question": "the uniform ~3x in-model gap is not explained by a copy stall (slack is 22-34 ms); it is consistent with per-block weight materialisation on the compute stream and/or per-op dispatch with M=10448"
+}
