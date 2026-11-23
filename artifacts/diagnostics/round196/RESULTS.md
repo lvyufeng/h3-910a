@@ -93,6 +93,54 @@ Sij_ub_zN = self.tik_ops_utils.matmul_compute(Qi_l1_zN, KjT_l1_zN, ...,
 若能编译期/标量期算出上界，可省掉 828 波里那些空转的 `if_scope` 判断。
 但这个开销应该远小于 2.922 µs/tile 的缓冲等待，优先级低于双缓冲。
 
+## 五b、可行性检查结果（实现前必须先确认的那一点）
+
+R196 原本标注"TIK 同步语义是否允许重叠必须先确认"。**已确认，而且结论比预期严重。**
+
+`tik_ops_utils.matmul_compute`（第 331 行）的核心：
+
+```python
+with self.tik_instance.new_stmt_scope(disable_sync=False):     # ← 关键
+    C_l0c = self.tik_instance.Tensor(FP32, (N//16, M, 16), scope=L0C, ...)
+    self.tik_instance.matmul(C_l0c, A_l1, B_l1, m, k, n)
+    self.tik_instance.tensor_mov(C_ub, C_l0c, "m", ...)
+```
+
+`disable_sync=False` ⇒ **每次 `stmt_scope` 退出时自动插入流水屏障**。
+而每个 tile 里会调用多次 `matmul_compute` / `softmax_compute` / `output_compute`，
+**每一次都是一个硬同步点**。
+
+### 所以串行有两个独立来源，不是只有一个
+
+| # | 来源 | 后果 |
+|---|---|---|
+| 1 | **`Sij_ub_zN` 单缓冲**（第三节） | 缓冲区依赖，matmul(j+1) 必须等 softmax(j) 读完 |
+| 2 | **`disable_sync=False` 自动屏障**（本节） | 每个算子边界都是全流水屏障，cube 与 vector 无法跨算子重叠 |
+
+**⇒ 只做 ping-pong 双缓冲不够**，还必须把 `disable_sync` 改成 `True`
+并手工插入 `set_flag`/`wait_flag` 做细粒度同步。
+
+这是 TIK 里"专家级"的写法：屏障从"编译器自动"变成"人手工管"，
+需要精确保证 L1/L0A/L0B/L0C/UB 之间每一条依赖都有对应的 flag。
+
+### 对实现工作量的诚实判断
+
+这不是"改两行参数"，而是**重写内核的同步骨架**：
+- 双缓冲 Sij（`Bc=256` 可行，见第四节）
+- 双缓冲 K/V 的 L1 载入，让 MTE 与 cube 重叠
+- 全部 `new_stmt_scope` 改 `disable_sync=True` + 手工 flag
+- 逐条验证依赖正确性（错一条就是静默错误结果）
+
+**这正是我之前说的"真正的内核工程"。** 估算工作量：数天级，且需要完整的
+数值对照验证（现有 R183/R186 那套逐张量判定比对可以复用）。
+
+### 一条更务实的中间路线
+
+如果全手工同步风险太大，还有**降级方案**：
+只把 `Sij` 双缓冲 + 仅对"softmax 与下一个 matmul"这一对改成 `disable_sync=True` 手工同步，
+其余保持自动屏障。这样只动一处依赖对，出错面小，且理论上就能拿到
+第五节估算的 1.2–1.5×。
+
 ## 六、诚实边界
 
 - **本轮是源码阅读，不是实现，也不是测量。** 上面所有收益都是**估算**，

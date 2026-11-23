@@ -115,5 +115,36 @@
     "weights_loaded": false,
     "model_math_unchanged": true,
     "driver_or_device_reset": false
+  },
+  "feasibility_check": {
+    "question": "whether TIK synchronisation semantics allow overlap, which had to be confirmed before implementing",
+    "answer": "no, not as written - and the problem is bigger than the single buffer",
+    "evidence": {
+      "location": "tik_ops_utils.py:331 matmul_compute",
+      "code": "with self.tik_instance.new_stmt_scope(disable_sync=False): ... matmul ... tensor_mov",
+      "meaning": "disable_sync=False makes every stmt_scope exit insert a full pipeline barrier, and every tile contains several such calls"
+    },
+    "two_independent_sources_of_serialisation": [
+      {
+        "source": "single Sij_ub_zN buffer",
+        "effect": "buffer dependency forces matmul(j+1) to wait for softmax(j) to finish reading"
+      },
+      {
+        "source": "disable_sync=False automatic barriers",
+        "effect": "every operator boundary is a full pipeline barrier, so cube and vector cannot overlap across operators"
+      }
+    ],
+    "implication": "ping-pong double buffering alone is insufficient; disable_sync must become True with manual set_flag/wait_flag synchronisation",
+    "work_estimate": "this is a rewrite of the kernels synchronisation skeleton, not a parameter tweak: days of work plus full numeric comparison, reusing the R183/R186 per-tensor verdict comparison",
+    "pragmatic_middle_route": {
+      "idea": "double buffer Sij and hand-synchronise only the softmax-to-next-matmul dependency, leaving the rest on automatic barriers",
+      "benefit": "a single dependency pair to get right, small failure surface, and the projected 1.2-1.5x comes from exactly this pair"
+    },
+    "scope_of_rewrite": [
+      "double buffer Sij (feasible at Bc=256)",
+      "double buffer the K/V L1 loads so MTE overlaps cube",
+      "convert every new_stmt_scope to disable_sync=True with manual flags",
+      "verify each dependency one by one, since a single wrong flag silently corrupts results"
+    ]
   }
 }
