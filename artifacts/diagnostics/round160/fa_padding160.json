@@ -1,0 +1,80 @@
+{
+  "scope": "R160 read-only closure of the FA padding candidate (no machine use)",
+  "read_only": true,
+  "no_machine_used": true,
+  "no_code_changed": true,
+  "candidate_from_r159": "skip the padding and launch on N=41792 with Br=128 Bc=304",
+  "verdict": "WITHDRAWN, disproved by arithmetic before any run",
+  "why": {
+    "tile_derivation_is_from_n": "_build derives the tiles with br = pick_tile(n,128) and bc = pick_tile(n,304), so launching on N=41792 does NOT keep Br=128/Bc=304: it re-derives Br=64/Bc=64.",
+    "tile_counts": {
+      "unpadded_41792": {
+        "br": 64,
+        "bc": 64,
+        "tiles": 426409
+      },
+      "padded_43776": {
+        "br": 128,
+        "bc": 304,
+        "tiles": 49248
+      },
+      "ratio": "the unpadded form needs about 8.7 times more tiles, which is far worse than the 9.72 percent of wasted FLOPs the padding costs"
+    },
+    "conclusion": "the padding is not waste, it is the mechanism that buys the large tiles"
+  },
+  "padding_optimality_search": {
+    "search_space": "every multiple of 16 in [41792, 41792 + 10%] whose derived Br*Bc reaches 128*128",
+    "admissible_candidates": 90,
+    "best_five_by_tile_count": [
+      {
+        "kernel_n": 43776,
+        "pad": 1984,
+        "br": 128,
+        "bc": 304,
+        "tiles": 49248
+      },
+      {
+        "kernel_n": 42624,
+        "pad": 832,
+        "br": 128,
+        "bc": 288,
+        "tiles": 49284
+      },
+      {
+        "kernel_n": 42560,
+        "pad": 768,
+        "br": 112,
+        "bc": 304,
+        "tiles": 53200
+      },
+      {
+        "kernel_n": 41984,
+        "pad": 192,
+        "br": 128,
+        "bc": 256,
+        "tiles": 53792
+      },
+      {
+        "kernel_n": 43520,
+        "pad": 1728,
+        "br": 128,
+        "bc": 272,
+        "tiles": 54400
+      }
+    ],
+    "finding": "the shipped choice is the minimum-tile option in the whole admissible space"
+  },
+  "multiples_of_lcm_check": {
+    "lcm_128_304": 2432,
+    "x17": 41344,
+    "x18": 43776,
+    "note": "17 quanta fall short of 41792 and 18 quanta are exactly what is used, so no smaller common multiple exists"
+  },
+  "remaining_avenue": "only a rule change would help: support a non-dividing tail block so Br=128 can be used on N=41792. That needs a tile shape the current CANN flash_attention invocation does not expose through pick_tile, so it is real kernel work rather than a configuration change.",
+  "line_status": "FA configuration analysis is CLOSED: it is optimal within its own rule set.",
+  "what_still_stands_from_r159": [
+    "the achieved rate is 41.1 TFLOPS per card useful, 45.1 including padding",
+    "core_budget=30, Br=128, Bc=304 are as tuned in the shipped code",
+    "reaching about 69 TFLOPS per card needs new kernel work and the user decision"
+  ]
+}
