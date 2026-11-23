@@ -9,7 +9,38 @@
 > Follow [the agent contract](<AGENTS.md>) and
 > [the GitHub execution guide](<artifacts/diagnostics/github-execution/README.md>);
 > numerical changes require an explicit user decision, and **TP stays enabled**.
+> Current performance position, gap analysis and next levers:
+> [PERFORMANCE_STATUS.md](<artifacts/diagnostics/PERFORMANCE_STATUS.md>).
 
+> **R139 video VAE candidate Rejected (measurement-only):** native `stack_tiling` microbatch
+> (upstream config knob; tile windows/overlap/blend and parameters unchanged) gives **no warm gain**
+> (21.609 vs 21.618 s median, 0.010 s inside noise) and costs **+195 s on the first decode**
+> (280.77 vs 85.35 s). [R139 results](<artifacts/diagnostics/round139/RESULTS.md>).
+> Useful side-fact: with the knob on, four decodes are **bitwise identical**, while native
+> repeat-to-repeat differs — so the native nondeterminism lives in the per-tile sequential path.
+> The user-approved "native noise band" rule turned out **unsatisfiable in its literal form**:
+> a pure-native restored control already exceeds the native internal band (0.066412% > 0.066253%),
+> so a statistical form is proposed and the run is **Awaiting approval**; no tolerance adopted.
+>
+> **R138 video VAE decode decomposition:** fixed R136 latent, original FP32 VAE parameters,
+> 8 ranks x 4 decodes. Warm decode **21.62–21.76 s** rank-max with **99.8% inside `decode_base`**;
+> pipeline-side revert/normalize/copy 0.031 s and staging 0.109 s (≈0.14 s total), so the
+> `<20 s` goal cannot be reached outside the decoder. Geometry measured: VAE parallel 8,
+> tiles **4x7 = 28** (4 per rank), `stack_tiling=False`, `clip_length=17`,
+> `tokens_chunk_size=5`, `token_overlap=2`. Repeatability: **not bitwise** — 253k/384M
+> (**0.0660%**) uint8 components differ by exactly **1 LSB**. Peak allocated 13.44 GiB.
+> [R138 results](<artifacts/diagnostics/round138/RESULTS.md>).
+>
+> **R137 original components are not bitwise repeatable:** fixed-input encoder TP8 and
+> fixed-latent FP32 audio decoder, 8 repeats each per rank with byte-identical inputs and
+> unchanged parameters/states. Encoder repeats differ in **≈96% of output words**
+> (relRMS 0.88–2.32%, maxabs 320–976) with the first change at `encoder.text.layers.0` post;
+> audio decoder repeats differ by maxabs **6e-5** with the first change at a native
+> `parametrizations.weight_norm` materialisation (`resblocks.9.convs1.0`). Therefore R136's
+> encoder-level deltas (2.53% candidate, 3.70% restored) are **within native jitter and not
+> causal evidence**; the user decided to **record the fact and stop numeric attribution**.
+> [R137 results](<artifacts/diagnostics/round137/RESULTS.md>).
+>
 > **R136 approved full49 quality comparison:** three requests completed **182,280
 > strictchecks /58,800DiT FAlaunches /0errors**. Candidatecombo(Falseoriginal→globalTrue
 > +AdaLN→False restored) changesvideo latent0.184615%,nativeRGBPSNR55.9579dB but
