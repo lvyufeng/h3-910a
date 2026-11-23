@@ -1,0 +1,130 @@
+{
+  "scope": "R141 roofline addendum: split GEMM and TP all-reduce out of the attention/mlp regions",
+  "measurement_only_no_math_change": true,
+  "no_candidate_installed": true,
+  "workers": 8,
+  "warm_step_s": 20.798,
+  "warm_step_median_across_ranks_s": 20.801,
+  "hook_overhead_note": "step is 20.798 s here versus 19.906 s in R140 because this run adds five more synchronising region hooks; use R140 for the absolute step and this run for the split only",
+  "regions": [
+    {
+      "region": "qkv_proj (column)",
+      "device_s": 2.087,
+      "share_percent": 10.0,
+      "flops_TF": 20.1,
+      "TFLOPS_per_card": 9.6,
+      "percent_of_peak": 3.1
+    },
+    {
+      "region": "out_proj (row + all-reduce)",
+      "device_s": 0.951,
+      "share_percent": 4.6,
+      "flops_TF": 20.1,
+      "TFLOPS_per_card": 21.2,
+      "percent_of_peak": 6.8
+    },
+    {
+      "region": "mlp.fc1 (merged column)",
+      "device_s": 2.73,
+      "share_percent": 13.1,
+      "flops_TF": 80.5,
+      "TFLOPS_per_card": 29.5,
+      "percent_of_peak": 9.5
+    },
+    {
+      "region": "mlp.fc2 (row + all-reduce)",
+      "device_s": 1.515,
+      "share_percent": 7.3,
+      "flops_TF": 40.3,
+      "TFLOPS_per_card": 26.6,
+      "percent_of_peak": 8.6
+    },
+    {
+      "region": "GEMM subtotal",
+      "device_s": 7.283,
+      "share_percent": 35.0,
+      "flops_TF": 161.0,
+      "TFLOPS_per_card": 22.1,
+      "percent_of_peak": 7.1
+    },
+    {
+      "region": "attention region (FA+USP+q/k norm+qkv+out)",
+      "device_s": 12.242,
+      "share_percent": 58.9,
+      "flops_TF": null,
+      "TFLOPS_per_card": null,
+      "percent_of_peak": null
+    },
+    {
+      "region": "mlp region (fc1+fc2)",
+      "device_s": 4.452,
+      "share_percent": 21.4,
+      "flops_TF": null,
+      "TFLOPS_per_card": null,
+      "percent_of_peak": null
+    },
+    {
+      "region": "adaln region",
+      "device_s": 1.365,
+      "share_percent": 6.6,
+      "flops_TF": null,
+      "TFLOPS_per_card": null,
+      "percent_of_peak": null
+    },
+    {
+      "region": "norms",
+      "device_s": 0,
+      "share_percent": 0.0,
+      "flops_TF": null,
+      "TFLOPS_per_card": null,
+      "percent_of_peak": null
+    },
+    {
+      "region": "block total",
+      "device_s": 20.501,
+      "share_percent": 98.6,
+      "flops_TF": null,
+      "TFLOPS_per_card": null,
+      "percent_of_peak": null
+    },
+    {
+      "region": "block residual (block - attn - mlp - adaln - norms)",
+      "device_s": 2.442,
+      "share_percent": 11.7,
+      "flops_TF": null,
+      "TFLOPS_per_card": null,
+      "percent_of_peak": null
+    },
+    {
+      "region": "misc (refiner/patch/final/time)",
+      "device_s": 0.157,
+      "share_percent": 0.8,
+      "flops_TF": null,
+      "TFLOPS_per_card": null,
+      "percent_of_peak": null
+    },
+    {
+      "region": "step residual (step - blocks - misc)",
+      "device_s": 0.14,
+      "share_percent": 0.7,
+      "flops_TF": null,
+      "TFLOPS_per_card": null,
+      "percent_of_peak": null
+    }
+  ],
+  "tp_all_reduce": {
+    "calls": 420,
+    "device_ms_total": 7092.338,
+    "ms_per_call": 16.89,
+    "additive_wall_time": false,
+    "why_not_additive": "HCCL runs on a side stream, so per-call spans overlap in device time; the total is residency, not wall time, and is already inside the enclosing out_proj/fc2/block regions"
+  },
+  "prefetch": {
+    "calls": 201,
+    "copy_stream_device_ms_total": 6871.844
+  },
+  "h2d_bandwidth_GB_per_s": 21.74,
+  "peak_assumed_FP16_TFLOPS": 310,
+  "peak_assumption_is_order_of_magnitude_not_vendor_quote": true,
+  "conclusion": "GEMM is a first-class 10 s target (7.283 s = 35% of the step, qkv 2.087 + out_proj 0.951 + fc1 2.730 + fc2 1.515); TP all-reduce spans 7.09 s across 420 calls on a side stream and the unhidden part sits in the 2.442 s block residual."
+}
