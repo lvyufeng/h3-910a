@@ -3,7 +3,7 @@
 from __future__ import annotations
 import json, os, sys
 from pathlib import Path
-ROOT = Path('/tmp/h3_mem170'); LABEL = os.environ.get('H3_FAST163_LABEL', 'mem170a')
+ROOT = Path('/tmp/h3_mem170'); LABEL = os.environ['H3_MEM170_LABEL']   # must match what the launcher exports
 
 
 def main():
