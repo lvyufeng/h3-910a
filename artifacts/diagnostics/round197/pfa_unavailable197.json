@@ -1,0 +1,87 @@
+{
+  "scope": "R197: the official AscendC prompt_flash_attention is unusable here, closing the library-swap path",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "motivation": "R196 showed fixing the TIK kernel needs a multi-day synchronisation rewrite, so a cheaper option was tested first: the CANN source tree contains prompt_flash_attention_tiling_v2.cpp, implying an official AscendC implementation",
+  "op_confirmed_present": {
+    "libopapi_symbols": [
+      "aclnnPromptFlashAttention",
+      "aclnnPromptFlashAttentionGetWorkspaceSize"
+    ],
+    "torch_npu": "npu_prompt_flash_attention",
+    "note": "the first attempt failed only because head_num was the wrong keyword; the real schema uses num_heads"
+  },
+  "schema": "npu::npu_prompt_flash_attention(query, key, value, *, ..., num_heads=1, scale_value=1., pre_tokens=2147483647, next_tokens=0, input_layout=\"BSH\", num_key_value_heads=0, actual_seq_lengths_kv, sparse_mode=0) -> Tensor",
+  "result": {
+    "error": "call aclnnPromptFlashAttentionV3 failed, error code is 561103",
+    "sweep": [
+      {
+        "N": 4096,
+        "aligned": true,
+        "ok": false
+      },
+      {
+        "N": 8192,
+        "aligned": true,
+        "ok": false
+      },
+      {
+        "N": 16384,
+        "aligned": true,
+        "ok": false
+      },
+      {
+        "N": 41792,
+        "aligned": false,
+        "ok": false
+      },
+      {
+        "N": 43776,
+        "aligned": true,
+        "ok": false
+      }
+    ],
+    "conclusion": "even N=4096 fails, so this is not a length or alignment issue; the op is unusable on this chip and CANN combination, most likely because this build lacks an ascend910 kernel binary for the V3 implementation"
+  },
+  "paths_closed": [
+    {
+      "path": "official AscendC prompt_flash_attention",
+      "status": "closed",
+      "evidence": "561103 at every length"
+    },
+    {
+      "path": "npu_fusion_attention",
+      "status": "closed",
+      "evidence": "161001 (R187)"
+    },
+    {
+      "path": "torch SDPA",
+      "status": "closed",
+      "evidence": "would need 45.55 GiB to materialise the score matrix (R187)"
+    }
+  ],
+  "only_remaining_path": {
+    "path": "rewrite the TIK kernel synchronisation",
+    "evidence": "R196 located the two causes",
+    "cost": "multi-day"
+  },
+  "complete_option_set": {
+    "core_budget": "ruled out (R188)",
+    "tile_parameters": "capped at 1.089x by UB (R191/R194)",
+    "softmax_or_fewer_ops": "ruled out, vector at most 21 percent (R190)",
+    "swap_in_official_op": "ruled out (R187/R197)",
+    "rewrite_TIK_sync": "the only remaining route"
+  },
+  "limits": [
+    "the meaning of 561103 was not verified against a CANN error table; the reading that the build lacks an ascend910 binary is an inference",
+    "the sparse_mode=2 call was made without an explicit atten_mask, which is the one parameter variant still untried and would settle it",
+    "only B=1, H=7, D=128 in fp16 was tested"
+  ],
+  "compliance": {
+    "weights_loaded": false,
+    "shared_cann_modified": false,
+    "driver_or_device_reset": false,
+    "model_math_unchanged": true
+  }
+}
