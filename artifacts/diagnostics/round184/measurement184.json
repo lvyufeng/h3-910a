@@ -1,0 +1,62 @@
+{
+  "scope": "R184: per-layer audit cost measured from Python with the host syncs included, native path vs one custom-op call",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": true,
+  "method": {
+    "native": "exactly matrix_safety126._hook strict mode, including both int() host syncs",
+    "fast": "one h3_max_mag_bits() ctypes call: one op launch plus one stream sync",
+    "why_not_device_events": "R168 showed device time alone does not predict step time"
+  },
+  "rows": [
+    {
+      "tensor": "mlp_fc1",
+      "mib": 285.7,
+      "native_ms": 30.329,
+      "fast_ms": 2.129,
+      "speedup": 14.25,
+      "verdict_agrees": true
+    },
+    {
+      "tensor": "qkv_proj",
+      "mib": 214.3,
+      "native_ms": 23.988,
+      "fast_ms": 1.648,
+      "speedup": 14.56,
+      "verdict_agrees": true
+    },
+    {
+      "tensor": "adaln",
+      "mib": 0.6,
+      "native_ms": 0.876,
+      "fast_ms": 0.169,
+      "speedup": 5.18,
+      "verdict_agrees": true
+    }
+  ],
+  "per_step_native_s": 2.764,
+  "per_step_fast_s": 0.198,
+  "implied_saving_s_per_step": 2.566,
+  "cross_check": "R162 independently measured the audit at 2.87 s; this round's native path measured 2.764 s, so the measurement reproduces the real cost",
+  "why_r168_does_not_apply": "R168 kept 5-6 device ops and multiple syncs per layer, so neither the arithmetic nor the serialisation went away. This route has one launch and one sync per layer, and the 14x speedup was measured with the syncs included",
+  "verification": {
+    "adversarial": "15/15 (R183)",
+    "real_shapes_verdict_agreement": "3/3"
+  },
+  "contract_B_status": "not yet run against the real 8-rank model path; used real code and real shapes instead",
+  "candidate_status": "Awaiting approval - not adopted",
+  "projection_if_approved": {
+    "now_s": 17.902,
+    "plus_stage_a_s": 15.34,
+    "plus_guard_s": 13.67,
+    "plus_fa_s": 9.3
+  },
+  "compliance": {
+    "shared_cann_modified": false,
+    "artifacts_in": "/tmp",
+    "vendor_install": "opp/vendors",
+    "weights_downloaded": false,
+    "driver_or_device_reset": false,
+    "nothing_adopted": true
+  }
+}
