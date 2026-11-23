@@ -1,0 +1,46 @@
+{
+  "scope": "R154 single-device microbench of the MLP activation path",
+  "measurement_only": true,
+  "no_model_loaded": true,
+  "device": "npu:0",
+  "shape": [
+    10448,
+    14336
+  ],
+  "row_stride": 14336,
+  "logical_width": 7168,
+  "ms_median": {
+    "strided_silu": 1.737,
+    "strided_mul": 2.103,
+    "strided_silu_then_mul": 3.239,
+    "contiguous_silu": 1.133,
+    "contiguous_mul": 0.903,
+    "contiguous_silu_then_mul": 2.041,
+    "both_copies": 1.207,
+    "contiguous_plus_copies": 3.238
+  },
+  "strided_penalty_factor": 1.59,
+  "bit_identity": {
+    "torch_equal": true,
+    "differing_elements": 0,
+    "total_elements": 74891264,
+    "max_abs_diff": 0.0,
+    "relative_RMS": 0.0
+  },
+  "verdict": {
+    "strided_theory": "REJECTED",
+    "why": "Making the halves contiguous is 1.59x faster on the operators themselves, but the two copies cost 1.207 ms and the total becomes 3.238 ms against 3.239 ms for the strided version, so there is no net gain at all.",
+    "bit_identity": "the contiguous path is bit-identical to the strided path (0 differing elements of 74891264), so if it ever became worth doing it would carry no numeric risk",
+    "bigger_finding": "the same operators take 3.24 ms standalone but the model attributes about 33.6 ms per layer to the mlp region between fc1 and fc2, a factor of about 10, so the in-model residual is not these operators",
+    "attribution_error": "R153b computed the residual as median(mlp) minus median(fc1) minus median(fc2). Those medians come from different calls and do not form an additive decomposition, so the 34.7 ms number cannot be read as time spent between fc1 and fc2."
+  },
+  "new_lead": "The 34.7 ms per layer gap behaves like an environment effect rather than arithmetic: the model allocates fresh FP32 buffers of about 600 MB plus two 300 MB temporaries every layer while the layerwise offloader is live, whereas the microbench reuses its buffers. Allocator pressure or a stream wait would show up exactly this way.",
+  "next": [
+    "measure the mlp region with a single wrapping span and an inner span around the activation to get a true additive pair",
+    "or count allocator events / check for sampling of free-block reuse inside the mlp region"
+  ],
+  "limits": [
+    "single device, no TP or USP traffic",
+    "no layerwise offloader active, so staging waits are absent by construction"
+  ]
+}
