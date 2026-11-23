@@ -1,0 +1,51 @@
+{
+  "scope": "R191: FA tile sweep - shape tuning is worth at most 9 percent, not the 1.5x needed",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "model_math_unchanged": false,
+  "numeric_equivalence_note": "changing the tile changes accumulation order, so these outputs are NOT numerically equivalent to the default; this is measurement only and may never be a candidate",
+  "method": {
+    "patched_private_copy": "_build's br_cap/bc_cap made overridable via H3_FA_BR_CAP/H3_FA_BC_CAP, defaults untouched at 128/304",
+    "shape": "B=1 H=7 N=41792 D=128 (the real FA shape)",
+    "per_config": "separate process with separate TIK compile, warmup 2, 5 timed reps"
+  },
+  "results_ms": {
+    "128/128": 254.98,
+    "128/256": 169.94,
+    "128/304": 154.57,
+    "128/384": 142.0,
+    "64/304": 178.51
+  },
+  "validation": "the 128/304 baseline of 154.57 ms matches the known 7.454 s / 50 blocks = 149 ms, so the measurement method is sound",
+  "best": {
+    "config": "128/384",
+    "median_ms": 142.0,
+    "speedup": 1.089,
+    "fa_s_per_step_projected": 6.85,
+    "saving_s": 0.6
+  },
+  "conclusion": {
+    "tile_tuning_ceiling": "about 9 percent, far short of the 1.50x the 10 s target needs",
+    "revealed_pattern": "larger Bc means fewer tiles and less total time; Bc=128 needs about 2.4x the tiles and costs 1.65x the time",
+    "interpretation": "this is the signature of a sizeable fixed per-tile cost, matching R190's bubble conclusion: the problem is not that a 304-wide tile wastes cube work (384 is only 9 percent better) but that each tile pays a fixed cost",
+    "implication": "reducing the number of tiles and overlapping the per-tile dependency chain matter more than making one tile more efficient"
+  },
+  "for_the_10s_path": {
+    "tile_tuning": "about 0.6 s, not enough",
+    "overlap_pipelining": "2.5-3.0 s, the only viable direction",
+    "note": "Bc=384 and better overlap are additive, so 384 is a sensible starting parameter for any new kernel"
+  },
+  "limits": [
+    "Bc larger than 384 was not tried; UB capacity may not allow it and that needs checking separately",
+    "the bubble hypothesis is still only indirectly supported; an occupancy timeline has not been captured",
+    "output_sum differs across configs, which both confirms the rounding difference and rules out treating any of these as an equivalent implementation"
+  ],
+  "compliance": {
+    "shared_cann_modified": false,
+    "original_fa910a_unmodified": true,
+    "private_copy_in": "/tmp",
+    "weights_loaded": false,
+    "synthetic_tensors": true,
+    "driver_or_device_reset": false
+  }
+}
