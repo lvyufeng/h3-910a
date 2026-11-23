@@ -1,0 +1,50 @@
+{
+  "scope": "R185: end-to-end step time of the stage A fast audit, native vs fast, 8 ranks",
+  "read_only_measurement": true,
+  "nothing_adopted": true,
+  "default_path_unchanged": true,
+  "runs": {
+    "native185": {
+      "audit": "untouched original matrix_safety126.py",
+      "warm_step_median_s": 17.9869,
+      "exit": 0,
+      "completed": true
+    },
+    "fast185": {
+      "audit": "patched copy, H3_FAST_AUDIT=1",
+      "warm_step_median_s": 15.4729,
+      "exit": 0,
+      "completed": true
+    }
+  },
+  "saving_s_per_step": 2.514,
+  "saving_pct": 14.0,
+  "fast_branch_proof": {
+    "marker_file_lines": 2480,
+    "note": "without this proof the first attempt looked like a 0.058 s difference"
+  },
+  "r184_prediction_s": 2.566,
+  "prediction_error_pct": 2.0,
+  "r168_relationship": "R168's conclusion that the audit cost is an irreducible per-layer serialisation point holds only for a replacement that keeps 5-6 device ops and several syncs per layer; this route has one launch and one sync, so arithmetic and serialisation collapse together",
+  "methodology_trap_found": "run185.py sat in /tmp/h3_fast185, so sys.path[0] (the script directory) beat PYTHONPATH and an unpatched matrix_safety126.py from the copied R149 tree shadowed both variants; the first comparison therefore measured the native path twice",
+  "new_compliant_baseline_s": 15.473,
+  "projection": {
+    "now_s": 17.902,
+    "plus_stage_a_s": 15.473,
+    "plus_guard_s": 13.81,
+    "plus_fa_s": 9.43
+  },
+  "status": "Awaiting approval, not adopted",
+  "not_yet_verified": [
+    "no per-tensor 465-call comparison in the real model path",
+    "stability across repeats not measured"
+  ],
+  "compliance": {
+    "weights_downloaded": false,
+    "weights_reused": "/home/mseco/models/MiniMax-H3/FL2VA/transformer",
+    "shared_cann_modified": false,
+    "artifacts_in": "/tmp",
+    "driver_or_device_reset": false,
+    "model_math_unchanged": true
+  }
+}
