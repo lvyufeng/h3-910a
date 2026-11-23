@@ -1,0 +1,34 @@
+{
+  "scope": "R155 additive parent-child span decomposition of MiniMaxH3MLP.forward",
+  "measurement_only": true,
+  "no_sync_inside_forward": true,
+  "additive_by_construction": true,
+  "uses_the_native_forward_path": true,
+  "workers": 8,
+  "all_ranks_completed": true,
+  "step_s": 17.902,
+  "calls": 150,
+  "median_ms": {
+    "fc1": 23.274,
+    "activation": 34.717,
+    "fc2": 29.999,
+    "tail": 0.006,
+    "total": 88.217
+  },
+  "sum_of_parts_ms": 87.996,
+  "closure_error_ms": 0.221,
+  "per_call_sum_median_ms": 88.217,
+  "per_step_s": {
+    "activation": 1.736,
+    "mlp_total": 4.411
+  },
+  "silu_inside_the_activation_ms": 0.575,
+  "conclusion": "The decomposition is additive (closure error 0.221 ms) and the activation region between fc1 and fc2 is genuinely 34.717 ms per layer, 1.736 s per step. The SiLU inside it is only 0.575 ms, so the remainder is the multiply, the chunk handling and dispatch.",
+  "contradiction_with_microbench": "R154 measured the same operator sequence at 3.24 ms standalone, roughly a tenth of the in-model activation region. Since R155 shows the region is real and additive, the extra time is environmental, not arithmetic: in-model the region allocates about 900 MB of FP32 temporaries per layer while the layerwise offloader and its staging buffers are live, whereas the microbench runs in a quiet process.",
+  "probe_attempts": {
+    "span155a": "failed: the harness module was not copied into the round directory",
+    "span155b": "the measurement reported here"
+  },
+  "next": "kernel-level profile (msprof op summary) of a few blocks to see whether the activation region is compute or a gap",
+  "not_claimed": "no candidate is proposed yet; allocator or stream behaviour has to be identified before anything can be changed"
+}
