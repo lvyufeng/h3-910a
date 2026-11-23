@@ -1,0 +1,46 @@
+{
+  "scope": "R159 read-only analysis of the FA910A launch plan (no machine use, no code change)",
+  "read_only": true,
+  "no_model_loaded": true,
+  "no_code_changed": true,
+  "confirmed_launch_plan": "[FA910A] plan input_N=41792 kernel_N=43776 key_limit=41769 original_pad=23 ; core_budget=30 blockDim=30 B=1 H=7 N=43776 D=128 Br=128 Bc=304",
+  "plan_source": "historical log evidence in the repository receipts, not a new run",
+  "retraction": {
+    "claim_i_was_about_to_make": "the FA kernel is forced to 64x64 tiles because pick_tile requires exact divisibility and 41792 = 64 x 653 with 653 prime",
+    "why_it_is_wrong": "_kernel_sequence_length pads the sequence to kernel_N=43776 = 18 x lcm(128,304) whenever the unpadded shape would produce tiles smaller than 128x128, so the kernel actually runs Br=128 Bc=304 on the padded length",
+    "status": "retracted before being proposed as a candidate"
+  },
+  "padding_arithmetic": {
+    "input_N": 41792,
+    "kernel_N": 43776,
+    "padded_rows": 1984,
+    "padded_rows_percent": 4.75,
+    "note": "attention is quadratic so the wasted work grows with the square of the padded length",
+    "wasted_flops_percent": 9.72,
+    "tiles_now": 49248,
+    "tiles_without_padding_at_the_same_tile_shape": 45126,
+    "tiles_saved_percent": 8.37
+  },
+  "achieved_efficiency": {
+    "useful_TFLOP_per_rank_per_step": 313.0,
+    "seconds": 7.607,
+    "useful_TFLOPS_per_card": 41.1,
+    "TFLOPS_per_card_including_padding": 45.1,
+    "assumed_peak_TFLOPS_per_card": 310,
+    "percent_of_assumed_peak_including_padding": 14.6
+  },
+  "candidate_identified": {
+    "what": "launch the same CANN flash_attention kernel on N=41792 with Br=128 Bc=304 instead of padding to 43776",
+    "why_it_should_be_numerically_identical": "the padded keys are zeroed and excluded by key_limit, and the padded query rows produce outputs that are discarded, so dropping them removes no real contribution; row blocks are independent in flash attention, so per-row accumulation order over the 304-wide key blocks is unchanged",
+    "expected_saving_s_per_step": 0.74,
+    "expected_saving_basis": "8.4 percent fewer tiles at the same tile shape, applied to a 7.607 s kernel term",
+    "what_it_needs": "a one-line condition change in _kernel_sequence_length, then a bitwise comparison of the two paths in the same process, exactly like the R148 pattern where the native result is still returned",
+    "risk": "medium: it exercises the kernel tail-block path that the padding currently avoids, so both correctness and speed must be measured",
+    "authorization_required": "yes, because it changes the attention path even though the expectation is bit-identical"
+  },
+  "what_this_does_not_do": [
+    "it does not close the gap between 41 TFLOPs and the roughly 69 TFLOPs the 10 s path needs",
+    "it does not touch the softmax or the cube efficiency of the CANN kernel"
+  ],
+  "conclusion": "the FA plan is already well tuned on the axes I could inspect (Br=128, Bc=304, 30 cores, documented repartitioning win). The only clearly wasteful, quantified and likely-free item is the 9.7 percent padding overhead, worth about 0.74 s per step. Reaching 10 s still needs the kernel to get materially faster, which is new kernel work and needs the user decision."
+}
