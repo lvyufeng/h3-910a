@@ -1,0 +1,30 @@
+{
+  "scope": "R157 resident control attempt plus a correction to earlier round explanations",
+  "measurement_only": true,
+  "resident_control": {
+    "result": "NOT AVAILABLE: OOM",
+    "detail": "--resident moves the whole model onto the device and drops the layerwise offloader, which would have removed the host-to-device copy stream entirely. It fails with NPU out of memory: 31.06 GiB already allocated of 32.00 GiB, 404 MiB requested. This confirms the R125 note that whole-model residency is not available at the baseline precision configuration.",
+    "consequence": "copy-stream contention cannot be tested by residency; it needs a prefetch-timing control instead"
+  },
+  "correction": {
+    "what_i_claimed": "in R149, R152 and R153b I explained the 3x call counts (fa 150, mlp 150, silu 312) as the hook group being installed three times",
+    "what_is_true": "the harness warms up each selected step --warmup times and then measures it --repeats times, so a run with --warmup 2 --repeats 1 executes three forward passes. 150 mlp calls are 3 steps x 50 blocks, and 312 silu calls are 3 steps x 104. No hook was ever installed more than once.",
+    "why_the_numbers_survived": "dividing by three because of a supposed triple installation and dividing by three because of three steps give the same arithmetic, so the derived per-step values were still correct; the explanation was wrong, not the data.",
+    "still_correct": [
+      "FA 7736 ms per step (R150 measured it directly at 7736.2 ms)",
+      "mlp 4418-4411 ms per step",
+      "the R155 additive decomposition and its 0.22 ms closure",
+      "silu median 1.14 ms on the MLP shape"
+    ],
+    "retracted": [
+      "the phrase triple hook installation in R149/R152/R153b",
+      "the implication that the probes needed a de-duplication step to be read correctly"
+    ]
+  },
+  "mlp_forward_source_confirmed": "MiniMaxH3MLP.forward is exactly fc1 -> chunk(2,-1) -> F.silu(gate)*up -> fc2, with no extra .float() calls, so the E1 to E2 interval really is those three pointwise steps",
+  "next_control": "run the same span probe with the offloader prefetch made synchronous (non_blocking=False) so no copy is in flight during a block; if the activation region collapses, contention is confirmed, and if it stays at about 35 ms the contention hypothesis is rejected. This is diagnostic only: a synchronous prefetch would never be proposed as an optimisation, it only separates waiting from computing.",
+  "caveats": [
+    "the resident attempt is a scheduling control and was never a candidate",
+    "a synchronous-prefetch control would also be diagnostic only and would never be proposed as an optimisation"
+  ]
+}
