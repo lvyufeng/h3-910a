@@ -1,0 +1,44 @@
+{
+  "scope": "R182: the 7-round cstdint blocker is solved; the blocker moves to AscendC API type support",
+  "root_cause_found": {
+    "what": "CANN's $CANN/bin/asc_opc wrapper prepends its own python/site-packages to PYTHONPATH",
+    "code": "export PYTHONPATH=\"${PYTHON_PATH}:${PYTHONPATH}\"",
+    "consequence": "every external overlay was shadowed, so the patches were never imported from R175 to R181",
+    "why_it_was_missed_for_seven_rounds": "the patch appeared to apply and the errors never changed, which looked like a wrong injection point rather than a shadowed package"
+  },
+  "fix": {
+    "private_wrapper": "/tmp/h3_bin182/asc_opc calling asc_opc_tool/opc.py directly with the overlay first",
+    "verified_by": [
+      "asc_opc resolves to /tmp/h3_bin182/asc_opc",
+      "imported from /tmp/h3_overlay182/asc_op_compile_base/__init__.py",
+      "patch present: True"
+    ],
+    "anchor_corrected": "R179's regex for 'compile_options = ' does not exist in that file; the real anchor is just before 'return compile_cmd' in gen_compile_cmd_v200/v220 (5 anchors total)"
+  },
+  "result": {
+    "cstdint_errors_before": 10,
+    "cstdint_errors_after": 0,
+    "compile_now_reaches": "CompileStage.LINKRELOCATE"
+  },
+  "new_blocker": {
+    "api": "Ands",
+    "header_claims": "SupportType<PrimType, uint16_t, int16_t, int64_t, uint64_t>",
+    "reality": "undefined symbol for half, int16_t and uint16_t; the level-2 count overload has no 16-bit instantiation",
+    "reduce_max_supported": [
+      "half",
+      "float"
+    ]
+  },
+  "next_routes": {
+    "A": "32-bit Ands - rejected, masking int32 would touch two fp16 lanes at once",
+    "B": "Abs (half) to get magnitudes - still leaves NaN invisible to ReduceMax per R165",
+    "C": "CompareScalar against 65504 / Compare(x,x) for NaN / CompareScalar against Inf, all reduced with ReduceMax on half - recommended",
+    "D": "coarse ReduceMax(Abs(x)) screen with an exact fallback - needs ReduceMax's real NaN behaviour measured first"
+  },
+  "compliance": {
+    "shared_cann_modified": false,
+    "overlay_location": "/tmp only",
+    "weights_downloaded": false,
+    "driver_or_device_reset": false
+  }
+}

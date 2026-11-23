@@ -1,0 +1,11 @@
+#!/bin/bash
+# R182: private asc_opc wrapper. CANN's own wrapper prepends its site-packages to PYTHONPATH,
+# which shadows any overlay; this wrapper puts the patched overlay FIRST and calls opc.py
+# directly, so the patched compile-command builder is the one that gets imported.
+set -euo pipefail
+OVL=${OVL:-/tmp/h3_overlay182}
+R=/home/mseco/Ascend/cann-9.2.0
+PY_SITE="$R/python/site-packages"
+python_args="${HI_PYTHON:-python3}"
+export PYTHONPATH="$OVL:$PY_SITE:${PYTHONPATH:-}"
+exec $python_args "$PY_SITE/asc_opc_tool/opc.py" "$@"
