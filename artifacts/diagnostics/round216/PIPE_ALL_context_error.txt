@@ -1,0 +1,34 @@
+[W1124 07:48:03.470288230 NPUCachingAllocator.cpp:204] Warning: The current CANN and HDK(driver) versions require processing for 32 padding size, with memory allocation. (function operator())
+[FA910A] plan input_N=41792 kernel_N=43776 key_limit=41792 original_pad=0
+Error: Don't support high level api in new_stmt_scope with disable sync
+File path: /tmp/h3_fa216/pkg/flash_attention/ops/flash_attention/tik_ops_utils.py, line 352
+The context code cause the exception is:
+349            # R216 measurement prototype: same cube and data-movement operations, with
+350            # the automatic scope synchronisation replaced by an explicit barrier.
+351            # The mathematical tile and accumulation order are not changed.
+352 ->         with self.tik_instance.new_stmt_scope(disable_sync=True):
+353                # matmul
+354                C_l0c = self.tik_instance.Tensor(
+355                    FP32, (N // 16, M, 16), scope=L0C, name="C_l0c"
+
+Traceback:
+  File /tmp/h3_fa216/sweep215.py, line 90, in <module>
+     main()
+  File /tmp/h3_fa216/sweep215.py, line 42, in main
+     out = fa.flash_attention_910a(q, k, v)
+  File /tmp/h3_fa216/fa910a_sweep.py, line 341, in flash_attention_910a
+     out = _flash_attention_core(pq, pk, pv, scale=scale, stream=stream,
+  File /tmp/h3_fa216/fa910a_sweep.py, line 358, in _flash_attention_core
+     obj, kern, bd = _CACHE.get(cache_key) or _build(b, h, n, d, key_seq_limit=key_seq_limit)
+  File /tmp/h3_fa216/fa910a_sweep.py, line 249, in _build
+                     instance.compute_process()
+  File /tmp/h3_fa216/pkg/flash_attention/ops/flash_attention/attention.py, line 410, in compute_process
+             self.compute_one_core(batch_start_s, batch_num_s, core_idx_to_tr_info, core_idx)
+  File /tmp/h3_fa216/pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py, line 477, in compute_one_core
+                 self.compute_in_each_q_block(batch_start_sc, batch_idx, q_blk_idx, self.Br)
+  File /tmp/h3_fa216/pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py, line 446, in compute_in_each_q_block
+             Sij_ub_zN = self.tik_ops_utils.matmul_compute(Qi_l1_zN,
+  File /tmp/h3_fa216/pkg/flash_attention/ops/flash_attention/tik_ops_utils.py, line 352, in matmul_compute
+         with self.tik_instance.new_stmt_scope(disable_sync=True):
+  File /home/mseco/Ascend/cann-9.2.0/python/site-packages/tbe/tvm/tir/ir_builder.py, line 42, in __exit__
+         self._exit_cb()

@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "round": 217,
+  "nothing_adopted": true,
+  "whole_goal_complete": false,
+  "scope": "single-card synthetic local FA with actual geometry and key limit; NOT 8-rank whole-step",
+  "geometry": {
+    "B_heads": 7,
+    "head_num": 7,
+    "Nq": 43776,
+    "Nk": 43776,
+    "d": 128,
+    "Br": 128,
+    "Bc": 304,
+    "Tr": 342,
+    "Tc": 144,
+    "core_num": 30,
+    "prev_block_num": 65536,
+    "next_block_num": 65536,
+    "has_attn_mask": false,
+    "only_causal": false,
+    "key_seq_limit": 41769,
+    "forward_sha256": "a21c52eaa65071e6d496449bf663571bc543b1cdd818fe8950b9764e1680ffdd",
+    "forward_path": "/tmp/h3_fa217/baseline_pkg/flash_attention/ops/flash_attention/flash_attention_fwd.py",
+    "utils_sha256": "6aa8949d19d5527ae105578ca098eff9784c96af6c63d7c5f552c49c4e413900",
+    "utils_path": "/tmp/h3_fa217/baseline_pkg/flash_attention/ops/flash_attention/tik_ops_utils.py"
+  },
+  "work": {
+    "mode": "dense attention",
+    "padded_dense_matmul_TFLOP_per_call": 6.868156022784,
+    "useful_dense_matmul_TFLOP_per_call": 6.256266412032,
+    "dense_tiles_per_head": 49248,
+    "dense_tiles_all_heads": 344736,
+    "padded_rate_TFLOPS_per_card": 45.13179362162656,
+    "historical_best_GEMM_TFLOPS_per_card": 96.9,
+    "empirical_GEMM_reference_is_not_a_physical_ceiling": true,
+    "not_measured_hardware_occupancy_or_MFU": true
+  },
+  "measurements": [
+    {
+      "name": "accepted_baseline",
+      "wall_ms": 154.57061026245356,
+      "kernel_ms": 152.17999267578125,
+      "disposition": "Keep baseline"
+    },
+    {
+      "name": "grouped_k128",
+      "wall_ms": 157.65195013955235,
+      "kernel_ms": 155.3419952392578,
+      "kernel_time_ratio_to_baseline": 1.020778043866865,
+      "output_sha256_matches_baseline": true,
+      "disposition": "Reject: slower; not adopted"
+    },
+    {
+      "name": "grouped_k128_thread2",
+      "wall_ms": 157.70060010254383,
+      "kernel_ms": 155.33099365234375,
+      "kernel_time_ratio_to_baseline": 1.0207057506125374,
+      "output_sha256_matches_baseline": true,
+      "disposition": "Reject: slower; not adopted"
+    },
+    {
+      "name": "restored_baseline",
+      "wall_ms": 154.50981026515365,
+      "kernel_ms": 152.16799926757812,
+      "disposition": "Keep baseline restored"
+    }
+  ],
+  "numeric": {
+    "comparisons": [
+      {
+        "baseline": "small_base",
+        "candidate": "small_pvgroup",
+        "elements": 3670016,
+        "differing_words": 0,
+        "baseline_nonfinite": 0,
+        "candidate_nonfinite": 0,
+        "baseline_saturated": 0,
+        "candidate_saturated": 0,
+        "base_sha256": "52eedbf9e82cc6f7dfd6f2d5086cb7b2358770b8c37be1370b264e3b5766c529",
+        "candidate_sha256": "52eedbf9e82cc6f7dfd6f2d5086cb7b2358770b8c37be1370b264e3b5766c529"
+      },
+      {
+        "baseline": "small_base",
+        "candidate": "small_pvdouble",
+        "elements": 3670016,
+        "differing_words": 0,
+        "baseline_nonfinite": 0,
+        "candidate_nonfinite": 0,
+        "baseline_saturated": 0,
+        "candidate_saturated": 0,
+        "base_sha256": "52eedbf9e82cc6f7dfd6f2d5086cb7b2358770b8c37be1370b264e3b5766c529",
+        "candidate_sha256": "52eedbf9e82cc6f7dfd6f2d5086cb7b2358770b8c37be1370b264e3b5766c529"
+      },
+      {
+        "baseline": "real_restored_final",
+        "candidate": "real_pvgroup",
+        "elements": 37445632,
+        "differing_words": 0,
+        "baseline_nonfinite": 0,
+        "candidate_nonfinite": 0,
+        "baseline_saturated": 0,
+        "candidate_saturated": 0,
+        "base_sha256": "3b7bf78c6a9623303b83d32ccd0fd112e967c7f761bb5142354d6eebd010f21b",
+        "candidate_sha256": "3b7bf78c6a9623303b83d32ccd0fd112e967c7f761bb5142354d6eebd010f21b"
+      },
+      {
+        "baseline": "real_restored_final",
+        "candidate": "real_pvdouble",
+        "elements": 37445632,
+        "differing_words": 0,
+        "baseline_nonfinite": 0,
+        "candidate_nonfinite": 0,
+        "baseline_saturated": 0,
+        "candidate_saturated": 0,
+        "base_sha256": "3b7bf78c6a9623303b83d32ccd0fd112e967c7f761bb5142354d6eebd010f21b",
+        "candidate_sha256": "3b7bf78c6a9623303b83d32ccd0fd112e967c7f761bb5142354d6eebd010f21b"
+      },
+      {
+        "baseline": "real_restored_final",
+        "candidate": "real_restored_end",
+        "elements": 37445632,
+        "differing_words": 0,
+        "baseline_nonfinite": 0,
+        "candidate_nonfinite": 0,
+        "baseline_saturated": 0,
+        "candidate_saturated": 0,
+        "base_sha256": "3b7bf78c6a9623303b83d32ccd0fd112e967c7f761bb5142354d6eebd010f21b",
+        "candidate_sha256": "3b7bf78c6a9623303b83d32ccd0fd112e967c7f761bb5142354d6eebd010f21b"
+      }
+    ],
+    "no_model_or_client_tensor_transfer": true
+  },
+  "failed_direct_PV_layout": {
+    "shape": [
+      1,
+      7,
+      4096,
+      128
+    ],
+    "dtype": "torch.float16",
+    "elements": 3670016,
+    "differing_words": 3669614,
+    "differing_values": 3669614,
+    "differing_fraction": 0.9998904636928013,
+    "relative_rms": 1.4109433508337912,
+    "max_abs_difference": 0.3619384765625,
+    "baseline_nonfinite_words": 0,
+    "candidate_nonfinite_words": 0,
+    "baseline_saturated_words": 0,
+    "candidate_saturated_words": 0,
+    "candidate_enabled": false,
+    "disposition": "Awaiting user numeric decision; no promotion",
+    "scope": "small synthetic local operator only, not model output"
+  },
+  "scoped_sync_runtime_fault": "507015 L0A/L0B read/write conflict, not a timing result",
+  "grouped_double_and_single_binary_equal": true,
+  "conditional_scenarios_only": {
+    "formula": "new_step=A-guard_gain-F+F/speedup-other_gain",
+    "A_s": 15.473,
+    "guard_gain_assumed_s": 1.665,
+    "historical_FA_scope_s": 7.454,
+    "no_combo_measured": true,
+    "different_run_scopes": true,
+    "FA_speedup_needed_with_guard_assumption": 2.0444322545255074,
+    "FA_speedup_needed_without_guard": 3.7627460878344303,
+    "FA_speedup_1_5_assuming_guard_step_s": 11.323333333333334,
+    "FA_speedup_1_89_assuming_guard_step_s": 10.297915343915344,
+    "not_a_physical_lower_bound": true,
+    "historical_fit_not_proven_removable_cost": true
+  },
+  "source_policy": "Only hashes of installed proprietary SDK references published; no SDK vendoring",
+  "next_experiment": "Optimize vector memory passes with exact NZ layouts and tail handling; keep automatic dependency sync, and measure current same-run critical path before whole-step projection"
+}
