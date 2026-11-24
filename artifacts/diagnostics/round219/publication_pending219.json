@@ -1,0 +1,25 @@
+{
+  "round": 219,
+  "evidence_commit_local": "3a50128",
+  "status": "remote publication unconfirmed; reconciliation pending",
+  "known_last_pushed_commit_before_attempt": "1a66044",
+  "failed_operations": [
+    {"operation": "git push origin master", "exit_code": 128, "error": "LibreSSL SSL_connect: SSL_ERROR_SYSCALL github.com:443"},
+    {"operation": "gh api repos/lvyufeng/h3-910a/commits/master", "exit_code": 1, "error": "Get https://api.github.com/repos/lvyufeng/h3-910a/commits/master: EOF"},
+    {"operation": "git ls-remote --exit-code origin refs/heads/master", "exit_code": 128, "error": "LibreSSL SSL_connect: SSL_ERROR_SYSCALL github.com:443"}
+  ],
+  "no_blind_push_retry": true,
+  "FA_issue_comment_published": false,
+  "roadmap_comment_published": false,
+  "last_project_status_verified_at_start": "In Progress for supplemental gate-only evidence; originally Awaiting approval",
+  "project_finish_update_pending": "Awaiting approval",
+  "models_finished": true,
+  "candidate_adopted": false,
+  "lease_released": true,
+  "recovery_steps": [
+    "Read remote master SHA before repeating any uncertain push",
+    "If master contains evidence commit, do not resend experiment; otherwise push local normal fast-forward once connection is verified",
+    "Read latest FA/roadmap comments and reconcile exact markers before writing pending comment drafts",
+    "Update Project #5 to Awaiting approval, preserve roadmap In Progress, read back and commit finish receipts"
+  ]
+}

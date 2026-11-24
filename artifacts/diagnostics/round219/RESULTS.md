@@ -69,6 +69,7 @@ These timings are isolated replay, not live encoder/full49step pipeline. Do not 
 - Only original checkpoints and sealed on-host conditioning/snapshots reused; no new weights or activations downloaded/transferred to the client.
 - R219 generator, launch, model gates and edge tests all completed without a runtime/code failure. Static contracts check that `_attention` returns only `reference` and there is no candidate-measurement mode, but are explicitly not numerical evidence.
 - Private model/test processes gone; all host-only prediction/edge tensor files, private candidate/cache and package removed. Original sources unchanged; no driver/device/SDK reset, CI/dormant use or unrelated process signaling.
+- Publication encountered GitHub TLS failures after local evidence commit `3a50128`: push failed with `SSL_ERROR_SYSCALL`, read-only REST and git remote-head reconciliation also failed. Do not blindly replay uncertain push/Issue writes. Local [publication receipt](publication_pending219.json) and pending comment drafts preserve the recovery steps; no finish comment/Project update is claimed remote until read-back succeeds.
 - Owned ts-217 lease released (`released=true`); CUDA grants released unused. Another session's dormant host lease was not touched.
 
 [Cleanup](cleanup219.json) · [Static scope contracts](static_gate_contracts219.json) · [Issue #5](https://github.com/lvyufeng/h3-910a/issues/5).
