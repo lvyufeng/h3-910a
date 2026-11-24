@@ -48,11 +48,14 @@ scenarios={'formula':'new_step=A-guard_gain-F+F/speedup-other_gain',
            'FA_speedup_1_89_assuming_guard_step_s':A-guard-F+F/1.89,
            'not_a_physical_lower_bound':True,
            'historical_fit_not_proven_removable_cost':True}
+failed_layout=load('comparison_pv217.json')
+failed_layout['raw_initial_disposition']=failed_layout['disposition']
+failed_layout['disposition']='Reject: wrong NZ operand layout, not a numerical tolerance decision'
 result={'schema':1,'round':217,'nothing_adopted':True,'whole_goal_complete':False,
         'scope':'single-card synthetic local FA with actual geometry and key limit; NOT 8-rank whole-step',
         'geometry':instance,'work':work,'measurements':rows,
         'numeric':load('exact_comparison217.json'),
-        'failed_direct_PV_layout':load('comparison_pv217.json'),
+        'failed_direct_PV_layout':failed_layout,
         'scoped_sync_runtime_fault':'507015 L0A/L0B read/write conflict, not a timing result',
         'grouped_double_and_single_binary_equal':candidates[0][1]['compiled_kernels'][0]['object_sha256']==candidates[1][1]['compiled_kernels'][0]['object_sha256'],
         'conditional_scenarios_only':scenarios,
