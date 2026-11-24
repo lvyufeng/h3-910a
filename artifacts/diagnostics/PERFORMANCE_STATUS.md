@@ -1,4 +1,4 @@
-# 当前性能状态与证据索引（截至 R218）
+# 当前性能状态与证据索引（截至 R219）
 
 GitHub [路线图 #1](https://github.com/lvyufeng/h3-910a/issues/1) 与 [Project #10](https://github.com/users/lvyufeng/projects/10) 是实时状态源。本文件是证据索引，不把历史实验、拟合或情景算术升级为采用/达标。此前版本中的“10s可达”“FA实测证明1.89×”“encoder99%搬运/0.5s”等过强结论撤回。
 
@@ -11,21 +11,29 @@ GitHub [路线图 #1](https://github.com/lvyufeng/h3-910a/issues/1) 与 [Project
 | DiT ≤10s/step | R126 whole-forward19.372s；R136逐step rank-max中位20.03/20.11/20.03s | 未达标；不可替换为isolated replay17.556s |
 | 审计候选（R185） | 同轮配对17.987→15.473s，节省2.514s，10测量step×8rank | 候选实测，非本轮采用或完整49步10s证明；H3_FAST_AUDIT默认关 |
 | 真实形状FA局部（R217） | wrapper154.57ms，ACL kernel152.18ms | 原版复现；R217候选全部Reject |
-| padding-task裁剪FA单项（R218） | 局部kernel152.235→140.853ms；8rank replay17.944→17.376s，恢复17.977s | 实测节省0.568s；真实400FA对逐位同；完整预测仍variation，默认关，待用户判据/补充验证 |
+| padding-task裁剪FA单项（R218/R219） | R218局部kernel152.235→140.853ms；8rank replay17.944→17.376s，恢复17.977s | 实测节省0.568s；steps0/25/48共1,200真实FA对逐位同，8finite边界测试同；完整49step未验，默认关，待用户决定 |
 | encoder<2s | 历史in-pipeline rank-max3.14–3.17s；隔离live FP16约2.34s | 未达标；驻留/NUMA等仍待实测 |
 | video VAE<20s | 历史warm rank-max21.62–21.76s | 用户已暂停此路，未达标 |
 | A2/A3同口径对比 | 未完成 | [#13](https://github.com/lvyufeng/h3-910a/issues/13)仍开放 |
 
 [R217完整结果](round217/RESULTS.md) · [R217原始基线](round217/restored_final217.json) · [R217恢复](round217/restored_end217.json)。历史R126整体证据以[封存说明](round126/README.md)为准；不同scope或冷热数据不相减作因果归因。
 
-## 2. R218最新实测：独立候选，不组合/采用
+## 2. R219补精度证据，R218单项实测收益未晋升
+
+- R219只做gate-only步骤，model始终返回original FA output。step0和48新增800次原版/candidate真实QKV对比，29,956,505,600FP16word零差异；与R218 step25合计1,200对/44,934,758,400word零差异。
+- 同一candidate源码与binary SHA052c49f2…重编译复核；8个finite mask/极端值测试（signedzero、subnormal、maxinvalidKV、negative scores ×exact/partialkey边界）14,680,064word零差异、nonfinite/saturation=0。
+- 这是局部精度补充证据，未采用、组合或重新测candidate speed，不证明全49step轨迹；R218完整预测variation仍不作为自动容差。原版restore、privatecache/tensor清理、lease释放。
+
+[R219完整结果](round219/RESULTS.md) · [实际input gates](round219/gate_summary219.json) · [finite边界gate](round219/edge_summary219.json)。待用户对该项精度门与完整候选验证作决定，默认OFF。
+
+### R218独立候选实测（未组合/采用）
 
 - 当前同run8rank DiT replay step25：clean17.997s、只读profile18.080s、恢复18.000s；全部155strict检查保留，实际50FA launches/rank。不是执行live encoder的完整pipeline。
 - 同runnative ACL FA kernel约7.627s/步；qkv/fc1/adaln检查subspan约1.244/1.578/0.066s；H2D约32.3GB/rank、50次prefetch，3.381s span包含stream waits并与compute重叠，不能与父子span相加。
 - 精确UB广播位拷贝候选small/real逐位同（含signedzero/subnormal/NaN payload unit），kernel152.256→153.152ms，无收益Reject。
 - **padding任务裁剪**：保留GM storage shape/stride、Br128/Bc304、mask/FP32累加、自动同步与所有真实token pair，仅Tr342→327、Tc144→138。真实几何局部kernel152.235→140.853ms（1.0808×），输出37,445,632word零差异。exact/partial有效key边界测试通过。
 - **单独8rank测试这一项**：原版17.944s→候选17.376s→恢复17.977s，节省0.568s（3.17%时间减少），没有与R185审计/guard候选组合。原50块、155strict检查保留；首次gate forward返回原版输出，400真实attention输入对比较14,978,252,800word零差异。
-- 完整预测candidate与native仍有video relRMS2.56–2.58e-4、audio3.99–4.44e-4，native自身也variation。这不是自动容差；候选默认关，**Awaiting user decision/additional step0/48/full49step evidence**。
+- 完整预测candidate与native仍有video relRMS2.56–2.58e-4、audio3.99–4.44e-4，native自身也variation。这不是自动容差；候选默认关，R218具体测量时等待step0/48补证据；现R219已补，但**仍Awaiting user decision/full49step evidence**。
 
 [R218完整结果](round218/RESULTS.md) · [当前同run预算](round218/path_summary218.json) · [独立裁剪单步测量](round218/trim_model_summary218.json) · [完整预测数值](round218/trim_prediction_metrics218.json)。不能直接把这0.568s从R185不同run15.473s里扣成组合结果；10s仍未达标。
 
@@ -79,7 +87,7 @@ R193拟合`83.53ms+2.922µs×tiles`中的截距和斜率没有被证明是可移
 
 ## 5. 候选与数值门禁
 
-- [#5 FA](https://github.com/lvyufeng/h3-910a/issues/5)：R217/PV与R218广播候选Reject；R218仅padding-task裁剪拿到实测单项收益，Awaiting user decision/additional evidence，默认未启用。后续需step0/48实际输入门禁；不能把单buf源码依赖定位等同于测得瓶颈，也不能称“唯一剩余路线”。
+- [#5 FA](https://github.com/lvyufeng/h3-910a/issues/5)：R217/PV与R218广播候选Reject；R218仅padding-task裁剪拿到实测单项收益，Awaiting user decision/additional evidence，默认未启用。R219已补step0/48实际输入门禁；待用户decide/full49step evidence，默认OFF。不能把单buf源码依赖定位等同于测得瓶颈，也不能称“唯一剩余路线”。
 - R185单趟审计内核：配对节省2.514s；R183对抗15/15、R186实际张量310/310判定相符。不是“zero risk”；未由本轮推广到默认路径。内核阶段历史代理0.351 s与推演2.52 s仅是R178诊断；实际收益以R185配对为准。历史构建脚本[overlay179.sh](round179/overlay179.sh)不代表当前FA采用。
 - [#6 GEMM](https://github.com/lvyufeng/h3-910a/issues/6)：仍需当前same-run布局/保护/传输分解；低“剩余速率百分比”不能证明没有优化空间。guard默认保留；不以native噪声带自动接受差异。
 - [#4 Runtime](https://github.com/lvyufeng/h3-910a/issues/4)与[#15重现性](https://github.com/lvyufeng/h3-910a/issues/15)：R213 legacy也出现variation，只能说明async prefetch不是variation的必要条件；isolated collective稳定不证明全模型上下文无问题。历史26.923vs20s未配对，不能称prefetch收益6.9s。
@@ -88,6 +96,6 @@ R193拟合`83.53ms+2.922µs×tiles`中的截距和斜率没有被证明是可移
 
 ## 6. 下一轮与资源
 
-下一轮优先补R218 padding裁剪的step0/48真实输入精度门，用户逐项决定后才组合；可继续单测其他布局/向量方案。当前same-run数据已建立区域范围，但精确关键路径仍需trace；父子与copy span不相加。未通过的候选不组合，目标达成前不关闭路线图。
+step0/25/48的局部FA门禁已通过；下一步等待用户对R218这一项的精度门和完整49step独立候选验证作决定。未批准前不采用/组合，可继续单测其他布局/向量或GEMM候选。当前same-run数据已建立区域范围，但精确关键路径仍需trace；父子与copy span不相加，目标达成前不关闭路线图。
 
-本轮结束原版已恢复；私有候选cache/package与合成输出删除，未修改SDK/driver或reset设备。owned ts-217 lease已释放；没有使用CI/dormant，其他会话lease不操作。[清理回执](round218/cleanup218.json)。所有权重与激活留在主机，本轮只下载scalar JSON、源码及文本；专有SDK参考仅保留本地hash，不公开源码。
+本轮结束原版已恢复；私有候选cache/package与合成输出删除，未修改SDK/driver或reset设备。owned ts-217 lease已释放；没有使用CI/dormant，其他会话lease不操作。[清理回执](round219/cleanup219.json)。所有权重与激活留在主机，本轮只下载scalar JSON、源码及文本；专有SDK参考仅保留本地hash，不公开源码。
