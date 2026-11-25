@@ -1,4 +1,4 @@
-# 当前性能状态与证据索引（截至 R219）
+# 当前性能状态与证据索引（截至 R221）
 
 GitHub [路线图 #1](https://github.com/lvyufeng/h3-910a/issues/1) 与 [Project #10](https://github.com/users/lvyufeng/projects/10) 是实时状态源。本文件是证据索引，不把历史实验、拟合或情景算术升级为采用/达标。此前版本中的“10s可达”“FA实测证明1.89×”“encoder99%搬运/0.5s”等过强结论撤回。
 
@@ -19,6 +19,30 @@ GitHub [路线图 #1](https://github.com/lvyufeng/h3-910a/issues/1) 与 [Project
 [R217完整结果](round217/RESULTS.md) · [R217原始基线](round217/restored_final217.json) · [R217恢复](round217/restored_end217.json)。历史R126整体证据以[封存说明](round126/README.md)为准；不同scope或冷热数据不相减作因果归因。
 
 ## 2. R219补精度证据，R218单项实测收益未晋升
+
+### R221 受保护 linear 精确分解：guard 只占0.52s/step，另1.14s/step未归属
+
+按部署副本`transformer.py`（sha256`5d94ba09…`）第495–517行的逐op序列，在真实形状
+（M=10448；`out_proj`K3584/N5376、`fc2`K7168/N5376）上做**免权重、单卡、仅计时**复现
+（[R221结果](round221/RESULTS.md)、[receipt](round221/receipts221.json)）：
+
+| 变体 | `out_proj` ms | `fc2` ms |
+|---|---|---|
+| `mm_only`（含x cast，FP32 out） | 2.952 | 11.613 |
+| `amax_cast_mm`（去掉/scale与×scale） | 6.556 | 17.491 |
+| `full_guard`（部署序列原样） | 7.080 | 18.429 |
+| R147 in-model中位 | 18.306 | 29.934 |
+
+- **guard净开销≈0.52 s/step**（×50块×2层），不是R147推的1.665 s；scale==1分支跳过两次恒等运算
+  只值73 ms/step，且两case在112,336,896 word上逐位同——仅是分支证据，**未采用**。
+- **in-model比standalone多11.2/11.5 ms/层，合计≈1.14 s/step既不在guard也不在mm内**；
+  候选主因是RowParallelLinear的TP all-reduce，或guard内`float(peak)`把权重预取流一并排空。
+  这是R222要归属的对象，不能计入已回收。
+- GEMM达成率（`mm_only`口径，310 TF为沿用假设）：`out_proj`136.4 TFLOPS/卡（44.0%）、
+  `fc2`69.3 TFLOPS/卡（22.4%）。
+- **10 s仍不可达**：GEMM区域即使拿掉1.14 s，仍需FA从7.45 s降到≈2.2 s。
+
+**结论**：GEMM/guard路径的可回收量级是0.05–0.2 s/step，不改变10 s判断；FA仍是第一杠杆。
 
 - R219只做gate-only步骤，model始终返回original FA output。step0和48新增800次原版/candidate真实QKV对比，29,956,505,600FP16word零差异；与R218 step25合计1,200对/44,934,758,400word零差异。
 - 同一candidate源码与binary SHA052c49f2…重编译复核；8个finite mask/极端值测试（signedzero、subnormal、maxinvalidKV、negative scores ×exact/partialkey边界）14,680,064word零差异、nonfinite/saturation=0。
