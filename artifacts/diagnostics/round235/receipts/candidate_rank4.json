@@ -1,0 +1,433 @@
+{
+  "scope": "R126 warm, rank-max candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "baseline",
+  "rank": 4,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    0
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "case_index": 0,
+      "audit_mode": "strict",
+      "step_index": 0,
+      "repeat_index": 0,
+      "sigma_video": 1.0,
+      "sigma_audio": 1.0,
+      "local_elapsed_s": 17.931557949632406,
+      "rank_max_elapsed_s": 17.99040412902832,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7661076480,
+      "elapsed_s_after_explicit_warmup": 17.931557949632406,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 11.851239204406738
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.821492671966553
+      }
+    }
+  ],
+  "candidate_hypothesis": "Baseline determinism check: repeated identical execution must reproduce itself bit for bit.",
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "tp_actual": 2,
+  "tp_group_ranks": [
+    4,
+    5
+  ],
+  "local_heads": 28,
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float16": 16539411712,
+    "torch.float32": 22377664
+  },
+  "offload_kind": "native immutable pinned masters, flattened dtype copies, asynchronous next-block prefetch",
+  "host_weight_bytes": 32279142400,
+  "D2H_weight_copies_after_each_layer": false,
+  "per_block_cpu_offload_used": true,
+  "safety_mode": "strict",
+  "warmup_each_selected_step": 1,
+  "clean_repeats_each_selected_step": 1,
+  "numerical_changes_are_not_automatically_accepted": true,
+  "rest235": {
+    "installed": true,
+    "scope": "per-call samples over the measured step; default-stream device events plus host perf_counter; forwards untouched",
+    "measurement_only_no_math_change": true,
+    "functions_patched": {
+      "_apply_rope": "patched",
+      "_run_packed_attention": "patched",
+      "F.silu": "patched"
+    },
+    "labels": {
+      "packed_attention_uspfakernel": {
+        "device": {
+          "calls": 104,
+          "median_ms": 176.752,
+          "p10_ms": 176.281,
+          "p90_ms": 178.486,
+          "min_ms": 4.92,
+          "max_ms": 22691.523,
+          "sum_ms": 42621.8
+        },
+        "host": {
+          "calls": 104,
+          "median_ms": 4.315,
+          "p10_ms": 3.953,
+          "p90_ms": 7.44,
+          "min_ms": 0.929,
+          "max_ms": 26020.538,
+          "sum_ms": 26540.1
+        },
+        "event_errors": 0
+      },
+      "silu": {
+        "device": {
+          "calls": 208,
+          "median_ms": 0.368,
+          "p10_ms": 0.003,
+          "p90_ms": 1.142,
+          "min_ms": 0.002,
+          "max_ms": 190.056,
+          "sum_ms": 826.8
+        },
+        "host": {
+          "calls": 208,
+          "median_ms": 0.22,
+          "p10_ms": 0.175,
+          "p90_ms": 0.257,
+          "min_ms": 0.166,
+          "max_ms": 2.389,
+          "sum_ms": 48.9
+        },
+        "event_errors": 0
+      },
+      "adaln_proj": {
+        "device": {
+          "calls": 100,
+          "median_ms": 1.954,
+          "p10_ms": 1.894,
+          "p90_ms": 2.064,
+          "min_ms": 1.827,
+          "max_ms": 3779.6,
+          "sum_ms": 4187.3
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 27.057,
+          "p10_ms": 26.193,
+          "p90_ms": 27.547,
+          "min_ms": 16.161,
+          "max_ms": 4341.434,
+          "sum_ms": 9675.5
+        },
+        "event_errors": 0
+      },
+      "norm1": {
+        "device": {
+          "calls": 100,
+          "median_ms": 1.765,
+          "p10_ms": 1.751,
+          "p90_ms": 1.814,
+          "min_ms": 1.729,
+          "max_ms": 1500.704,
+          "sum_ms": 1677.2
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 0.453,
+          "p10_ms": 0.425,
+          "p90_ms": 0.491,
+          "min_ms": 0.387,
+          "max_ms": 0.903,
+          "sum_ms": 46.3
+        },
+        "event_errors": 0
+      },
+      "qkv": {
+        "device": {
+          "calls": 100,
+          "median_ms": 17.066,
+          "p10_ms": 17.063,
+          "p90_ms": 17.068,
+          "min_ms": 17.043,
+          "max_ms": 210.348,
+          "sum_ms": 1899.8
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 0.238,
+          "p10_ms": 0.228,
+          "p90_ms": 0.267,
+          "min_ms": 0.216,
+          "max_ms": 0.655,
+          "sum_ms": 24.9
+        },
+        "event_errors": 0
+      },
+      "q_norm": {
+        "device": {
+          "calls": 100,
+          "median_ms": 2.35,
+          "p10_ms": 2.336,
+          "p90_ms": 2.398,
+          "min_ms": 2.325,
+          "max_ms": 1874.403,
+          "sum_ms": 2107.7
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 0.504,
+          "p10_ms": 0.478,
+          "p90_ms": 0.587,
+          "min_ms": 0.462,
+          "max_ms": 1.221,
+          "sum_ms": 52.5
+        },
+        "event_errors": 0
+      },
+      "k_norm": {
+        "device": {
+          "calls": 100,
+          "median_ms": 2.252,
+          "p10_ms": 2.245,
+          "p90_ms": 2.263,
+          "min_ms": 2.239,
+          "max_ms": 193.57,
+          "sum_ms": 416.7
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 0.489,
+          "p10_ms": 0.468,
+          "p90_ms": 0.533,
+          "min_ms": 0.449,
+          "max_ms": 0.857,
+          "sum_ms": 50.2
+        },
+        "event_errors": 0
+      },
+      "rope": {
+        "device": {
+          "calls": 200,
+          "median_ms": 1.11,
+          "p10_ms": 1.099,
+          "p90_ms": 1.125,
+          "min_ms": 1.042,
+          "max_ms": 2314.251,
+          "sum_ms": 2535.5
+        },
+        "host": {
+          "calls": 200,
+          "median_ms": 0.828,
+          "p10_ms": 0.795,
+          "p90_ms": 0.909,
+          "min_ms": 0.751,
+          "max_ms": 2.72,
+          "sum_ms": 173.8
+        },
+        "event_errors": 0
+      },
+      "out_proj": {
+        "device": {
+          "calls": 100,
+          "median_ms": 18.787,
+          "p10_ms": 18.43,
+          "p90_ms": 19.605,
+          "min_ms": 18.132,
+          "max_ms": 2434.319,
+          "sum_ms": 4308.6
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 179.616,
+          "p10_ms": 177.374,
+          "p90_ms": 182.294,
+          "min_ms": 173.834,
+          "max_ms": 1487.787,
+          "sum_ms": 19304.5
+        },
+        "event_errors": 0
+      },
+      "attn": {
+        "device": {
+          "calls": 100,
+          "median_ms": 244.401,
+          "p10_ms": 243.419,
+          "p90_ms": 245.928,
+          "min_ms": 242.986,
+          "max_ms": 31967.836,
+          "sum_ms": 56216.5
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 232.594,
+          "p10_ms": 231.637,
+          "p90_ms": 235.04,
+          "min_ms": 231.187,
+          "max_ms": 32900.018,
+          "sum_ms": 56011.9
+        },
+        "event_errors": 0
+      },
+      "norm2": {
+        "device": {
+          "calls": 100,
+          "median_ms": 1.574,
+          "p10_ms": 1.57,
+          "p90_ms": 1.58,
+          "min_ms": 1.564,
+          "max_ms": 1.595,
+          "sum_ms": 157.4
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 0.357,
+          "p10_ms": 0.333,
+          "p90_ms": 0.459,
+          "min_ms": 0.32,
+          "max_ms": 0.736,
+          "sum_ms": 38.0
+        },
+        "event_errors": 0
+      },
+      "fc1": {
+        "device": {
+          "calls": 100,
+          "median_ms": 23.206,
+          "p10_ms": 23.092,
+          "p90_ms": 23.675,
+          "min_ms": 23.059,
+          "max_ms": 24.11,
+          "sum_ms": 2330.5
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 0.238,
+          "p10_ms": 0.223,
+          "p90_ms": 0.275,
+          "min_ms": 0.21,
+          "max_ms": 0.354,
+          "sum_ms": 24.5
+        },
+        "event_errors": 0
+      },
+      "fc2": {
+        "device": {
+          "calls": 100,
+          "median_ms": 30.043,
+          "p10_ms": 29.983,
+          "p90_ms": 30.448,
+          "min_ms": 29.614,
+          "max_ms": 2884.937,
+          "sum_ms": 5869.6
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 7.96,
+          "p10_ms": 7.911,
+          "p90_ms": 8.86,
+          "min_ms": 7.324,
+          "max_ms": 1368.358,
+          "sum_ms": 2178.4
+        },
+        "event_errors": 0
+      },
+      "mlp": {
+        "device": {
+          "calls": 100,
+          "median_ms": 88.014,
+          "p10_ms": 87.795,
+          "p90_ms": 88.454,
+          "min_ms": 87.644,
+          "max_ms": 5900.263,
+          "sum_ms": 14620.1
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 83.205,
+          "p10_ms": 80.883,
+          "p90_ms": 84.819,
+          "min_ms": 79.865,
+          "max_ms": 5396.349,
+          "sum_ms": 13622.8
+        },
+        "event_errors": 0
+      },
+      "block": {
+        "device": {
+          "calls": 100,
+          "median_ms": 347.024,
+          "p10_ms": 345.944,
+          "p90_ms": 348.946,
+          "min_ms": 345.509,
+          "max_ms": 44591.574,
+          "sum_ms": 79226.9
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 346.977,
+          "p10_ms": 345.453,
+          "p90_ms": 349.443,
+          "min_ms": 335.242,
+          "max_ms": 42648.723,
+          "sum_ms": 79720.6
+        },
+        "event_errors": 0
+      }
+    },
+    "caveats": "silu is global; packed_attention wraps USP all-to-all + FA kernel"
+  },
+  "rest235_function_report": {
+    "patched": {
+      "_apply_rope": "patched",
+      "_run_packed_attention": "patched",
+      "F.silu": "patched"
+    }
+  },
+  "rest235_spans_installed": {
+    "blocks": 50
+  },
+  "rest235_step_invariance": {
+    "measured_rank_max_s": 17.99040412902832,
+    "reference_s": 17.928,
+    "delta_s": 0.062,
+    "accepted": true,
+    "note": "R227 showed a 15% perturbation is possible; only accepted runs may be quoted"
+  }
+}
