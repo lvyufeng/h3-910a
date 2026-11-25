@@ -1,0 +1,209 @@
+{
+  "scope": "R126 warm, rank-max candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "baseline",
+  "rank": 3,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    0
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "case_index": 0,
+      "audit_mode": "strict",
+      "step_index": 0,
+      "repeat_index": 0,
+      "sigma_video": 1.0,
+      "sigma_audio": 1.0,
+      "local_elapsed_s": 17.88400819990784,
+      "rank_max_elapsed_s": 17.94654083251953,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7661076480,
+      "elapsed_s_after_explicit_warmup": 17.88400819990784,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 11.845704078674316
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.825008869171143
+      }
+    }
+  ],
+  "candidate_hypothesis": "Baseline determinism check: repeated identical execution must reproduce itself bit for bit.",
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "tp_actual": 2,
+  "tp_group_ranks": [
+    2,
+    3
+  ],
+  "local_heads": 28,
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float16": 16539411712,
+    "torch.float32": 22377664
+  },
+  "offload_kind": "native immutable pinned masters, flattened dtype copies, asynchronous next-block prefetch",
+  "host_weight_bytes": 32279142400,
+  "D2H_weight_copies_after_each_layer": false,
+  "per_block_cpu_offload_used": true,
+  "safety_mode": "strict",
+  "warmup_each_selected_step": 1,
+  "clean_repeats_each_selected_step": 1,
+  "numerical_changes_are_not_automatically_accepted": true,
+  "rest232": {
+    "installed": true,
+    "scope": "default-stream device events plus host perf_counter; forwards untouched",
+    "measurement_only_no_math_change": true,
+    "functions_patched": {
+      "_apply_rope": "patched",
+      "_run_packed_attention": "patched",
+      "F.silu": "patched"
+    },
+    "labels": {
+      "packed_attention_uspfakernel": {
+        "calls": 104,
+        "median_ms": 176.769,
+        "sum_ms": 30123.5,
+        "host_ms": 4.166,
+        "device_minus_host_ms": 172.602
+      },
+      "silu": {
+        "calls": 208,
+        "median_ms": 0.35,
+        "sum_ms": 890.5,
+        "host_ms": 0.221,
+        "device_minus_host_ms": 0.129
+      },
+      "block": {
+        "calls": 1,
+        "median_ms": 346.171,
+        "sum_ms": 346.2,
+        "host_ms": 346.123,
+        "device_minus_host_ms": 0.048
+      },
+      "adaln_proj": {
+        "calls": 1,
+        "median_ms": 1.881,
+        "sum_ms": 1.9,
+        "host_ms": 27.128,
+        "device_minus_host_ms": -25.247
+      },
+      "attn": {
+        "calls": 1,
+        "median_ms": 243.625,
+        "sum_ms": 243.6,
+        "host_ms": 232.212,
+        "device_minus_host_ms": 11.413
+      },
+      "qkv": {
+        "calls": 1,
+        "median_ms": 17.067,
+        "sum_ms": 17.1,
+        "host_ms": 0.247,
+        "device_minus_host_ms": 16.82
+      },
+      "q_norm": {
+        "calls": 1,
+        "median_ms": 2.335,
+        "sum_ms": 2.3,
+        "host_ms": 0.495,
+        "device_minus_host_ms": 1.84
+      },
+      "k_norm": {
+        "calls": 1,
+        "median_ms": 2.254,
+        "sum_ms": 2.3,
+        "host_ms": 0.494,
+        "device_minus_host_ms": 1.76
+      },
+      "rope": {
+        "calls": 200,
+        "median_ms": 1.101,
+        "sum_ms": 2911.3,
+        "host_ms": 0.833,
+        "device_minus_host_ms": 0.268
+      },
+      "out_proj": {
+        "calls": 1,
+        "median_ms": 18.273,
+        "sum_ms": 18.3,
+        "host_ms": 179.822,
+        "device_minus_host_ms": -161.549
+      },
+      "mlp": {
+        "calls": 1,
+        "median_ms": 88.124,
+        "sum_ms": 88.1,
+        "host_ms": 83.508,
+        "device_minus_host_ms": 4.616
+      },
+      "fc1": {
+        "calls": 1,
+        "median_ms": 23.593,
+        "sum_ms": 23.6,
+        "host_ms": 0.21,
+        "device_minus_host_ms": 23.383
+      },
+      "fc2": {
+        "calls": 1,
+        "median_ms": 29.962,
+        "sum_ms": 30.0,
+        "host_ms": 7.906,
+        "device_minus_host_ms": 22.056
+      }
+    },
+    "caveats": "F.silu is patched globally, so its span aggregates every silu in the step (MLP, AdaLN). packed_attention_uspfakernel wraps the USP all-to-all plus the FA kernel, so it is not pure kernel time."
+  },
+  "rest232_function_report": {
+    "patched": {
+      "_apply_rope": "patched",
+      "_run_packed_attention": "patched",
+      "F.silu": "patched"
+    }
+  },
+  "rest232_spans_installed": {
+    "blocks": 50
+  },
+  "rest232_step_invariance": {
+    "measured_rank_max_s": 17.94654083251953,
+    "reference_s": 17.928,
+    "delta_s": 0.019,
+    "accepted": true,
+    "note": "R227 showed a 15% perturbation is possible; only accepted runs may be quoted"
+  }
+}
