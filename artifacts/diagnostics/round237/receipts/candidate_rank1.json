@@ -1,0 +1,272 @@
+{
+  "scope": "R126 warm, rank-max candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "baseline",
+  "rank": 1,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    0
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "case_index": 0,
+      "audit_mode": "strict",
+      "step_index": 0,
+      "repeat_index": 0,
+      "sigma_video": 1.0,
+      "sigma_audio": 1.0,
+      "local_elapsed_s": 17.891939870081842,
+      "rank_max_elapsed_s": 17.988813400268555,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7661076480,
+      "elapsed_s_after_explicit_warmup": 17.891939870081842,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 11.842962265014648
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.825596332550049
+      }
+    }
+  ],
+  "candidate_hypothesis": "Baseline determinism check: repeated identical execution must reproduce itself bit for bit.",
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "tp_actual": 2,
+  "tp_group_ranks": [
+    0,
+    1
+  ],
+  "local_heads": 28,
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float32": 22377664,
+    "torch.float16": 16539411712
+  },
+  "offload_kind": "native immutable pinned masters, flattened dtype copies, asynchronous next-block prefetch",
+  "host_weight_bytes": 32279142400,
+  "D2H_weight_copies_after_each_layer": false,
+  "per_block_cpu_offload_used": true,
+  "safety_mode": "strict",
+  "warmup_each_selected_step": 1,
+  "clean_repeats_each_selected_step": 1,
+  "numerical_changes_are_not_automatically_accepted": true,
+  "rest237": {
+    "installed": true,
+    "forward_calls": 104,
+    "measurement_only_no_math_change": true,
+    "note": "same statements in the same order; only device events added",
+    "segments": {
+      "attn_qkv": {
+        "calls": 104,
+        "median_ms": 41.551,
+        "p10_ms": 41.403,
+        "p90_ms": 41.761,
+        "max_ms": 3289.469,
+        "event_errors": 0
+      },
+      "attn_split_view": {
+        "calls": 104,
+        "median_ms": 0.136,
+        "p10_ms": 0.121,
+        "p90_ms": 0.155,
+        "max_ms": 2.411,
+        "event_errors": 0
+      },
+      "attn_q_norm": {
+        "calls": 104,
+        "median_ms": 2.372,
+        "p10_ms": 2.354,
+        "p90_ms": 2.398,
+        "max_ms": 1912.522,
+        "event_errors": 0
+      },
+      "attn_k_norm": {
+        "calls": 104,
+        "median_ms": 2.258,
+        "p10_ms": 2.248,
+        "p90_ms": 2.27,
+        "max_ms": 210.821,
+        "event_errors": 0
+      },
+      "attn_rope_q": {
+        "calls": 104,
+        "median_ms": 1.099,
+        "p10_ms": 1.088,
+        "p90_ms": 1.11,
+        "max_ms": 2534.326,
+        "event_errors": 0
+      },
+      "attn_rope_k": {
+        "calls": 104,
+        "median_ms": 1.115,
+        "p10_ms": 1.1,
+        "p90_ms": 1.134,
+        "max_ms": 1.229,
+        "event_errors": 0
+      },
+      "attn_packed_uspfakernel": {
+        "calls": 104,
+        "median_ms": 176.456,
+        "p10_ms": 176.311,
+        "p90_ms": 178.215,
+        "max_ms": 10739.149,
+        "event_errors": 0
+      },
+      "attn_reshape": {
+        "calls": 104,
+        "median_ms": 0.006,
+        "p10_ms": 0.005,
+        "p90_ms": 0.008,
+        "max_ms": 0.022,
+        "event_errors": 0
+      },
+      "attn_out_proj": {
+        "calls": 104,
+        "median_ms": 18.185,
+        "p10_ms": 18.071,
+        "p90_ms": 18.968,
+        "max_ms": 2315.709,
+        "event_errors": 0
+      },
+      "attn_total": {
+        "calls": 104,
+        "median_ms": 243.506,
+        "p10_ms": 242.98,
+        "p90_ms": 245.578,
+        "max_ms": 19126.775,
+        "event_errors": 0
+      },
+      "mlp_fc1": {
+        "calls": 104,
+        "median_ms": 54.859,
+        "p10_ms": 54.395,
+        "p90_ms": 55.44,
+        "max_ms": 2775.849,
+        "event_errors": 0
+      },
+      "mlp_chunk": {
+        "calls": 104,
+        "median_ms": 0.095,
+        "p10_ms": 0.086,
+        "p90_ms": 0.11,
+        "max_ms": 0.901,
+        "event_errors": 0
+      },
+      "mlp_gate_cast": {
+        "calls": 104,
+        "median_ms": 0.861,
+        "p10_ms": 0.838,
+        "p90_ms": 0.897,
+        "max_ms": 450.359,
+        "event_errors": 0
+      },
+      "mlp_silu": {
+        "calls": 104,
+        "median_ms": 1.138,
+        "p10_ms": 1.103,
+        "p90_ms": 1.143,
+        "max_ms": 222.746,
+        "event_errors": 0
+      },
+      "mlp_up_cast": {
+        "calls": 104,
+        "median_ms": 0.743,
+        "p10_ms": 0.738,
+        "p90_ms": 0.747,
+        "max_ms": 220.723,
+        "event_errors": 0
+      },
+      "mlp_mul": {
+        "calls": 104,
+        "median_ms": 0.914,
+        "p10_ms": 0.911,
+        "p90_ms": 0.917,
+        "max_ms": 244.296,
+        "event_errors": 0
+      },
+      "mlp_fc2": {
+        "calls": 104,
+        "median_ms": 29.938,
+        "p10_ms": 29.544,
+        "p90_ms": 30.025,
+        "max_ms": 1587.719,
+        "event_errors": 0
+      },
+      "mlp_total": {
+        "calls": 104,
+        "median_ms": 88.559,
+        "p10_ms": 87.966,
+        "p90_ms": 89.305,
+        "max_ms": 5501.883,
+        "event_errors": 0
+      }
+    }
+  },
+  "rest237_patch": {
+    "patched": [
+      "MiniMaxH3Attention.forward",
+      "MiniMaxH3MLP.forward"
+    ],
+    "attn_segments": [
+      "attn_qkv",
+      "attn_split_view",
+      "attn_q_norm",
+      "attn_k_norm",
+      "attn_rope_q",
+      "attn_rope_k",
+      "attn_packed_uspfakernel",
+      "attn_reshape",
+      "attn_out_proj"
+    ],
+    "mlp_segments": [
+      "mlp_fc1",
+      "mlp_chunk",
+      "mlp_gate_cast",
+      "mlp_silu",
+      "mlp_up_cast",
+      "mlp_mul",
+      "mlp_fc2"
+    ]
+  },
+  "rest237_invariance": {
+    "measured_rank_max_s": 17.988813400268555,
+    "reference_s": 17.928,
+    "delta_s": 0.061,
+    "accepted": true
+  }
+}
