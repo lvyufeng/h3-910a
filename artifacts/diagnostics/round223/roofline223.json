@@ -1,0 +1,153 @@
+{
+  "schema_version": "r223.roofline.v1",
+  "measurement_only": true,
+  "no_model_run": true,
+  "no_weights_loaded": true,
+  "peak_assumption_TFLOPS_per_card": 310.0,
+  "geometry": {
+    "N": 41792,
+    "D": 128,
+    "heads_per_rank": 7,
+    "blocks": 50,
+    "M": 10448,
+    "tp": 2,
+    "usp": 4,
+    "note": "N/heads from the recorded R218 kernel instance; M and GEMM shapes from R146"
+  },
+  "current": {
+    "step_s": 19.372,
+    "fa": {
+      "region": "dense FA kernel",
+      "TFLOP": 313.0,
+      "seconds": 7.454,
+      "achieved_TFLOPS_per_card": 42.0,
+      "percent_of_assumed_peak": 13.5,
+      "seconds_at_100pct_MFU": 1.01
+    },
+    "gemm_in_model": {
+      "region": "four linear spans (in-model)",
+      "TFLOP": 201.3,
+      "seconds": 4.435,
+      "achieved_TFLOPS_per_card": 45.4,
+      "percent_of_assumed_peak": 14.6,
+      "seconds_at_100pct_MFU": 0.649
+    },
+    "gemm_standalone_mm": {
+      "region": "four mm calls only (standalone)",
+      "TFLOP": 201.3,
+      "seconds": 2.322,
+      "achieved_TFLOPS_per_card": 86.7,
+      "percent_of_assumed_peak": 28.0,
+      "seconds_at_100pct_MFU": 0.649
+    },
+    "whole_step": {
+      "region": "whole step",
+      "TFLOP": 514.3,
+      "seconds": 19.372,
+      "achieved_TFLOPS_per_card": 26.5,
+      "percent_of_assumed_peak": 8.6,
+      "seconds_at_100pct_MFU": 1.659
+    }
+  },
+  "non_compute": {
+    "allreduce_s": 1.22,
+    "allreduce_basis": "12.199 ms x 2 row-parallel reductions x 50 blocks",
+    "usp_s": 1.077,
+    "qk_norm_s": 0.23,
+    "guard_s": 0.52,
+    "h2d_floor_s": 1.515,
+    "h2d_note": "floor if the 32.28 GB/step stream never overlaps compute; it is partly overlapped today, so this is not additive with the measured step",
+    "rest_s": 4.121,
+    "rest_basis": "R147 block parent span 346.345 ms x 50 minus FA/USP/qknorm/GEMM"
+  },
+  "feasibility": {
+    "today": {
+      "fa_s": 7.454,
+      "gemm_s": 2.322,
+      "fixed_non_compute_s": 8.118,
+      "step_floor_s": 17.894,
+      "below_10s": false,
+      "below_15s": false
+    },
+    "fa_30pct_gemm_35pct": {
+      "fa_s": 3.365,
+      "gemm_s": 1.855,
+      "fixed_non_compute_s": 8.118,
+      "step_floor_s": 13.339,
+      "below_10s": false,
+      "below_15s": true
+    },
+    "fa_40pct_gemm_45pct": {
+      "fa_s": 2.524,
+      "gemm_s": 1.443,
+      "fixed_non_compute_s": 8.118,
+      "step_floor_s": 12.085,
+      "below_10s": false,
+      "below_15s": true
+    },
+    "fa_50pct_gemm_50pct": {
+      "fa_s": 2.019,
+      "gemm_s": 1.299,
+      "fixed_non_compute_s": 8.118,
+      "step_floor_s": 11.436,
+      "below_10s": false,
+      "below_15s": true
+    },
+    "fa_70pct_gemm_70pct": {
+      "fa_s": 1.442,
+      "gemm_s": 0.928,
+      "fixed_non_compute_s": 8.118,
+      "step_floor_s": 10.488,
+      "below_10s": false,
+      "below_15s": true
+    },
+    "fa_100pct_gemm_100pct": {
+      "fa_s": 1.01,
+      "gemm_s": 0.649,
+      "fixed_non_compute_s": 8.118,
+      "step_floor_s": 9.777,
+      "below_10s": true,
+      "below_15s": true
+    }
+  },
+  "verdict": {
+    "compute_floor_at_100pct": 1.659,
+    "fa_share_of_flops_pct": 60.9,
+    "step_over_compute_floor_x": 11.7,
+    "ten_seconds_requires": [
+      "FA at >=90-100% MFU with the fixed cost unchanged (not attainable), or",
+      "FA ~40% and GEMM ~45% MFU plus ~3.9 s of the 8.14 s fixed cost removed",
+      "the R218 FA trim (0.568 s, ~1.03x) is ~15% of that cut"
+    ],
+    "honest_conclusion": "10 s/step is not reachable by kernel-efficiency work alone. Calibrating the measured pieces reproduces the instrumented step (17.9 s), and even FA and GEMM at 100% MFU leave 1.66 + 8.14 = 9.8 s. At plausible efficiency (FA 40%, GEMM 45%) the compute is 3.97 s and the 8.14 s of measured non-compute work must be cut by ~3.9 s. 15 s is reachable with FA ~30% and GEMM ~35% MFU at today's fixed cost."
+  },
+  "floor_model": {
+    "fixed_non_compute_s": 8.118,
+    "pieces_s": {
+      "guard": 0.52,
+      "allreduce": 1.22,
+      "wrapper_remainder": 0.373,
+      "usp": 1.077,
+      "qk_norm": 0.23,
+      "rest": 4.121,
+      "outside_blocks": 0.577
+    },
+    "calibration_step_s": 17.894,
+    "calibration_target_s": 17.919,
+    "calibration_error_s": -0.025,
+    "calibration_note": "today's measured FA kernel + standalone mm + fixed pieces must reproduce the R147 instrumented step; a small error means the pieces are disjoint and complete"
+  },
+  "fixed_cost_budget": {
+    "plausible_compute_s_at_fa40_gemm45": 3.967,
+    "fixed_cost_needed_for_10s": 6.033,
+    "fixed_cost_today_s": 8.118,
+    "cut_required_s": 2.085,
+    "cut_required_pct": 25.7,
+    "where_the_cut_could_come_from_s": {
+      "rest_unmeasured": 4.121,
+      "all_reduce": 1.22,
+      "usp": 1.077,
+      "guard": 0.52
+    }
+  }
+}
