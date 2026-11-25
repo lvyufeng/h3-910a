@@ -1,0 +1,67 @@
+{
+  "schema_version": "r248.gemm_vs_weight_copy.v1",
+  "host": "ts-217",
+  "measurement_only": true,
+  "no_model_weights_loaded": true,
+  "rank": 7,
+  "world": 8,
+  "copy_bytes": 677380096,
+  "r146_standalone_reference_ms": {
+    "qkv_proj_true": 12.47,
+    "mlp_fc1_true": 19.04,
+    "attn_out_proj_true": 2.73,
+    "mlp_fc2_true": 12.21
+  },
+  "in_model_ms": {
+    "qkv_proj_true": 17.07,
+    "mlp_fc1_true": 23.4,
+    "attn_out_proj_true": 18.22,
+    "mlp_fc2_true": 30.05
+  },
+  "rows": {
+    "qkv_proj_true": {
+      "world_size": 8,
+      "k": 5376,
+      "n": 10752,
+      "out_dtype": "float16",
+      "solo_ms": 12.485,
+      "with_646mb_copy_ms": 12.47,
+      "ratio": 0.999,
+      "solo_TFLOPS_per_card": 96.7,
+      "contended_TFLOPS_per_card": 96.9
+    },
+    "mlp_fc1_true": {
+      "world_size": 8,
+      "k": 5376,
+      "n": 14336,
+      "out_dtype": "float32",
+      "solo_ms": 18.988,
+      "with_646mb_copy_ms": 19.002,
+      "ratio": 1.001,
+      "solo_TFLOPS_per_card": 84.8,
+      "contended_TFLOPS_per_card": 84.8
+    },
+    "attn_out_proj_true": {
+      "world_size": 8,
+      "k": 3584,
+      "n": 5376,
+      "out_dtype": "float32",
+      "solo_ms": 2.718,
+      "with_646mb_copy_ms": 2.7,
+      "ratio": 0.994,
+      "solo_TFLOPS_per_card": 148.1,
+      "contended_TFLOPS_per_card": 149.1
+    },
+    "mlp_fc2_true": {
+      "world_size": 8,
+      "k": 7168,
+      "n": 5376,
+      "out_dtype": "float32",
+      "solo_ms": 11.811,
+      "with_646mb_copy_ms": 11.856,
+      "ratio": 1.004,
+      "solo_TFLOPS_per_card": 68.2,
+      "contended_TFLOPS_per_card": 67.9
+    }
+  }
+}
