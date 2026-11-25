@@ -1,0 +1,221 @@
+{
+  "scope": "R126 warm, rank-max candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "baseline",
+  "rank": 0,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    0
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "case_index": 0,
+      "audit_mode": "strict",
+      "step_index": 0,
+      "repeat_index": 0,
+      "sigma_video": 1.0,
+      "sigma_audio": 1.0,
+      "local_elapsed_s": 17.957937879953533,
+      "rank_max_elapsed_s": 18.02008056640625,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7661076480,
+      "elapsed_s_after_explicit_warmup": 17.957937879953533,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 11.839264869689941
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.815838813781738
+      },
+      "video_vs_R124_baseline": {
+        "shape": [
+          37296,
+          96
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 3580230,
+        "total_elements": 3580416,
+        "relative_RMS_vs_R124_NPU_baseline": 0.001010312393166555,
+        "max_abs_difference": 0.19908833503723145,
+        "finite": true
+      },
+      "audio_vs_R124_baseline": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "bit_identical": false,
+        "differing_elements": 13248,
+        "total_elements": 13248,
+        "relative_RMS_vs_R124_NPU_baseline": 0.0018112901461479888,
+        "max_abs_difference": 0.02434706687927246,
+        "finite": true
+      },
+      "bit_identical_to_R124_baseline": false,
+      "candidate_prediction_sha256": "2648e8c4f8073b34898c81173bed5e334d606a1ce805397ee57647fc8a830ae3"
+    }
+  ],
+  "candidate_hypothesis": "Baseline determinism check: repeated identical execution must reproduce itself bit for bit.",
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "tp_actual": 2,
+  "tp_group_ranks": [
+    0,
+    1
+  ],
+  "local_heads": 28,
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float32": 22377664,
+    "torch.float16": 16539411712
+  },
+  "offload_kind": "native immutable pinned masters, flattened dtype copies, asynchronous next-block prefetch",
+  "host_weight_bytes": 32279142400,
+  "D2H_weight_copies_after_each_layer": false,
+  "per_block_cpu_offload_used": true,
+  "safety_mode": "strict",
+  "warmup_each_selected_step": 1,
+  "clean_repeats_each_selected_step": 1,
+  "numerical_changes_are_not_automatically_accepted": true,
+  "all_steps_bit_identical_to_R124_baseline": false,
+  "warm_step_median_s": 18.02008056640625,
+  "warm_step_by_sigma": {
+    "0": 18.02008056640625
+  },
+  "warm_step_by_case": {
+    "0:strict": 18.02008056640625
+  },
+  "warm_step_min_s": 18.02008056640625,
+  "warm_step_max_s": 18.02008056640625,
+  "rest231": {
+    "installed": true,
+    "scope": "default-stream device events only; forwards untouched; no stream switching",
+    "measurement_only_no_math_change": true,
+    "functions_patched": {
+      "_apply_rope": "patched",
+      "_run_packed_attention": "patched",
+      "F.silu": "patched"
+    },
+    "labels": {
+      "packed_attention_uspfakernel": {
+        "calls": 104,
+        "median_ms": 176.715,
+        "sum_ms": 24267.8
+      },
+      "silu": {
+        "calls": 208,
+        "median_ms": 0.59,
+        "sum_ms": 1031.9
+      },
+      "block": {
+        "calls": 1,
+        "median_ms": 346.075,
+        "sum_ms": 346.1
+      },
+      "adaln_proj": {
+        "calls": 1,
+        "median_ms": 1.92,
+        "sum_ms": 1.9
+      },
+      "attn": {
+        "calls": 1,
+        "median_ms": 243.74,
+        "sum_ms": 243.7
+      },
+      "qkv": {
+        "calls": 1,
+        "median_ms": 17.067,
+        "sum_ms": 17.1
+      },
+      "q_norm": {
+        "calls": 1,
+        "median_ms": 2.352,
+        "sum_ms": 2.4
+      },
+      "k_norm": {
+        "calls": 1,
+        "median_ms": 2.244,
+        "sum_ms": 2.2
+      },
+      "rope": {
+        "calls": 200,
+        "median_ms": 1.1,
+        "sum_ms": 2885.0
+      },
+      "out_proj": {
+        "calls": 1,
+        "median_ms": 18.222,
+        "sum_ms": 18.2
+      },
+      "mlp": {
+        "calls": 1,
+        "median_ms": 87.922,
+        "sum_ms": 87.9
+      },
+      "fc1": {
+        "calls": 1,
+        "median_ms": 23.195,
+        "sum_ms": 23.2
+      },
+      "fc2": {
+        "calls": 1,
+        "median_ms": 29.878,
+        "sum_ms": 29.9
+      }
+    },
+    "caveats": "F.silu is patched globally, so its span aggregates every silu in the step (MLP, AdaLN). packed_attention_uspfakernel wraps the USP all-to-all plus the FA kernel, so it is not pure kernel time."
+  },
+  "rest231_function_report": {
+    "patched": {
+      "_apply_rope": "patched",
+      "_run_packed_attention": "patched",
+      "F.silu": "patched"
+    }
+  },
+  "rest231_spans_installed": {
+    "blocks": 50
+  },
+  "rest231_step_invariance": {
+    "measured_rank_max_s": 18.02008056640625,
+    "reference_s": 17.928,
+    "delta_s": 0.092,
+    "accepted": true,
+    "note": "R227 showed a 15% perturbation is possible; only accepted runs may be quoted"
+  }
+}
