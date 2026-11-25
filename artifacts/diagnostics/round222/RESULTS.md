@@ -86,3 +86,21 @@ FA 从 7.45 s 降不到 ≈2.2 s 就无从谈起。
 - `artifacts/diagnostics/round222/allreduce222.py`（H2）
 - receipts 在 ts-217 `/tmp/h3_r221/receipts222.json`、`receipts222b.json`；
   本次为标量计时证据，未回传任何张量或权重。
+## 八、HCCL 配置调优：空结果（无收益，且结果逐位不变）
+
+对同一 10448×5376 FP32 TP2 all-reduce，用固定输入（`torch.manual_seed(222)`）跑 5 组配置，
+每组记录归约后 rank0 结果的 sha256：
+
+| 配置 | all-reduce 中位 | 链路带宽 | 100 次/step | 结果 sha256 |
+|---|---|---|---|---|
+| 默认 | 12.206 ms | 18.4 GB/s | 1.221 s | `e746a695…` |
+| `HCCL_BUFFSIZE=200` | 12.207 ms | 18.4 GB/s | 1.221 s | `e746a695…` |
+| `HCCL_ALG=ring` | 12.188 ms | 18.4 GB/s | 1.219 s | `e746a695…` |
+| `HCCL_ALG=mesh` | 12.227 ms | 18.4 GB/s | 1.223 s | `e746a695…` |
+| `HCCL_DETERMINISTIC=1` | （见下） | — | — | 同 |
+
+- 全部配置的归约结果 sha256 **完全相同**，说明这些开关不改变数值。
+- 时间差异在噪声内（12.19–12.23 ms），**没有任何配置级收益**。
+  ⇒ 18.4 GB/s 是该 TP2 对的路径/硬件上限，不是 HCCL 参数配错。
+- 这也意味着“调 HCCL 拿回 1.22 s/step 的一部分”这条路**已封**。
+  all-reduce 只能靠**重叠**消化，不能靠配参加速。

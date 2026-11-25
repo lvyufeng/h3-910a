@@ -20,6 +20,22 @@ GitHub [路线图 #1](https://github.com/lvyufeng/h3-910a/issues/1) 与 [Project
 
 ## 2. R219补精度证据，R218单项实测收益未晋升
 
+### R222 归属：R221 的 1.14 s/step 是 TP2 all-reduce（1.22 s/step），host sync 排除
+
+- **H1 否掉**：侧流压 62.69 ms d2d 队列时，guard 的 `float(amax)` 墙钟只多 0.056 ms（`out_proj`）
+  / 0.102 ms（`fc2`）；`float(peak)` 不跨流排空。顺带实测 646 MB pinned H2D=30.3 ms（21.3 GB/s），
+  即 32.3 GB/step 权重流自身有 **≈1.52 s/step** 搬运下界。
+- **H2 确认**：真实 TP2 HCCL 组上 10448×5376 FP32（225 MB）all-reduce 中位 **12.199 ms**
+  （HCCS 同岛，18.4 GB/s），100 次/step ⇒ **1.220 s/step**，与 R221 未归属的 1.14 s/step 重合。
+  跨岛 PHB 对 (0,4) 是 16.046 ms；模型 TP 组 `[0,1],[2,3],[4,5],[6,7]` 本就同岛，无换配对收益。
+- **HCCL 配参空结果**：`HCCL_ALG=ring/mesh`、`HCCL_BUFFSIZE=200`、`HCCL_DETERMINISTIC=1`
+  均为 12.19–12.23 ms，且固定输入归约结果 sha256 完全一致 ⇒ 无配置级收益，只能靠重叠。
+- **口径更正**：此前“GEMM 区域可回收 2.099 s/step”不成立；其中 **1.22 s/step 是必需归约**。
+  真实可回收为 guard ≤0.2 s（融合 abs-max）+ all-reduce 重叠所得。
+
+[R222结果](round222/RESULTS.md) · [守卫同步receipt](round222/receipts222.json) · [all-reduce receipt](round222/receipts222b.json)。
+
+
 ### R221 受保护 linear 精确分解：guard 只占0.52s/step，另1.14s/step未归属
 
 按部署副本`transformer.py`（sha256`5d94ba09…`）第495–517行的逐op序列，在真实形状

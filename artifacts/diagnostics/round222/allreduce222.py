@@ -37,8 +37,9 @@ def main() -> int:
     torch.npu.set_device(rank)
     device = torch.device(f"npu:{rank}")
     props = torch.npu.get_device_properties(rank)
-    torch.manual_seed(222 + rank)
-    x = torch.randn(args.m, args.n, dtype=torch.float32, device=device)
+    torch.manual_seed(222)  # identical on every rank/config
+    x_init = torch.randn(args.m, args.n, dtype=torch.float32, device=device)
+    x = x_init.clone()
     torch.npu.synchronize()
     dist.barrier()
 
@@ -96,13 +97,28 @@ def main() -> int:
                     "not a measurement of the composed model",
         },
     }
+    import hashlib
+    import os
+    x_check = x_init.clone()
+    dist.all_reduce(x_check, op=dist.ReduceOp.SUM)
+    torch.npu.synchronize()
+    digest = None
+    if rank == 0:
+        digest = hashlib.sha256(x_check.cpu().numpy().tobytes()).hexdigest()
+    del x_check
+    report["reduced_result_sha256_rank0"] = digest
+    report["hccl_env"] = {key: os.environ[key] for key in
+                          ("HCCL_ALG", "HCCL_BUFFSIZE", "HCCL_DETERMINISTIC",
+                           "HCCL_IF_BASE_PORT", "HCCL_CONNECT_TIMEOUT")
+                          if key in os.environ}
     if rank == 0:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(report, indent=2) + "\n")
         print("RESULT " + json.dumps({"ar_ms": round(ar_ms, 3),
                                       "link_GBps": report["all_reduce_link_GB_per_s"],
-                                      "projected_s_per_step": round(ar_ms * 100 / 1000, 3)}),
-              flush=True)
+                                      "projected_s_per_step": round(ar_ms * 100 / 1000, 3),
+                                      "sha256_rank0": digest,
+                                      "env": report["hccl_env"]}), flush=True)
     dist.barrier()
     dist.destroy_process_group()
     return 0
