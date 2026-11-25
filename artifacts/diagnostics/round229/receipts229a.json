@@ -1,0 +1,59 @@
+{
+  "schema_version": "r229.mlp_alloc.v1",
+  "host": "ts-217",
+  "measurement_only": true,
+  "no_model_weights_loaded": true,
+  "no_model_import": true,
+  "no_source_modification": true,
+  "candidate_installed": false,
+  "device": {
+    "requested_id": 0,
+    "actual_id": 0,
+    "name": "Ascend910B"
+  },
+  "runtime": {
+    "torch": "2.10.0+cpu",
+    "torch_npu": "2.10.0.post7"
+  },
+  "replayed_op": "silu(gate.float()) * up.float() on (10448, 7168) FP16 inputs",
+  "element_bytes_read": 299565056,
+  "fp32_temporaries_bytes": 898695168,
+  "prefetch_bytes": 646000000,
+  "pinned": true,
+  "idle": {
+    "n": 20,
+    "min": 2.9839999675750732,
+    "median": 2.994499921798706,
+    "max": 3.010999917984009
+  },
+  "copy_reuse": {
+    "n": 20,
+    "min": 2.9739999771118164,
+    "median": 2.9954999685287476,
+    "max": 3.068000078201294,
+    "slowdown_x": 1.0,
+    "extra_ms": 0.0
+  },
+  "copy_alloc": {
+    "n": 20,
+    "min": 2.986999988555908,
+    "median": 2.994999885559082,
+    "max": 3.053999900817871,
+    "slowdown_x": 1.0,
+    "extra_ms": 0.0
+  },
+  "alloc_only": {
+    "n": 20,
+    "min": 2.9820001125335693,
+    "median": 2.997999906539917,
+    "max": 3.0190000534057617,
+    "slowdown_x": 1.0,
+    "extra_ms": 0.0
+  },
+  "r228_mlp_remainder_ms_per_block": 34.6,
+  "interpretation": {
+    "idle_vs_r228_remainder_ratio": 11.55,
+    "allocator_churn_explains_remainder": false,
+    "note": "the replicated chain is only the elementwise part; the in-model remainder also contains chunk/residual/Python dispatch"
+  }
+}
