@@ -1,0 +1,157 @@
+{
+  "scope": "R126 warm, rank-max candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "baseline",
+  "rank": 3,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    0
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "case_index": 0,
+      "audit_mode": "strict",
+      "step_index": 0,
+      "repeat_index": 0,
+      "sigma_video": 1.0,
+      "sigma_audio": 1.0,
+      "local_elapsed_s": 20.62215756997466,
+      "rank_max_elapsed_s": 20.622295379638672,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7661076480,
+      "elapsed_s_after_explicit_warmup": 20.62215756997466,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 11.855801582336426
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.821813583374023
+      }
+    }
+  ],
+  "candidate_hypothesis": "Baseline determinism check: repeated identical execution must reproduce itself bit for bit.",
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "tp_actual": 2,
+  "tp_group_ranks": [
+    2,
+    3
+  ],
+  "local_heads": 28,
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float32": 22377664,
+    "torch.float16": 16539411712
+  },
+  "offload_kind": "native immutable pinned masters, flattened dtype copies, asynchronous next-block prefetch",
+  "host_weight_bytes": 32279142400,
+  "D2H_weight_copies_after_each_layer": false,
+  "per_block_cpu_offload_used": true,
+  "safety_mode": "strict",
+  "warmup_each_selected_step": 1,
+  "clean_repeats_each_selected_step": 1,
+  "numerical_changes_are_not_automatically_accepted": true,
+  "rest227": {
+    "installed": true,
+    "scope": "device events on the layerwise copy stream plus block spans; one synchronize after the measured step; no policy change",
+    "measurement_only_no_math_change": true,
+    "copy_stream": {
+      "prefetch_calls_timed": 0,
+      "copy_ms_sum_per_step": null,
+      "copy_ms_median": null,
+      "copy_ms_min": null,
+      "copy_ms_max": null,
+      "implied_GB_per_s": null,
+      "note": "measured on the real copy stream during the real step; the 26.2% duty-cycle comparison uses 646 MB per prefetch"
+    },
+    "synchronous_fallback": {
+      "count": 1,
+      "host_wall_ms": 30.9,
+      "per_call_median_ms": 30.887
+    },
+    "spans": {
+      "block": {
+        "calls": 1,
+        "median_ms": 407.931,
+        "sum_ms": 407.9
+      },
+      "adaln_proj": {
+        "calls": 1,
+        "median_ms": 31.883,
+        "sum_ms": 31.9
+      },
+      "attn": {
+        "calls": 1,
+        "median_ms": 242.811,
+        "sum_ms": 242.8
+      },
+      "qkv": {
+        "calls": 1,
+        "median_ms": 17.065,
+        "sum_ms": 17.1
+      },
+      "out_proj": {
+        "calls": 1,
+        "median_ms": 18.279,
+        "sum_ms": 18.3
+      },
+      "mlp": {
+        "calls": 1,
+        "median_ms": 88.087,
+        "sum_ms": 88.1
+      },
+      "fc1": {
+        "calls": 1,
+        "median_ms": 23.568,
+        "sum_ms": 23.6
+      },
+      "fc2": {
+        "calls": 1,
+        "median_ms": 29.958,
+        "sum_ms": 30.0
+      }
+    },
+    "blocks_seen": 100
+  },
+  "rest227_hook_patch": {
+    "patched": true,
+    "hook_class": "LayerwiseOffloadHook"
+  },
+  "rest227_spans_installed": {
+    "blocks": 50
+  }
+}
