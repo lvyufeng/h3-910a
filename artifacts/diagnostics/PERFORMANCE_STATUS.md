@@ -20,6 +20,20 @@ GitHub [路线图 #1](https://github.com/lvyufeng/h3-910a/issues/1) 与 [Project
 
 ## 2. R219补精度证据，R218单项实测收益未晋升
 
+### R226/R228 `rest` 拆解与权重等待假设的否证
+
+- **R226 拆解**（单步、设备事件、8 rank）：`rest` 4.09 s/step 中 82% 落在父区间——
+  `attn` 残项 1.63 s + `mlp` 残项 1.74 s，norms+adaln 0.26 s，块级 0.46 s；
+  与 R223 的 4.121 s 闭合（差 0.03 s）。
+- **R227 失败留档**：copy-stream 探针使步时 17.93→20.62 s（+15%），数据作废；
+  但排除同步补拷路径（8 rank 均只 1 次/步）。
+- **R228 否证权重等待假设**：8 rank 并发 + 计算争用下 H2D 不变慢（23.1 GB/s，slowdown 1.00×）；
+  且 rank1/rank5 的 H2D 慢一倍（54.6 vs 28 ms，copy work 2.72 vs 1.40 s/step），
+  但其 `rest` 与快 rank 只差 **0.0042 s/step** ⇒ 拷贝已被 prefetch 完全隐藏，
+  **候选 #4 在该区域 headroom≈0**，`rest` 只能来自计算/派发侧。
+
+[R226结果](round226/RESULTS.md) · [R227失败](round227/RESULTS.md) · [R228结果](round228/RESULTS.md)。
+
 ### R222 归属：R221 的 1.14 s/step 是 TP2 all-reduce（1.22 s/step），host sync 排除
 
 - **H1 否掉**：侧流压 62.69 ms d2d 队列时，guard 的 `float(amax)` 墙钟只多 0.056 ms（`out_proj`）
