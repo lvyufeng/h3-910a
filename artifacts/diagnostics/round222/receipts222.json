@@ -1,0 +1,148 @@
+{
+  "schema_version": "r222.guard_sync_attribution.v1",
+  "host": "ts-217",
+  "measurement_only": true,
+  "no_model_weights_loaded": true,
+  "no_model_import": true,
+  "no_source_modification": true,
+  "candidate_installed": false,
+  "numerical_approval_granted": false,
+  "device": {
+    "requested_id": 0,
+    "actual_id": 0,
+    "name": "Ascend910B"
+  },
+  "runtime": {
+    "python": "3.12.13",
+    "torch": "2.10.0+cpu",
+    "torch_npu": "2.10.0.post7"
+  },
+  "m_tokens": 10448,
+  "prefetch_bytes_per_event": 646000000,
+  "h2d_bandwidth": {
+    "pinned": true,
+    "bytes": 646000000,
+    "copy_ms": {
+      "n": 7,
+      "min": 30.23699951171875,
+      "median": 30.30299949645996,
+      "max": 30.336000442504883
+    },
+    "effective_GB_per_s": 21.3,
+    "prefetch_ms_implied_per_event": 30.303
+  },
+  "cross_stream_queue": {
+    "queued_copies": 5,
+    "buffer_bytes": 4294967296,
+    "queued_work_ms": {
+      "n": 5,
+      "min": 62.66699981689453,
+      "median": 62.691001892089844,
+      "max": 62.69900131225586
+    },
+    "d2d_GB_per_s": 342.6
+  },
+  "host_sync_blocking": {
+    "attn_out_proj_guarded": {
+      "idle_wall_ms": {
+        "n": 15,
+        "min": 2.2036503069102764,
+        "median": 2.205620054155588,
+        "max": 2.2114203311502934
+      },
+      "with_side_queue_wall_ms": {
+        "n": 15,
+        "min": 2.2579398937523365,
+        "median": 2.2620796225965023,
+        "max": 2.273540012538433
+      },
+      "added_wall_ms_median": 0.056459568440914154,
+      "side_queue_work_ms": 62.691001892089844
+    },
+    "mlp_fc2_guarded": {
+      "idle_wall_ms": {
+        "n": 15,
+        "min": 4.302899818867445,
+        "median": 4.30777994915843,
+        "max": 4.323970060795546
+      },
+      "with_side_queue_wall_ms": {
+        "n": 15,
+        "min": 4.400030244141817,
+        "median": 4.4102598913013935,
+        "max": 4.4625299051404
+      },
+      "added_wall_ms_median": 0.10247994214296341,
+      "side_queue_work_ms": 62.691001892089844
+    }
+  },
+  "guard_timing": {
+    "attn_out_proj_guarded": {
+      "host_wall_idle_ms": {
+        "n": 15,
+        "min": 6.058590020984411,
+        "median": 6.085929926484823,
+        "max": 6.096950266510248
+      },
+      "host_wall_with_side_queue_ms": {
+        "n": 15,
+        "min": 6.202110089361668,
+        "median": 6.217479705810547,
+        "max": 6.250649690628052
+      },
+      "host_wall_added_ms": 0.13154977932572365,
+      "device_scale_with_side_queue_ms": {
+        "n": 15,
+        "min": 65.17238961532712,
+        "median": 65.19250012934208,
+        "max": 65.24133030325174
+      },
+      "device_scale_minus_hostsync_ms": 58.97502042353153
+    },
+    "mlp_fc2_guarded": {
+      "host_wall_idle_ms": {
+        "n": 15,
+        "min": 17.41866022348404,
+        "median": 17.441530246287584,
+        "max": 17.452749889343977
+      },
+      "host_wall_with_side_queue_ms": {
+        "n": 15,
+        "min": 20.121329929679632,
+        "median": 20.14733012765646,
+        "max": 20.215630065649748
+      },
+      "host_wall_added_ms": 2.7057998813688755,
+      "device_scale_with_side_queue_ms": {
+        "n": 15,
+        "min": 67.18260003253818,
+        "median": 67.21010990440845,
+        "max": 67.24510993808508
+      },
+      "device_scale_minus_hostsync_ms": 47.062779776751995
+    }
+  },
+  "bitwise": {
+    "attn_out_proj_guarded": {
+      "path_a": "deployed host-sync guard",
+      "path_b": "device-scale guard (no host sync)",
+      "scale_branch": "scale==1",
+      "observed_peak": 0.26806640625,
+      "bitwise_equal": true,
+      "differing_words": 0,
+      "word_count": 112336896,
+      "approval": "none; comparison only"
+    },
+    "mlp_fc2_guarded": {
+      "path_a": "deployed host-sync guard",
+      "path_b": "device-scale guard (no host sync)",
+      "scale_branch": "scale==1",
+      "observed_peak": 0.27546656131744385,
+      "bitwise_equal": true,
+      "differing_words": 0,
+      "word_count": 112336896,
+      "approval": "none; comparison only"
+    }
+  },
+  "interpretation_limits": "The side stream carries pure d2d copies, not the real prefetch graph; the test answers whether the sync drains foreign-stream work at all. Real H2D prefetch is slower per byte, so a measured wait here is a lower bound on the in-model cross-stream stall, and a measured non-wait disproves H1."
+}
