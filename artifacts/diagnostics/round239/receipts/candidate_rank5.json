@@ -1,0 +1,376 @@
+{
+  "scope": "R126 warm, rank-max candidate harness: replay identical model inputs on original 910A.\n\nBaseline is the exact R124 executed graph (verified transformer + FP32\npatch/time guards + TP2/USP4). Each candidate mode must reproduce the saved\nR124 NPU predictions; bit-identical outputs are the only automatic pass. Any\nmeasurable deviation is recorded and the candidate is stopped for user review,\neven when it would still fall inside the earlier 1% GPU-comparison tolerance.\n\nThis harness loads the original local checkpoint only. No weights are downloaded,\ncopied or transferred; no CPU model inference is performed.\n",
+  "completed": true,
+  "mode": "baseline",
+  "rank": 5,
+  "baseline_is_committed_R124": true,
+  "baseline_commit": "f3f1328",
+  "baseline_npu_predictions": "/tmp/h3_align12401/NPU_sigma_checks124c",
+  "bit_identical_is_the_only_automatic_lossless_pass": true,
+  "no_model_download_or_weight_copy": true,
+  "CPU_model_inference": false,
+  "full_transformer_layers": 50,
+  "selected_steps": [
+    0
+  ],
+  "matrix_precision_contract": "FP16 GEMM operands with FP32 wide/out_dtype and preserved original FP32 front/time/final parameters",
+  "checks": [
+    {
+      "case_index": 0,
+      "audit_mode": "strict",
+      "step_index": 0,
+      "repeat_index": 0,
+      "sigma_video": 1.0,
+      "sigma_audio": 1.0,
+      "local_elapsed_s": 17.99268811987713,
+      "rank_max_elapsed_s": 18.025144577026367,
+      "safety": {
+        "matrix_checks": 155,
+        "nonfinite_count": 0,
+        "boundary_count": 0,
+        "mode": "strict",
+        "all_checks_preserved": true,
+        "checked_before_sampler_update": true
+      },
+      "peak_allocated_bytes": 7661076480,
+      "elapsed_s_after_explicit_warmup": 17.99268811987713,
+      "video": {
+        "shape": [
+          39312,
+          96
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 11.840384483337402
+      },
+      "audio": {
+        "shape": [
+          414,
+          32
+        ],
+        "dtype": "torch.float32",
+        "finite": true,
+        "max_abs": 4.825039863586426
+      }
+    }
+  ],
+  "candidate_hypothesis": "Baseline determinism check: repeated identical execution must reproduce itself bit for bit.",
+  "sigma_layout_bundle_sha256": "8a560c430b3048dd8f4ad5c7ef7d5a603cef7c4f52d6fe56aa4173e42120e3b9",
+  "parallel_config": {
+    "tensor_parallel_size": 2,
+    "ulysses_degree": 4,
+    "ring_degree": 1
+  },
+  "tp_actual": 2,
+  "tp_group_ranks": [
+    4,
+    5
+  ],
+  "local_heads": 28,
+  "precision_guard_modules": [
+    "video_patch_proj",
+    "audio_patch_proj",
+    "time_embedder.proj_in",
+    "time_embedder.proj_out"
+  ],
+  "parameter_elements_by_dtype": {
+    "torch.float32": 22377664,
+    "torch.float16": 16539411712
+  },
+  "offload_kind": "native immutable pinned masters, flattened dtype copies, asynchronous next-block prefetch",
+  "host_weight_bytes": 32279142400,
+  "D2H_weight_copies_after_each_layer": false,
+  "per_block_cpu_offload_used": true,
+  "safety_mode": "strict",
+  "warmup_each_selected_step": 1,
+  "clean_repeats_each_selected_step": 1,
+  "numerical_changes_are_not_automatically_accepted": true,
+  "rest239": {
+    "installed": true,
+    "layers": {
+      "ColumnParallelLinear:(2688, 5120)": {
+        "device": {
+          "calls": 2,
+          "median_ms": 350.072,
+          "p10_ms": 0.591,
+          "p90_ms": 699.553,
+          "min_ms": 0.591,
+          "max_ms": 699.553
+        },
+        "host": {
+          "calls": 2,
+          "median_ms": 0.616,
+          "p10_ms": 0.461,
+          "p90_ms": 0.772,
+          "min_ms": 0.461,
+          "max_ms": 0.772
+        },
+        "x_shape": [
+          2043,
+          5120
+        ],
+        "x_dtype": "torch.float32",
+        "x_contiguous": true,
+        "x_stride": [
+          5120,
+          1
+        ],
+        "w_shape": [
+          2688,
+          5120
+        ],
+        "w_dtype": "torch.float32",
+        "w_contiguous": true,
+        "w_stride": [
+          5120,
+          1
+        ],
+        "bias": true
+      },
+      "QKVParallelLinear:(10752, 5376)": {
+        "device": {
+          "calls": 104,
+          "median_ms": 17.071,
+          "p10_ms": 17.064,
+          "p90_ms": 17.076,
+          "min_ms": 1.653,
+          "max_ms": 452.285
+        },
+        "host": {
+          "calls": 104,
+          "median_ms": 0.344,
+          "p10_ms": 0.323,
+          "p90_ms": 0.426,
+          "min_ms": 0.301,
+          "max_ms": 1.121
+        },
+        "x_shape": [
+          2043,
+          5376
+        ],
+        "x_dtype": "torch.float16",
+        "x_contiguous": true,
+        "x_stride": [
+          5376,
+          1
+        ],
+        "w_shape": [
+          10752,
+          5376
+        ],
+        "w_dtype": "torch.float16",
+        "w_contiguous": true,
+        "w_stride": [
+          5376,
+          1
+        ],
+        "bias": false
+      },
+      "MergedColumnParallelLinear:(14336, 5376)": {
+        "device": {
+          "calls": 104,
+          "median_ms": 23.213,
+          "p10_ms": 23.144,
+          "p90_ms": 23.76,
+          "min_ms": 2.047,
+          "max_ms": 438.764
+        },
+        "host": {
+          "calls": 104,
+          "median_ms": 0.299,
+          "p10_ms": 0.275,
+          "p90_ms": 0.377,
+          "min_ms": 0.261,
+          "max_ms": 0.944
+        },
+        "x_shape": [
+          2043,
+          5376
+        ],
+        "x_dtype": "torch.float16",
+        "x_contiguous": true,
+        "x_stride": [
+          5376,
+          1
+        ],
+        "w_shape": [
+          14336,
+          5376
+        ],
+        "w_dtype": "torch.float16",
+        "w_contiguous": true,
+        "w_stride": [
+          5376,
+          1
+        ],
+        "bias": false
+      },
+      "ColumnParallelLinear:(48384, 2688)": {
+        "device": {
+          "calls": 100,
+          "median_ms": 0.799,
+          "p10_ms": 0.794,
+          "p90_ms": 0.935,
+          "min_ms": 0.791,
+          "max_ms": 789.676
+        },
+        "host": {
+          "calls": 100,
+          "median_ms": 0.387,
+          "p10_ms": 0.362,
+          "p90_ms": 0.408,
+          "min_ms": 0.347,
+          "max_ms": 0.581
+        },
+        "x_shape": [
+          2,
+          2688
+        ],
+        "x_dtype": "torch.float16",
+        "x_contiguous": true,
+        "x_stride": [
+          2688,
+          1
+        ],
+        "w_shape": [
+          48384,
+          2688
+        ],
+        "w_dtype": "torch.float16",
+        "w_contiguous": true,
+        "w_stride": [
+          2688,
+          1
+        ],
+        "bias": true
+      },
+      "ColumnParallelLinear:(5376, 2688)": {
+        "device": {
+          "calls": 2,
+          "median_ms": 328.337,
+          "p10_ms": 0.115,
+          "p90_ms": 656.56,
+          "min_ms": 0.115,
+          "max_ms": 656.56
+        },
+        "host": {
+          "calls": 2,
+          "median_ms": 0.442,
+          "p10_ms": 0.385,
+          "p90_ms": 0.499,
+          "min_ms": 0.385,
+          "max_ms": 0.499
+        },
+        "x_shape": [
+          2,
+          2688
+        ],
+        "x_dtype": "torch.float16",
+        "x_contiguous": true,
+        "x_stride": [
+          2688,
+          1
+        ],
+        "w_shape": [
+          5376,
+          2688
+        ],
+        "w_dtype": "torch.float16",
+        "w_contiguous": true,
+        "w_stride": [
+          2688,
+          1
+        ],
+        "bias": true
+      },
+      "ColumnParallelLinear:(48, 5376)": {
+        "device": {
+          "calls": 2,
+          "median_ms": 357.717,
+          "p10_ms": 4.573,
+          "p90_ms": 710.861,
+          "min_ms": 4.573,
+          "max_ms": 710.861
+        },
+        "host": {
+          "calls": 2,
+          "median_ms": 0.479,
+          "p10_ms": 0.322,
+          "p90_ms": 0.635,
+          "min_ms": 0.322,
+          "max_ms": 0.635
+        },
+        "x_shape": [
+          41792,
+          5376
+        ],
+        "x_dtype": "torch.float32",
+        "x_contiguous": true,
+        "x_stride": [
+          5376,
+          1
+        ],
+        "w_shape": [
+          48,
+          5376
+        ],
+        "w_dtype": "torch.float32",
+        "w_contiguous": true,
+        "w_stride": [
+          5376,
+          1
+        ],
+        "bias": true
+      },
+      "ColumnParallelLinear:(16, 5376)": {
+        "device": {
+          "calls": 2,
+          "median_ms": 193.223,
+          "p10_ms": 4.503,
+          "p90_ms": 381.943,
+          "min_ms": 4.503,
+          "max_ms": 381.943
+        },
+        "host": {
+          "calls": 2,
+          "median_ms": 0.325,
+          "p10_ms": 0.304,
+          "p90_ms": 0.346,
+          "min_ms": 0.304,
+          "max_ms": 0.346
+        },
+        "x_shape": [
+          41792,
+          5376
+        ],
+        "x_dtype": "torch.float32",
+        "x_contiguous": true,
+        "x_stride": [
+          5376,
+          1
+        ],
+        "w_shape": [
+          16,
+          5376
+        ],
+        "w_dtype": "torch.float32",
+        "w_contiguous": true,
+        "w_stride": [
+          5376,
+          1
+        ],
+        "bias": true
+      }
+    },
+    "measurement_only_no_math_change": true
+  },
+  "rest239_patch": {
+    "patched": "UnquantizedLinearMethod.apply"
+  },
+  "rest239_invariance": {
+    "measured_rank_max_s": 18.025144577026367,
+    "reference_s": 17.928,
+    "delta_s": 0.097,
+    "accepted": true
+  }
+}
