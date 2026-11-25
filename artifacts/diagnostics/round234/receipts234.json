@@ -1,0 +1,91 @@
+{
+  "schema_version": "r234.dispatch_cost.v1",
+  "host": "ts-217",
+  "measurement_only": true,
+  "no_model_weights_loaded": true,
+  "no_model_import": true,
+  "device": {
+    "requested_id": 0,
+    "actual_id": 0,
+    "name": "Ascend910B"
+  },
+  "runtime": {
+    "torch": "2.10.0+cpu",
+    "torch_npu": "2.10.0.post7"
+  },
+  "cases": {
+    "tiny_64x64": {
+      "shape": [
+        64,
+        64
+      ],
+      "elements": 4096,
+      "host_dispatch_ms_per_op": 0.0134,
+      "device_ms_per_op": 0.0173,
+      "host_over_device_x": 0.77,
+      "ops_per_second_host_limited": 74690.2
+    },
+    "elem_1k": {
+      "shape": [
+        1024
+      ],
+      "elements": 1024,
+      "host_dispatch_ms_per_op": 0.0129,
+      "device_ms_per_op": 0.0178,
+      "host_over_device_x": 0.72,
+      "ops_per_second_host_limited": 77650.7
+    },
+    "elem_224x128": {
+      "shape": [
+        224,
+        128
+      ],
+      "elements": 28672,
+      "host_dispatch_ms_per_op": 0.0132,
+      "device_ms_per_op": 0.0178,
+      "host_over_device_x": 0.74,
+      "ops_per_second_host_limited": 75799.9
+    },
+    "elem_1m": {
+      "shape": [
+        1024,
+        1024
+      ],
+      "elements": 1048576,
+      "host_dispatch_ms_per_op": 0.0134,
+      "device_ms_per_op": 0.017,
+      "host_over_device_x": 0.79,
+      "ops_per_second_host_limited": 74531.4
+    },
+    "elem_8m": {
+      "shape": [
+        2048,
+        4096
+      ],
+      "elements": 8388608,
+      "host_dispatch_ms_per_op": 0.0133,
+      "device_ms_per_op": 0.0203,
+      "host_over_device_x": 0.65,
+      "ops_per_second_host_limited": 75417.1
+    },
+    "elem_37m_attn_shaped": {
+      "shape": [
+        10448,
+        3584
+      ],
+      "elements": 37445632,
+      "host_dispatch_ms_per_op": 0.0138,
+      "device_ms_per_op": 0.1933,
+      "host_over_device_x": 0.07,
+      "ops_per_second_host_limited": 72716.7
+    }
+  },
+  "implications": {
+    "ops_dispatchable_per_ms": 74.63,
+    "gap_model": "If a region issues N small ops and each costs host_dispatch_ms while the device needs device_ms, the parent span includes (host-device)*N of device idle. attn/mlp issue on the order of 10-40 small ops per block.",
+    "examples": {
+      "attn_26.7ms_gap_vs_1ms_dispatch": 26.7,
+      "mlp_34.9ms_gap_vs_1ms_dispatch": 34.9
+    }
+  }
+}
