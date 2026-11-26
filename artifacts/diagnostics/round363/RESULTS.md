@@ -40,3 +40,25 @@ TIK 生成代码用的是 `cce_aicore_intrinsics.h` 里的 builtin，所以可�
 - AscendC 高层/底层：已关闭（R356/R359）；
 - **TIK：SoC 打通、代码生成可达，卡在 L0C 写回指令族**；
 - 下一步：raw builtin（`copy_matrix_cc_to_cbuf`）——这是与 CANN 自家 910A 算子一致的写回路径。
+
+---
+
+## 五、补充（同日）：TIK 映射表确认无 L0C→L1；raw builtin 名称已定位
+
+`te/tik/tik_lib/tik_data_move_api/tik_data_move_common.py` 的 `tensor_mov_dma_list` 中：
+
+- L0C 相关只有 `("cc_m", "ubuf") → copy_matrix_cc_to_ubuf`（v200 不支持）；
+- **没有** `("cc_m", "cbuf")`（L0C→L1）条目；
+- 有 `("cbuf", "gm") → copy_cbuf_to_gm`、`("cbuf", "cc_m") → copy_cbuf_to_matrix_cc`。
+
+编译器内建（`cce_aicore_intrinsics.h`）中已确认存在：
+
+```
+__builtin_cce_mad                     (矩阵乘)
+__builtin_cce_load_cbuf_to_ca / _cb   (L1→L0A/L0B)
+__builtin_cce_copy_matrix_cc_to_cbuf  (L0C→L1)   ← v200 的写回路径
+```
+
+⇒ 最后一步的具体做法：在 kernel 里直接调用这三个 builtin（可变参签名，编译可通过），
+参数格式可参照 TIK 生成的 `.cce` 中 `copy_matrix_cc_to_ubuf(...)` 的实参排列；
+构建后**先反汇编确认 `MAD` 出现**，再做数值校验。
