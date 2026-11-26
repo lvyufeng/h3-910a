@@ -61,3 +61,32 @@ H3_FA215_KERNEL_DIR=/tmp/fa910a_kernels H3_FA215_PKG=/tmp/fa_pkg \
 /home/mseco/vllm910a/bin/python -u /tmp/h3_r221/fa_bench_now.py /tmp/out.json
 ```
 新 kernel 首次调用会自动构建（~19 s），之后走缓存。
+
+---
+
+## 七、追加实验（R370）：Br=128 系列与瓶颈判定
+
+| Br / Bc | 实测 | 说明 |
+|---|---|---|
+| 128 / 480 | **142.01 ms** | S=128×480×2=122880B 仍在 UB 内 |
+| 128 / 448 | 142.00 ms | |
+| 128 / 384 | 142.00 ms | |
+| 96 / 608 | **655.88 ms** | 明显退化（S 走 GM workspace） |
+| 64 / 912 | **137.79 ms** | 当前最优 |
+
+**关键观察**：Br=128 的三种 Bc（384/448/480）耗时**完全相同**（142.0 ms），
+且把 Br 翻倍（K/V 重读量减半）**没有变快** ⇒ **不是 HBM 带宽受限**。
+
+⇒ **结论修正：FA 内核是 cube 计算受限**，约 49.8 TFLOPS ≈ **19.5% MFU**，
+tile 组合无法改善（所有可行组合都在 137.8–142.0 ms 之间）。
+
+### 为何无法进一步定位
+- `msprof` 在本机不可用：`Operation not permitted`（profiling 权限受限），拿不到 AIC/AIV/MTE 利用率；
+- 只能推断：19% MFU 通常意味着 **cube 与 vector（softmax）未充分流水**，即每个 kv-block 内
+  `Mmad → 同步 → 向量 softmax → 同步 → Mmad` 的串行比例高。
+
+### 结论（工程判断）
+要把 FA 压到 ~50 ms（10 s/step 所需量级）需要**内核级重写**（cube/vector 双流水 + 更深的
+K/V 预取 + 行和/softmax 融合），这不是调参能到达的；在当前会话内不具备可行性。
+
+**因此：TIK 路线在"可调参数"层面已到最优（64/912, 137.79 ms），后续必须做内核重写。**
