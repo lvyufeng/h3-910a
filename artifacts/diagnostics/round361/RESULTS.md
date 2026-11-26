@@ -44,3 +44,23 @@ print('after:', get_soc_spec('SHORT_SOC_VERSION'))        # 仍是 Ascend310B
 - 交付不变：**16.34 s/step（−8.9%）**，`H3_PERF_COMBO=1` 默认 OFF；
 - TIK：API 全部就绪、最小 matmul 脚本可运行到构建、**仅卡在 SOC=310B 的选择**；
 - 证据与脚本：远端 `/tmp/h3_r221/tik_mm.py`、`tik_soc.py`、`tikbuild/`。
+
+---
+
+## 六、补充实验（同日）：Python 层拦截有效，但构建阶段出现 `KeyError`
+
+把拦截层写成 `/tmp/h3_r221/tik_socfix.py`（在 `import te.tik` 之前调用）：
+
+- 成功：`get_soc_name() -> Ascend910A`（说明拦截确实生效）；
+- 但 `BuildCCE` 阶段报 **`KeyError: 'Ascend910A'`**；
+- 改试 `Ascend910B1`（平台配置里同样存在）→ **`KeyError: 'Ascend910B1'`**。
+
+⇒ 该 `KeyError` 不是来自 `platform_config/*.ini`，而是 TIK/TBE 内部的**版本映射表**用我们强制返回的名字做键，
+而该表期望的是另一种命名（例如带小版本号的 `Ascend910A1`/`Ascend910B2C` 或 `full_soc_version` 形式）。
+
+### 下一步（精确）
+1. 打印 `get_soc_spec('SOC_VERSION')` / `('FULL_SOC_VERSION')` 的真实期望值（在**未拦截**时是 `Ascend310B1`），
+   据此确定映射表期望的命名格式；
+2. 用该格式强制返回值，或在拦截层里同时覆盖 `full_soc_version`；
+3. 若映射表只认 310B/910_93x ⇒ 说明本机 CANN 9.2.0 的 TIK 确实不支持 910A 目标，
+   应停止该路线并记录结论。
