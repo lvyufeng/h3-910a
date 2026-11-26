@@ -44,3 +44,40 @@
 - 交付不变：**16.34 s/step（−8.9%）**，`H3_PERF_COMBO=1` 默认 OFF；
 - cube 代码生成已彻底打通（R366/R367），当前唯一障碍是 Matmul 运行时 M 维行为；
 - 远端工程：`/tmp/h3_r221/faA/proj`；harness：`test_mmrows.cpp`（确定性）、`test_mmfull.cpp`、`test_dump10.cpp`。
+
+---
+
+## 六、第二轮调试（本轮）：新增证据与结论
+
+### 已试且无效
+| 尝试 | 结果 |
+|---|---|
+| `mm.SetOrgShape(M,N,K)` + `mm.SetTail(M,N,K)` | 仍复制 row0 |
+| 追加 `mm.SetSingleShape(singleCoreM, singleCoreN, singleCoreK)` | 仍复制 row0 |
+| B 改为非转置（K×N 存储） | **第 0 行精确正确**（-3.121 vs -3.122），但其余行仍复制 row0 |
+| M=16 / 32 / 64 扫描（动态 tiling） | 三种 M 全部同样表现 |
+| 换 `MultiCoreMatmulTiling` / 加 `SetDim(1)` | 无变化 |
+
+### 决定性隔离实验（B = 单位阵）
+`q[i][d] = i*1000 + d`，`k = I(128×512 前 128 列)` ⇒ 期望 `o[i][j] = q[i][j]`。
+
+实测：
+```
+row0[0..5] = 0 1 2 3 4 5      (expect 0 1 2 3 4 5)   ✅
+row1[0..5] = 0 1 2 3 4 5      (expect 1000 1001 ...) ❌
+row2[0..5] = 0 1 2 3 4 5      (expect 2000 2001 ...) ❌
+```
+
+⇒ **A 的行步进（row stride）为 0**：A 的 ND→NZ 转换把第 0 行复制到了每一行。
+C 的写回没问题（因为若是 C 覆盖，最后应是第 63 行，而观测始终是第 0 行）。
+
+### 结论
+- `Matmul` 高层 API 在 ascend910 上的 **ND 输入 ND→NZ 转换**存在可用性问题（至少在我们这套调用方式下）；
+- 已知可绕开的候选路径：
+  1. **手工 ND2NZ + L1(A1)/NZ 输入**：`TQue<TPosition::A1>` + `Nd2NzParams` 自己做转换，再 `MatmulType<TPosition::A1, CubeFormat::NZ, half>`；
+  2. **低层 `LoadData` + `Mmad` + `Fixpipe`**（等价 TIK 生成代码），完全绕开 Matmul 封装；
+  3. **回到 TIK 链路**（已验证端到端数值正确：现役 FA 内核就是 TIK 生成/编译的）。
+
+### 建议
+优先 **路径 3 + 路径 2**：TIK 链路已被证明能产出正确结果，且是现役交付的基础；
+AscendC Matmul 的 ND2NZ 问题可作为独立问题继续（或改用 A1/NZ 输入）。
