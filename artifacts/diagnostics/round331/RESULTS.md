@@ -40,3 +40,16 @@ warm 3.196 s ≈ 63 GB / 3.196 s ≈ **19.7 GB/s**，与 H2D 聚合带宽吻合 
 - 主机仍有 665 GB 被占用（无我方进程）——疑似被 OOM 打断后未及时回收的共享/固定内存，
   **建议用户重启 ts-217** 后再做任何显存/内存敏感实验；
 - 交付不变：**16.34 s/step（−8.9%）**，`H3_PERF_COMBO=1` 默认 OFF。
+
+## 七、清理（R331 追加）
+
+此前「665 GB 被占用」并非系统异常：是 warm330 轮遗留的 **8 个孤儿 `vLLM-Omni::DiffusionWorker` 进程**
+（被 reparent 到 PID 1，不受 `pkill -f warmvae` 匹配）。本轮已：
+
+```
+pkill -9 -f vLLM-Omni        # 全部清理
+```
+
+结果：`vllm_workers_left=0`、`npu_procs=0`、`free -g` = **9 GB used / 743 GB free**（完全干净）。
+
+**教训**：以后清理要按 **worker 进程名**（`vLLM-Omni::DiffusionWorker`）匹配，不能只按脚本名。
