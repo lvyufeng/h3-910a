@@ -56,3 +56,39 @@ llvm-objdump -d dev.bin | grep -oE "\b(MMAD|LOAD_L1_TO_L0A[A-Z0-9_]*|MOV_L0C[A-Z
 - 交付不变：**16.34 s/step（−8.9%）**，`H3_PERF_COMBO=1` 默认 OFF；
 - **自定义 cube 内核路线重新打开**（此前"不可行"结论作废）；
 - 证据文件：远端 `/tmp/ccetest/k_dav-c100.o`、`dev.dis`（107,701 行）。
+
+---
+
+## 六、补充：TIK 最小 matmul 内核已成功构建并含 `MMAD`（默认配置，无需任何 SoC 覆盖）
+
+撤销 `tik_socfix.py`（不强改 SoC）、使用 `load2dv2` + `fixpipe` 后：
+
+```
+BUILD_OK
+/tmp/h3_r221/tikbuild/kernel_meta/tik_mm16x16x16.o   (1824 B, elf64-hiipu)
+```
+
+`llvm-objdump -d` 结果：
+
+```
+1  MMAD
+1  LOAD_L1_TO_L0A_2D
+1  LOAD_L1_TO_L0B_2D
+2  MOV_OUT_TO_L1
+```
+
+⇒ **TIK 默认构建链路本来就能为 910A 生成 cube 指令**；此前的失败全部来自
+（1）我强改 SoC 到 Ascend910/Ascend910B 触发的版本检查与指令选择错误，
+（2）在错误的 ELF 段（host stub / 未提取设备段）上数 `MAD`。
+
+## 七、下一步（可直接执行）
+
+1. **数值判据**：写 acl 小程序加载 `kernel_meta/tik_mm16x16x16.o` + json，
+   输入 A=I、B=随机，验证 C==B；
+2. 通过后，用同一 TIK 链路把 FA 内核（64×512×128）从现有版本改写并测量；
+3. 判据始终用「设备段反汇编出现 `MMAD`」+ 数值校验，不再用 host 段的 mnemonic 判断。
+
+## 八、结论更正（对外）
+
+Issue #18 中 R356/R359/R365 的「本机不生成 cube / target feature 缺失」**全部作废**，
+以本节为准。
