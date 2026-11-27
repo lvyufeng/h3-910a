@@ -59,9 +59,45 @@ def _wrap_integration_hooks() -> None:
             install_optimizations(verbose=True)
         except Exception as exc:  # never break the numeric alignment path
             print(f"[h3-boot] speedups skipped: {exc!r}", flush=True)
+        _harden_repeat_requests()
 
     install._h3_service_wrapped = True
     integration_hooks126.install = install
+
+
+def _harden_repeat_requests() -> None:
+    """Make the reference capture hook safe for many requests per process.
+
+    ``integration_hooks126`` writes ``live_NPU_encoder_hidden_pid<pid>126.pt`` with
+    ``Path.open("xb")`` -- one capture per process, which is true for the one-shot
+    reference run but raises ``FileExistsError`` on the second service request.
+    Rotating the capture root per encoder call keeps the artifacts (they are
+    experiment-only) without ever colliding.
+    """
+    try:
+        import itertools
+
+        import integration_hooks126 as hooks
+        import vllm_omni.diffusion.models.minimax_h3.pipeline_minimax_h3 as pipeline
+    except Exception:
+        return
+    encoder_cls = getattr(pipeline, "MiniMaxH3Qwen3VLEncoder", None)
+    if encoder_cls is None:
+        return
+    inner = encoder_cls._encode
+    if getattr(inner, "_h3_service_rotated", False):
+        return
+    counter = itertools.count()
+    base = Path(hooks.GENERATION_ROOT)
+
+    def _encode_rotated(self, *args, **kwargs):
+        target = base / "requests" / f"pid{os.getpid()}_{next(counter)}"
+        target.mkdir(parents=True, exist_ok=True)
+        hooks.GENERATION_ROOT = target
+        return inner(self, *args, **kwargs)
+
+    _encode_rotated._h3_service_rotated = True
+    encoder_cls._encode = _encode_rotated
 
 
 def install_parent_alignment() -> None:

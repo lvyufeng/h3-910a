@@ -182,7 +182,15 @@ rules.update(profile='vllm-omni-h3', allowedKinds=['text', 'image', 'video', 'au
 | `GET /v1/models` | 返回 `{"id":"minimax-h3"}` |
 | `POST /v1/videos` | 200 + job id；multipart 字段与文件解析正确 |
 | `GET /v1/videos/{id}` | `queued → in_progress → completed`，params 已脱敏（不含图像对象） |
-| `GET /v1/videos/{id}/content` | 返回 MP4（见下） |
+| `GET /v1/videos/{id}/content` | 返回 MP4 |
+| 49 步端到端（首请求） | `completed`，1221.7 s（**含 FA 内核按形状编译**），mux 2.1 s |
+| 产物校验（av 解码） | h264 **1344×768** / 24 fps / **124 帧** / aac 32 kHz 立体声 / 165600 采样，与 R126 验收口径一致 |
+| 重复请求 | 首版失败：capture 钩子按 `pid` 命名且 `'xb'` 独占创建；已改为**每请求独立捕获目录**（`h3_service_bootstrap._harden_repeat_requests`），连续作业验证见下 |
 
-已知引擎行为：**4 步等脱离验收配方的步数会触发 vllm-omni 异步输出打包路径的协议错误**
-（`Unexpected response type: AsyncDiffusionOutput`）；服务按验收配方 **49 步** 使用。
+已知引擎行为与运维注意：
+
+- **4 步等脱离验收配方的步数**会触发 vllm-omni 异步输出打包路径的协议错误
+  （`Unexpected response type: AsyncDiffusionOutput`）；服务按验收配方 **49 步** 使用。
+- **首个请求明显慢**：FA V1 内核按形状惰性编译（51 个形状）。部署后建议先跑一次预热请求，
+  或把 `H3_FA215_KERNEL_DIR` 指向已含 V1 内核的缓存目录（本机 `/tmp/fa_kernels_v1`）。
+- 单条 5 s 视频（49 步）稳态约 **13–14 分钟**；服务串行处理，OpenDirector 轮询间隔 3 s。
