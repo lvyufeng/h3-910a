@@ -173,6 +173,25 @@ rules.update(profile='vllm-omni-h3', allowedKinds=['text', 'image', 'video', 'au
 > 该补丁只影响 OpenDirector 前端/校验的输入约束，不改动服务端与数值路径。
 > 上游若更愿意保留"H3 自部署=单帧"的语义，也可以继续让网关做首帧复制，两种都能跑通。
 
+### 补丁落地状态
+
+- 已在本地 checkout `~/Projects/OpenDirector` 的分支 **`h3-dual-frame`**（commit `13614df`）上应用并验证：
+  `input_rules({'protocol':'vllm_omni','modelId':'minimax-h3',...})` 现在返回
+  `frameRoles=['first_frame','last_frame']`，未打补丁时是 `None`。
+- 可直接提上游的补丁文件：`artifacts/deploy/opendirector_h3_dual_frame.patch`（`git format-patch` 格式）。
+- **注意生效范围**：
+  - `/Applications/OpenDirector.app` 是打包版（backend 在 `app.asar` 里），**不会**拾取源码补丁；
+  - 要让补丁生效，用源码方式运行（本机 node v25.4.0 / npm 11.7.0 / Python 3.14 均满足要求）：
+
+```bash
+cd ~/Projects/OpenDirector && git checkout h3-dual-frame
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e .          # 首次会构建前端
+opendirector serve        # http://127.0.0.1:8000
+```
+
+  - 或者把补丁提到 ThinkFlowLab/OpenDirector，等下一个版本随 app 发布。
+
 ## 10. 端到端验收记录
 
 | 项 | 结果 |

@@ -1,13 +1,37 @@
+From 13614dffb7bcf534960b7986ad865d32f5514207 Mon Sep 17 00:00:00 2001
+From: lvyufeng <lvyufeng@users.noreply.github.com>
+Date: Fri, 27 Nov 2026 15:21:12 +0800
+Subject: [PATCH] feat(video): allow first+last frames for self-hosted
+ MiniMax-H3
+
+The self-hosted vLLM-Omni H3 profile (adapter minimax_h3 -> profile
+vllm-omni-h3) declares no frameRoles, so the canvas exposes only a first-frame
+slot and generation.py/reference_inputs.py cap the request at one image. The
+official MiniMax-H3 profile (minimax_video_v2) and the FastH3 dual adapter both
+declare frameRoles=['first_frame','last_frame'], and MiniMax-H3 FL2VA is a
+first-frame + last-frame model, so a self-hosted deployment could never receive
+the closing frame and degenerated to a loop back to the opening frame.
+
+Declaring the two frame roles restores first/last-frame generation for
+self-hosted H3 without touching the wire protocol: the server already receives
+the opening frame as input_reference and additional images as input_references.
+---
+ packages/core/src/opendirector/domain/input_rules.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
 diff --git a/packages/core/src/opendirector/domain/input_rules.py b/packages/core/src/opendirector/domain/input_rules.py
-index 729de0d..b4416a6 100644
+index 5989181..204b4d0 100644
 --- a/packages/core/src/opendirector/domain/input_rules.py
 +++ b/packages/core/src/opendirector/domain/input_rules.py
-@@ -107,7 +107,7 @@ def _adapter_rules(config):
+@@ -57,7 +57,7 @@ def _adapter_rules(config):
          # references) stays zero.
          rules.update(profile='vllm-omni-h3', allowedKinds=['text', 'image', 'video', 'audio'], maxImages=9, maxAudios=3,
                       imageBytes=30 * 1024 * 1024, requestBytes=64 * 1024 * 1024, videoModes=['first_frame', 'reference', 'continuation'],
 -                     outputResolutions=['480P', '768P'])
 +                     frameRoles=['first_frame', 'last_frame'], outputResolutions=['480P', '768P'])
          return rules
-     if kind == 'video' and config.get('protocol') == 'vllm_omni' and adapter in {'fasth3', 'fasth3_dual'}:
+     if kind == 'video' and config.get('protocol') == 'vllm_omni' and adapter == 'fasth3':
          rules.update(profile='fasth3-omni', allowedKinds=['text', 'image', 'video', 'audio'],
+-- 
+2.56.0
+
