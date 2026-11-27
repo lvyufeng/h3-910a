@@ -59,6 +59,12 @@ def _wrap_integration_hooks() -> None:
             install_optimizations(verbose=True)
         except Exception as exc:  # never break the numeric alignment path
             print(f"[h3-boot] speedups skipped: {exc!r}", flush=True)
+        try:
+            from h3_production_hooks import install as install_production_hooks
+
+            install_production_hooks()
+        except Exception as exc:  # observation trimming must never break alignment
+            print(f"[h3-boot] production hot path skipped: {exc!r}", flush=True)
         _harden_repeat_requests()
 
     install._h3_service_wrapped = True

@@ -157,11 +157,39 @@ class EngineHolder:
             self.omni = Omni(model=self.checkpoint, **_engine_kwargs())
             self.init_s = round(time.perf_counter() - t0, 2)
             logger(f"engine ready in {self.init_s}s")
+            if os.environ.get("H3_SERVICE_PREWARM", "0").strip().lower() in ("1", "true", "on", "yes"):
+                self._prewarm()
         except Exception:
             self.error = traceback.format_exc()
             logger("engine init failed:\n" + self.error)
         finally:
             self.ready.set()
+
+    def _prewarm(self) -> None:
+        """Run one throwaway generation so the first real request is warm.
+
+        The engine pays a one-time cost on its first request (VAE cold decode and
+        first-call kernel setup). Prewarming moves that cost into startup.
+        """
+        try:
+            from PIL import Image
+            from vllm_omni.inputs.data import OmniDiffusionSamplingParams
+
+            frame = Image.new("RGB", (1344, 768), (128, 128, 128))
+            sampling = OmniDiffusionSamplingParams(
+                seed=1234, height=768, width=1344, num_frames=120, fps=24, frame_rate=24,
+                num_inference_steps=DEFAULT_STEPS, quality="lossless", output_type="np",
+                return_frames=False, save_output=False,
+                extra_args={"task": "fl2va", "duration_seconds": 5, "audio_mode": "native",
+                            "frame_indices": [0, -1]},
+            )
+            t0 = time.perf_counter()
+            logger("prewarm generation started")
+            self.omni.generate({"prompt": "prewarm", "multi_modal_data": {"image": [frame, frame]}},
+                               sampling_params_list=sampling, use_tqdm=False)
+            logger(f"prewarm finished in {time.perf_counter() - t0:.1f}s")
+        except Exception as exc:  # prewarm must never take the service down
+            logger(f"prewarm failed (ignored): {exc!r}")
 
 
 def _engine_kwargs() -> dict[str, Any]:

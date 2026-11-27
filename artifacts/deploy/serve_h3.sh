@@ -69,6 +69,12 @@ export ASCEND_RT_VISIBLE_DEVICES="${ASCEND_RT_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}"
 export ASCEND_WORK_PATH="$WORK"
 
 # --- deployment speedups ----------------------------------------------------
+# Production hot path: drop the per-step audit (CPU readbacks, event log, 155
+# exhaustive Half counts) while keeping every numeric guard. Set
+# H3_SERVICE_STRICT_HALF_AUDIT=1 for acceptance-parity auditing.
+export H3_SERVICE_PROD_HOTPATH="${H3_SERVICE_PROD_HOTPATH:-1}"
+export H3_SERVICE_STRICT_HALF_AUDIT="${H3_SERVICE_STRICT_HALF_AUDIT:-0}"
+export H3_SERVICE_PREWARM="${H3_SERVICE_PREWARM:-0}"
 export H3_SERVICE_FA_V1="${H3_SERVICE_FA_V1:-1}"
 export H3_SERVICE_GUARD_FAST="${H3_SERVICE_GUARD_FAST:-1}"
 export H3_SERVICE_FAST_GEMM="${H3_SERVICE_FAST_GEMM:-1}"
@@ -82,7 +88,7 @@ export H3_FA_TRIM_Q_LIMIT="${H3_FA_TRIM_Q_LIMIT:-41792}"
 echo "[serve_h3] here=$HERE"
 echo "[serve_h3] model=$MODEL"
 echo "[serve_h3] output_root=$OUTPUT_ROOT http=$HOST:$PORT"
-echo "[serve_h3] fa_v1=$H3_SERVICE_FA_V1 guard_fast=$H3_SERVICE_GUARD_FAST fast_gemm=$H3_SERVICE_FAST_GEMM"
+echo "[serve_h3] fa_v1=$H3_SERVICE_FA_V1 guard_fast=$H3_SERVICE_GUARD_FAST fast_gemm=$H3_SERVICE_FAST_GEMM prod_hotpath=$H3_SERVICE_PROD_HOTPATH strict_audit=$H3_SERVICE_STRICT_HALF_AUDIT"
 
 exec "$PY" -u "$HERE/h3_service.py" \
   --model "$MODEL" \
