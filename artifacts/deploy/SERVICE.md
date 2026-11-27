@@ -140,3 +140,49 @@ OpenDirector 侧 `vllm-omni-h3` profile 的行为与本网关的对应关系：
 | 精度路径 | NVFP4 量化单卡 | FP16 矩阵 + 原始 FP32 例外，TP2+USP4 |
 | 步数 | 8 | 49（无损验收配置） |
 | 与 OpenDirector | 协议 vLLM-Omni | **同为协议 vLLM-Omni，零客户端改动** |
+## 9. 与 OpenDirector `vllm-omni-h3` 适配器的差异清单
+
+| 项 | OpenDirector 行为 | 本部署 | 处理 |
+|---|---|---|---|
+| 服务名匹配 | `adapter` 按模型名自动判定：`minimax-h3` / `minimax-h3-ref2va` → `minimax_h3` | 服务端 `H3_SERVED_MODEL_NAME=minimax-h3` | 两边一致即可 |
+| 帧角色 | `vllm-omni-h3` 的 `frameRoles` **未声明**，默认只允许 1 张首帧；只有 `fasth3_dual` 适配器才开放尾帧槽 | FL2VA 需要 **首帧+尾帧** | 见下方补丁；未打补丁时网关把单图复制成首/尾两帧（生成会收束回首帧，属语义降级） |
+| 帧数 | 发送 `round(秒×24)`（5 s → 120），期望输出 17n+5 | 引擎把 120 对齐成 **124** | 一致 |
+| 尺寸 | `size=WxH`，768P 16:9 → `1344x768`，480P → `832x480` | 解析 WxH → width/height | 一致 |
+| 步数 | `vllm_omni` 路径不发送步数，服务端默认 | 默认 **49**（无损验收配置） | 一致 |
+| 任务 | `extra_params.task` = `fl2va`（有图）/`ref2va`（素材参考）/`t2va` | 只支持 `fl2va` | `ref2va`→400、`t2va`→400 |
+| 续写 | `videoMode=continuation` 发 `extra_params.continue_from` | 无跨请求 latent 缓存 | 409 + 消息含 `continue_from`，OpenDirector 会转成"服务端无接续缓存"提示 |
+| 结构控制 | `fasth3` 专属 `control_type` | 不支持 | 400 |
+
+### 建议的 OpenDirector 一行补丁（启用真正的首尾帧 FL2VA）
+
+`packages/core/src/opendirector/domain/input_rules.py`，在 `adapter == 'minimax_h3'` 的 `rules.update(...)` 里补上：
+
+```python
+rules.update(profile='vllm-omni-h3', allowedKinds=['text', 'image', 'video', 'audio'],
+             maxImages=9, maxAudios=3, imageBytes=30 * 1024 * 1024,
+             requestBytes=64 * 1024 * 1024,
+             videoModes=['first_frame', 'reference', 'continuation'],
+             frameRoles=['first_frame', 'last_frame'],   # <- 新增：开放尾帧槽
+             outputResolutions=['480P', '768P'])
+```
+
+效果：画布 `frame_roles` 变为 `{first_frame, last_frame}`（`creation_canvas.py:136`），
+首尾帧最多 2 张，`generation.py:508` 的帧数上限随之放开；网关按 `input_reference`（首帧）+
+`input_references[0]`（尾帧）直接映射到引擎的 `fl2va`，语义与验收配置完全一致。
+
+> 该补丁只影响 OpenDirector 前端/校验的输入约束，不改动服务端与数值路径。
+> 上游若更愿意保留"H3 自部署=单帧"的语义，也可以继续让网关做首帧复制，两种都能跑通。
+
+## 10. 端到端验收记录
+
+| 项 | 结果 |
+|---|---|
+| 引擎初始化 | 286.8 s / 321.7 s（两次冷启动） |
+| 三项加速装载 | 每个 worker 日志均有 `[h3-opt] applied: fast_gemm,guard_fast,fa_v1_128x384` |
+| `GET /v1/models` | 返回 `{"id":"minimax-h3"}` |
+| `POST /v1/videos` | 200 + job id；multipart 字段与文件解析正确 |
+| `GET /v1/videos/{id}` | `queued → in_progress → completed`，params 已脱敏（不含图像对象） |
+| `GET /v1/videos/{id}/content` | 返回 MP4（见下） |
+
+已知引擎行为：**4 步等脱离验收配方的步数会触发 vllm-omni 异步输出打包路径的协议错误**
+（`Unexpected response type: AsyncDiffusionOutput`）；服务按验收配方 **49 步** 使用。
