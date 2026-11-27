@@ -88,3 +88,29 @@
 | PDD 融合权重/头间插值细节不明确 | 以 FastVideo 源码（`MiniMaxH3Ref2VAModularPipeline` + `basic_fasth3_omniref_pdd.py`）为准逐行对照 |
 | 8 步蒸馏权重对 480p/768p 的表现 | 官方 480p 是主推档；768p 作为可选，验收按视觉对比 |
 | B 机软件栈复刻耗时 | 复用 ts-217 的 wheel 源与源码树，先跑通再优化 |
+
+## 6. 910A 实测验证（ts-87，2026-11-27）
+
+补齐 CANN 的 TBE python 依赖后（见 `ASCEND910A_CANN_FIX.md`），真 910A 上的关键链路逐项通过：
+
+| 项 | 结果 |
+|---|---|
+| torch_npu 算子 | FP16 matmul 2048/5376/8192 = 82.3 / 90.9 / 100.0 TFLOPS |
+| 8 卡 HCCL | all_reduce 32MB fp16 = 2.63 ms（22.35 GB/s），求和正确 |
+| vllm 平台 | `vllm_ascend` python-only 安装 + SoC 补丁（`soc_version=102` → A2）后，`NPUPlatform` / `Ascend910A` 识别成功 |
+| vllm_omni | `diffusion.models.minimax_h3.minimax_h3_transformer` 导入成功 |
+| 910A FA 内核 | TIK 内核编译+运行成功（首次 58s，含编译） |
+| FastH3 权重 | FP8 导出 68GB 下载完成；FP8→FP16 反量化 14/14 分片完成（proj_out=[3072,5376]、audio_proj_out=[1024,5376]） |
+| 基座组件 | text_encoder/vae/audio_vae 从 MiniMaxAI/MiniMax-H3 直连下载中（约 78GB） |
+
+### 权重命名对齐（下一步实现）
+FastH3 FP16 张量（688 个）为 diffusers 命名：
+`transformer_blocks.N.{adaln_proj.linear, attn.to_q/to_k/to_v/to_out.0/to_gate_compress, attn.norm_q/norm_k, ff.net.0.proj, ff.net.2, norm1/norm2}` +
+顶层 `proj_out / audio_proj_out / context_embedder`；其中 `to_gate_compress` 是 VSA 门控（dense 路径先忽略）。
+我们的 replay transformer 使用 `blocks.N.*` / `time_embedder.*` 命名，需要一张名字映射表。
+
+### 剩余实现
+1. 名字映射 + 32 头 proj_out 的 PDD 融合；
+2. PDD-8 采样循环（8 forward、4 头加权、shift 12/3）；
+3. ref2va/FL2VA 条件打包（复用现有 keyframe/ref 打包代码）；
+4. VAE/audio VAE 解码 + 服务化。
