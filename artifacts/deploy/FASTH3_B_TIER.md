@@ -3,6 +3,38 @@
 > 目标：与 ts-217（A 机，原模型 768p/49 步/12.3 min 一条）组成"快速草稿 + 高质量终稿"
 > 双档，两档都以 vLLM-Omni `/v1/videos` 契约接入 OpenDirector。
 
+## 0. 硬件结论（2026-11-27 实测，决定 B 机选型）
+
+| 机器 | npu-smi / torch_npu | Board ID | CANN 算子 | 结论 |
+|---|---|---|---|---|
+| ts-217（A 机） | Ascend910B | 0x21 | ✅ 正常 | 可用（现有服务） |
+| ts-87 / ts-88 | Ascend910A | 0x02 | ❌ `GEInitializeV2 failed`（CANN 9.2 不支持 910A 代） | 不可用 |
+| ts-188 / ts-190 / ts-194 | Ascend910PremiumA | 0x24 | ❌ `CannKbInit failed` → `TeFusion init failed` → GE init failed；AOE 旁路无效 | 不可用 |
+| ts-216 | 910B3（64 GB×8） | — | 期望与 ts-217 同族 | **唯一候选，但测试时 BUSY（8 卡 aicore 100%）** |
+
+结论：B 机必须是 **910B/910B3 代**；910A 与 910PremiumA 在本轮 CANN 9.2 环境下无法初始化计算图。
+（注：`npu-smi` 的 910A/910B 标签与 `torch_npu.get_device_name()` 一致，不是显示误差。）
+
+## 5. 已完成的非 NPU 工作
+
+### 5.1 权重下载（ts-87，hf-mirror，直连不经本机）
+- `transformer_ref/` 14 分片：已到 7 片（26 GB）
+- `text_encoder/` 4/4（16 GB）✓，`audio_vae` ✓，`adaln_table.pt`（499 MB）✓，scheduler/processor/tokenizer ✓
+- 剩余：7 个 transformer 分片 + `vae/`（4.2 GB）
+
+### 5.2 FP8→FP16 反量化器（已实现并单分片验证）
+- 工具：`artifacts/deploy/fasth3_dequant.py`（运行时在 `/data/h3fast/tools/dequant_fasth3.py`）
+- 实测格式：每分片 72 个张量 = **15 个 FP8 线性层**（`weight` + 每输出通道 `weight_scale` [N,1] F32）+ 57 个 BF16；`proj_out.weight`=[3072,5376]、`audio_proj_out.weight`=[1024,5376]（32 头 × 96/32 通道）
+- 公式：`w_fp16 = (w_fp8.float() * scale).half()`；roundtrip 校验无 mismatch
+- 单分片 CPU 约 5 s（14 分片约 1–2 分钟）
+
+### 5.3 PDD-8 采样契约（依据 FastVideo 源码 `fastvideo/layers/pdd.py` + denoising 测试）
+- 细网格：`u = linspace(0.999, 0, 33)`（float64），`pdd_step_indices=[0,4,…,32]`
+- 模态 shift：`f_s(u) = s·u·M / (u·(s−1)+M)`，`M=0.999`；video s=12、audio s=3
+- 每个 block 的积分权重：`Δσ_j = f_s(u_{j+1}) − f_s(u_j)`（数值稳定式）；采样 `x_end = x_start − Σ_j Δσ_j·m_j`，`m = x0 − eps`
+- 前向融合：把 block 内 4 个输出头的权重按 `Δσ_j / ΣΔσ` 加权平均成一个投影，再做一次 matmul（8 次 forward 覆盖 32 个头）
+- 片长 124/243/362 帧；guidance 1.0；ref2va 有序参考（图/视频/音频），首尾帧模式用两张有序图
+
 ## 1. 实测事实（来自权重与官方文档，非推测）
 
 | 项 | 结论 |
