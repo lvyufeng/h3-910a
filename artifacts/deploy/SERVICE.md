@@ -205,7 +205,8 @@ opendirector serve        # http://127.0.0.1:8000
 | 49 步端到端（首请求） | `completed`，1221.7 s（**含 FA 内核按形状编译**），mux 2.1 s |
 | 产物校验（av 解码） | h264 **1344×768** / 24 fps / **124 帧** / aac 32 kHz 立体声 / 165600 采样，与 R126 验收口径一致 |
 | 重复请求 | 首版失败：capture 钩子按 `pid` 命名且 `'xb'` 独占创建；已改为**每请求独立捕获目录**（`h3_service_bootstrap._harden_repeat_requests`） |
-| 连续两次作业 | 均 `completed`：A = 1176.7 s（进程首个请求，含 VAE 冷解码），**B = 863.8 s（热稳态，14.4 min/条）**，mux 2.1/2.5 s |
+| 连续两次作业（审计钩子版） | 均 `completed`：A = 1176.7 s（首个请求，含 VAE 冷解码），B = **863.8 s**（热稳态 14.4 min/条） |
+| **连续两次作业（生产热路径版）** | A = **1078.7 s**，B = **735.9 s** ⇒ **12.3 min/条**；相对审计版 **−98 s / −128 s（−8.3% / −14.8%）**，折算 **15.0 s/DiT 评价**（已回到 isolated replay 基准 15.55 s 水平） |
 | 两条产物一致 | h264 1344×768 / 24 fps / **124 帧** / aac 32 kHz 立体声 —— 与 R126 验收口径完全一致 |
 
 已知引擎行为与运维注意：
@@ -214,8 +215,12 @@ opendirector serve        # http://127.0.0.1:8000
   （`Unexpected response type: AsyncDiffusionOutput`）；服务按验收配方 **49 步** 使用。
 - **首个请求明显慢**：FA V1 内核按形状惰性编译（51 个形状）。部署后建议先跑一次预热请求，
   或把 `H3_FA215_KERNEL_DIR` 指向已含 V1 内核的缓存目录（本机 `/tmp/fa_kernels_v1`）。
-- 单条 5 s 视频（49 步）实测：进程首个请求 1176.7 s（含 VAE 冷解码），**热稳态 863.8 s ≈ 14.4 分钟**；
-  折算 **17.6 s/DiT 评价**。注意这比 isolated replay 基准的 15.55 s/评价慢约 13%，
-  原因是从 R126 对齐链继承的审计/捕获钩子（每步 `stats()` 统计、`event()` 写盘、断言）在服务路径上仍然生效。
-  → 生产化下一步：只保留数值 guard、去掉审计日志与捕获（不改数值路径），预计可回到 ~15.5–16 s/评价。
+- 单条 5 s 视频（49 步）实测（生产热路径）：
+  - 进程首个请求 **1078.7 s**（含一次性 VAE 冷解码）；
+  - **热稳态 735.9 s ≈ 12.3 分钟**，折算 **15.0 s/DiT 评价**。
+- 已剥离的纯审计开销（`h3_service_bootstrap` 自动安装，`H3_SERVICE_PROD_HOTPATH=1` 默认）：
+  每步 `stats()` 的两次 CPU 回拷、`event()` 写盘、155 个 module 的 exhaustive Half 计数
+  （改为一次端到端 finite/saturation 门）。所有**改数值**的 guard 全部保留；
+  `H3_SERVICE_STRICT_HALF_AUDIT=1` 可恢复到验收审计口径。
+- 冷启动的 VAE 冷解码可用 `H3_SERVICE_PREWARM=1` 移到启动阶段（启动变慢，首个客户请求变快）。
 - 服务串行处理，OpenDirector 轮询间隔 3 s；排队深度见 `/healthz.queue_len`。
