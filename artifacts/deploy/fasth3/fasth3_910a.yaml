@@ -1,0 +1,58 @@
+# FastH3 PDD-8 (MiniMax-H3 Ref2VA) on 8x Ascend910A, 32 GB per card.
+#
+# The three resident components do not fit on one card group (encoder 63 GB,
+# DiT 66 GB, video VAE ~10 GB), so the official disaggregated topology is used
+# instead of CPU offload: stage 0 keeps the Qwen3-VL encoder and the VAE
+# encoders on cards 0-3, stage 1 keeps the DiT and the VAE decoder on cards 4-7.
+pipeline: minimax_h3_disaggregated
+async_chunk: false
+trust_remote_code: true
+distributed_executor_backend: mp
+
+connectors:
+  shared_memory_connector:
+    name: SharedMemoryConnector
+
+stages:
+  - stage_id: 0
+    devices: "0,1,2,3"
+    max_num_seqs: 1
+    gpu_memory_utilization: 0.9
+    tensor_parallel_size: 4
+    output_connectors:
+      to_stage_1: shared_memory_connector
+    hf_overrides:
+      minimax_h3_encoder_components:
+        text_encoder:
+          parallel_mode: tp
+        video_vae:
+          parallel_mode: patch
+        audio_vae:
+          parallel_mode: leader
+    default_sampling_params:
+      max_tokens: 1
+      temperature: 0.0
+      detokenize: false
+
+  - stage_id: 1
+    devices: "4,5,6,7"
+    max_num_seqs: 1
+    model_loaded:
+      text_encoder: false
+      vae_encoder: false
+    parallel_config:
+      tensor_parallel_size: 4
+      ulysses_degree: 1
+      vae_patch_parallel_size: 4
+    diffusion_attention_backend: TORCH_SDPA
+    vae_use_tiling: true
+    vae_use_slicing: true
+    input_connectors:
+      from_stage_0: shared_memory_connector
+    default_sampling_params:
+      seed: 42
+      num_inference_steps: 8
+      guidance_scale: 1.0
+      extra_args:
+        flow_shift: 12.0
+        audio_flow_shift: 3.0

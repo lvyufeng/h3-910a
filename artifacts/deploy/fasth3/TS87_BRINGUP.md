@@ -75,14 +75,17 @@ Fix (single small kernel, numerically the same math): run that conv in FP32 and
 cast its output back to the module dtype (`encoder.py`,
 `encoder.py.pre_910a_convfix` keeps the original).
 
-## Memory plan for 32 GB cards
+## Deployment topology: disaggregated card groups (no CPU offload)
 
-All three components cannot stay resident: the released weights alone are
-encoder 8 GB + DiT 4.4 GB + video VAE 10.4 GB per card (TP8). The service runs
-with module-level CPU offload of `dit` + `text_encoder`
-(`--diffusion-offload-config '{"mode": "module", "components": ["dit", "text_encoder"]}'`)
-plus `--vae-use-tiling --vae-use-slicing`, so only the component in use is on
-the NPU. `vae` is not an offloadable component on this tree; it stays resident.
+CPU offload is explicitly not the wanted strategy here. The released weights are
+encoder 63 GB, DiT 66 GB and video VAE ~10 GB, so the official H3 disaggregated
+topology is used instead: **stage 0 (encoder + VAE encoders) on cards 0-3,
+stage 1 (DiT + VAE decoder) on cards 4-7**, with the encoder conditioning payload
+handed over through the shared-memory connector. Each group only loads its own
+weights, so no card ever holds two components.
+
+Config: `fasth3_910a.yaml`, launcher: `serve_fasth3_split.sh` (both in this
+directory). VAE tiling/slicing stays on for the decode activations.
 
 ## Reference conditioning cost (official policy, not a bug)
 
@@ -104,5 +107,17 @@ FA kernel for `head_dim=72`, or an approved smaller reference canvas).
 - Offload + VAE tiling: request now reaches `_build_denoise_inputs`; the legacy
   `base_schedule` carried by the parent FL2VA `model_index.json` is ignored for
   PDD (own fine grid + shifts) instead of aborting.
-- Remaining: PDD denoise + tiled VAE decode timings, then 480p/124 frames and
-  the OpenDirector wiring.
+- Disaggregated two-stage service: bring-up in progress on 910A. Three
+  environment blockers found and fixed on the host:
+  1. the LLM worker of the encoder stage needs `libatb.so` from the NNAL/ATB
+     package (`ATB_HOME_PATH` + `LD_LIBRARY_PATH`);
+  2. that worker JIT-builds the triton-ascend `npu_utils` extension, and the
+     host GCC 7.3 trips PyTorch's `c10/util/C++17.h` "need GCC 9" guard;
+     the guard is relaxed (the extension uses no GCC>=9-only feature and builds
+     cleanly) — the prebuilt wheel itself is untouched;
+  3. `init_device_properties_triton()` assumes the driver reports
+     `num_vectorcore`, but Ascend910A reports 0 (torch_npu's
+     `vector_core_num` is 0 as well); it now falls back to the reported
+     `num_aicore`/`cube_core_num` with `VLLM_ASCEND_NUM_*` overrides.
+- Remaining: verify the two-stage startup, then PDD denoise + tiled VAE decode
+  timings, 480p/124 frames, and the OpenDirector wiring.
