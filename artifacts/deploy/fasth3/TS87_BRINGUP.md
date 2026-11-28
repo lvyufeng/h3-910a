@@ -75,10 +75,34 @@ Fix (single small kernel, numerically the same math): run that conv in FP32 and
 cast its output back to the module dtype (`encoder.py`,
 `encoder.py.pre_910a_convfix` keeps the original).
 
+## Memory plan for 32 GB cards
+
+All three components cannot stay resident: the released weights alone are
+encoder 8 GB + DiT 4.4 GB + video VAE 10.4 GB per card (TP8). The service runs
+with module-level CPU offload of `dit` + `text_encoder`
+(`--diffusion-offload-config '{"mode": "module", "components": ["dit", "text_encoder"]}'`)
+plus `--vae-use-tiling --vae-use-slicing`, so only the component in use is on
+the NPU. `vae` is not an offloadable component on this tree; it stays resident.
+
+## Reference conditioning cost (official policy, not a bug)
+
+`resolve_minimax_h3_reference_image_shape` resizes every Ref2VA reference image
+to a **2048-pixel short edge** canvas, so a single reference becomes a
+`[[1, 128, 128]]` vision grid: **16,384 vision tokens**. On ts-87 the vision
+tower takes **~216 s** with the FP16 chunked attention fallback (block 1024,
+`head_dim=72`), because the reference SDPA path cannot be used at this head dim
+and 910A has no BF16 hardware path. This dominates a ref2va job and is the first
+speed target for the fast tier (options: cache conditioning per reference set,
+FA kernel for `head_dim=72`, or an approved smaller reference canvas).
+
 ## Status
 
 - DiT load (585/585 tensors, zero missing) and PDD head preparation: OK.
 - Service startup: OK, `/v1/videos` accepts ref2va requests with a JSON-string
   `image_reference` field (`{"image_url": "data:image/png;base64,..."}`).
-- Encoder: OK after the Conv3d fix (FP16).
-- Remaining: end-to-end short smoke (VAE tiling memory), then 480p/124 frames.
+- Encoder: OK after the Conv3d fix (FP16); 16k-token reference encodes in ~216 s.
+- Offload + VAE tiling: request now reaches `_build_denoise_inputs`; the legacy
+  `base_schedule` carried by the parent FL2VA `model_index.json` is ignored for
+  PDD (own fine grid + shifts) instead of aborting.
+- Remaining: PDD denoise + tiled VAE decode timings, then 480p/124 frames and
+  the OpenDirector wiring.
